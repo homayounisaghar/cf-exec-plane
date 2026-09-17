@@ -16,13 +16,13 @@ port="${VPS_PORT:-22}"
 case "$port" in ''|*[!0-9]*) echo "VPS_PORT must be numeric" >&2; exit 2 ;; esac
 case "$VPS_SSH_USER" in ''|*[!a-zA-Z0-9_-]*) echo "VPS_SSH_USER contains unsupported characters" >&2; exit 2 ;; esac
 
-# Backblaze may display the S3 endpoint either as a bare hostname or an HTTPS URL.
-# Normalize it without ever printing the secret-backed value.
+# Normalize any display form to a hostname, then always construct an HTTPS S3 URL.
+# The endpoint value itself is never printed.
 endpoint="${CF_BACKUP_S3_ENDPOINT//$'\r'/}"
 [[ "$endpoint" != *$'\n'* ]] || { echo "backup endpoint must be one line" >&2; exit 2; }
 case "$endpoint" in
   https://*) endpoint="${endpoint#https://}" ;;
-  http://*) echo "backup endpoint must use HTTPS" >&2; exit 2 ;;
+  http://*) endpoint="${endpoint#http://}" ;;
 esac
 while [[ "$endpoint" == */ ]]; do endpoint="${endpoint%/}"; done
 case "$endpoint" in ''|*/*|*' '*|*[!a-zA-Z0-9.-]*) echo "backup endpoint must resolve to a bare S3 hostname" >&2; exit 2 ;; esac
