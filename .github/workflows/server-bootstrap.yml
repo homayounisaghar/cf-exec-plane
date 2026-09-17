@@ -50,10 +50,7 @@ jobs:
             phase='${{ inputs.phase }}'
           else
             mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
-            [[ "${#changes[@]}" -eq 1 ]] || {
-              echo "control-trigger commit must add exactly one request file and change nothing else" >&2
-              exit 1
-            }
+            [[ "${#changes[@]}" -eq 1 ]] || { echo "control-trigger commit must add exactly one request file and change nothing else" >&2; exit 1; }
             IFS=$'\t' read -r status request_path <<<"${changes[0]}"
             [[ "$status" == "A" ]] || { echo "control request must be a newly added immutable file" >&2; exit 1; }
             [[ "$request_path" == server-bootstrap/control/requests/*.request ]] || { echo "unexpected control request path" >&2; exit 1; }
@@ -140,7 +137,7 @@ jobs:
     needs: resolve
     if: needs.resolve.outputs.phase == 'phase1'
     runs-on: ubuntu-latest
-    env: &ssh_env
+    env:
       VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
       VPS_HOST: ${{ secrets.VPS_HOST }}
       VPS_PORT: ${{ secrets.VPS_PORT }}
@@ -148,11 +145,13 @@ jobs:
       VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
     steps:
       - uses: actions/checkout@v4
-        with: {persist-credentials: false}
+        with:
+          persist-credentials: false
       - name: Mask endpoint and login
         run: |
           set -euo pipefail
-          printf '::add-mask::%s\n' "$VPS_HOST"; printf '::add-mask::%s\n' "$VPS_SSH_USER"
+          printf '::add-mask::%s\n' "$VPS_HOST"
+          printf '::add-mask::%s\n' "$VPS_SSH_USER"
           while IFS= read -r addr; do [[ -n "$addr" ]] && printf '::add-mask::%s\n' "$addr"; done < <(getent ahosts "$VPS_HOST" 2>/dev/null | awk '{print $1}' | sort -u)
       - run: bash server-bootstrap/runner/remote-exec.sh server-bootstrap/10-inventory.sh
 
@@ -160,27 +159,36 @@ jobs:
     needs: resolve
     if: needs.resolve.outputs.phase == 'phase2'
     runs-on: ubuntu-latest
-    env: *ssh_env
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
     steps:
       - uses: actions/checkout@v4
-        with: {persist-credentials: false}
+        with:
+          persist-credentials: false
       - name: Mask endpoint and derive stable admin login
         run: |
           set -euo pipefail
           [[ -n "$VPS_HOST" && -n "$VPS_SSH_USER" ]] || { echo "required SSH endpoint/login Secret missing" >&2; exit 2; }
-          printf '::add-mask::%s\n' "$VPS_HOST"; printf '::add-mask::%s\n' "$VPS_SSH_USER"
+          printf '::add-mask::%s\n' "$VPS_HOST"
+          printf '::add-mask::%s\n' "$VPS_SSH_USER"
           while IFS= read -r addr; do [[ -n "$addr" ]] && printf '::add-mask::%s\n' "$addr"; done < <(getent ahosts "$VPS_HOST" 2>/dev/null | awk '{print $1}' | sort -u)
           suffix="$(printf '%s' "$VPS_HOST" | sha256sum | awk '{print substr($1,1,10)}')"
           admin_user="cfop_${suffix}"
           printf '::add-mask::%s\n' "$admin_user"
           printf 'CF_ADMIN_USER=%s\n' "$admin_user" >> "$GITHUB_ENV"
       - name: Prepare non-root admin without changing SSH or UFW
-        env: {CF_HARDENING_MODE: prepare}
+        env:
+          CF_HARDENING_MODE: prepare
         run: bash server-bootstrap/runner/remote-exec.sh server-bootstrap/20-hardening.sh
       - name: Prove fresh admin SSH and sudo before final hardening
         run: VPS_TEST_USER="$CF_ADMIN_USER" REQUIRE_SUDO=yes bash server-bootstrap/runner/ssh-test.sh
       - name: Finalize SSH, logging, firewall, updates, zram and fixed swap
-        env: {CF_HARDENING_MODE: finalize}
+        env:
+          CF_HARDENING_MODE: finalize
         run: bash server-bootstrap/runner/remote-exec.sh server-bootstrap/20-hardening.sh
       - name: Verify fresh privileged login after UFW enable
         run: VPS_TEST_USER="$VPS_SSH_USER" REQUIRE_SUDO=no bash server-bootstrap/runner/ssh-test.sh
@@ -191,10 +199,16 @@ jobs:
     needs: resolve
     if: needs.resolve.outputs.phase == 'phase3'
     runs-on: ubuntu-latest
-    env: *ssh_env
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
     steps:
       - uses: actions/checkout@v4
-        with: {persist-credentials: false}
+        with:
+          persist-credentials: false
       - run: bash server-bootstrap/runner/remote-exec.sh server-bootstrap/30-docker.sh
 
   phase4:
@@ -202,16 +216,22 @@ jobs:
     if: needs.resolve.outputs.phase == 'phase4'
     runs-on: ubuntu-latest
     env:
-      <<: *ssh_env
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
       CF_REPO_READ_TOKEN: ${{ secrets.CF_REPO_READ_TOKEN }}
       CF_DEPLOY_SIGNING_PUBLIC_KEY: ${{ secrets.CF_DEPLOY_SIGNING_PUBLIC_KEY }}
     steps:
       - uses: actions/checkout@v4
-        with: {persist-credentials: false}
+        with:
+          persist-credentials: false
       - name: Mask endpoint and login
         run: |
           set -euo pipefail
-          printf '::add-mask::%s\n' "$VPS_HOST"; printf '::add-mask::%s\n' "$VPS_SSH_USER"
+          printf '::add-mask::%s\n' "$VPS_HOST"
+          printf '::add-mask::%s\n' "$VPS_SSH_USER"
           while IFS= read -r addr; do [[ -n "$addr" ]] && printf '::add-mask::%s\n' "$addr"; done < <(getent ahosts "$VPS_HOST" 2>/dev/null | awk '{print $1}' | sort -u)
       - name: Install read-only private-repository credential
         run: |
@@ -226,28 +246,42 @@ jobs:
           [[ -n "$CF_DEPLOY_SIGNING_PUBLIC_KEY" ]] || { echo 'PHASE4_DEPLOY_SIGNING_PUBLIC_KEY_REQUIRED' >&2; exit 21; }
           bash server-bootstrap/runner/install-server-material.sh signing-key
       - name: Install pull agent and systemd units with timer disabled
-        env: {CF_PHASE4_MODE: install}
+        env:
+          CF_PHASE4_MODE: install
         run: bash server-bootstrap/runner/remote-bundle-exec.sh server-bootstrap/40-pull-agent.sh
       - name: Apply signed release, prove health and run rollback drill
-        env: {CF_PHASE4_MODE: activate}
+        env:
+          CF_PHASE4_MODE: activate
         run: bash server-bootstrap/runner/remote-bundle-exec.sh server-bootstrap/40-pull-agent.sh
 
   phase5:
     needs: resolve
     if: needs.resolve.outputs.phase == 'phase5'
     runs-on: ubuntu-latest
-    env: *ssh_env
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
     steps:
       - uses: actions/checkout@v4
-        with: {persist-credentials: false}
+        with:
+          persist-credentials: false
       - run: bash server-bootstrap/runner/remote-exec.sh server-bootstrap/50-backup.sh
 
   phase6:
     needs: resolve
     if: needs.resolve.outputs.phase == 'phase6'
     runs-on: ubuntu-latest
-    env: *ssh_env
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
     steps:
       - uses: actions/checkout@v4
-        with: {persist-credentials: false}
+        with:
+          persist-credentials: false
       - run: bash server-bootstrap/runner/remote-exec.sh server-bootstrap/60-final-verify.sh
