@@ -24,18 +24,18 @@ umask 077
 printf '%s\n' "$VPS_SSH_KEY" > "$key_file"
 chmod 600 "$key_file"
 
-valid_host_key_lines=0
-while IFS= read -r line; do
-  [[ -n "$line" ]] || continue
-  key_type="${line%% *}"
-  key_data="${line#* }"
-  case "$key_type" in ssh-ed25519|ssh-rsa|rsa-sha2-*|ecdsa-sha2-*) ;; *) exit 3 ;; esac
-  case "$key_data" in ''|*[!A-Za-z0-9+/=]*) exit 3 ;; esac
-  printf '%s %s %s\n' "$VPS_HOST" "$key_type" "$key_data" >> "$known_hosts"
-  printf '[%s]:%s %s %s\n' "$VPS_HOST" "$port" "$key_type" "$key_data" >> "$known_hosts"
-  valid_host_key_lines=$((valid_host_key_lines + 1))
-done <<< "$VPS_HOST_KEY"
-(( valid_host_key_lines > 0 )) || exit 3
+host_key_line="${VPS_HOST_KEY//$'\r'/}"
+[[ "$host_key_line" != *$'\n'* ]] || { echo "VPS_HOST_KEY must contain exactly one line" >&2; exit 3; }
+read -r key_type key_data extra <<< "$host_key_line"
+[[ "$key_type" == "ssh-ed25519" && -n "$key_data" && -z "${extra:-}" ]] || {
+  echo "VPS_HOST_KEY must be exactly: ssh-ed25519 <base64-public-key>" >&2
+  exit 3
+}
+case "$key_data" in
+  *[!A-Za-z0-9+/=]*) echo "VPS_HOST_KEY contains malformed key data" >&2; exit 3 ;;
+esac
+printf '%s %s %s\n' "$VPS_HOST" "$key_type" "$key_data" > "$known_hosts"
+printf '[%s]:%s %s %s\n' "$VPS_HOST" "$port" "$key_type" "$key_data" >> "$known_hosts"
 chmod 600 "$known_hosts"
 
 remote_check='printf "CF_SSH_TEST_OK\\n"'
