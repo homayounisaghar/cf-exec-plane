@@ -1,0 +1,81 @@
+name: Personal Server Phase5 Backup Proof
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - server-bootstrap/control/phase5-requests/**
+
+permissions:
+  contents: read
+
+concurrency:
+  group: personal-server-phase5
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  resolve:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Validate immutable Phase5 request
+        run: |
+          set -euo pipefail
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then exit 0; fi
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || { echo "Phase5 trigger commit must add exactly one request file" >&2; exit 1; }
+          IFS=$'\t' read -r status request_path <<<"${changes[0]}"
+          [[ "$status" == "A" ]] || { echo "Phase5 request must be immutable/new" >&2; exit 1; }
+          [[ "$request_path" == server-bootstrap/control/phase5-requests/*.request ]] || { echo "unexpected Phase5 request path" >&2; exit 1; }
+          request_id="$(basename "$request_path" .request)"
+          file_request_id="$(awk -F= '$1=="request_id" {print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          phase="$(awk -F= '$1=="phase" {print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          [[ "$file_request_id" == "$request_id" && "$phase" == phase5 ]] || { echo "invalid Phase5 request" >&2; exit 1; }
+
+  backup-proof:
+    needs: resolve
+    runs-on: ubuntu-latest
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+      CF_BACKUP_S3_ENDPOINT: ${{ secrets.CF_BACKUP_S3_ENDPOINT }}
+      CF_BACKUP_S3_REGION: ${{ secrets.CF_BACKUP_S3_REGION }}
+      CF_BACKUP_S3_BUCKET: ${{ secrets.CF_BACKUP_S3_BUCKET }}
+      CF_BACKUP_S3_ACCESS_KEY: ${{ secrets.CF_BACKUP_S3_ACCESS_KEY }}
+      CF_BACKUP_S3_SECRET_KEY: ${{ secrets.CF_BACKUP_S3_SECRET_KEY }}
+      CF_BACKUP_RESTIC_PASSWORD: ${{ secrets.CF_BACKUP_RESTIC_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Mask endpoint and login
+        run: |
+          set -euo pipefail
+          printf '::add-mask::%s\n' "$VPS_HOST"
+          printf '::add-mask::%s\n' "$VPS_SSH_USER"
+          while IFS= read -r addr; do [[ -n "$addr" ]] && printf '::add-mask::%s\n' "$addr"; done < <(getent ahosts "$VPS_HOST" 2>/dev/null | awk '{print $1}' | sort -u)
+      - name: Validate backup material presence
+        run: |
+          set -euo pipefail
+          for v in CF_BACKUP_S3_ENDPOINT CF_BACKUP_S3_REGION CF_BACKUP_S3_BUCKET CF_BACKUP_S3_ACCESS_KEY CF_BACKUP_S3_SECRET_KEY CF_BACKUP_RESTIC_PASSWORD; do
+            [[ -n "${!v:-}" ]] || { echo "missing required backup Secret: $v" >&2; exit 30; }
+          done
+      - name: Install root-only backup configuration
+        run: bash server-bootstrap/runner/install-backup-material.sh
+      - name: Run real external backup and isolated restore proof
+        env:
+          CF_BACKUP_MODE: prove
+        run: bash server-bootstrap/runner/remote-bundle-exec.sh server-bootstrap/50-backup.sh
