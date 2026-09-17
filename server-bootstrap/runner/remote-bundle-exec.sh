@@ -28,6 +28,7 @@ chmod 600 "$known_hosts"
 ssh_opts=(-i "$key_file" -p "$port" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$known_hosts" -o ConnectTimeout=15)
 remote_env=("VPS_SSH_PORT=$port")
 [[ -n "${CF_PHASE4_MODE:-}" ]] && remote_env+=("CF_PHASE4_MODE=$CF_PHASE4_MODE")
+[[ -n "${CF_BACKUP_MODE:-}" ]] && remote_env+=("CF_BACKUP_MODE=$CF_BACKUP_MODE")
 remote_cmd='set -euo pipefail; d=$(mktemp -d /root/.cf-bootstrap.XXXXXX); trap '\''rm -rf "$d"'\'' EXIT; tar -xzf - -C "$d"; cd "$d"; env'
 for kv in "${remote_env[@]}"; do
   printf -v q '%q' "$kv"
