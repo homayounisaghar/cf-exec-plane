@@ -15,7 +15,18 @@ umask 077
 port="${VPS_PORT:-22}"
 case "$port" in ''|*[!0-9]*) echo "VPS_PORT must be numeric" >&2; exit 2 ;; esac
 case "$VPS_SSH_USER" in ''|*[!a-zA-Z0-9_-]*) echo "VPS_SSH_USER contains unsupported characters" >&2; exit 2 ;; esac
-case "$CF_BACKUP_S3_ENDPOINT" in *://*|*/*|*' '*|'') echo "backup endpoint must be a bare S3 hostname" >&2; exit 2 ;; esac
+
+# Backblaze may display the S3 endpoint either as a bare hostname or an HTTPS URL.
+# Normalize it without ever printing the secret-backed value.
+endpoint="${CF_BACKUP_S3_ENDPOINT//$'\r'/}"
+[[ "$endpoint" != *$'\n'* ]] || { echo "backup endpoint must be one line" >&2; exit 2; }
+case "$endpoint" in
+  https://*) endpoint="${endpoint#https://}" ;;
+  http://*) echo "backup endpoint must use HTTPS" >&2; exit 2 ;;
+esac
+while [[ "$endpoint" == */ ]]; do endpoint="${endpoint%/}"; done
+case "$endpoint" in ''|*/*|*' '*|*[!a-zA-Z0-9.-]*) echo "backup endpoint must resolve to a bare S3 hostname" >&2; exit 2 ;; esac
+
 case "$CF_BACKUP_S3_REGION" in ''|*[!a-zA-Z0-9-]*) echo "backup region is malformed" >&2; exit 2 ;; esac
 case "$CF_BACKUP_S3_BUCKET" in ''|*[!a-z0-9.-]*) echo "backup bucket is malformed" >&2; exit 2 ;; esac
 for v in CF_BACKUP_S3_ACCESS_KEY CF_BACKUP_S3_SECRET_KEY CF_BACKUP_RESTIC_PASSWORD; do
@@ -23,7 +34,7 @@ for v in CF_BACKUP_S3_ACCESS_KEY CF_BACKUP_S3_SECRET_KEY CF_BACKUP_RESTIC_PASSWO
   [[ "$value" != *$'\n'* && "$value" != *$'\r'* ]] || { echo "$v must be one line" >&2; exit 2; }
 done
 
-repository="s3:https://${CF_BACKUP_S3_ENDPOINT}/${CF_BACKUP_S3_BUCKET}/capability-fabric-personal-server"
+repository="s3:https://${endpoint}/${CF_BACKUP_S3_BUCKET}/capability-fabric-personal-server"
 printf -v q_repo '%q' "$repository"
 printf -v q_pass '%q' "$CF_BACKUP_RESTIC_PASSWORD"
 printf -v q_access '%q' "$CF_BACKUP_S3_ACCESS_KEY"
