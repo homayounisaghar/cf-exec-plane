@@ -21,6 +21,11 @@ else
   cgroup_v2=no
 fi
 
+os_lts_declared=no
+case "${VERSION:-} ${PRETTY_NAME:-}" in
+  *LTS*) os_lts_declared=yes ;;
+esac
+
 read_dmi() {
   local path="$1"
   if [[ -r "$path" ]]; then
@@ -36,7 +41,11 @@ default_iface="$(ip route show default 2>/dev/null | awk 'NR==1 {print $5}')"
 printf 'CF_INVENTORY_BEGIN\n'
 printf 'OS_ID=%s\n' "${ID:-unknown}"
 printf 'OS_VERSION_ID=%s\n' "${VERSION_ID:-unknown}"
+printf 'OS_VERSION=%s\n' "${VERSION:-unknown}"
 printf 'OS_PRETTY_NAME=%s\n' "${PRETTY_NAME:-unknown}"
+printf 'OS_VERSION_CODENAME=%s\n' "${VERSION_CODENAME:-unknown}"
+printf 'OS_UBUNTU_CODENAME=%s\n' "${UBUNTU_CODENAME:-unknown}"
+printf 'OS_LTS_DECLARED=%s\n' "$os_lts_declared"
 printf 'KERNEL=%s\n' "$(uname -srmo)"
 printf 'ARCH=%s\n' "$(uname -m)"
 printf 'VCPU=%s\n' "$(nproc)"
