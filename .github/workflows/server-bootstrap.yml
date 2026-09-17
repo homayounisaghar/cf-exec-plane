@@ -101,10 +101,9 @@ jobs:
           set -euo pipefail
           echo '=== CONTROL_RAW_SSH_BANNER ==='
           set +e
-          timeout 10 bash -c 'exec 3<>/dev/tcp/github.com/22; head -c 80 <&3'
+          timeout 10 bash -c 'exec 3<>/dev/tcp/github.com/22; IFS= read -r -t 8 line <&3; printf "%s\n" "$line"'
           banner_rc=$?
           set -e
-          echo
           printf 'CONTROL_BANNER_RC=%s\n' "$banner_rc"
           echo '=== CONTROL_SSH_VERBOSE ==='
           set +e
@@ -124,7 +123,7 @@ jobs:
           probe_port() {
             local p="$1" out="$tmpdir/out-$1" err="$tmpdir/err-$1" rc banner
             set +e
-            timeout 10 bash -c 'exec 3<>/dev/tcp/"$1"/"$2"; head -c 80 <&3' _ "$VPS_HOST" "$p" >"$out" 2>"$err"
+            timeout 10 bash -c 'exec 3<>/dev/tcp/"$1"/"$2"; IFS= read -r -t 8 line <&3; printf "%s\n" "$line"' _ "$VPS_HOST" "$p" >"$out" 2>"$err"
             rc=$?
             set -e
             if [[ "$rc" -eq 0 ]]; then
