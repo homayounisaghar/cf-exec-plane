@@ -284,4 +284,22 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - run: bash server-bootstrap/runner/remote-exec.sh server-bootstrap/60-final-verify.sh
+      - name: Mask endpoint and derive stable admin login
+        run: |
+          set -euo pipefail
+          [[ -n "$VPS_HOST" && -n "$VPS_SSH_USER" ]] || { echo "required SSH endpoint/login Secret missing" >&2; exit 2; }
+          printf '::add-mask::%s\n' "$VPS_HOST"
+          printf '::add-mask::%s\n' "$VPS_SSH_USER"
+          while IFS= read -r addr; do [[ -n "$addr" ]] && printf '::add-mask::%s\n' "$addr"; done < <(getent ahosts "$VPS_HOST" 2>/dev/null | awk '{print $1}' | sort -u)
+          suffix="$(printf '%s' "$VPS_HOST" | sha256sum | awk '{print substr($1,1,10)}')"
+          admin_user="cfop_${suffix}"
+          printf '::add-mask::%s\n' "$admin_user"
+          printf 'CF_ADMIN_USER=%s\n' "$admin_user" >> "$GITHUB_ENV"
+      - name: Verify live private-repository read access
+        run: bash server-bootstrap/runner/remote-exec.sh server-bootstrap/41-phase4-token-check.sh
+      - name: Verify final server security runtime signature and backup invariants
+        run: bash server-bootstrap/runner/remote-exec.sh server-bootstrap/60-final-verify.sh
+      - name: Verify fresh privileged SSH login
+        run: VPS_TEST_USER="$VPS_SSH_USER" REQUIRE_SUDO=no bash server-bootstrap/runner/ssh-test.sh
+      - name: Verify fresh non-root admin SSH and sudo
+        run: VPS_TEST_USER="$CF_ADMIN_USER" REQUIRE_SUDO=yes bash server-bootstrap/runner/ssh-test.sh
