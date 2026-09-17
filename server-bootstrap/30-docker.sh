@@ -5,7 +5,7 @@ set -euo pipefail
 . /etc/os-release
 case "${ID:-}" in
   ubuntu|debian) distro="$ID" ;;
-  *) echo "unsupported distribution for Docker repository: ${ID:-unknown}" >&2; exit 2 ;;
+  *) echo "unsupported distribution for Docker official repository: ${ID:-unknown}" >&2; exit 2 ;;
 esac
 
 if [[ ! -f /sys/fs/cgroup/cgroup.controllers ]]; then
@@ -13,18 +13,52 @@ if [[ ! -f /sys/fs/cgroup/cgroup.controllers ]]; then
   exit 3
 fi
 
-export DEBIAN_FRONTEND=noninteractive
-apt-get update
-apt-get install -y ca-certificates curl
-install -m 0755 -d /etc/apt/keyrings
-if [[ ! -s /etc/apt/keyrings/docker.asc ]]; then
-  curl -fsSL "https://download.docker.com/linux/${distro}/gpg" -o /etc/apt/keyrings/docker.asc
-  chmod a+r /etc/apt/keyrings/docker.asc
-fi
+# Phase 3 must not mutate apt sources/packages until the Docker-owned repository
+# proves this exact distribution codename+architecture is published with all
+# required stable packages. Phase 2 installs curl+ca-certificates as prerequisites.
+command -v curl >/dev/null 2>&1 || { echo "PHASE3_PREREQ_MISSING: curl is required for read-only Docker repository preflight" >&2; exit 6; }
+command -v gzip >/dev/null 2>&1 || { echo "PHASE3_PREREQ_MISSING: gzip is required for read-only Docker repository preflight" >&2; exit 6; }
+
 arch="$(dpkg --print-architecture)"
 codename="${VERSION_CODENAME:-}"
 [[ -n "$codename" ]] || { echo "VERSION_CODENAME missing" >&2; exit 4; }
-repo_line="deb [arch=${arch} signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/${distro} ${codename} stable"
+repo_base="https://download.docker.com/linux/${distro}"
+release_url="${repo_base}/dists/${codename}/Release"
+packages_url="${repo_base}/dists/${codename}/stable/binary-${arch}/Packages.gz"
+tmpdir="$(mktemp -d)"
+trap 'rm -rf "$tmpdir"' EXIT
+
+if ! curl -fsSL --retry 2 --connect-timeout 10 "$release_url" -o "$tmpdir/Release"; then
+  echo "DOCKER_OFFICIAL_REPO_UNAVAILABLE: no official Docker Release metadata for distro=${distro} codename=${codename}; no Docker apt/source mutation performed" >&2
+  exit 20
+fi
+if ! curl -fsSL --retry 2 --connect-timeout 10 "$packages_url" -o "$tmpdir/Packages.gz"; then
+  echo "DOCKER_OFFICIAL_REPO_UNAVAILABLE: no official Docker stable package index for distro=${distro} codename=${codename} arch=${arch}; no Docker apt/source mutation performed" >&2
+  exit 20
+fi
+
+gzip -cd "$tmpdir/Packages.gz" > "$tmpdir/Packages"
+for pkg in docker-ce docker-ce-cli containerd.io docker-compose-plugin; do
+  if ! grep -Fxq "Package: $pkg" "$tmpdir/Packages"; then
+    echo "DOCKER_OFFICIAL_REPO_INCOMPLETE: required package $pkg is absent for distro=${distro} codename=${codename} arch=${arch}; no Docker apt/source mutation performed" >&2
+    exit 21
+  fi
+done
+
+printf 'CF_DOCKER_PREFLIGHT_BEGIN\n'
+printf 'DISTRO=%s\n' "$distro"
+printf 'CODENAME=%s\n' "$codename"
+printf 'ARCH=%s\n' "$arch"
+printf 'OFFICIAL_DOCKER_REPO=available\n'
+printf 'REQUIRED_PACKAGES=available\n'
+printf 'CF_DOCKER_PREFLIGHT_END\n'
+
+# Only the official Docker repository passed the read-only gate. Mutations start here.
+export DEBIAN_FRONTEND=noninteractive
+install -m 0755 -d /etc/apt/keyrings
+curl -fsSL "${repo_base}/gpg" -o /etc/apt/keyrings/docker.asc
+chmod a+r /etc/apt/keyrings/docker.asc
+repo_line="deb [arch=${arch} signed-by=/etc/apt/keyrings/docker.asc] ${repo_base} ${codename} stable"
 if [[ ! -f /etc/apt/sources.list.d/docker.list ]] || [[ "$(cat /etc/apt/sources.list.d/docker.list)" != "$repo_line" ]]; then
   printf '%s\n' "$repo_line" > /etc/apt/sources.list.d/docker.list
 fi
