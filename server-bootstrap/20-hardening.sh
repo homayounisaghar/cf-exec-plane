@@ -23,9 +23,16 @@ if (( CF_SWAPFILE_BYTES < min_swap || CF_SWAPFILE_BYTES > max_swap )); then
 fi
 
 . /etc/os-release
-case "${ID:-}:${ID_LIKE:-}" in
-  ubuntu:*|debian:*|*:debian*) ;;
-  *) echo "unsupported package manager family: ${ID:-unknown} ${ID_LIKE:-}" >&2; exit 3 ;;
+if [[ "${ID:-}" != "ubuntu" ]]; then
+  echo "PHASE2_OS_DECISION_REQUIRED: expected Ubuntu; observed ${ID:-unknown} ${VERSION_ID:-unknown}. No mutation performed." >&2
+  exit 11
+fi
+case "${VERSION:-} ${PRETTY_NAME:-}" in
+  *LTS*) ;;
+  *)
+    echo "PHASE2_OS_DECISION_REQUIRED: observed Ubuntu ${VERSION_ID:-unknown} without an LTS declaration. No mutation performed." >&2
+    exit 11
+    ;;
 esac
 
 ssh_connection="${SSH_CONNECTION:-}"
