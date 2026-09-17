@@ -1,0 +1,28 @@
+name: Phase5 Static Validation
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/phase5-validation/**
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Validate shell syntax
+        run: |
+          set -euo pipefail
+          bash -n server-bootstrap/50-backup.sh
+          bash -n server-bootstrap/runner/install-backup-material.sh
+          bash -n server-bootstrap/runner/remote-bundle-exec.sh
+          echo CF_PHASE5_STATIC_VALIDATION_OK
