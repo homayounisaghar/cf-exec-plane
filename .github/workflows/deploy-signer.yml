@@ -1,0 +1,37 @@
+name: Capability Fabric Deployment Signer
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '*/10 * * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: capability-fabric-deploy-signer
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  sign:
+    if: github.event_name == 'schedule' || github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+      CF_REPO_READ_TOKEN: ${{ secrets.CF_REPO_READ_TOKEN }}
+      CF_DEPLOY_SIGNING_PUBLIC_KEY: ${{ secrets.CF_DEPLOY_SIGNING_PUBLIC_KEY }}
+      CF_DEPLOY_SIGNING_PRIVATE_KEY: ${{ secrets.CF_DEPLOY_SIGNING_PRIVATE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Validate, sign if needed, and install detached signature
+        run: bash server-bootstrap/runner/sign-and-install-release-v2.sh
