@@ -118,7 +118,6 @@ jobs:
           port="${VPS_PORT:-22}"
           tmpdir="$(mktemp -d)"
           trap 'rm -rf "$tmpdir"' EXIT
-
           PROBE_RESULT=''
           probe_port() {
             local p="$1" out="$tmpdir/out-$1" err="$tmpdir/err-$1" rc banner
@@ -147,17 +146,14 @@ jobs:
               printf 'PORT_%s_RESULT=ERROR_RC_%s\n' "$p" "$rc"
             fi
           }
-
           probe_port 22
           port22_result="$PROBE_RESULT"
-
           if [[ "$port" == 22 ]]; then
             primary_result="$port22_result"
           else
             probe_port "$port"
             primary_result="$PROBE_RESULT"
           fi
-
           selected_port=''
           if [[ "$primary_result" == OPEN_SSH ]]; then
             selected_port="$port"
@@ -171,11 +167,9 @@ jobs:
               fi
             done
           fi
-
           printf 'PORT_22_SUMMARY=%s\n' "$port22_result"
           [[ -n "$selected_port" ]] || { echo 'SERVER_SSH_ENDPOINT_NOT_REACHABLE' >&2; exit 20; }
           printf 'SELECTED_PORT=%s\n' "$selected_port"
-
           ssh-keyscan -T 8 -p "$selected_port" "$VPS_HOST" 2>/dev/null \
             | awk 'NF >= 3 {print $2 " " $3}' \
             | sort -u > "$tmpdir/host-keys"
@@ -198,6 +192,14 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+      - name: Mask endpoint and login
+        run: |
+          set -euo pipefail
+          printf '::add-mask::%s\n' "$VPS_HOST"
+          printf '::add-mask::%s\n' "$VPS_SSH_USER"
+          while IFS= read -r addr; do
+            [[ -n "$addr" ]] && printf '::add-mask::%s\n' "$addr"
+          done < <(getent ahosts "$VPS_HOST" 2>/dev/null | awk '{print $1}' | sort -u)
       - run: bash server-bootstrap/runner/remote-exec.sh server-bootstrap/10-inventory.sh
 
   phase2:
@@ -210,31 +212,37 @@ jobs:
       VPS_PORT: ${{ secrets.VPS_PORT }}
       VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
       VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
-      CF_ADMIN_USER: ${{ secrets.VPS_ADMIN_USER }}
-      CF_SWAPFILE_BYTES: '0'
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - name: Mask account labels
+      - name: Mask endpoint and derive stable admin login
         run: |
           set -euo pipefail
-          [[ -n "$VPS_SSH_USER" ]] || { echo "VPS_SSH_USER is missing" >&2; exit 2; }
-          [[ -n "$CF_ADMIN_USER" ]] || { echo "VPS_ADMIN_USER is missing" >&2; exit 2; }
+          [[ -n "$VPS_HOST" && -n "$VPS_SSH_USER" ]] || { echo "required SSH endpoint/login Secret missing" >&2; exit 2; }
+          printf '::add-mask::%s\n' "$VPS_HOST"
           printf '::add-mask::%s\n' "$VPS_SSH_USER"
-          printf '::add-mask::%s\n' "$CF_ADMIN_USER"
-      - name: Apply idempotent hardening
+          while IFS= read -r addr; do
+            [[ -n "$addr" ]] && printf '::add-mask::%s\n' "$addr"
+          done < <(getent ahosts "$VPS_HOST" 2>/dev/null | awk '{print $1}' | sort -u)
+          suffix="$(printf '%s' "$VPS_HOST" | sha256sum | awk '{print substr($1,1,10)}')"
+          admin_user="cfop_${suffix}"
+          printf '::add-mask::%s\n' "$admin_user"
+          printf 'CF_ADMIN_USER=%s\n' "$admin_user" >> "$GITHUB_ENV"
+      - name: Prepare non-root admin without changing SSH or UFW
+        env:
+          CF_HARDENING_MODE: prepare
         run: bash server-bootstrap/runner/remote-exec.sh server-bootstrap/20-hardening.sh
-      - name: Verify fresh privileged login after firewall enable
+      - name: Prove fresh admin SSH and sudo before final hardening
+        run: VPS_TEST_USER="$CF_ADMIN_USER" REQUIRE_SUDO=yes bash server-bootstrap/runner/ssh-test.sh
+      - name: Finalize SSH, logging, firewall, updates, zram and fixed swap
         env:
-          VPS_TEST_USER: ${{ secrets.VPS_SSH_USER }}
-          REQUIRE_SUDO: 'no'
-        run: bash server-bootstrap/runner/ssh-test.sh
-      - name: Verify separate administrative login
-        env:
-          VPS_TEST_USER: ${{ secrets.VPS_ADMIN_USER }}
-          REQUIRE_SUDO: 'yes'
-        run: bash server-bootstrap/runner/ssh-test.sh
+          CF_HARDENING_MODE: finalize
+        run: bash server-bootstrap/runner/remote-exec.sh server-bootstrap/20-hardening.sh
+      - name: Verify fresh privileged login after UFW enable
+        run: VPS_TEST_USER="$VPS_SSH_USER" REQUIRE_SUDO=no bash server-bootstrap/runner/ssh-test.sh
+      - name: Verify fresh admin login and sudo after UFW enable
+        run: VPS_TEST_USER="$CF_ADMIN_USER" REQUIRE_SUDO=yes bash server-bootstrap/runner/ssh-test.sh
 
   phase3:
     needs: resolve
