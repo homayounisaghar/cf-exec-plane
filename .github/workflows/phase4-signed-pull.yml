@@ -1,0 +1,114 @@
+name: Personal Server Phase4 Signed Pull
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - server-bootstrap/control/phase4-requests/**
+
+permissions:
+  contents: read
+
+concurrency:
+  group: personal-server-phase4
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  resolve:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Validate immutable Phase4 request
+        run: |
+          set -euo pipefail
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            exit 0
+          fi
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || { echo "Phase4 trigger commit must add exactly one request file" >&2; exit 1; }
+          IFS=$'\t' read -r status request_path <<<"${changes[0]}"
+          [[ "$status" == "A" ]] || { echo "Phase4 request must be immutable/new" >&2; exit 1; }
+          [[ "$request_path" == server-bootstrap/control/phase4-requests/*.request ]] || { echo "unexpected Phase4 request path" >&2; exit 1; }
+          request_id="$(basename "$request_path" .request)"
+          file_request_id="$(awk -F= '$1=="request_id" {print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          phase="$(awk -F= '$1=="phase" {print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          [[ "$file_request_id" == "$request_id" && "$phase" == phase4 ]] || { echo "invalid Phase4 request" >&2; exit 1; }
+
+  prepare:
+    needs: resolve
+    runs-on: ubuntu-latest
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+      CF_REPO_READ_TOKEN: ${{ secrets.CF_REPO_READ_TOKEN }}
+      CF_DEPLOY_SIGNING_PUBLIC_KEY: ${{ secrets.CF_DEPLOY_SIGNING_PUBLIC_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Mask endpoint and login
+        run: |
+          set -euo pipefail
+          printf '::add-mask::%s\n' "$VPS_HOST"
+          printf '::add-mask::%s\n' "$VPS_SSH_USER"
+          while IFS= read -r addr; do [[ -n "$addr" ]] && printf '::add-mask::%s\n' "$addr"; done < <(getent ahosts "$VPS_HOST" 2>/dev/null | awk '{print $1}' | sort -u)
+      - name: Install repo-read credential
+        run: bash server-bootstrap/runner/install-server-material.sh token
+      - name: Verify private repo read access
+        run: bash server-bootstrap/runner/remote-exec.sh server-bootstrap/41-phase4-token-check.sh
+      - name: Install verifier trust root only
+        run: bash server-bootstrap/runner/install-server-material.sh signing-key
+
+  sign:
+    needs: prepare
+    runs-on: ubuntu-latest
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+      CF_REPO_READ_TOKEN: ${{ secrets.CF_REPO_READ_TOKEN }}
+      CF_DEPLOY_SIGNING_PUBLIC_KEY: ${{ secrets.CF_DEPLOY_SIGNING_PUBLIC_KEY }}
+      CF_DEPLOY_SIGNING_PRIVATE_KEY: ${{ secrets.CF_DEPLOY_SIGNING_PRIVATE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Sign exact private manifest and install detached signature only
+        run: bash server-bootstrap/runner/sign-and-install-release-v2.sh
+
+  activate:
+    needs: sign
+    runs-on: ubuntu-latest
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Install pull agent and units with timer disabled
+        env:
+          CF_PHASE4_MODE: install
+        run: bash server-bootstrap/runner/remote-bundle-exec.sh server-bootstrap/40-pull-agent.sh
+      - name: Activate signed release, prove health and run rollback drill
+        env:
+          CF_PHASE4_MODE: activate
+        run: bash server-bootstrap/runner/remote-bundle-exec.sh server-bootstrap/40-pull-agent.sh
