@@ -55,21 +55,12 @@ jobs:
               exit 1
             }
             IFS=$'\t' read -r status request_path <<<"${changes[0]}"
-            [[ "$status" == "A" ]] || {
-              echo "control request must be a newly added immutable file" >&2
-              exit 1
-            }
-            [[ "$request_path" == server-bootstrap/control/requests/*.request ]] || {
-              echo "unexpected control request path" >&2
-              exit 1
-            }
+            [[ "$status" == "A" ]] || { echo "control request must be a newly added immutable file" >&2; exit 1; }
+            [[ "$request_path" == server-bootstrap/control/requests/*.request ]] || { echo "unexpected control request path" >&2; exit 1; }
             [[ -f "$request_path" ]] || { echo "control request file missing" >&2; exit 1; }
             request_id="$(basename "$request_path" .request)"
             file_request_id="$(awk -F= '$1=="request_id" {print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
-            [[ -n "$file_request_id" && "$file_request_id" == "$request_id" ]] || {
-              echo "request_id must match immutable request filename" >&2
-              exit 1
-            }
+            [[ -n "$file_request_id" && "$file_request_id" == "$request_id" ]] || { echo "request_id must match immutable request filename" >&2; exit 1; }
             phase="$(awk -F= '$1=="phase" {print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
           fi
           case "$phase" in
@@ -93,9 +84,7 @@ jobs:
           port="${VPS_PORT:-22}"
           case "$port" in ''|*[!0-9]*) echo "VPS_PORT must be numeric" >&2; exit 2 ;; esac
           printf '::add-mask::%s\n' "$VPS_HOST"
-          while IFS= read -r addr; do
-            [[ -n "$addr" ]] && printf '::add-mask::%s\n' "$addr"
-          done < <(getent ahosts "$VPS_HOST" 2>/dev/null | awk '{print $1}' | sort -u)
+          while IFS= read -r addr; do [[ -n "$addr" ]] && printf '::add-mask::%s\n' "$addr"; done < <(getent ahosts "$VPS_HOST" 2>/dev/null | awk '{print $1}' | sort -u)
       - name: Prove runner direct SSH egress
         run: |
           set -euo pipefail
@@ -127,62 +116,31 @@ jobs:
             set -e
             if [[ "$rc" -eq 0 ]]; then
               banner="$(tr -d '\r\n' <"$out")"
-              if [[ "$banner" == SSH-* ]]; then
-                PROBE_RESULT=OPEN_SSH
-                printf 'PORT_%s_RESULT=OPEN_SSH\n' "$p"
-                printf 'PORT_%s_BANNER=%s\n' "$p" "$banner"
-              else
-                PROBE_RESULT=TCP_OPEN_NON_SSH
-                printf 'PORT_%s_RESULT=TCP_OPEN_NON_SSH\n' "$p"
-              fi
-            elif [[ "$rc" -eq 124 ]]; then
-              PROBE_RESULT=TIMEOUT
-              printf 'PORT_%s_RESULT=TIMEOUT\n' "$p"
-            elif grep -qi 'Connection refused' "$err"; then
-              PROBE_RESULT=REFUSED
-              printf 'PORT_%s_RESULT=REFUSED\n' "$p"
-            else
-              PROBE_RESULT="ERROR_RC_${rc}"
-              printf 'PORT_%s_RESULT=ERROR_RC_%s\n' "$p" "$rc"
-            fi
+              if [[ "$banner" == SSH-* ]]; then PROBE_RESULT=OPEN_SSH; printf 'PORT_%s_RESULT=OPEN_SSH\n' "$p"; printf 'PORT_%s_BANNER=%s\n' "$p" "$banner"; else PROBE_RESULT=TCP_OPEN_NON_SSH; printf 'PORT_%s_RESULT=TCP_OPEN_NON_SSH\n' "$p"; fi
+            elif [[ "$rc" -eq 124 ]]; then PROBE_RESULT=TIMEOUT; printf 'PORT_%s_RESULT=TIMEOUT\n' "$p"
+            elif grep -qi 'Connection refused' "$err"; then PROBE_RESULT=REFUSED; printf 'PORT_%s_RESULT=REFUSED\n' "$p"
+            else PROBE_RESULT="ERROR_RC_${rc}"; printf 'PORT_%s_RESULT=ERROR_RC_%s\n' "$p" "$rc"; fi
           }
           probe_port 22
           port22_result="$PROBE_RESULT"
-          if [[ "$port" == 22 ]]; then
-            primary_result="$port22_result"
-          else
-            probe_port "$port"
-            primary_result="$PROBE_RESULT"
-          fi
+          if [[ "$port" == 22 ]]; then primary_result="$port22_result"; else probe_port "$port"; primary_result="$PROBE_RESULT"; fi
           selected_port=''
-          if [[ "$primary_result" == OPEN_SSH ]]; then
-            selected_port="$port"
+          if [[ "$primary_result" == OPEN_SSH ]]; then selected_port="$port"
           elif [[ "$primary_result" == TIMEOUT ]]; then
-            for candidate in 2222 22022 2022; do
-              [[ "$candidate" == "$port" ]] && continue
-              probe_port "$candidate"
-              if [[ "$PROBE_RESULT" == OPEN_SSH ]]; then
-                selected_port="$candidate"
-                break
-              fi
-            done
+            for candidate in 2222 22022 2022; do [[ "$candidate" == "$port" ]] && continue; probe_port "$candidate"; if [[ "$PROBE_RESULT" == OPEN_SSH ]]; then selected_port="$candidate"; break; fi; done
           fi
           printf 'PORT_22_SUMMARY=%s\n' "$port22_result"
           [[ -n "$selected_port" ]] || { echo 'SERVER_SSH_ENDPOINT_NOT_REACHABLE' >&2; exit 20; }
           printf 'SELECTED_PORT=%s\n' "$selected_port"
-          ssh-keyscan -T 8 -p "$selected_port" "$VPS_HOST" 2>/dev/null \
-            | awk 'NF >= 3 {print $2 " " $3}' \
-            | sort -u > "$tmpdir/host-keys"
+          ssh-keyscan -T 8 -p "$selected_port" "$VPS_HOST" 2>/dev/null | awk 'NF >= 3 {print $2 " " $3}' | sort -u > "$tmpdir/host-keys"
           [[ -s "$tmpdir/host-keys" ]] || { echo 'SSH_HOST_KEY_SCAN_FAILED' >&2; exit 21; }
-          echo 'CF_HOST_KEY_MATERIAL_BEGIN'
-          cat "$tmpdir/host-keys"
-          echo 'CF_HOST_KEY_MATERIAL_END'
+          echo 'CF_HOST_KEY_MATERIAL_BEGIN'; cat "$tmpdir/host-keys"; echo 'CF_HOST_KEY_MATERIAL_END'
 
   phase1:
     needs: resolve
     if: needs.resolve.outputs.phase == 'phase1'
     runs-on: ubuntu-latest
-    env:
+    env: &ssh_env
       VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
       VPS_HOST: ${{ secrets.VPS_HOST }}
       VPS_PORT: ${{ secrets.VPS_PORT }}
@@ -190,54 +148,39 @@ jobs:
       VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
+        with: {persist-credentials: false}
       - name: Mask endpoint and login
         run: |
           set -euo pipefail
-          printf '::add-mask::%s\n' "$VPS_HOST"
-          printf '::add-mask::%s\n' "$VPS_SSH_USER"
-          while IFS= read -r addr; do
-            [[ -n "$addr" ]] && printf '::add-mask::%s\n' "$addr"
-          done < <(getent ahosts "$VPS_HOST" 2>/dev/null | awk '{print $1}' | sort -u)
+          printf '::add-mask::%s\n' "$VPS_HOST"; printf '::add-mask::%s\n' "$VPS_SSH_USER"
+          while IFS= read -r addr; do [[ -n "$addr" ]] && printf '::add-mask::%s\n' "$addr"; done < <(getent ahosts "$VPS_HOST" 2>/dev/null | awk '{print $1}' | sort -u)
       - run: bash server-bootstrap/runner/remote-exec.sh server-bootstrap/10-inventory.sh
 
   phase2:
     needs: resolve
     if: needs.resolve.outputs.phase == 'phase2'
     runs-on: ubuntu-latest
-    env:
-      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
-      VPS_HOST: ${{ secrets.VPS_HOST }}
-      VPS_PORT: ${{ secrets.VPS_PORT }}
-      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
-      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+    env: *ssh_env
     steps:
       - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
+        with: {persist-credentials: false}
       - name: Mask endpoint and derive stable admin login
         run: |
           set -euo pipefail
           [[ -n "$VPS_HOST" && -n "$VPS_SSH_USER" ]] || { echo "required SSH endpoint/login Secret missing" >&2; exit 2; }
-          printf '::add-mask::%s\n' "$VPS_HOST"
-          printf '::add-mask::%s\n' "$VPS_SSH_USER"
-          while IFS= read -r addr; do
-            [[ -n "$addr" ]] && printf '::add-mask::%s\n' "$addr"
-          done < <(getent ahosts "$VPS_HOST" 2>/dev/null | awk '{print $1}' | sort -u)
+          printf '::add-mask::%s\n' "$VPS_HOST"; printf '::add-mask::%s\n' "$VPS_SSH_USER"
+          while IFS= read -r addr; do [[ -n "$addr" ]] && printf '::add-mask::%s\n' "$addr"; done < <(getent ahosts "$VPS_HOST" 2>/dev/null | awk '{print $1}' | sort -u)
           suffix="$(printf '%s' "$VPS_HOST" | sha256sum | awk '{print substr($1,1,10)}')"
           admin_user="cfop_${suffix}"
           printf '::add-mask::%s\n' "$admin_user"
           printf 'CF_ADMIN_USER=%s\n' "$admin_user" >> "$GITHUB_ENV"
       - name: Prepare non-root admin without changing SSH or UFW
-        env:
-          CF_HARDENING_MODE: prepare
+        env: {CF_HARDENING_MODE: prepare}
         run: bash server-bootstrap/runner/remote-exec.sh server-bootstrap/20-hardening.sh
       - name: Prove fresh admin SSH and sudo before final hardening
         run: VPS_TEST_USER="$CF_ADMIN_USER" REQUIRE_SUDO=yes bash server-bootstrap/runner/ssh-test.sh
       - name: Finalize SSH, logging, firewall, updates, zram and fixed swap
-        env:
-          CF_HARDENING_MODE: finalize
+        env: {CF_HARDENING_MODE: finalize}
         run: bash server-bootstrap/runner/remote-exec.sh server-bootstrap/20-hardening.sh
       - name: Verify fresh privileged login after UFW enable
         run: VPS_TEST_USER="$VPS_SSH_USER" REQUIRE_SUDO=no bash server-bootstrap/runner/ssh-test.sh
@@ -248,16 +191,10 @@ jobs:
     needs: resolve
     if: needs.resolve.outputs.phase == 'phase3'
     runs-on: ubuntu-latest
-    env:
-      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
-      VPS_HOST: ${{ secrets.VPS_HOST }}
-      VPS_PORT: ${{ secrets.VPS_PORT }}
-      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
-      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+    env: *ssh_env
     steps:
       - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
+        with: {persist-credentials: false}
       - run: bash server-bootstrap/runner/remote-exec.sh server-bootstrap/30-docker.sh
 
   phase4:
@@ -265,45 +202,52 @@ jobs:
     if: needs.resolve.outputs.phase == 'phase4'
     runs-on: ubuntu-latest
     env:
-      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
-      VPS_HOST: ${{ secrets.VPS_HOST }}
-      VPS_PORT: ${{ secrets.VPS_PORT }}
-      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
-      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+      <<: *ssh_env
+      CF_REPO_READ_TOKEN: ${{ secrets.CF_REPO_READ_TOKEN }}
+      CF_DEPLOY_SIGNING_PUBLIC_KEY: ${{ secrets.CF_DEPLOY_SIGNING_PUBLIC_KEY }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-      - run: bash server-bootstrap/runner/remote-exec.sh server-bootstrap/40-pull-agent.sh
+        with: {persist-credentials: false}
+      - name: Mask endpoint and login
+        run: |
+          set -euo pipefail
+          printf '::add-mask::%s\n' "$VPS_HOST"; printf '::add-mask::%s\n' "$VPS_SSH_USER"
+          while IFS= read -r addr; do [[ -n "$addr" ]] && printf '::add-mask::%s\n' "$addr"; done < <(getent ahosts "$VPS_HOST" 2>/dev/null | awk '{print $1}' | sort -u)
+      - name: Install read-only private-repository credential
+        run: |
+          set -euo pipefail
+          [[ -n "$CF_REPO_READ_TOKEN" ]] || { echo 'PHASE4_REPO_READ_TOKEN_REQUIRED' >&2; exit 20; }
+          bash server-bootstrap/runner/install-server-material.sh token
+      - name: Verify private-repository read access
+        run: bash server-bootstrap/runner/remote-exec.sh server-bootstrap/41-phase4-token-check.sh
+      - name: Install out-of-repo deployment signing public key
+        run: |
+          set -euo pipefail
+          [[ -n "$CF_DEPLOY_SIGNING_PUBLIC_KEY" ]] || { echo 'PHASE4_DEPLOY_SIGNING_PUBLIC_KEY_REQUIRED' >&2; exit 21; }
+          bash server-bootstrap/runner/install-server-material.sh signing-key
+      - name: Install pull agent and systemd units with timer disabled
+        env: {CF_PHASE4_MODE: install}
+        run: bash server-bootstrap/runner/remote-bundle-exec.sh server-bootstrap/40-pull-agent.sh
+      - name: Apply signed release, prove health and run rollback drill
+        env: {CF_PHASE4_MODE: activate}
+        run: bash server-bootstrap/runner/remote-bundle-exec.sh server-bootstrap/40-pull-agent.sh
 
   phase5:
     needs: resolve
     if: needs.resolve.outputs.phase == 'phase5'
     runs-on: ubuntu-latest
-    env:
-      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
-      VPS_HOST: ${{ secrets.VPS_HOST }}
-      VPS_PORT: ${{ secrets.VPS_PORT }}
-      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
-      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+    env: *ssh_env
     steps:
       - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
+        with: {persist-credentials: false}
       - run: bash server-bootstrap/runner/remote-exec.sh server-bootstrap/50-backup.sh
 
   phase6:
     needs: resolve
     if: needs.resolve.outputs.phase == 'phase6'
     runs-on: ubuntu-latest
-    env:
-      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
-      VPS_HOST: ${{ secrets.VPS_HOST }}
-      VPS_PORT: ${{ secrets.VPS_PORT }}
-      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
-      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+    env: *ssh_env
     steps:
       - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
+        with: {persist-credentials: false}
       - run: bash server-bootstrap/runner/remote-exec.sh server-bootstrap/60-final-verify.sh
