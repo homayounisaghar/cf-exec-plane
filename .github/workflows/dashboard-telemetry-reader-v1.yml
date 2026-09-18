@@ -75,7 +75,7 @@ jobs:
         run: |
           set -euo pipefail
           suffix="$(printf '%s' "$GITHUB_RUN_ID:$GITHUB_RUN_ATTEMPT" | sha256sum | cut -c1-8)"
-          thing="${THING_BASE}-p-${suffix}"
+          thing="${THING_BASE}-probe"
           printf '::add-mask::%s\n' "$thing"
           marker="probe-${{ steps.req.outputs.request_id }}"
           write="$(mktemp)"; readback="$(mktemp)"
@@ -101,7 +101,7 @@ jobs:
           set -euo pipefail
           echo 'CF_DASH_TELEMETRY_READBACK_BEGIN'
           found=0
-          for cat in state model effort planner target; do
+          for cat in probe state model effort planner target; do
             thing="${THING_BASE}-${cat}"
             printf '::add-mask::%s\n' "$thing"
             tmp="$(mktemp)"
@@ -127,6 +127,7 @@ jobs:
                     current: (.content.current // ""),
                     target: (.content.target // ""),
                     status: (.content.status // ""),
+                    marker: (.content.marker // ""),
                     created: (.created // "")
                   } | with_entries(select(.value != "" and .value != null))' <<<"$row")"
                   printf 'CF_DASH_TELEMETRY_EVENT=%s\n' "$safe"
