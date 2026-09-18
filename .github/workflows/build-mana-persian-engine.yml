@@ -1,0 +1,95 @@
+name: Build Mana Persian TTS Engine
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - mana-engine/control/*.request
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Build unsigned Mana engine
+        shell: bash
+        run: |
+          set -euo pipefail
+          work="$RUNNER_TEMP/mana-engine"
+          mkdir -p "$work" "$work/unpack"
+          engine_url="https://huggingface.co/csukuangfj2/sherpa-onnx-apk/resolve/main/tts-engine-new/1.13.4/sherpa-onnx-1.13.4-arm64-v8a-fas-tts-engine-vits-piper-fa_IR-ganji_adabi-medium.apk"
+          mana_model="https://huggingface.co/MahtaFetrat/Mana-Persian-Piper/resolve/d7ec7b55362a11c2b79907188bd6e71acc19d9b0/fa_IR-mana-medium.onnx"
+          mana_cfg="https://huggingface.co/MahtaFetrat/Mana-Persian-Piper/resolve/d7ec7b55362a11c2b79907188bd6e71acc19d9b0/fa_IR-mana-medium.onnx.json"
+          curl -L --fail --retry 3 --retry-all-errors -o "$work/base.apk" "$engine_url"
+          curl -L --fail --retry 3 --retry-all-errors -o "$work/mana.onnx" "$mana_model"
+          curl -L --fail --retry 3 --retry-all-errors -o "$work/mana.json" "$mana_cfg"
+          echo "e390c0e74ba71fd97c49ba662ee0c6e1724b462ba2d4561698af4f564840f126  $work/mana.onnx" | sha256sum -c -
+          python3 -m pip -q install onnx==1.17.0
+          python3 - "$work/mana.onnx" "$work/mana.json" "$work/tokens.txt" <<'PY'
+          import json,sys,onnx
+          model_path,cfg_path,tokens_path=sys.argv[1:]
+          cfg=json.load(open(cfg_path,encoding='utf-8'))
+          with open(tokens_path,'w',encoding='utf-8') as f:
+              for s, ids in cfg['phoneme_id_map'].items():
+                  f.write(f"{s} {ids[0]}\n")
+          m=onnx.load(model_path)
+          wanted={
+              'model_type':'vits',
+              'comment':'piper',
+              'language':'Persian',
+              'voice':'fa',
+              'has_espeak':'1',
+              'n_speakers':'1',
+              'sample_rate':'22050',
+          }
+          kept=[p for p in m.metadata_props if p.key not in wanted]
+          del m.metadata_props[:]
+          for p in kept:
+              q=m.metadata_props.add(); q.key=p.key; q.value=p.value
+          for k,v in wanted.items():
+              q=m.metadata_props.add(); q.key=k; q.value=v
+          onnx.save(m,model_path)
+          PY
+          cd "$work/unpack"
+          unzip -q "$work/base.apk"
+          model_rel="$(find assets -type f -name '*ganji_adabi*onnx' | head -n1)"
+          token_rel="$(dirname "$model_rel")/tokens.txt"
+          test -n "$model_rel" && test -f "$token_rel"
+          cp "$work/mana.onnx" "$model_rel"
+          cp "$work/tokens.txt" "$token_rel"
+          rm -rf META-INF
+          printf '%s\n'             'Mana Persian Piper embedded proof engine'             'source_commit=d7ec7b55362a11c2b79907188bd6e71acc19d9b0'             'source_sha256=e390c0e74ba71fd97c49ba662ee0c6e1724b462ba2d4561698af4f564840f126'             'runtime_base=sherpa-onnx-1.13.4-arm64-v8a-fas-tts-engine-vits-piper-fa_IR-ganji_adabi-medium'             > assets/MANA_ENGINE_BUILD.txt
+          python3 - "$work/unpack" "$work/repacked.apk" <<'PY'
+          import os,sys,zipfile
+          root,out=sys.argv[1:]
+          with zipfile.ZipFile(out,'w') as z:
+              for dp,_,fs in os.walk(root):
+                  for n in sorted(fs):
+                      p=os.path.join(dp,n); rel=os.path.relpath(p,root)
+                      ext=os.path.splitext(n)[1].lower()
+                      store = rel.startswith('lib/') or ext in {'.onnx','.so'}
+                      z.write(p,rel,compress_type=zipfile.ZIP_STORED if store else zipfile.ZIP_DEFLATED)
+          PY
+          zipalign_bin="$(find "$ANDROID_HOME/build-tools" -type f -name zipalign | sort -V | tail -n1)"
+          test -x "$zipalign_bin"
+          "$zipalign_bin" -f -p 4 "$work/repacked.apk" "$work/mana-engine-unsigned.apk"
+          unzip -t "$work/mana-engine-unsigned.apk" >/dev/null
+          model_entry="$(unzip -Z1 "$work/mana-engine-unsigned.apk" | grep -E 'assets/.*ganji_adabi.*\.onnx$' | head -n1)"
+          unzip -p "$work/mana-engine-unsigned.apk" "$model_entry" | sha256sum
+          ls -lh "$work/mana-engine-unsigned.apk"
+          cp "$work/mana-engine-unsigned.apk" "$GITHUB_WORKSPACE/mana-persian-engine-unsigned.apk"
+          sha256sum "$GITHUB_WORKSPACE/mana-persian-engine-unsigned.apk" > "$GITHUB_WORKSPACE/mana-persian-engine-unsigned.sha256"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mana-persian-engine-unsigned
+          path: |
+            mana-persian-engine-unsigned.apk
+            mana-persian-engine-unsigned.sha256
+          retention-days: 7
