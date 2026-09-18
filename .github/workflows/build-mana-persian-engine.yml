@@ -25,7 +25,7 @@ jobs:
           mkdir -p "$work" "$work/unpack"
           engine_url="https://huggingface.co/csukuangfj2/sherpa-onnx-apk/resolve/main/tts-engine-new/1.13.4/sherpa-onnx-1.13.4-arm64-v8a-fas-tts-engine-vits-piper-fa_IR-ganji_adabi-medium.apk"
           mana_model="https://huggingface.co/MahtaFetrat/Mana-Persian-Piper/resolve/d7ec7b55362a11c2b79907188bd6e71acc19d9b0/fa_IR-mana-medium.onnx"
-          mana_cfg="https://huggingface.co/MahtaFetrat/Mana-Persian-Piper/resolve/d7ec7b55362a11c2b79907188bd6e71acc19d9b0/fa_IR-mana-medium.onnx.json"
+          mana_cfg="https://huggingface.co/MahtaFetrat/Mana-Persian-Piper/resolve/cafdcbdb455e4a9ab2ef18dccb3e21dce6a25ee9/fa_IR-mana-medium.onnx.json"
           curl -L --fail --retry 3 --retry-all-errors -o "$work/base.apk" "$engine_url"
           curl -L --fail --retry 3 --retry-all-errors -o "$work/mana.onnx" "$mana_model"
           curl -L --fail --retry 3 --retry-all-errors -o "$work/mana.json" "$mana_cfg"
