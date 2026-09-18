@@ -27,8 +27,8 @@ jobs:
       VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
       VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
       CF_REPO_READ_TOKEN: ${{ secrets.CF_REPO_READ_TOKEN }}
-      CF_DEPLOY_SIGNING_PUBLIC_KEY: ${{ secrets.CF_DEPLOY_SIGNING_PUBLIC_KEY }}
-      CF_DEPLOY_SIGNING_PRIVATE_KEY: ${{ secrets.CF_DEPLOY_SIGNING_PRIVATE_KEY }}
+      CF_DEPLOY_SIGNING_PUBLIC_KEY: ${{ secrets.CF_DEPLOY_SIGNING_PUBLIC_KEY_NEW }}
+      CF_DEPLOY_SIGNING_PRIVATE_KEY: ${{ secrets.CF_DEPLOY_SIGNING_PRIVATE_KEY_NEW }}
     steps:
       - uses: actions/checkout@v4
         with:
