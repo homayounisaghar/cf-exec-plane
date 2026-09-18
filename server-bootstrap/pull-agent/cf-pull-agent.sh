@@ -4,6 +4,7 @@ umask 077
 
 TOKEN_FILE=/etc/capability-fabric/secrets/repo-read-token
 TRUST_FILE=/etc/capability-fabric/trust/deploy-signing.pub
+TRUST_FILE_NEXT=/etc/capability-fabric/trust/deploy-signing-next.pub
 REPO_URL=https://github.com/homayounisaghar/capability-fabric.git
 BRANCH=main
 DEPLOY_DIR=server-deploy/current
@@ -133,9 +134,18 @@ if [[ ! -s "$sig_path" ]]; then
 fi
 install -m 0640 "$sig_path" "$work/manifest.json.sig"
 
-pub_line="$(tr -d '\r\n' < "$TRUST_FILE")"; read -r key_type key_data extra <<< "$pub_line"
-if [[ "$key_type" != ssh-ed25519 || -z "$key_data" || -n "${extra:-}" ]]; then echo "CF_PULL_INVALID_TRUST_KEY" >&2; exit 21; fi
-allowed="$work/allowed_signers"; printf '%s %s %s\n' "$SIGN_ID" "$key_type" "$key_data" > "$allowed"
+allowed="$work/allowed_signers"
+: > "$allowed"
+for trust_path in "$TRUST_FILE" "$TRUST_FILE_NEXT"; do
+  [[ -e "$trust_path" ]] || continue
+  [[ -s "$trust_path" ]] || { echo "CF_PULL_INVALID_TRUST_KEY" >&2; exit 21; }
+  pub_line="$(tr -d '\r\n' < "$trust_path")"
+  read -r key_type key_data extra <<< "$pub_line"
+  if [[ "$key_type" != ssh-ed25519 || -z "$key_data" || -n "${extra:-}" ]]; then echo "CF_PULL_INVALID_TRUST_KEY" >&2; exit 21; fi
+  case "$key_data" in *[!A-Za-z0-9+/=]*) echo "CF_PULL_INVALID_TRUST_KEY" >&2; exit 21 ;; esac
+  printf '%s %s %s\n' "$SIGN_ID" "$key_type" "$key_data" >> "$allowed"
+done
+[[ -s "$allowed" ]] || { echo "CF_PULL_BLOCKED_SIGNING_TRUST" >&2; exit 21; }
 if ! ssh-keygen -Y verify -f "$allowed" -I "$SIGN_ID" -n "$SIGN_NAMESPACE" -s "$work/manifest.json.sig" < "$work/manifest.json" >>"$DETAIL_LOG" 2>&1; then atomic_write "$STATE/last-failed-commit" "$commit"; echo "CF_PULL_SIGNATURE_REJECTED" >&2; exit 32; fi
 
 if ! python3 - "$work/manifest.json" "$work/meta" "$work/files" "$work/images" <<'PY' >>"$DETAIL_LOG" 2>&1
