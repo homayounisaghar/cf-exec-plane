@@ -23,4 +23,6 @@ ssh -i "$key" -p "$port" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKey
   [[ -x "$active/rollback.sh" ]] || { echo "CF_STAGE2_ROLLBACK_STATE_MISSING" >&2; exit 40; }
   systemctl stop "$watchdog.timer" >/dev/null 2>&1 || true
   "$active/rollback.sh"
+  rm -rf "$active"
+  systemctl reset-failed "$watchdog.timer" "$watchdog.service" >/dev/null 2>&1 || true
   echo "CF_STAGE2_ROLLBACK=performed"'
