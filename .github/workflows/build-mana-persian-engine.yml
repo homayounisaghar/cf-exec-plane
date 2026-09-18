@@ -64,6 +64,56 @@ jobs:
           cp "$work/mana.onnx" "$model_rel"
           cp "$work/tokens.txt" "$token_rel"
           rm -rf META-INF
+          python3 - AndroidManifest.xml classes.dex <<'PY'
+          import struct,sys
+          manifest_path,dex_path=sys.argv[1:]
+          old='com.k2fsa.sherpa.onnx.tts.engine'
+          new='com.mana.persian.onnx.tts.engine'
+          assert len(old)==len(new)
+          repl={
+            old:new,
+            old+'.fileprovider':new+'.fileprovider',
+            old+'.androidx-startup':new+'.androidx-startup',
+            old+'.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION':new+'.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION',
+          }
+          b=bytearray(open(manifest_path,'rb').read())
+          assert struct.unpack_from('<H',b,0)[0]==3
+          pos=8
+          typ,hdr,size=struct.unpack_from('<HHI',b,pos)
+          assert typ==1
+          sc,sty,flags,strings_start,styles_start=struct.unpack_from('<IIIII',b,pos+8)
+          utf8=bool(flags&0x100)
+          offs=list(struct.unpack_from('<'+'I'*sc,b,pos+hdr))
+          base=pos+strings_start
+          def read_u8len(q):
+            x=b[q];q+=1
+            if x&0x80: x=((x&0x7f)<<8)|b[q];q+=1
+            return x,q
+          def read_u16len(q):
+            x=struct.unpack_from('<H',b,q)[0];q+=2
+            if x&0x8000:
+              y=struct.unpack_from('<H',b,q)[0];q+=2;x=((x&0x7fff)<<16)|y
+            return x,q
+          changed=[]
+          for off in offs:
+            q=base+off
+            if utf8:
+              _,q=read_u8len(q); bytelen,q=read_u8len(q); start=q; raw=bytes(b[start:start+bytelen]); s=raw.decode('utf-8')
+              if s in repl:
+                nr=repl[s].encode('utf-8'); assert len(nr)==bytelen; b[start:start+bytelen]=nr; changed.append(s)
+            else:
+              charlen,q=read_u16len(q); start=q; raw=bytes(b[start:start+charlen*2]); s=raw.decode('utf-16le')
+              if s in repl:
+                nr=repl[s].encode('utf-16le'); assert len(nr)==charlen*2; b[start:start+charlen*2]=nr; changed.append(s)
+          assert old in changed, changed
+          open(manifest_path,'wb').write(b)
+          # Patch exact dotted application-id constants in DEX. Class descriptors use slashes,
+          # so this does not rename implementation classes.
+          d=bytearray(open(dex_path,'rb').read())
+          for a,z in [(old,new),(old+'.fileprovider',new+'.fileprovider'),(old+'.androidx-startup',new+'.androidx-startup')]:
+            aa=a.encode();zz=z.encode();assert len(aa)==len(zz);d=d.replace(aa,zz)
+          open(dex_path,'wb').write(d)
+          PY
           printf '%s\n'             'Mana Persian Piper embedded proof engine'             'source_commit=d7ec7b55362a11c2b79907188bd6e71acc19d9b0'             'source_sha256=e390c0e74ba71fd97c49ba662ee0c6e1724b462ba2d4561698af4f564840f126'             'runtime_base=sherpa-onnx-1.13.4-arm64-v8a-fas-tts-engine-vits-piper-fa_IR-ganji_adabi-medium'             > assets/MANA_ENGINE_BUILD.txt
           python3 - "$work/unpack" "$work/repacked.apk" <<'PY'
           import os,sys,zipfile
