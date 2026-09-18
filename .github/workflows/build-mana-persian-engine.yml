@@ -68,7 +68,7 @@ jobs:
           import struct,sys
           manifest_path,dex_path=sys.argv[1:]
           old='com.k2fsa.sherpa.onnx.tts.engine'
-          new='com.mana.persian.onnx.tts.engine'
+          new='com.mana.persian.onnx.tts.engin2'
           assert len(old)==len(new)
           repl={
             old:new,
@@ -111,7 +111,7 @@ jobs:
           # classes intentionally retain their upstream namespace; only the installed package
           # identity and manifest authorities are isolated.
           PY
-          printf '%s\n'             'Mana Persian Piper embedded proof engine'             'source_commit=d7ec7b55362a11c2b79907188bd6e71acc19d9b0'             'source_sha256=e390c0e74ba71fd97c49ba662ee0c6e1724b462ba2d4561698af4f564840f126'             'runtime_base=sherpa-onnx-1.13.4-arm64-v8a-fas-tts-engine-vits-piper-fa_IR-ganji_adabi-medium'             > assets/MANA_ENGINE_BUILD.txt
+          printf '%s\n'             'Mana Persian Piper embedded proof engine v2'             'source_commit=d7ec7b55362a11c2b79907188bd6e71acc19d9b0'             'source_sha256=e390c0e74ba71fd97c49ba662ee0c6e1724b462ba2d4561698af4f564840f126'             'runtime_base=sherpa-onnx-1.13.4-arm64-v8a-fas-tts-engine-vits-piper-fa_IR-ganji_adabi-medium'             > assets/MANA_ENGINE_BUILD.txt
           python3 - "$work/unpack" "$work/repacked.apk" <<'PY'
           import os,sys,zipfile
           root,out=sys.argv[1:]
@@ -130,12 +130,12 @@ jobs:
           model_entry="$(unzip -Z1 "$work/mana-engine-unsigned.apk" | grep -E 'assets/.*ganji_adabi.*\.onnx$' | head -n1)"
           unzip -p "$work/mana-engine-unsigned.apk" "$model_entry" | sha256sum
           ls -lh "$work/mana-engine-unsigned.apk"
-          cp "$work/mana-engine-unsigned.apk" "$GITHUB_WORKSPACE/mana-persian-engine-unsigned.apk"
-          sha256sum "$GITHUB_WORKSPACE/mana-persian-engine-unsigned.apk" > "$GITHUB_WORKSPACE/mana-persian-engine-unsigned.sha256"
+          cp "$work/mana-engine-unsigned.apk" "$GITHUB_WORKSPACE/mana-persian-engine-v2-unsigned.apk"
+          sha256sum "$GITHUB_WORKSPACE/mana-persian-engine-unsigned.apk" > "$GITHUB_WORKSPACE/mana-persian-engine-v2-unsigned.sha256"
 
       - uses: actions/upload-artifact@v4
         with:
-          name: mana-persian-engine-unsigned
+          name: mana-persian-engine-v2-unsigned
           path: |
             mana-persian-engine-unsigned.apk
             mana-persian-engine-unsigned.sha256
