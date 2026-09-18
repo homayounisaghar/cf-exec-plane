@@ -21,7 +21,10 @@ printf '[%s]:%s %s %s\n' "$VPS_HOST" "$port" "$hkt" "$hkd" >> "$kh"
 chmod 0600 "$kh"
 
 test_user() {
-  local user="$1" label="$2" err="$tmp/$label.err" rc
+  local user="$1"
+  local label="$2"
+  local err="$tmp/$label.err"
+  local rc
   set +e
   ssh -i "$key" -p "$port" -o BatchMode=yes -o IdentitiesOnly=yes \
     -o PreferredAuthentications=publickey -o PasswordAuthentication=no -o KbdInteractiveAuthentication=no \
