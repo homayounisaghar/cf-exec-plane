@@ -89,7 +89,7 @@ case "$mode" in
       old=/etc/capability-fabric/trust/deploy-signing.pub
       next=/etc/capability-fabric/trust/deploy-signing-next.pub
       [[ -s "$old" ]] || exit 6
-      old_sha="$(sha256sum "$old" | awk "{print \\$1}")"
+      old_sha="$(sha256sum "$old" | cut -d " " -f1)"
       install -d -m 0755 -o root -g root /etc/capability-fabric/trust
       t="$(mktemp /etc/capability-fabric/trust/.deploy-signing-next.XXXXXX)"
       trap '\''rm -f "$t"'\'' EXIT
