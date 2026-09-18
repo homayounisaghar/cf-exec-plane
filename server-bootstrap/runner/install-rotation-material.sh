@@ -98,7 +98,7 @@ case "$mode" in
       chown root:root "$t"; chmod 0644 "$t"
       mv -f "$t" "$next"
       trap - EXIT
-      [[ "$(sha256sum "$old" | awk "{print \\$1}")" == "$old_sha" ]] || exit 8
+      [[ "$(sha256sum "$old" | cut -d " " -f1)" == "$old_sha" ]] || exit 8
       [[ "$(stat -c "%U:%G:%a" "$next")" == root:root:644 ]] || exit 9
       printf "CF_ROTATION_TRUST_ADD=ok\n"
       printf "OLD_TRUST_PRESERVED=yes\n"
