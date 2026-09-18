@@ -3,7 +3,6 @@ set -euo pipefail
 umask 077
 
 : "${VPS_SSH_KEY:?VPS_SSH_KEY is required}"
-: "${VPS_SSH_KEY_OLD:?VPS_SSH_KEY_OLD is required}"
 : "${VPS_HOST:?VPS_HOST is required}"
 : "${VPS_SSH_USER:?VPS_SSH_USER is required}"
 : "${VPS_HOST_KEY:?VPS_HOST_KEY is required}"
@@ -16,21 +15,14 @@ for u in "$VPS_SSH_USER" "$CF_ADMIN_USER"; do case "$u" in ''|*[!a-zA-Z0-9_-]*) 
 tmp="$(mktemp -d "${RUNNER_TEMP:-/tmp}/cf-stage2-cutover.XXXXXX")"
 trap 'rm -rf "$tmp"' EXIT
 new_key="$tmp/new-key"
-old_key="$tmp/old-key"
 known_hosts="$tmp/known-hosts"
 printf '%s\n' "$VPS_SSH_KEY" > "$new_key"
-printf '%s\n' "$VPS_SSH_KEY_OLD" > "$old_key"
-chmod 0600 "$new_key" "$old_key"
+chmod 0600 "$new_key"
 
 new_pub="$(ssh-keygen -y -f "$new_key")"
-old_pub="$(ssh-keygen -y -f "$old_key")"
 read -r nkt nkd nkx <<< "$new_pub"
-read -r okt okd okx <<< "$old_pub"
-[[ "$nkt" == ssh-ed25519 && -n "$nkd" && -z "${nkx:-}" ]] || { echo "NEW SSH key is not a clean Ed25519 key" >&2; exit 3; }
-[[ "$okt" == ssh-ed25519 && -n "$okd" && -z "${okx:-}" ]] || { echo "OLD SSH key is not a clean Ed25519 key" >&2; exit 3; }
-[[ "$nkd" != "$okd" ]] || { echo "OLD and NEW SSH keys are identical" >&2; exit 3; }
+[[ "$nkt" == ssh-ed25519 && -n "$nkd" && -z "${nkx:-}" ]] || { echo "canonical VPS_SSH_KEY is not a clean Ed25519 key" >&2; exit 3; }
 new_pub="$nkt $nkd"
-old_pub="$okt $okd"
 
 sign_pub="$(printf '%s' "$CF_DEPLOY_SIGNING_PUBLIC_KEY" | tr -d '\r\n')"
 read -r skt skd skx <<< "$sign_pub"
@@ -49,7 +41,6 @@ chmod 0600 "$known_hosts"
 {
   printf '%s\n' "$CF_ADMIN_USER"
   printf '%s\n' "$new_pub"
-  printf '%s\n' "$old_pub"
   printf '%s\n' "$sign_pub"
 } | ssh \
   -i "$new_key" \
@@ -62,117 +53,210 @@ chmod 0600 "$known_hosts"
   "${VPS_SSH_USER}@${VPS_HOST}" 'set -euo pipefail; umask 077
     IFS= read -r admin
     IFS= read -r new_ssh
-    IFS= read -r old_ssh
     IFS= read -r new_sign
     [[ "$admin" =~ ^[A-Za-z0-9_-]+$ ]] || exit 10
-    [[ "$new_ssh" == ssh-ed25519\ * && "$old_ssh" == ssh-ed25519\ * && "$new_ssh" != "$old_ssh" ]] || exit 10
-    [[ "$new_sign" == ssh-ed25519\ * ]] || exit 10
+    [[ "$new_ssh" == ssh-ed25519\ * && "$new_sign" == ssh-ed25519\ * ]] || exit 10
 
-    rollback_dir="$(mktemp -d /root/.cf-stage2-rollback.XXXXXX)"
-    committed=no
-    rollback() {
-      rc=$?
-      if [[ "$committed" != yes ]]; then
-        for label in root admin; do
-          meta="$rollback_dir/$label.meta"
-          bak="$rollback_dir/$label.authorized_keys"
-          if [[ -s "$meta" && -f "$bak" ]]; then
-            IFS=: read -r home user gid < "$meta"
-            install -d -m 0700 -o "$user" -g "$gid" "$home/.ssh"
-            cp -f "$bak" "$home/.ssh/authorized_keys"
-            chown "$user:$gid" "$home/.ssh/authorized_keys"
-            chmod 0600 "$home/.ssh/authorized_keys"
-          fi
-        done
-        if [[ -f "$rollback_dir/deploy-signing.pub" ]]; then
-          cp -f "$rollback_dir/deploy-signing.pub" /etc/capability-fabric/trust/deploy-signing.pub
-          chown root:root /etc/capability-fabric/trust/deploy-signing.pub
-          chmod 0644 /etc/capability-fabric/trust/deploy-signing.pub
-        fi
-        if [[ -f "$rollback_dir/deploy-signing-next.pub" ]]; then
-          cp -f "$rollback_dir/deploy-signing-next.pub" /etc/capability-fabric/trust/deploy-signing-next.pub
-          chown root:root /etc/capability-fabric/trust/deploy-signing-next.pub
-          chmod 0644 /etc/capability-fabric/trust/deploy-signing-next.pub
-        fi
-      fi
-      rm -rf "$rollback_dir"
-      exit "$rc"
-    }
-    trap rollback EXIT
+    active=/root/.cf-stage2-rollback-active
+    watchdog=cf-stage2-rollback-watchdog
+    [[ ! -e "$active" ]] || { echo "CF_STAGE2_STALE_ROLLBACK_STATE" >&2; exit 11; }
+    systemctl is-active --quiet "$watchdog.timer" && { echo "CF_STAGE2_STALE_WATCHDOG" >&2; exit 11; } || true
 
-    prepare_auth() {
-      label="$1"; user="$2"
-      entry="$(getent passwd "$user")" || exit 11
-      home="$(printf "%s" "$entry" | cut -d: -f6)"
-      gid="$(id -g "$user")"
-      auth="$home/.ssh/authorized_keys"
-      [[ -f "$auth" && ! -L "$auth" ]] || exit 11
-      cp -a "$auth" "$rollback_dir/$label.authorized_keys"
-      printf "%s:%s:%s\n" "$home" "$user" "$gid" > "$rollback_dir/$label.meta"
-      old_count="$(grep -F -c -- "$old_ssh" "$auth" || true)"
-      new_count="$(grep -F -c -- "$new_ssh" "$auth" || true)"
-      [[ "$old_count" -eq 1 && "$new_count" -eq 1 ]] || {
-        echo "CF_STAGE2_AUTH_KEY_CARDINALITY_FAIL=$label" >&2
-        exit 12
-      }
+    root_entry="$(getent passwd root)"
+    admin_entry="$(getent passwd "$admin")"
+    root_home="$(printf "%s" "$root_entry" | cut -d: -f6)"
+    admin_home="$(printf "%s" "$admin_entry" | cut -d: -f6)"
+    root_auth="$root_home/.ssh/authorized_keys"
+    admin_auth="$admin_home/.ssh/authorized_keys"
+    [[ -f "$root_auth" && ! -L "$root_auth" && -f "$admin_auth" && ! -L "$admin_auth" ]] || exit 12
+
+    parse_keys() {
+      python3 - "$1" <<'PY'
+import shlex,sys
+known_prefixes=("ssh-","ecdsa-","sk-ssh-","sk-ecdsa-")
+for raw in open(sys.argv[1],encoding="utf-8",errors="strict"):
+    s=raw.strip()
+    if not s or s.startswith("#"):
+        continue
+    try:
+        t=shlex.split(s,comments=False,posix=True)
+    except ValueError:
+        continue
+    for i,x in enumerate(t[:-1]):
+        if x.startswith(known_prefixes):
+            print(x+" "+t[i+1])
+            break
+PY
     }
-    prepare_auth root root
-    prepare_auth admin "$admin"
+
+    work="$(mktemp -d /root/.cf-stage2-pre.XXXXXX)"
+    trap '\''rm -rf "$work"'\'' RETURN
+    parse_keys "$root_auth" > "$work/root.keys"
+    parse_keys "$admin_auth" > "$work/admin.keys"
+    root_before="$(wc -l < "$work/root.keys" | tr -d " ")"
+    admin_before="$(wc -l < "$work/admin.keys" | tr -d " ")"
+    [[ "$root_before" -ge 2 && "$admin_before" -ge 2 ]] || { echo "CF_STAGE2_TOO_FEW_KEYS_BEFORE" >&2; exit 13; }
+    [[ "$(grep -Fxc -- "$new_ssh" "$work/root.keys" || true)" -eq 1 ]] || { echo "CF_STAGE2_NEW_KEY_ROOT_CARDINALITY_FAIL" >&2; exit 13; }
+    [[ "$(grep -Fxc -- "$new_ssh" "$work/admin.keys" || true)" -eq 1 ]] || { echo "CF_STAGE2_NEW_KEY_ADMIN_CARDINALITY_FAIL" >&2; exit 13; }
+
+    grep -Fxv -- "$new_ssh" "$work/root.keys" | sort -u > "$work/root.other"
+    grep -Fxv -- "$new_ssh" "$work/admin.keys" | sort -u > "$work/admin.other"
+    comm -12 "$work/root.other" "$work/admin.other" > "$work/common.other"
+    [[ "$(wc -l < "$work/common.other" | tr -d " ")" -eq 1 ]] || {
+      echo "CF_STAGE2_OLD_KEY_IDENTITY_AMBIGUOUS" >&2
+      exit 14
+    }
+    old_ssh="$(cat "$work/common.other")"
+    [[ "$old_ssh" != "$new_ssh" ]] || exit 14
+    [[ "$(grep -Fxc -- "$old_ssh" "$work/root.keys" || true)" -eq 1 ]] || exit 14
+    [[ "$(grep -Fxc -- "$old_ssh" "$work/admin.keys" || true)" -eq 1 ]] || exit 14
+
+    fingerprint() {
+      local k="$1" f
+      f="$(mktemp "$work/key.XXXXXX")"
+      printf "%s\n" "$k" > "$f"
+      ssh-keygen -E sha256 -lf "$f" | awk "{print \\$2}"
+      rm -f "$f"
+    }
+    old_fp="$(fingerprint "$old_ssh")"
+    new_fp="$(fingerprint "$new_ssh")"
 
     old_trust=/etc/capability-fabric/trust/deploy-signing.pub
     next_trust=/etc/capability-fabric/trust/deploy-signing-next.pub
-    [[ -s "$old_trust" && -s "$next_trust" ]] || exit 13
-    cp -a "$old_trust" "$rollback_dir/deploy-signing.pub"
-    cp -a "$next_trust" "$rollback_dir/deploy-signing-next.pub"
-    old_norm="$(awk "NF>=2 {print \\$1 \" \" \\$2; exit}" "$old_trust")"
-    next_norm="$(awk "NF>=2 {print \\$1 \" \" \\$2; exit}" "$next_trust")"
-    [[ "$next_norm" == "$new_sign" && "$old_norm" != "$new_sign" ]] || {
-      echo "CF_STAGE2_TRUST_IDENTITY_MISMATCH" >&2
-      exit 14
-    }
+    [[ -s "$old_trust" && -s "$next_trust" ]] || { echo "CF_STAGE2_OVERLAP_TRUST_MISSING" >&2; exit 15; }
+    old_sign="$(awk "NF>=2 {print \\$1 \" \" \\$2; exit}" "$old_trust")"
+    next_sign="$(awk "NF>=2 {print \\$1 \" \" \\$2; exit}" "$next_trust")"
+    [[ "$next_sign" == "$new_sign" && "$old_sign" != "$new_sign" ]] || { echo "CF_STAGE2_TRUST_IDENTITY_MISMATCH" >&2; exit 15; }
+    old_sign_fp="$(fingerprint "$old_sign")"
+    new_sign_fp="$(fingerprint "$new_sign")"
 
-    cut_auth() {
-      label="$1"; user="$2"
-      entry="$(getent passwd "$user")"
-      home="$(printf "%s" "$entry" | cut -d: -f6)"
-      gid="$(id -g "$user")"
-      auth="$home/.ssh/authorized_keys"
-      t="$(mktemp "$home/.ssh/.authorized_keys.stage2.XXXXXX")"
-      awk -v old="$old_ssh" "index(\$0, old)==0 {print}" "$auth" > "$t"
-      grep -Fq -- "$new_ssh" "$t" || exit 15
-      ! grep -Fq -- "$old_ssh" "$t" || exit 15
-      chown "$user:$gid" "$t"
-      chmod 0600 "$t"
-      mv -f "$t" "$auth"
-      [[ "$(stat -c "%U:%G:%a" "$auth")" == "$user:$gid:600" ]] || exit 15
-      printf "CF_STAGE2_OLD_SSH_KEY_REMOVED_%s=yes\n" "$label"
+    printf "CF_STAGE2_PRE_OLD_SSH_FINGERPRINT=%s\n" "$old_fp"
+    printf "CF_STAGE2_PRE_NEW_SSH_FINGERPRINT=%s\n" "$new_fp"
+    printf "CF_STAGE2_PRE_OLD_SIGNING_FINGERPRINT=%s\n" "$old_sign_fp"
+    printf "CF_STAGE2_PRE_NEW_SIGNING_FINGERPRINT=%s\n" "$new_sign_fp"
+    printf "CF_STAGE2_PRE_ROOT_KEY_COUNT=%s\n" "$root_before"
+    printf "CF_STAGE2_PRE_ADMIN_KEY_COUNT=%s\n" "$admin_before"
+    printf "CF_STAGE2_PRE_BOTH_KEYS_PRESENT_ROOT=yes\n"
+    printf "CF_STAGE2_PRE_BOTH_KEYS_PRESENT_ADMIN=yes\n"
+
+    install -d -m 0700 -o root -g root "$active"
+    cp -a "$root_auth" "$active/root.authorized_keys"
+    cp -a "$admin_auth" "$active/admin.authorized_keys"
+    cp -a "$old_trust" "$active/deploy-signing.pub"
+    cp -a "$next_trust" "$active/deploy-signing-next.pub"
+    printf "%s\n" "$root_auth" > "$active/root.path"
+    printf "%s\n" "$admin_auth" > "$active/admin.path"
+    printf "%s\n" "$admin" > "$active/admin.user"
+    printf "%s\n" "$old_ssh" > "$active/old-ssh.pub"
+    printf "%s\n" "$new_ssh" > "$active/new-ssh.pub"
+    printf "%s\n" "$old_fp" > "$active/old-ssh.fp"
+    printf "%s\n" "$new_fp" > "$active/new-ssh.fp"
+    printf "%s\n" "$root_before" > "$active/root.count.before"
+    printf "%s\n" "$admin_before" > "$active/admin.count.before"
+
+    cat > "$active/rollback.sh" <<'RB'
+#!/usr/bin/env bash
+set -euo pipefail
+active=/root/.cf-stage2-rollback-active
+root_auth="$(cat "$active/root.path")"
+admin_auth="$(cat "$active/admin.path")"
+admin="$(cat "$active/admin.user")"
+root_gid="$(id -g root)"
+admin_gid="$(id -g "$admin")"
+install -d -m 0700 -o root -g "$root_gid" "$(dirname "$root_auth")"
+install -d -m 0700 -o "$admin" -g "$admin_gid" "$(dirname "$admin_auth")"
+cp -f "$active/root.authorized_keys" "$root_auth"
+cp -f "$active/admin.authorized_keys" "$admin_auth"
+chown root:"$root_gid" "$root_auth"; chmod 0600 "$root_auth"
+chown "$admin":"$admin_gid" "$admin_auth"; chmod 0600 "$admin_auth"
+cp -f "$active/deploy-signing.pub" /etc/capability-fabric/trust/deploy-signing.pub
+cp -f "$active/deploy-signing-next.pub" /etc/capability-fabric/trust/deploy-signing-next.pub
+chown root:root /etc/capability-fabric/trust/deploy-signing.pub /etc/capability-fabric/trust/deploy-signing-next.pub
+chmod 0644 /etc/capability-fabric/trust/deploy-signing.pub /etc/capability-fabric/trust/deploy-signing-next.pub
+logger -t cf-stage2-rollback "CF_STAGE2_ROLLBACK_PERFORMED"
+RB
+    chmod 0700 "$active/rollback.sh"
+
+    rollback_now() {
+      rc=$?
+      systemctl stop "$watchdog.timer" >/dev/null 2>&1 || true
+      "$active/rollback.sh" || true
+      echo "CF_STAGE2_ROLLBACK=performed" >&2
+      exit "$rc"
     }
-    cut_auth root root
-    cut_auth admin "$admin"
+    trap rollback_now EXIT
+
+    systemd-run --quiet --unit="$watchdog" --on-active=10m "$active/rollback.sh"
+    systemctl is-active --quiet "$watchdog.timer" || { echo "CF_STAGE2_WATCHDOG_NOT_ARMED" >&2; exit 16; }
+    printf "CF_STAGE2_ROLLBACK_WATCHDOG=armed\n"
+
+    rewrite_auth() {
+      auth="$1"; user="$2"; old="$3"
+      gid="$(id -g "$user")"
+      t="$(mktemp "$(dirname "$auth")/.authorized_keys.stage2.XXXXXX")"
+      python3 - "$auth" "$old" "$t" <<'PY'
+import shlex,sys
+src,old,out=sys.argv[1:]
+known_prefixes=("ssh-","ecdsa-","sk-ssh-","sk-ecdsa-")
+removed=0
+with open(src,encoding="utf-8",errors="strict") as f, open(out,"w",encoding="utf-8") as g:
+    for raw in f:
+        norm=None
+        s=raw.strip()
+        if s and not s.startswith("#"):
+            try: t=shlex.split(s,comments=False,posix=True)
+            except ValueError: t=[]
+            for i,x in enumerate(t[:-1]):
+                if x.startswith(known_prefixes):
+                    norm=x+" "+t[i+1]
+                    break
+        if norm==old:
+            removed+=1
+            continue
+        g.write(raw)
+if removed!=1:
+    raise SystemExit(20)
+PY
+      chown "$user:$gid" "$t"; chmod 0600 "$t"; mv -f "$t" "$auth"
+    }
+    rewrite_auth "$root_auth" root "$old_ssh"
+    rewrite_auth "$admin_auth" "$admin" "$old_ssh"
 
     t="$(mktemp /etc/capability-fabric/trust/.deploy-signing.stage2.XXXXXX)"
     printf "%s\n" "$new_sign" > "$t"
-    chown root:root "$t"
-    chmod 0644 "$t"
-    mv -f "$t" "$old_trust"
+    chown root:root "$t"; chmod 0644 "$t"; mv -f "$t" "$old_trust"
     rm -f "$next_trust"
-    [[ "$(awk "NF>=2 {print \\$1 \" \" \\$2; exit}" "$old_trust")" == "$new_sign" ]] || exit 16
-    [[ ! -e "$next_trust" ]] || exit 16
+
+    parse_keys "$root_auth" > "$work/root.after"
+    parse_keys "$admin_auth" > "$work/admin.after"
+    root_after="$(wc -l < "$work/root.after" | tr -d " ")"
+    admin_after="$(wc -l < "$work/admin.after" | tr -d " ")"
+    [[ "$root_after" -eq $((root_before-1)) && "$admin_after" -eq $((admin_before-1)) ]] || { echo "CF_STAGE2_KEY_COUNT_NOT_REDUCED_BY_ONE" >&2; exit 17; }
+    [[ "$(grep -Fxc -- "$new_ssh" "$work/root.after" || true)" -eq 1 && "$(grep -Fxc -- "$new_ssh" "$work/admin.after" || true)" -eq 1 ]] || exit 17
+    [[ "$(grep -Fxc -- "$old_ssh" "$work/root.after" || true)" -eq 0 && "$(grep -Fxc -- "$old_ssh" "$work/admin.after" || true)" -eq 0 ]] || exit 17
+    [[ ! -e "$next_trust" ]] || exit 17
+    [[ "$(awk "NF>=2 {print \\$1 \" \" \\$2; exit}" "$old_trust")" == "$new_sign" ]] || exit 17
 
     current="$(readlink -f /opt/capability-fabric/current)"
-    [[ "$current" == /var/lib/capability-fabric/releases/* ]] || exit 17
+    [[ "$current" == /var/lib/capability-fabric/releases/* ]] || exit 18
     manifest="$current/manifest.json"
     manifest_sha="$(sha256sum "$manifest" | cut -d " " -f1)"
     sig="/var/lib/capability-fabric/signatures/${manifest_sha}.sig"
-    [[ -s "$sig" ]] || exit 17
-    printf "capability-fabric-deploy %s\n" "$(cat "$old_trust")" > "$rollback_dir/allowed-new"
-    ssh-keygen -Y verify -f "$rollback_dir/allowed-new" -I capability-fabric-deploy -n capability-fabric-deploy -s "$sig" < "$manifest" >/dev/null
+    [[ -s "$manifest" && -s "$sig" && -x "$current/health.sh" ]] || exit 18
+    printf "capability-fabric-deploy %s\n" "$(cat "$old_trust")" > "$work/allowed-new"
+    ssh-keygen -Y verify -f "$work/allowed-new" -I capability-fabric-deploy -n capability-fabric-deploy -s "$sig" < "$manifest" >/dev/null
     timeout 300 env CF_RELEASE_DIR="$current" CF_COMPOSE_PROJECT=capability-fabric bash "$current/health.sh" >/dev/null
 
-    committed=yes
     trap - EXIT
-    rm -rf "$rollback_dir"
-    printf "CF_STAGE2_TRUST_CUTOVER=pass\n"
+    printf "CF_STAGE2_CUTOVER_MUTATION=pass\n"
+    printf "CF_STAGE2_POST_OLD_SSH_FINGERPRINT=%s\n" "$old_fp"
+    printf "CF_STAGE2_POST_NEW_SSH_FINGERPRINT=%s\n" "$new_fp"
+    printf "CF_STAGE2_POST_ROOT_KEY_COUNT=%s\n" "$root_after"
+    printf "CF_STAGE2_POST_ADMIN_KEY_COUNT=%s\n" "$admin_after"
+    printf "CF_STAGE2_POST_OLD_KEY_PRESENT_ROOT=no\n"
+    printf "CF_STAGE2_POST_OLD_KEY_PRESENT_ADMIN=no\n"
+    printf "CF_STAGE2_POST_NEW_KEY_PRESENT_ROOT=yes\n"
+    printf "CF_STAGE2_POST_NEW_KEY_PRESENT_ADMIN=yes\n"
     printf "CF_STAGE2_ONLY_NEW_SIGNING_TRUST_ACTIVE=yes\n"
     printf "CF_STAGE2_CURRENT_SIGNATURE_NEW_TRUST=pass\n"
     printf "CF_STAGE2_CURRENT_HEALTH=pass\n"'
