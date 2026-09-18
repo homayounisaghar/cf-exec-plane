@@ -1,0 +1,139 @@
+name: Dashboard Telemetry Reader v1
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - dashboard-telemetry/control/requests/**
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dashboard-telemetry-reader-v1
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  readback:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    env:
+      CF_REPO_READ_TOKEN: ${{ secrets.CF_REPO_READ_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+
+      - name: Resolve immutable request
+        id: req
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || { echo "request commit must add exactly one file" >&2; exit 10; }
+          IFS=$'\t' read -r status request_path <<<"${changes[0]}"
+          [[ "$status" == A ]] || { echo "request file must be newly added" >&2; exit 11; }
+          [[ "$request_path" == dashboard-telemetry/control/requests/*.request ]] || { echo "unexpected request path" >&2; exit 12; }
+          request_id="$(basename "$request_path" .request)"
+          file_request_id="$(awk -F= '$1=="request_id" {print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          operation="$(awk -F= '$1=="operation" {print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          [[ -n "$file_request_id" && "$file_request_id" == "$request_id" ]] || { echo "request_id mismatch" >&2; exit 13; }
+          case "$operation" in probe|read) ;; *) echo "unsupported operation" >&2; exit 14 ;; esac
+          printf 'request_id=%s\noperation=%s\n' "$request_id" "$operation" >> "$GITHUB_OUTPUT"
+
+      - name: Load private transport binding
+        id: cfg
+        run: |
+          set -euo pipefail
+          [[ -n "$CF_REPO_READ_TOKEN" ]] || { echo "private repo read token missing" >&2; exit 20; }
+          api='https://api.github.com/repos/homayounisaghar/capability-fabric/contents/projects/chatgpt-webview-control-plane/private/remote-telemetry-v1.json?ref=main'
+          tmp="$(mktemp)"
+          trap 'rm -f "$tmp" "$tmp.cfg"' EXIT
+          curl --fail --silent --show-error --max-time 20             -H "Authorization: Bearer $CF_REPO_READ_TOKEN"             -H "Accept: application/vnd.github+json"             "$api" > "$tmp"
+          jq -r '.content' "$tmp" | tr -d '\n' | base64 -d > "$tmp.cfg"
+          [[ "$(jq -r '.schema' "$tmp.cfg")" == 'cf-dashboard-remote-telemetry.v1' ]]
+          [[ "$(jq -r '.transport' "$tmp.cfg")" == 'dweet.cc' ]]
+          thing_base="$(jq -r '.thing_base' "$tmp.cfg")"
+          proof="$(jq -r '.proof' "$tmp.cfg")"
+          [[ "$thing_base" =~ ^[A-Za-z0-9_.-]{10,54}$ ]] || { echo "invalid thing binding" >&2; exit 21; }
+          [[ "$proof" =~ ^[0-9a-f]{32}$ ]] || { echo "invalid proof binding" >&2; exit 22; }
+          printf '::add-mask::%s\n' "$thing_base"
+          printf '::add-mask::%s\n' "$proof"
+          {
+            printf 'THING_BASE=%s\n' "$thing_base"
+            printf 'PROOF=%s\n' "$proof"
+          } >> "$GITHUB_ENV"
+          echo 'CF_DASH_TELEMETRY_BINDING=loaded'
+
+      - name: End-to-end transport probe
+        if: steps.req.outputs.operation == 'probe'
+        run: |
+          set -euo pipefail
+          suffix="$(printf '%s' "$GITHUB_RUN_ID:$GITHUB_RUN_ATTEMPT" | sha256sum | cut -c1-8)"
+          thing="${THING_BASE}-p-${suffix}"
+          printf '::add-mask::%s\n' "$thing"
+          marker="probe-${{ steps.req.outputs.request_id }}"
+          write="$(mktemp)"; readback="$(mktemp)"
+          trap 'rm -f "$write" "$readback"' EXIT
+          curl --fail --silent --show-error --max-time 20 --get             "https://dweet.cc/dweet/for/$thing"             --data-urlencode "proof=$PROOF"             --data-urlencode "build=probe"             --data-urlencode "phase=transport_probe"             --data-urlencode "marker=$marker" > "$write"
+          jq -e '.this=="succeeded"' "$write" >/dev/null
+          curl --fail --silent --show-error --max-time 20             "https://dweet.cc/get/latest/dweet/for/$thing" > "$readback"
+          jq -e --arg proof "$PROOF" --arg marker "$marker" '
+            .this=="succeeded" and
+            (.with|type=="array" and length>=1) and
+            (.with[0].content.proof==$proof) and
+            (.with[0].content.marker==$marker) and
+            (.with[0].content.phase=="transport_probe")
+          ' "$readback" >/dev/null
+          echo 'CF_DASH_TELEMETRY_WRITE=pass'
+          echo 'CF_DASH_TELEMETRY_READ=pass'
+          echo 'CF_DASH_TELEMETRY_EQUALITY=pass'
+          echo 'CF_DASH_TELEMETRY_PROBE=pass'
+
+      - name: Read redacted dashboard telemetry
+        if: steps.req.outputs.operation == 'read'
+        run: |
+          set -euo pipefail
+          echo 'CF_DASH_TELEMETRY_READBACK_BEGIN'
+          found=0
+          for cat in state model effort planner target; do
+            thing="${THING_BASE}-${cat}"
+            printf '::add-mask::%s\n' "$thing"
+            tmp="$(mktemp)"
+            if curl --fail --silent --show-error --max-time 20                  "https://dweet.cc/get/dweets/for/$thing" > "$tmp"; then
+              ok="$(jq -r '.this // ""' "$tmp")"
+              if [[ "$ok" == succeeded ]]; then
+                while IFS= read -r row; do
+                  proof="$(jq -r '.content.proof // ""' <<<"$row")"
+                  [[ "$proof" == "$PROOF" ]] || continue
+                  found=1
+                  safe="$(jq -c '{
+                    category: (.content.category // ""),
+                    build: (.content.build // ""),
+                    run: (.content.run // ""),
+                    seq: (.content.seq // ""),
+                    phase: (.content.phase // ""),
+                    state: (.content.state // ""),
+                    reason: (.content.reason // ""),
+                    action: (.content.action // ""),
+                    method: (.content.method // ""),
+                    model: (.content.model // ""),
+                    effort: (.content.effort // ""),
+                    current: (.content.current // ""),
+                    target: (.content.target // ""),
+                    status: (.content.status // ""),
+                    created: (.created // "")
+                  } | with_entries(select(.value != "" and .value != null))' <<<"$row")"
+                  printf 'CF_DASH_TELEMETRY_EVENT=%s\n' "$safe"
+                done < <(jq -c '.with[]?' "$tmp")
+              fi
+            fi
+            rm -f "$tmp"
+          done
+          echo "CF_DASH_TELEMETRY_FOUND=$found"
+          echo 'CF_DASH_TELEMETRY_READBACK_END'
