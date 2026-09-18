@@ -1,0 +1,81 @@
+name: Shared Telemetry Transport Preflight v1
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - shared-telemetry/control/preflight/*.request
+
+permissions:
+  contents: read
+
+jobs:
+  preflight:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    env:
+      CF_REPO_READ_TOKEN: ${{ secrets.CF_REPO_READ_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+
+      - name: Resolve immutable request
+        id: req
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || { echo "request commit must add exactly one file" >&2; exit 10; }
+          IFS=$'\t' read -r status request_path <<<"${changes[0]}"
+          [[ "$status" == A ]] || { echo "request file must be newly added" >&2; exit 11; }
+          [[ "$request_path" == shared-telemetry/control/preflight/*.request ]] || { echo "unexpected request path" >&2; exit 12; }
+          request_id="$(basename "$request_path" .request)"
+          file_request_id="$(awk -F= '$1=="request_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          [[ "$request_id" =~ ^[A-Za-z0-9_.-]{8,96}$ && "$file_request_id" == "$request_id" ]] || { echo "bad request id" >&2; exit 13; }
+          echo "request_id=$request_id" >> "$GITHUB_OUTPUT"
+
+      - name: Load private preflight binding
+        id: cfg
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -n "$CF_REPO_READ_TOKEN" ]] || { echo "private repo read token missing" >&2; exit 20; }
+          rid="${{ steps.req.outputs.request_id }}"
+          api="https://api.github.com/repos/homayounisaghar/capability-fabric/contents/projects/shared-telemetry/evidence/preflight-requests/$rid.request?ref=main"
+          tmp="$(mktemp)"
+          trap 'rm -f "$tmp" "$tmp.req"' EXIT
+          curl --fail --silent --show-error --max-time 20             -H "Authorization: Bearer $CF_REPO_READ_TOKEN"             -H "Accept: application/vnd.github+json"             "$api" > "$tmp"
+          jq -r '.content' "$tmp" | tr -d '\n' | base64 -d > "$tmp.req"
+          endpoint="$(awk -F= '$1=="endpoint"{print substr($0,index($0,"=")+1)}' "$tmp.req")"
+          key="$(awk -F= '$1=="ingest_key"{print substr($0,index($0,"=")+1)}' "$tmp.req")"
+          source_rid="$(awk -F= '$1=="run_id"{print substr($0,index($0,"=")+1)}' "$tmp.req")"
+          [[ "$endpoint" == "https://shared-telemetry.mirkazem.workers.dev" ]] || { echo "unexpected endpoint" >&2; exit 21; }
+          [[ "$key" =~ ^[0-9a-f]{64}$ ]] || { echo "invalid ingest key shape" >&2; exit 22; }
+          [[ -n "$source_rid" ]] || { echo "missing run id" >&2; exit 23; }
+          echo "::add-mask::$key"
+          {
+            echo "ENDPOINT=$endpoint"
+            echo "INGEST_KEY=$key"
+            echo "PROBE_RUN_ID=$source_rid"
+          } >> "$GITHUB_ENV"
+
+      - name: Test new, duplicate, and bad-key writes
+        shell: bash
+        run: |
+          set -euo pipefail
+          body="$(jq -nc --arg rid "$PROBE_RUN_ID" '{events:[{app_id:"webview-dashboard",environment:"preflight",version:"stage70-preflight",build_id:"1070",device_instance_id:"github-runner",session_id:$rid,run_id:$rid,seq:0,event_id:($rid+":0"),timestamp_client:(now|todate),category:"state",phase:"SHARED_TELEMETRY_TRANSPORT_PREFLIGHT",state:"testing",action:"transport_probe",reason:"",status:"started",metadata:{source:"github-actions-preflight"}}]}')"
+
+          code1="$(curl -sS -o /tmp/r1.json -w '%{http_code}' -X POST "$ENDPOINT/v1/events" -H "Authorization: Bearer $INGEST_KEY" -H 'Content-Type: application/json' --data "$body")"
+          [[ "$code1" == 200 ]] && jq -e '.accepted==1 and .duplicates==0 and (.rejected|length)==0' /tmp/r1.json >/dev/null
+          echo "CF_SHARED_TELEMETRY_NEW=PASS http=$code1 accepted=$(jq -r .accepted /tmp/r1.json) duplicates=$(jq -r .duplicates /tmp/r1.json)"
+
+          code2="$(curl -sS -o /tmp/r2.json -w '%{http_code}' -X POST "$ENDPOINT/v1/events" -H "Authorization: Bearer $INGEST_KEY" -H 'Content-Type: application/json' --data "$body")"
+          [[ "$code2" == 200 ]] && jq -e '.accepted==0 and .duplicates==1 and (.rejected|length)==0' /tmp/r2.json >/dev/null
+          echo "CF_SHARED_TELEMETRY_DUPLICATE=PASS http=$code2 accepted=$(jq -r .accepted /tmp/r2.json) duplicates=$(jq -r .duplicates /tmp/r2.json)"
+
+          code3="$(curl -sS -o /tmp/r3.json -w '%{http_code}' -X POST "$ENDPOINT/v1/events" -H 'Authorization: Bearer deliberately-wrong-key' -H 'Content-Type: application/json' --data "$body")"
+          [[ "$code3" == 401 ]] && jq -e '.error=="invalid ingest key"' /tmp/r3.json >/dev/null
+          echo "CF_SHARED_TELEMETRY_BAD_KEY=PASS http=$code3"
+          echo "CF_SHARED_TELEMETRY_PREFLIGHT=PASS"
