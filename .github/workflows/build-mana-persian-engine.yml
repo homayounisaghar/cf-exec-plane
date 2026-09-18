@@ -137,6 +137,6 @@ jobs:
         with:
           name: mana-persian-engine-v2-unsigned
           path: |
-            mana-persian-engine-unsigned.apk
-            mana-persian-engine-unsigned.sha256
+            mana-persian-engine-v2-unsigned.apk
+            mana-persian-engine-v2-unsigned.sha256
           retention-days: 7
