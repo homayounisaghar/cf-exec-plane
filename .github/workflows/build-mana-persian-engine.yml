@@ -107,12 +107,9 @@ jobs:
                 nr=repl[s].encode('utf-16le'); assert len(nr)==charlen*2; b[start:start+charlen*2]=nr; changed.append(s)
           assert old in changed, changed
           open(manifest_path,'wb').write(b)
-          # Patch exact dotted application-id constants in DEX. Class descriptors use slashes,
-          # so this does not rename implementation classes.
-          d=bytearray(open(dex_path,'rb').read())
-          for a,z in [(old,new),(old+'.fileprovider',new+'.fileprovider'),(old+'.androidx-startup',new+'.androidx-startup')]:
-            aa=a.encode();zz=z.encode();assert len(aa)==len(zz);d=d.replace(aa,zz)
-          open(dex_path,'wb').write(d)
+          # Keep classes.dex byte-identical to the upstream sherpa runtime. The implementation
+          # classes intentionally retain their upstream namespace; only the installed package
+          # identity and manifest authorities are isolated.
           PY
           printf '%s\n'             'Mana Persian Piper embedded proof engine'             'source_commit=d7ec7b55362a11c2b79907188bd6e71acc19d9b0'             'source_sha256=e390c0e74ba71fd97c49ba662ee0c6e1724b462ba2d4561698af4f564840f126'             'runtime_base=sherpa-onnx-1.13.4-arm64-v8a-fas-tts-engine-vits-piper-fa_IR-ganji_adabi-medium'             > assets/MANA_ENGINE_BUILD.txt
           python3 - "$work/unpack" "$work/repacked.apk" <<'PY'
