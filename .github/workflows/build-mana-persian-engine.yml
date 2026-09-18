@@ -131,7 +131,7 @@ jobs:
           unzip -p "$work/mana-engine-unsigned.apk" "$model_entry" | sha256sum
           ls -lh "$work/mana-engine-unsigned.apk"
           cp "$work/mana-engine-unsigned.apk" "$GITHUB_WORKSPACE/mana-persian-engine-v2-unsigned.apk"
-          sha256sum "$GITHUB_WORKSPACE/mana-persian-engine-unsigned.apk" > "$GITHUB_WORKSPACE/mana-persian-engine-v2-unsigned.sha256"
+          sha256sum "$GITHUB_WORKSPACE/mana-persian-engine-v2-unsigned.apk" > "$GITHUB_WORKSPACE/mana-persian-engine-v2-unsigned.sha256"
 
       - uses: actions/upload-artifact@v4
         with:
