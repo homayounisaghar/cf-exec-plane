@@ -19,9 +19,10 @@ known_hosts="$tmp/known-hosts"
 printf '%s\n' "$VPS_SSH_KEY" > "$new_key"
 chmod 0600 "$new_key"
 
-new_pub="$(ssh-keygen -y -f "$new_key")"
-read -r nkt nkd nkx <<< "$new_pub"
-[[ "$nkt" == ssh-ed25519 && -n "$nkd" && -z "${nkx:-}" ]] || { echo "canonical VPS_SSH_KEY is not a clean Ed25519 key" >&2; exit 3; }
+new_pub_raw="$(ssh-keygen -y -f "$new_key")"
+read -r nkt nkd _ <<< "$new_pub_raw"
+[[ "$nkt" == ssh-ed25519 && -n "$nkd" ]] || { echo "canonical VPS_SSH_KEY does not derive an Ed25519 public key" >&2; exit 3; }
+case "$nkd" in *[!A-Za-z0-9+/=]*) echo "canonical VPS_SSH_KEY derived public key data is malformed" >&2; exit 3 ;; esac
 new_pub="$nkt $nkd"
 
 sign_pub="$(printf '%s' "$CF_DEPLOY_SIGNING_PUBLIC_KEY" | tr -d '\r\n')"
