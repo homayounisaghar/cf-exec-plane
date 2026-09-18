@@ -36,26 +36,24 @@ jobs:
           [[ "$request_id" =~ ^[A-Za-z0-9_.-]{8,96}$ && "$file_request_id" == "$request_id" ]] || { echo "bad request id" >&2; exit 13; }
           echo "request_id=$request_id" >> "$GITHUB_OUTPUT"
 
-      - name: Load private reader binding
+      - name: Load encrypted private reader binding
         id: cfg
         shell: bash
         run: |
           set -euo pipefail
           [[ -n "$CF_REPO_READ_TOKEN" ]] || { echo "private repo read token missing" >&2; exit 20; }
-          api="https://api.github.com/repos/homayounisaghar/capability-fabric/contents/projects/shared-telemetry/private/reader-runtime-v1.json?ref=main"
+          api="https://api.github.com/repos/homayounisaghar/capability-fabric/contents/projects/shared-telemetry/private/reader-runtime-v1.enc.json?ref=main"
           tmp="$(mktemp)"
           trap 'rm -f "$tmp" "$tmp.json"' EXIT
-          curl --fail --silent --show-error --max-time 20 \
-            -H "Authorization: Bearer $CF_REPO_READ_TOKEN" \
-            -H "Accept: application/vnd.github+json" \
-            "$api" > "$tmp"
+          curl --fail --silent --show-error --max-time 20             -H "Authorization: Bearer $CF_REPO_READ_TOKEN"             -H "Accept: application/vnd.github+json"             "$api" > "$tmp"
           jq -r '.content' "$tmp" | tr -d '\n' | base64 -d > "$tmp.json"
           endpoint="$(jq -r '.endpoint' "$tmp.json")"
           app_id="$(jq -r '.app_id' "$tmp.json")"
-          read_token="$(jq -r '.read_token' "$tmp.json")"
+          cipher="$(jq -r '.cipher' "$tmp.json")"
+          read_token="$(printf '%s' "$cipher" | openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -a -A -pass env:CF_REPO_READ_TOKEN 2>/dev/null)"
           [[ "$endpoint" == "https://shared-telemetry.mirkazem.workers.dev" ]] || { echo "unexpected endpoint" >&2; exit 21; }
           [[ "$app_id" == "webview-dashboard" ]] || { echo "unexpected app id" >&2; exit 22; }
-          [[ "$read_token" =~ ^[0-9a-f]{64}$ ]] || { echo "invalid read token shape" >&2; exit 23; }
+          [[ "$read_token" =~ ^[0-9a-f]{64}$ ]] || { echo "invalid decrypted read token shape" >&2; exit 23; }
           echo "::add-mask::$read_token"
           {
             echo "ENDPOINT=$endpoint"
@@ -68,8 +66,7 @@ jobs:
         run: |
           set -euo pipefail
           auth=( -H "Authorization: Bearer $READ_TOKEN" )
-          curl --fail --silent --show-error --max-time 20 "${auth[@]}" \
-            "$ENDPOINT/v1/runs/latest?app_id=$APP_ID" > /tmp/latest.json
+          curl --fail --silent --show-error --max-time 20 "${auth[@]}"             "$ENDPOINT/v1/runs/latest?app_id=$APP_ID" > /tmp/latest.json
           echo "CF_SHARED_TELEMETRY_LATEST=$(jq -c '.' /tmp/latest.json)"
           rid="$(jq -r '.latest_run.run_id // empty' /tmp/latest.json)"
           [[ -n "$rid" ]] || { echo "CF_SHARED_TELEMETRY_FOUND=0"; exit 0; }
@@ -79,9 +76,7 @@ jobs:
           total=0
           for page in $(seq 1 10); do
             url="$ENDPOINT/v1/events?app_id=$APP_ID&run_id=$rid&limit=500"
-            if [[ -n "$after" ]]; then
-              url="$url&after_seq=$after"
-            fi
+            if [[ -n "$after" ]]; then url="$url&after_seq=$after"; fi
             curl --fail --silent --show-error --max-time 20 "${auth[@]}" "$url" > /tmp/events.json
             count="$(jq -r '.count // (.events|length)' /tmp/events.json)"
             total=$((total + count))
@@ -93,8 +88,4 @@ jobs:
           done
           echo "CF_SHARED_TELEMETRY_READ_END"
           echo "CF_SHARED_TELEMETRY_TOTAL=$total"
-          if [[ "$total" -gt 0 ]]; then
-            echo "CF_SHARED_TELEMETRY_FOUND=1"
-          else
-            echo "CF_SHARED_TELEMETRY_FOUND=0"
-          fi
+          if [[ "$total" -gt 0 ]]; then echo "CF_SHARED_TELEMETRY_FOUND=1"; else echo "CF_SHARED_TELEMETRY_FOUND=0"; fi
