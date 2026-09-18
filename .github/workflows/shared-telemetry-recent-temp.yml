@@ -1,0 +1,40 @@
+name: Shared Telemetry Recent Window Temp
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - shared-telemetry/control/recent-temp/*.request
+
+permissions:
+  contents: read
+
+jobs:
+  read:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    env:
+      CF_REPO_READ_TOKEN: ${{ secrets.CF_REPO_READ_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Read recent WebView Dashboard events
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -n "$CF_REPO_READ_TOKEN" ]] || exit 20
+          api="https://api.github.com/repos/homayounisaghar/capability-fabric/contents/projects/shared-telemetry/private/reader-runtime-v1.enc.json?ref=main"
+          tmp="$(mktemp)"; trap 'rm -f "$tmp" "$tmp.json"' EXIT
+          curl --fail --silent --show-error --max-time 20 -H "Authorization: Bearer $CF_REPO_READ_TOKEN" -H "Accept: application/vnd.github+json" "$api" > "$tmp"
+          jq -r '.content' "$tmp" | tr -d '\n' | base64 -d > "$tmp.json"
+          endpoint="$(jq -r '.endpoint' "$tmp.json")"; cipher="$(jq -r '.cipher' "$tmp.json")"
+          read_token="$(printf '%s' "$cipher" | openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -a -A -pass env:CF_REPO_READ_TOKEN 2>/dev/null)"
+          echo "::add-mask::$read_token"
+          url="$endpoint/v1/events?app_id=webview-dashboard&after=2026-09-18T12%3A00%3A00Z&limit=500"
+          curl --fail --silent --show-error --max-time 20 -H "Authorization: Bearer $read_token" "$url" > /tmp/recent.json
+          echo "CF_RECENT_BEGIN"
+          jq -c '.events[] | select(.build_id=="1071")' /tmp/recent.json | sed 's/^/CF_RECENT_EVENT=/'
+          echo "CF_RECENT_END"
+          echo "CF_RECENT_V1071_COUNT=$(jq '[.events[] | select(.build_id=="1071")] | length' /tmp/recent.json)"
