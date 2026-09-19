@@ -87,6 +87,8 @@ fi
 if [[ ! -e "$browser_sentinel" ]]; then
   [[ "$mode" == prove ]] || { echo "backup exclusion sentinel missing outside prove mode" >&2; exit 31; }
   printf 'capability-fabric browser backup exclusion proof\n' > "$browser_sentinel"
+fi
+if [[ "$mode" == prove ]]; then
   chown root:root "$browser_sentinel"
   chmod 0600 "$browser_sentinel"
 fi
