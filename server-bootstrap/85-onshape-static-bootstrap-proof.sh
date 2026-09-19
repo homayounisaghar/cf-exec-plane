@@ -30,8 +30,21 @@ probe_headers() {
 probe_headers BAD_CSS "$bad_css"
 probe_headers GOOD_CSS "$good_css"
 
+curl -sS --fail --max-time 30 "$base/documents" -o "$tmp/documents.html"
 curl -sS --fail --max-time 30 "$base$loader_js" -o "$tmp/loader.js"
 curl -sS --fail --max-time 30 "$base$main_js" -o "$tmp/main.js"
+
+if grep -Fq '7f95d72295eac931d1a1' "$tmp/documents.html"; then
+  echo 'CF_ONSHAPE_STATIC_DOCUMENTS_REFERENCES_BAD_HASH=yes'
+else
+  echo 'CF_ONSHAPE_STATIC_DOCUMENTS_REFERENCES_BAD_HASH=no'
+fi
+if grep -Fq '/woolsthorpe.7f95d72295eac931d1a1.css' "$tmp/documents.html"; then
+  echo 'CF_ONSHAPE_STATIC_DOCUMENTS_REFERENCES_BAD_PATH=yes'
+else
+  echo 'CF_ONSHAPE_STATIC_DOCUMENTS_REFERENCES_BAD_PATH=no'
+fi
+printf 'CF_ONSHAPE_STATIC_DOCUMENTS_SHA256=%s\n' "$(sha256sum "$tmp/documents.html" | awk '{print $1}')"
 
 if grep -Fq '7f95d72295eac931d1a1' "$tmp/loader.js"; then
   echo 'CF_ONSHAPE_STATIC_LOADER_REFERENCES_BAD_HASH=yes'
