@@ -85,6 +85,7 @@ echo CF_PULL_DETAIL_TAIL_END
 echo CF_ONSHAPE_STORAGE_FS_DIAG_BEGIN
 if [[ -d "$profile" ]]; then
   echo "PROFILE_FS=$(stat -f -c '%T' "$profile")"
+  echo "PROFILE_SIZE_KB=$(du -sk "$profile" | awk '{print $1}')"
   echo "PROFILE_MOUNT=$(findmnt -T "$profile" -n -o FSTYPE,OPTIONS 2>/dev/null | tr ' ' '_' || true)"
   df -Pk "$profile" | awk 'NR==2{printf "PROFILE_DISK_KB_TOTAL=%s\\nPROFILE_DISK_KB_USED=%s\\nPROFILE_DISK_KB_AVAIL=%s\\nPROFILE_DISK_PCT=%s\\n",$2,$3,$4,$5}'
   df -Pi "$profile" | awk 'NR==2{printf "PROFILE_INODES_TOTAL=%s\\nPROFILE_INODES_USED=%s\\nPROFILE_INODES_AVAIL=%s\\nPROFILE_INODES_PCT=%s\\n",$2,$3,$4,$5}'
