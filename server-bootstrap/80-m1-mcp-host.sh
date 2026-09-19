@@ -63,19 +63,29 @@ fi
 export DEBIAN_FRONTEND=noninteractive
 caddy_keyring=/usr/share/keyrings/caddy-stable-archive-keyring.gpg
 caddy_list=/etc/apt/sources.list.d/caddy-stable.list
+
 if ! command -v caddy >/dev/null 2>&1; then
+  # Any leftover Caddy repo state from a failed earlier attempt must be purged
+  # BEFORE the first apt-get update. apt fails closed on an unreadable keyring,
+  # so repair code placed after that update would never be reached.
+  rm -f "$caddy_keyring" "$caddy_list"
+  rm -f /var/lib/apt/lists/*cloudsmith* 2>/dev/null || true
+  rm -f /var/lib/apt/lists/partial/*cloudsmith* 2>/dev/null || true
+
   apt-get update
   apt-get install -y debian-keyring debian-archive-keyring apt-transport-https curl gnupg
-  rm -f "$caddy_keyring"
+
   curl -1sLf "${scheme}://dl.cloudsmith.io/public/caddy/stable/gpg.key" \
     | gpg --dearmor -o "$caddy_keyring"
   curl -1sLf "${scheme}://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt" \
     > "$caddy_list"
   # apt evaluates these as the unprivileged _apt user; both must be readable.
-  chmod 0644 "$caddy_keyring" "$caddy_list"
   chown root:root "$caddy_keyring" "$caddy_list"
+  chmod 0644 "$caddy_keyring" "$caddy_list"
   [[ -s "$caddy_keyring" ]] || { echo "caddy keyring is empty" >&2; exit 22; }
   [[ -s "$caddy_list" ]] || { echo "caddy source list is empty" >&2; exit 22; }
+  [[ "$(stat -c '%a' "$caddy_keyring")" == "644" ]] || { echo "caddy keyring is not world-readable" >&2; exit 22; }
+
   apt-get update
   apt-get install -y caddy
 fi
