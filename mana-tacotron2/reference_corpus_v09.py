@@ -190,9 +190,9 @@ def locate_synth_model(syn):
     import torch
     for name,obj in vars(syn).items():
         m=getattr(obj,"_model",None)
-        if isinstance(m,torch.nn.Module):
+        if isinstance(m,torch.nn.Module) and all(hasattr(m,k) for k in ("encoder","decoder","postnet","post_proj")):
             return name,obj,m
-    raise RuntimeError("could not locate loaded Synthesizer._model in locked Space module")
+    raise RuntimeError("could not locate loaded Tacotron Synthesizer model in locked Space module")
 
 def locate_vocoder_model(syn):
     import torch
