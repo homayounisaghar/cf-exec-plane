@@ -657,7 +657,7 @@ def teacher_forced_debug(s2,segd,events,encoder_seq,encoder_seq_proj,T):
     zero512=np.zeros((1,512),np.float32)
     prev_gold={
       "attn_hidden":zero128,"rnn1_hidden":zero1024,"rnn1_cell":zero1024,
-      "rnn2_hidden":zero1024,"rnn2_cell":zero1024,"context_vec":zero512
+      "rnn2_hidden":zero1024,"rnn2_cell":zero1024,"context":zero512
     }
     evpos=2
     rows=[]
