@@ -1,0 +1,4 @@
+request_id=mana-playground-v020-20260919t1604z
+operation=build-disposable-interactive-apk
+source_commit=cd9d06533cdd7f234ae1252de47383f66128ff80
+features=custom-text,pause-marker,speed-playback
