@@ -146,7 +146,11 @@ def wave_metrics(y,sr,enc):
     if y.ndim!=1:
         y=np.squeeze(y)
     duration=float(len(y)/sr)
-    prep=enc.preprocess_wav(y,source_sr=sr)
+    if int(sr) != 16000:
+        y_for_encoder=librosa.resample(y,orig_sr=int(sr),target_sr=16000)
+    else:
+        y_for_encoder=y
+    prep=enc.preprocess_wav(np.asarray(y_for_encoder,dtype=np.float32),source_sr=None)
     emb=np.asarray(enc.embed_utterance(prep),dtype=np.float64)
     f0=librosa.yin(y.astype(np.float64),fmin=50.0,fmax=600.0,sr=sr,frame_length=2048,hop_length=300)
     f0=f0[np.isfinite(f0)]
