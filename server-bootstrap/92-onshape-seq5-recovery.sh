@@ -48,9 +48,8 @@ if ! timeout "$timeout_s" env CF_RELEASE_DIR="$active" CF_COMPOSE_PROJECT="$proj
   exit 28
 fi
 
-systemctl enable --now capability-fabric-pull.timer >/dev/null
-[[ "$(systemctl is-enabled capability-fabric-pull.timer 2>/dev/null)" == "enabled" ]]
-[[ "$(systemctl is-active capability-fabric-pull.timer 2>/dev/null)" == "active" ]]
+systemctl disable --now capability-fabric-pull.timer >/dev/null 2>&1 || true
+[[ "$(systemctl is-enabled capability-fabric-pull.timer 2>/dev/null || true)" != "enabled" ]]
 
 echo CF_ONSHAPE_RECOVERY_BEGIN
 echo "ACTIVE_RELEASE=$expected_release"
@@ -59,5 +58,5 @@ echo "BAD_FILES_BEFORE=$before_files"
 echo "BAD_DIRS_AFTER=$after_dirs"
 echo "BAD_FILES_AFTER=$after_files"
 echo "CURRENT_HEALTH=pass"
-echo "PULL_TIMER=enabled-active"
+echo "PULL_TIMER=disabled-pending-seq7"
 echo CF_ONSHAPE_RECOVERY_END
