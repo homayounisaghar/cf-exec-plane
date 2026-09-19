@@ -70,7 +70,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for f in checkpoint_dims.json p0-4-reconciliation.json p0-6-speaker.json frontend_fixtures.json frontend_quote_probe.json frontend_verbatim_capture.txt p0-7-vocoder.json p0-8-assets.json p0-9-environment.json requirements.lock p0-10-stop.json p0-11-hosted-attempt.json licenses.md phase0-resume-summary.json STOP_S1_NEW_CONTRACT_MISMATCH.json STOP_S13.txt; do
+          for f in checkpoint_dims.json p0-4-reconciliation.json p0-6-speaker.json reference_frontend.py frontend_fixtures.json frontend_quote_probe.json frontend_id_match_20.json frontend_verbatim_capture.txt p0-7-vocoder.json p0-8-assets.json p0-9-environment.json requirements.lock p0-10-stop.json p0-11-hosted-attempt.json licenses.md phase0-resume-summary.json STOP_S1_NEW_CONTRACT_MISMATCH.json STOP_S13.txt; do
             if [[ -f "out/$f" ]]; then
               echo "<<<MANA_FILE:$f>>>"
               cat "out/$f"
