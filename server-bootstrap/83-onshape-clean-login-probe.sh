@@ -14,15 +14,12 @@ cid="$(docker inspect -f '{{.Id}}' capability-fabric-onshape-server 2>/dev/null 
 [[ -n "$cid" ]] || { echo "Onshape server container missing" >&2; exit 22; }
 [[ "$(docker inspect -f '{{.State.Running}}' "$cid")" == "true" ]] || { echo "Onshape server container not running" >&2; exit 22; }
 
-host_probe="$(mktemp /root/.onshape-clean-login-probe.XXXXXX.mjs)"
 cleanup() {
-  rm -f "$host_probe"
-  docker exec "$cid" sh -lc 'rm -f /tmp/app/clean-login-probe.mjs; rm -rf /tmp/clean-login-probe-profile' >/dev/null 2>&1 || true
+  docker exec "$cid" sh -lc 'rm -rf /tmp/clean-login-probe-profile' >/dev/null 2>&1 || true
 }
 trap cleanup EXIT
-chmod 0600 "$host_probe"
 
-cat > "$host_probe" <<'JS'
+docker exec -i "$cid" sh -lc 'cd /tmp/app && node --input-type=module -' <<'JS'
 import fs from "node:fs";
 import { chromium } from "playwright";
 
@@ -153,6 +150,3 @@ async function classification() {
 const result = await classification();
 console.log("CF_ONSHAPE_CLEAN_LOGIN=" + result);
 JS
-
-docker cp "$host_probe" "$cid:/tmp/app/clean-login-probe.mjs"
-docker exec "$cid" sh -lc 'cd /tmp/app && node clean-login-probe.mjs'
