@@ -1,0 +1,241 @@
+name: Build Mana Demo Voice Wrapper
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - mana-demo-voice/control/*.request
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Prepare Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Prepare Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Verify Android SDK
+        shell: bash
+        run: |
+          set -euo pipefail
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          test -x "$SDKMANAGER"
+          "$SDKMANAGER" --version
+          "$SDKMANAGER" "platforms;android-35" "build-tools;35.0.0" "platform-tools"
+
+      - name: Generate and build wrapper
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="$RUNNER_TEMP/mana-demo-voice"
+          mkdir -p "$root/app/src/main/java/com/mana/demo/voice" "$root/app/src/main/res/values"
+
+          cat > "$root/settings.gradle" <<'EOF'
+          pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }
+          dependencyResolutionManagement {
+              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+              repositories { google(); mavenCentral() }
+          }
+          rootProject.name='ManaDemoVoice'
+          include ':app'
+          EOF
+
+          cat > "$root/build.gradle" <<'EOF'
+          plugins {
+              id 'com.android.application' version '8.7.3' apply false
+          }
+          EOF
+
+          cat > "$root/app/build.gradle" <<'EOF'
+          plugins { id 'com.android.application' }
+
+          android {
+              namespace 'com.mana.demo.voice'
+              compileSdk 35
+
+              defaultConfig {
+                  applicationId 'com.mana.demo.voice'
+                  minSdk 23
+                  targetSdk 35
+                  versionCode 1
+                  versionName '1.0.0-demo'
+              }
+
+              buildTypes {
+                  release {
+                      minifyEnabled false
+                  }
+              }
+          }
+          EOF
+
+          cat > "$root/app/src/main/res/values/strings.xml" <<'EOF'
+          <resources>
+              <string name="app_name">Mana Demo Voice</string>
+          </resources>
+          EOF
+
+          cat > "$root/app/src/main/res/values/styles.xml" <<'EOF'
+          <resources>
+              <style name="AppTheme" parent="android:style/Theme.Material.Light.NoActionBar">
+                  <item name="android:fontFamily">sans</item>
+                  <item name="android:windowLightStatusBar">true</item>
+                  <item name="android:windowActionModeOverlay">true</item>
+                  <item name="android:statusBarColor">#FFFFFF</item>
+                  <item name="android:navigationBarColor">#FFFFFF</item>
+              </style>
+          </resources>
+          EOF
+
+          cat > "$root/app/src/main/AndroidManifest.xml" <<'EOF'
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+              <uses-permission android:name="android.permission.INTERNET" />
+              <application
+                  android:allowBackup="false"
+                  android:usesCleartextTraffic="false"
+                  android:label="Mana Demo Voice"
+                  android:theme="@style/AppTheme">
+                  <activity
+                      android:name=".MainActivity"
+                      android:exported="true"
+                      android:screenOrientation="unspecified">
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN" />
+                          <category android:name="android.intent.category.LAUNCHER" />
+                      </intent-filter>
+                  </activity>
+              </application>
+          </manifest>
+          EOF
+
+          cat > "$root/app/src/main/java/com/mana/demo/voice/MainActivity.java" <<'EOF'
+          package com.mana.demo.voice;
+
+          import android.annotation.SuppressLint;
+          import android.app.Activity;
+          import android.graphics.Color;
+          import android.os.Build;
+          import android.os.Bundle;
+          import android.view.DisplayCutout;
+          import android.view.View;
+          import android.view.ViewGroup;
+          import android.view.WindowInsets;
+          import android.webkit.WebChromeClient;
+          import android.webkit.WebSettings;
+          import android.webkit.WebView;
+          import android.webkit.WebViewClient;
+          import android.widget.FrameLayout;
+
+          public final class MainActivity extends Activity {
+              private static final String DEMO_URL = "https://abreza-mana-tts.hf.space/";
+              private WebView webView;
+
+              @Override
+              @SuppressLint("SetJavaScriptEnabled")
+              protected void onCreate(Bundle state) {
+                  super.onCreate(state);
+
+                  FrameLayout root = new FrameLayout(this);
+                  root.setBackgroundColor(Color.WHITE);
+                  root.setFitsSystemWindows(false);
+
+                  root.setOnApplyWindowInsetsListener((v, insets) -> {
+                      int left = insets.getSystemWindowInsetLeft();
+                      int top = insets.getSystemWindowInsetTop();
+                      int right = insets.getSystemWindowInsetRight();
+                      int bottom = insets.getSystemWindowInsetBottom();
+                      if (Build.VERSION.SDK_INT >= 28) {
+                          DisplayCutout cutout = insets.getDisplayCutout();
+                          if (cutout != null) {
+                              left = Math.max(left, cutout.getSafeInsetLeft());
+                              top = Math.max(top, cutout.getSafeInsetTop());
+                              right = Math.max(right, cutout.getSafeInsetRight());
+                              bottom = Math.max(bottom, cutout.getSafeInsetBottom());
+                          }
+                      }
+                      v.setPadding(left, top, right, bottom);
+                      return insets;
+                  });
+
+                  webView = new WebView(this);
+                  WebSettings s = webView.getSettings();
+                  s.setJavaScriptEnabled(true);
+                  s.setDomStorageEnabled(true);
+                  s.setMediaPlaybackRequiresUserGesture(false);
+                  s.setBuiltInZoomControls(false);
+                  s.setDisplayZoomControls(false);
+                  s.setLoadWithOverviewMode(true);
+                  s.setUseWideViewPort(true);
+                  s.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
+
+                  webView.setWebViewClient(new WebViewClient());
+                  webView.setWebChromeClient(new WebChromeClient());
+
+                  root.addView(webView, new FrameLayout.LayoutParams(
+                          ViewGroup.LayoutParams.MATCH_PARENT,
+                          ViewGroup.LayoutParams.MATCH_PARENT));
+                  setContentView(root);
+                  root.requestApplyInsets();
+
+                  if (state == null) {
+                      webView.loadUrl(DEMO_URL);
+                  } else {
+                      webView.restoreState(state);
+                  }
+              }
+
+              @Override
+              protected void onSaveInstanceState(Bundle outState) {
+                  if (webView != null) webView.saveState(outState);
+                  super.onSaveInstanceState(outState);
+              }
+
+              @Override
+              public void onBackPressed() {
+                  if (webView != null && webView.canGoBack()) {
+                      webView.goBack();
+                  } else {
+                      super.onBackPressed();
+                  }
+              }
+          }
+          EOF
+
+          cd "$root"
+          gradle --no-daemon :app:assembleRelease
+
+          unsigned="$root/app/build/outputs/apk/release/app-release-unsigned.apk"
+          test -f "$unsigned"
+
+          AAPT2="$ANDROID_HOME/build-tools/35.0.0/aapt2"
+          test -x "$AAPT2"
+          "$AAPT2" dump badging "$unsigned" | tee "$GITHUB_WORKSPACE/mana-demo-voice-v1-badging.txt"
+          grep -q "package: name='com.mana.demo.voice' versionCode='1' versionName='1.0.0-demo'" "$GITHUB_WORKSPACE/mana-demo-voice-v1-badging.txt"
+          unzip -t "$unsigned" >/dev/null
+
+          cp "$unsigned" "$GITHUB_WORKSPACE/mana-demo-voice-v1-unsigned.apk"
+          sha256sum "$GITHUB_WORKSPACE/mana-demo-voice-v1-unsigned.apk" > "$GITHUB_WORKSPACE/mana-demo-voice-v1-unsigned.sha256"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mana-demo-voice-v1-unsigned
+          path: |
+            mana-demo-voice-v1-unsigned.apk
+            mana-demo-voice-v1-unsigned.sha256
+            mana-demo-voice-v1-badging.txt
+          retention-days: 7
