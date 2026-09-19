@@ -369,8 +369,10 @@ def vocoder_probe(space,out):
       "fft_size":config.get("fft_size"),"hop_size":config.get("hop_size"),
       "win_length":config.get("win_length"),"num_mels":config.get("num_mels"),
       "fmin":config.get("fmin"),"fmax":config.get("fmax"),
-      "upsample_kernel_sizes":config.get("upsample_kernel_sizes"),
-      "aux_context_window":config.get("aux_context_window"),
+      "upsample_kernel_sizes":config.get("generator_params",{}).get("upsample_kernel_sizes",
+                                config.get("generator_params",{}).get("upsample_kernal_sizes")),
+      "aux_context_window":config.get("aux_context_window",
+                            config.get("generator_params",{}).get("aux_context_window")),
       "affine_fit_pwg_log10_equals_a_times_reference_D_plus_b":{
         "a":float(a),"b":float(b),"r2":r2,"reference_ideal_if_no_preemphasis":{"a":0.625,"b":-1.5},
         "aligned_frames":n,"per_band":bands
@@ -487,26 +489,31 @@ def hosted_reference_attempt(out):
                 for v in obj: found.extend(existing_paths(v))
             return found
 
+        working_api=None
         for i,text in enumerate(sentences):
-            prediction=None; last=None
-            for api_name in ["/generate_speech","/synthesize","/predict"]:
+            prediction=None; errors={}; used_api=None
+            candidates=[working_api] if working_api else ["/generate_speech","/synthesize","/predict"]
+            for api_name in candidates:
+                if not api_name:
+                    continue
                 try:
                     job=client.submit(text,api_name=api_name)
                     prediction=job.result(timeout=45)
-                    last=None
+                    used_api=api_name
+                    working_api=api_name
                     break
                 except Exception as e:
-                    last=e
+                    errors[api_name]=repr(e)
             if prediction is None:
-                msg=repr(last).lower() if last else "no callable endpoint"
-                result["records"].append({"index":i,"text":text,"error":repr(last)})
-                if any(x in msg for x in ["quota","gpu","rate","timeout","timed out"]):
+                msg=" ".join(errors.values()).lower()
+                result["records"].append({"index":i,"text":text,"errors":errors,"working_api":working_api})
+                if any(x in msg for x in ["quota","gpu","rate","timeout","timed out","duration"]):
                     result["error"]="quota_gpu_or_timeout_gate"
                 else:
                     result["error"]="endpoint_error"
                 break
             paths=existing_paths(prediction)
-            rec={"index":i,"text":text,"result_type":type(prediction).__name__,"local_paths":[]}
+            rec={"index":i,"text":text,"api_name":used_api,"result_type":type(prediction).__name__,"local_paths":[]}
             copied=False
             for src in paths:
                 try:
