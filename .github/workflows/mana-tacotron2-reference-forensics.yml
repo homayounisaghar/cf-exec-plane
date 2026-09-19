@@ -13,7 +13,7 @@ jobs:
   phase0:
     if: github.actor == 'homayounisaghar'
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
         with:
@@ -37,35 +37,37 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Acquire locked public reference inputs
+      - name: Acquire locked public reference source and synthesizer
         shell: bash
         run: |
           set -euo pipefail
           git clone https://huggingface.co/spaces/abreza/mana-tts "$RUNNER_TEMP/space"
           git -C "$RUNNER_TEMP/space" checkout 3784ae7afc431cf333ad5961900db37a8297e5c6
-          git clone https://github.com/MahtaFetrat/Persian-MultiSpeaker-Tacotron2.git "$RUNNER_TEMP/upstream"
-          git -C "$RUNNER_TEMP/upstream" checkout master
-          curl -L --fail --retry 3 --retry-all-errors \
-            -o "$RUNNER_TEMP/synthesizer.pt" \
-            "https://huggingface.co/MahtaFetrat/Persian-Tacotron2-on-ManaTTS/resolve/3e8576c283aa45a4170b4423b7efb779b4844ac6/synthesizer.pt?download=true"
+          curl -L --fail --retry 3 --retry-all-errors             -o "$RUNNER_TEMP/synthesizer.pt"             "https://huggingface.co/MahtaFetrat/Persian-Tacotron2-on-ManaTTS/resolve/3e8576c283aa45a4170b4423b7efb779b4844ac6/synthesizer.pt?download=true"
           echo "433588014a7c0622e9f3b00faa75d8fa35344f0d61f64fd715f27a096978a21d  $RUNNER_TEMP/synthesizer.pt" | sha256sum -c -
 
-      - name: Install minimal checkpoint reader
-        shell: bash
-        run: |
-          python -m pip install --disable-pip-version-check --no-input "numpy==1.26.4" "torch==2.2.2" --extra-index-url https://download.pytorch.org/whl/cpu
-
-      - name: Run forensics
+      - name: Install pinned Phase 0 runtime
         shell: bash
         run: |
           set -euo pipefail
+          python -m pip install --disable-pip-version-check --no-input             "numpy==1.22.4"             "scipy==1.7.3"             "librosa==0.10.2.post1"             "numba==0.57.1"             "soundfile==0.12.1"             "webrtcvad==2.0.10"             "gdown==5.2.0"             "requests==2.32.3"             "PyYAML==6.0.2"             "h5py==3.11.0"             "tensorboardX==2.6.2.2"             "gradio_client==1.8.0"
+          python -m pip install --disable-pip-version-check --no-input             "torch==2.2.2" --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install --disable-pip-version-check --no-input             "parallel-wavegan==0.6.1" --no-build-isolation
+
+      - name: Run Phase 0 resume probe
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf out
           mkdir -p out
-          python mana-tacotron2/reference_forensics.py \
-            "$RUNNER_TEMP/space" "$RUNNER_TEMP/upstream" "$RUNNER_TEMP/synthesizer.pt" out
-          cat out/phase0-forensics.md
+          python mana-tacotron2/reference_forensics.py             "$RUNNER_TEMP/space" "$RUNNER_TEMP/synthesizer.pt" out
+          cat out/phase0-resume-summary.json
+          cat out/p0-6-speaker.json
+          cat out/p0-10-stop.json
 
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
-          name: mana-tacotron2-reference-forensics
+          name: mana-tacotron2-phase0-v08
           path: out/
           retention-days: 7
