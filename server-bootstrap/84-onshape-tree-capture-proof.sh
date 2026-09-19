@@ -50,7 +50,7 @@ operation_id="$(printf '%s' "$start_inner" | python3 -c 'import json,sys; print(
 [[ "$operation_id" =~ ^op_[A-Za-z0-9-]+$ ]] || { echo "diagnostic tool did not return operation id" >&2; exit 21; }
 
 for _ in $(seq 1 35); do
-  status_payload="$(python3 -c 'import json,sys; print(json.dumps({"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"onshape_operation_status","arguments":{"operation_id":sys.argv[1]}}},separators=(",",":"))' "$operation_id")"
+  status_payload="$(python3 -c 'import json,sys; print(json.dumps({"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"onshape_operation_status","arguments":{"operation_id":sys.argv[1]}}},separators=(",",":")))' "$operation_id")"
   status_raw="$(mcp_post "$status_payload")"
   status_inner="$(printf '%s' "$status_raw" | normalize_mcp)"
   state="$(printf '%s' "$status_inner" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("status",""))')"
