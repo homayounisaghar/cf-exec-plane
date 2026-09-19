@@ -34,6 +34,18 @@ if [[ -d "$interactive_config" ]]; then echo "INTERACTIVE_CONFIG=$(stat -c '%a %
 if [[ -e "$interactive_sentinel" ]]; then echo "INTERACTIVE_SENTINEL=$(stat -c '%a %u:%g' "$interactive_sentinel")"; else echo INTERACTIVE_SENTINEL=missing; fi
 if [[ -f "$exclude_file" ]] && grep -Fxq "$interactive_root" "$exclude_file"; then echo INTERACTIVE_EXCLUDE=pass; else echo INTERACTIVE_EXCLUDE=fail; fi
 
+echo CF_INTERACTIVE_LOGS_BEGIN
+if [[ -d "$interactive_config/log" ]]; then
+  find "$interactive_config/log" -xdev -maxdepth 3 -type f -print0 | while IFS= read -r -d '' logf; do
+    rel="${logf#"$interactive_config/"}"
+    echo "LOG_FILE=$rel"
+    tail -n 80 "$logf" 2>/dev/null | sed -E 's#https?://[^[:space:]"]+#<url>#g; s#([0-9]{1,3}\.){3}[0-9]{1,3}#<ipv4>#g; s#([A-Za-z0-9_-]{24,})#<long-token>#g' || true
+  done
+else
+  echo no-interactive-log-directory
+fi
+echo CF_INTERACTIVE_LOGS_END
+
 if [[ -d "$profile" ]]; then
   bad_dirs="$(find "$profile" -xdev -type d ! -perm 0700 -print | wc -l | tr -d '[:space:]')"
   bad_files="$(find "$profile" -xdev -type f -perm /077 -print | wc -l | tr -d '[:space:]')"
