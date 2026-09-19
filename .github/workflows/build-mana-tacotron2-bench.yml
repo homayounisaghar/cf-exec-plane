@@ -71,8 +71,8 @@ jobs:
           "$BT/apksigner" verify --verbose --print-certs "$apk" | tee mana-tacotron2-bench-apksigner.txt
           "$BT/zipalign" -c -P 16 -v 4 "$apk" | tee mana-tacotron2-bench-zipalign.txt
 
-          cp "$apk" mana-tacotron2-bench-phase3-v0.1.1.1-disposable.apk
-          sha256sum mana-tacotron2-bench-phase3-v0.1.1.1-disposable.apk | tee mana-tacotron2-bench-phase3-v0.1.1.1-disposable.sha256
+          cp "$apk" mana-tacotron2-bench-phase3-v0.1.1-disposable.apk
+          sha256sum mana-tacotron2-bench-phase3-v0.1.1-disposable.apk | tee mana-tacotron2-bench-phase3-v0.1.1-disposable.sha256
 
           cat > mana-tacotron2-bench-RUN_SHEET.txt <<'EOF'
           Mana Tacotron2 Phase 3 benchmark v0.1.1
@@ -90,8 +90,8 @@ jobs:
         with:
           name: mana-tacotron2-bench-phase3-v0.1.1
           path: |
-            mana-tacotron2-bench-phase3-v0.1.1.1-disposable.apk
-            mana-tacotron2-bench-phase3-v0.1.1.1-disposable.sha256
+            mana-tacotron2-bench-phase3-v0.1.1-disposable.apk
+            mana-tacotron2-bench-phase3-v0.1.1-disposable.sha256
             mana-tacotron2-bench-badging.txt
             mana-tacotron2-bench-permissions.txt
             mana-tacotron2-bench-apksigner.txt
