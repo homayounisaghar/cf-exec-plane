@@ -112,4 +112,64 @@ if docker inspect capability-fabric-onshape-server >/dev/null 2>&1; then
 fi
 echo CF_ONSHAPE_STORAGE_FS_DIAG_END
 
+
+echo CF_ONSHAPE_STORAGE_ISOLATION_DIAG_BEGIN
+quota_db="$profile/Default/WebStorage/QuotaManager"
+quota_journal="$profile/Default/WebStorage/QuotaManager-journal"
+qtmp="$(mktemp -d /root/.cf-onshape-quota-copy.XXXXXX)"
+trap 'rm -rf "$qtmp"' EXIT
+if [[ -f "$quota_db" ]]; then
+  cp -a "$quota_db" "$qtmp/QuotaManager"
+  [[ -f "$quota_journal" ]] && cp -a "$quota_journal" "$qtmp/QuotaManager-journal" || true
+  python3 - "$qtmp/QuotaManager" <<'PY'
+import sqlite3,sys
+p=sys.argv[1]
+try:
+    con=sqlite3.connect(p)
+    rows=con.execute("PRAGMA integrity_check").fetchall()
+    ok=(rows==[("ok",)])
+    print("QUOTA_COPY_INTEGRITY="+("ok" if ok else "fail"))
+    print("QUOTA_COPY_INTEGRITY_ROWS="+str(len(rows)))
+    con.close()
+except Exception as e:
+    print("QUOTA_COPY_INTEGRITY=error")
+    print("QUOTA_COPY_ERROR="+type(e).__name__+":"+str(e)[:300].replace("\n"," "))
+PY
+else
+  echo QUOTA_COPY_INTEGRITY=missing
+fi
+
+if docker inspect capability-fabric-onshape-server >/dev/null 2>&1; then
+  docker exec -i capability-fabric-onshape-server sh -lc 'cd /tmp/app && node --input-type=module' <<'NODE'
+import { chromium } from "playwright";
+import fs from "node:fs";
+const dir="/tmp/cf-clean-storage-probe-"+process.pid;
+const shape=(e)=>({name:String(e?.name||"Error").slice(0,120),message:String(e?.message||"error").slice(0,400),code:e?.code==null?null:String(e.code).slice(0,80)});
+let context=null;
+try {
+  context=await chromium.launchPersistentContext(dir,{headless:true,chromiumSandbox:false,args:["--no-sandbox","--disable-dev-shm-usage"]});
+  const page=context.pages()[0] || await context.newPage();
+  await page.goto("https://cad.onshape.com/documents",{waitUntil:"domcontentloaded",timeout:45000}).catch(()=>null);
+  const out=await page.evaluate(async()=>{
+    const shape=(e)=>({name:String(e?.name||"Error").slice(0,120),message:String(e?.message||"error").slice(0,400),code:e?.code==null?null:String(e.code).slice(0,80)});
+    const r={origin:location.origin,estimate:null,indexeddb:null};
+    try { const e=await navigator.storage.estimate(); r.estimate={ok:true,usage:Number(e.usage||0),quota:Number(e.quota||0)}; }
+    catch(e){ r.estimate={ok:false,error:shape(e)}; }
+    try { const d=await indexedDB.databases(); r.indexeddb={ok:true,count:d.length}; }
+    catch(e){ r.indexeddb={ok:false,error:shape(e)}; }
+    return r;
+  });
+  console.log("CLEAN_TEMP_PROFILE_STORAGE="+JSON.stringify(out));
+} catch(e) {
+  console.log("CLEAN_TEMP_PROFILE_STORAGE="+JSON.stringify({outer_error:shape(e)}));
+} finally {
+  if(context) await context.close().catch(()=>{});
+  fs.rmSync(dir,{recursive:true,force:true});
+}
+NODE
+else
+  echo 'CLEAN_TEMP_PROFILE_STORAGE={"outer_error":{"name":"ContainerMissing"}}'
+fi
+echo CF_ONSHAPE_STORAGE_ISOLATION_DIAG_END
+
 echo CF_ONSHAPE_DIAG_END
