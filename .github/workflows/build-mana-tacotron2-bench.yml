@@ -60,7 +60,7 @@ jobs:
 
           BT="$ANDROID_HOME/build-tools/35.0.0"
           "$BT/aapt" dump badging "$apk" | tee mana-tacotron2-bench-badging.txt
-          grep -q "package: name='com.mana.local.tacotron2.playground.maleformant' versionCode='7' versionName='0.6.0-male-formant'" mana-tacotron2-bench-badging.txt
+          grep -q "package: name='com.mana.local.tacotron2.playground.maleformant.v7' versionCode='8' versionName='0.7.0-formant-wordgap'" mana-tacotron2-bench-badging.txt
           grep -q "native-code: 'arm64-v8a'" mana-tacotron2-bench-badging.txt
           if grep -qE "native-code:.*(armeabi-v7a|x86|x86_64)" mana-tacotron2-bench-badging.txt; then
             echo "unexpected non-arm64 ABI" >&2
@@ -76,12 +76,12 @@ jobs:
           "$BT/apksigner" verify --verbose --print-certs "$apk" | tee mana-tacotron2-bench-apksigner.txt
           "$BT/zipalign" -c -P 16 -v 4 "$apk" | tee mana-tacotron2-bench-zipalign.txt
 
-          cp "$apk" mana-tacotron2-playground-v0.6.0-male-formant-disposable.apk
-          sha256sum mana-tacotron2-playground-v0.6.0-male-formant-disposable.apk | tee mana-tacotron2-playground-v0.6.0-male-formant-disposable.sha256
+          cp "$apk" mana-tacotron2-playground-v0.7.0-formant-wordgap-disposable.apk
+          sha256sum mana-tacotron2-playground-v0.7.0-formant-wordgap-disposable.apk | tee mana-tacotron2-playground-v0.7.0-formant-wordgap-disposable.sha256
 
           cat > mana-tacotron2-bench-RUN_SHEET.txt <<'EOF'
-          Mana Voice Playground v0.6.0 Male Formant
-          Package: com.mana.local.tacotron2.playground.maleformant
+          Mana Voice Playground v0.7.0 Formant WordGap Fix
+          Package: com.mana.local.tacotron2.playground.maleformant.v7
           Installability: signed Android debug APK; explicitly disposable diagnostic line
           Network: no INTERNET permission
           Runtime: ONNX Runtime Android 1.30.0
@@ -89,17 +89,17 @@ jobs:
           First action after install: open app -> Import voice pack ZIP
           Then: enter Persian text and tap the custom synthesis button.
           Controls: male preset ON by default at pitch 0.78x + formant 0.85x; manual pitch 0.70x..1.30x; formant 0.75x..1.15x; speed 0.50x..2.00x; punctuation pause 0..1500 ms; word gap 0..400 ms.
-          Punctuation is synthesized as real phrase boundaries. [700] overrides one boundary. Word gap 0 keeps natural phrase synthesis; >0 uses word-wise synthesis with real PCM silence.
+          Punctuation is synthesized as real phrase boundaries. [700] overrides one boundary. Word gap never uses word-wise Tacotron inference. The phrase is synthesized once; decoder attention maps spaces to WAV positions and extra PCM silence is inserted post-render.
           Benchmark buttons remain available for canonical Phase-3 measurements.
           The app records JSON on screen and writes local WAV renders.
           EOF
 
       - uses: actions/upload-artifact@v4
         with:
-          name: mana-tacotron2-playground-v0.6.0-male-formant
+          name: mana-tacotron2-playground-v0.7.0-formant-wordgap
           path: |
-            mana-tacotron2-playground-v0.6.0-male-formant-disposable.apk
-            mana-tacotron2-playground-v0.6.0-male-formant-disposable.sha256
+            mana-tacotron2-playground-v0.7.0-formant-wordgap-disposable.apk
+            mana-tacotron2-playground-v0.7.0-formant-wordgap-disposable.sha256
             mana-tacotron2-bench-badging.txt
             mana-tacotron2-bench-permissions.txt
             mana-tacotron2-bench-apksigner.txt
