@@ -332,7 +332,7 @@ def vocoder_probe(space,out):
     sample=find_one(space,"sample.wav",prefer=("sample.wav",))
     with open(cfg,encoding="utf-8") as f:
         config=yaml.safe_load(f)
-    model=load_model(str(voc),str(cfg))
+    model=load_model(str(voc),config)
     sig=str(inspect.signature(model.inference))
     norm_default=None
     if "normalize_before" in inspect.signature(model.inference).parameters:
