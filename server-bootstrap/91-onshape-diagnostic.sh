@@ -25,6 +25,15 @@ if getent passwd 19191 >/dev/null 2>&1; then echo HOST_UID_19191=assigned; else 
 if [[ -d "$profile" && "$(stat -c '%a %u:%g' "$profile")" == "700 19191:19191" ]]; then echo NEW_PROFILE_EXPECTATION=pass; else echo NEW_PROFILE_EXPECTATION=fail; fi
 if [[ -d "$profile" && "$(stat -c '%a %U:%G' "$profile")" == "700 root:root" ]]; then echo OLD_PROFILE_EXPECTATION=pass; else echo OLD_PROFILE_EXPECTATION=fail; fi
 
+interactive_root=/var/lib/capability-fabric/onshape/interactive-browser
+interactive_config="$interactive_root/config"
+interactive_sentinel="$interactive_root/.backup-exclusion-sentinel"
+exclude_file=/etc/capability-fabric/backup.exclude
+if [[ -d "$interactive_root" ]]; then echo "INTERACTIVE_ROOT=$(stat -c '%a %u:%g' "$interactive_root")"; else echo INTERACTIVE_ROOT=missing; fi
+if [[ -d "$interactive_config" ]]; then echo "INTERACTIVE_CONFIG=$(stat -c '%a %u:%g' "$interactive_config")"; else echo INTERACTIVE_CONFIG=missing; fi
+if [[ -e "$interactive_sentinel" ]]; then echo "INTERACTIVE_SENTINEL=$(stat -c '%a %u:%g' "$interactive_sentinel")"; else echo INTERACTIVE_SENTINEL=missing; fi
+if [[ -f "$exclude_file" ]] && grep -Fxq "$interactive_root" "$exclude_file"; then echo INTERACTIVE_EXCLUDE=pass; else echo INTERACTIVE_EXCLUDE=fail; fi
+
 if [[ -d "$profile" ]]; then
   bad_dirs="$(find "$profile" -xdev -type d ! -perm 0700 -print | wc -l | tr -d '[:space:]')"
   bad_files="$(find "$profile" -xdev -type f -perm /077 -print | wc -l | tr -d '[:space:]')"
