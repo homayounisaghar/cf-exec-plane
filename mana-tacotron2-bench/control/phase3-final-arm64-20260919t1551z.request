@@ -1,0 +1,4 @@
+request_id=mana-tacotron2-phase3-final-arm64-20260919t1551z
+operation=build-disposable-diagnostic-apk
+abi=arm64-v8a
+source_commit=70010cd5c0575daa876fdc7a5f756c4b4bddaa02
