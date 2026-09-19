@@ -1,0 +1,4 @@
+request_id=mana-playground-controls-finalpkg-20260919t1615z
+operation=build-disposable-interactive-apk
+version=0.3.0-controls
+package=com.mana.local.tacotron2.playground
