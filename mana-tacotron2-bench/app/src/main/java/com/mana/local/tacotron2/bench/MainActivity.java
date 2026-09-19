@@ -10,7 +10,6 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.media.PlaybackParams;
-import android.text.InputType;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -24,6 +23,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import org.json.JSONArray;
@@ -67,7 +67,12 @@ public final class MainActivity extends Activity {
     private TextView status;
     private Button choosePack;
     private EditText customText;
-    private EditText speedInput;
+    private SeekBar speedBar;
+    private SeekBar pitchBar;
+    private SeekBar pauseBar;
+    private TextView speedValue;
+    private TextView pitchValue;
+    private TextView pauseValue;
     private Button synthesizeText;
     private Button quickBench;
     private Button fullRender;
@@ -76,6 +81,7 @@ public final class MainActivity extends Activity {
     private File lastWav;
     private String lastReport = "";
     private float lastPlaybackSpeed = 1.0f;
+    private float lastPlaybackPitch = 1.0f;
     private static final Pattern PAUSE_MARKER = Pattern.compile("\\[(\\d{1,5})\\]");
 
     @Override
@@ -112,15 +118,37 @@ public final class MainActivity extends Activity {
         customText.setText("سلام دنیا. این یک آزمایش صدای مانا است.");
 
         TextView syntaxHelp = new TextView(this);
-        syntaxHelp.setText("برای مکث داخل متن بنویس: [700]  یعنی ۷۰۰ میلی ثانیه سکوت.");
+        syntaxHelp.setText("سه کنترل پایین برای ارزیابی شنیداری‌اند. سرعت و زیر و بمی هنگام پخش اعمال می‌شوند؛ مکث واقعاً بین بخش‌های ساخته شده داخل WAV قرار می‌گیرد. برای یک مرز خاص می‌توانی مثل [700] مکث ۷۰۰ میلی‌ثانیه‌ای بدهی.");
         syntaxHelp.setTextSize(13f);
         syntaxHelp.setTextColor(Color.DKGRAY);
-        syntaxHelp.setPadding(0, 8, 0, 4);
+        syntaxHelp.setPadding(0, 8, 0, 8);
 
-        speedInput = new EditText(this);
-        speedInput.setHint("سرعت پخش، مثلاً 1.0");
-        speedInput.setText("1.0");
-        speedInput.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
+        speedValue = controlLabel("سرعت پخش");
+        speedBar = new SeekBar(this);
+        speedBar.setMax(150);
+        speedBar.setProgress(50);
+
+        pitchValue = controlLabel("زیر و بمی");
+        pitchBar = new SeekBar(this);
+        pitchBar.setMax(60);
+        pitchBar.setProgress(30);
+
+        pauseValue = controlLabel("مکث بین بخش‌ها");
+        pauseBar = new SeekBar(this);
+        pauseBar.setMax(1500);
+        pauseBar.setProgress(180);
+
+        SeekBar.OnSeekBarChangeListener controlsListener = new SeekBar.OnSeekBarChangeListener() {
+            @Override public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                refreshControlLabels();
+            }
+            @Override public void onStartTrackingTouch(SeekBar seekBar) {}
+            @Override public void onStopTrackingTouch(SeekBar seekBar) {}
+        };
+        speedBar.setOnSeekBarChangeListener(controlsListener);
+        pitchBar.setOnSeekBarChangeListener(controlsListener);
+        pauseBar.setOnSeekBarChangeListener(controlsListener);
+        refreshControlLabels();
 
         synthesizeText = button("۲) خواندن متن من");
         quickBench = button("Benchmark سریع");
@@ -134,7 +162,12 @@ public final class MainActivity extends Activity {
         body.addView(choosePack);
         body.addView(customText);
         body.addView(syntaxHelp);
-        body.addView(speedInput);
+        body.addView(speedValue);
+        body.addView(speedBar);
+        body.addView(pitchValue);
+        body.addView(pitchBar);
+        body.addView(pauseValue);
+        body.addView(pauseBar);
         body.addView(synthesizeText);
         body.addView(playLast);
         body.addView(quickBench);
@@ -190,6 +223,39 @@ public final class MainActivity extends Activity {
         b.setText(text);
         b.setAllCaps(false);
         return b;
+    }
+
+    private TextView controlLabel(String text) {
+        TextView v = new TextView(this);
+        v.setText(text);
+        v.setTextSize(14f);
+        v.setTextColor(Color.BLACK);
+        v.setPadding(0, 10, 0, 0);
+        return v;
+    }
+
+    private float selectedSpeed() {
+        return 0.50f + (speedBar.getProgress() / 100.0f);
+    }
+
+    private float selectedPitch() {
+        return 0.70f + (pitchBar.getProgress() / 100.0f);
+    }
+
+    private int selectedPauseMs() {
+        return pauseBar.getProgress();
+    }
+
+    private void refreshControlLabels() {
+        if (speedValue != null && speedBar != null) {
+            speedValue.setText(String.format(Locale.ROOT, "سرعت پخش: %.2fx", selectedSpeed()));
+        }
+        if (pitchValue != null && pitchBar != null) {
+            pitchValue.setText(String.format(Locale.ROOT, "زیر و بمی: %.2fx", selectedPitch()));
+        }
+        if (pauseValue != null && pauseBar != null) {
+            pauseValue.setText("مکث بین بخش‌ها: " + selectedPauseMs() + " ms");
+        }
     }
 
     private void setReady(boolean ready) {
@@ -288,7 +354,9 @@ public final class MainActivity extends Activity {
             log("متن خالی است.");
             return;
         }
-        final float speed = parseSpeed(speedInput.getText().toString());
+        final float speed = selectedSpeed();
+        final float pitch = selectedPitch();
+        final int defaultPauseMs = selectedPauseMs();
 
         choosePack.setEnabled(false);
         synthesizeText.setEnabled(false);
@@ -306,7 +374,8 @@ public final class MainActivity extends Activity {
                 int renderIndex = 0;
 
                 try (ModelSessions sessions = ModelSessions.load(packDir, 2)) {
-                    for (CustomPart part : parts) {
+                    for (int pi = 0; pi < parts.size(); pi++) {
+                        CustomPart part = parts.get(pi);
                         String normalized = PersianFrontend.normalizeTextForSynthesis(part.text);
                         List<String> segments = PersianFrontend.splitNormalized(normalized);
                         for (int si = 0; si < segments.size(); si++) {
@@ -324,7 +393,15 @@ public final class MainActivity extends Activity {
                                     true
                             );
                             rendered.add(new File(result.wavPath));
-                            int pause = (si == segments.size() - 1) ? part.pauseAfterMs : 120;
+                            boolean finalSegment = (pi == parts.size() - 1) && (si == segments.size() - 1);
+                            int pause;
+                            if (finalSegment) {
+                                pause = 0;
+                            } else if (si == segments.size() - 1 && part.pauseAfterMs >= 0) {
+                                pause = part.pauseAfterMs;
+                            } else {
+                                pause = defaultPauseMs;
+                            }
                             pausesAfter.add(pause);
                             renderIndex++;
                         }
@@ -335,7 +412,10 @@ public final class MainActivity extends Activity {
                 File combined = combineRenderedWavs(rendered, pausesAfter);
                 lastWav = combined;
                 lastPlaybackSpeed = speed;
-                logFromWorker("آماده است. سرعت پخش: " + speed + "x");
+                lastPlaybackPitch = pitch;
+                logFromWorker(String.format(Locale.ROOT,
+                        "آماده است. speed=%.2fx pitch=%.2fx pause=%dms",
+                        speed, pitch, defaultPauseMs));
                 runOnUiThread(this::playLast);
             } catch (Throwable t) {
                 logFromWorker("SYNTHESIS FAILED: " + t);
@@ -349,15 +429,6 @@ public final class MainActivity extends Activity {
                 });
             }
         }, "mana-custom-text").start();
-    }
-
-    private float parseSpeed(String raw) {
-        try {
-            float v = Float.parseFloat(raw.trim());
-            return Math.max(0.5f, Math.min(2.0f, v));
-        } catch (Throwable ignored) {
-            return 1.0f;
-        }
     }
 
     private List<CustomPart> parseCustomParts(String raw) {
@@ -376,7 +447,7 @@ public final class MainActivity extends Activity {
             pos = m.end();
         }
         String tail = raw.substring(pos).trim();
-        if (!tail.isEmpty()) out.add(new CustomPart(tail, 0));
+        if (!tail.isEmpty()) out.add(new CustomPart(tail, -1));
         return out;
     }
 
@@ -751,13 +822,17 @@ public final class MainActivity extends Activity {
             p.setOnCompletionListener(MediaPlayer::release);
             p.prepare();
             if (Build.VERSION.SDK_INT >= 23) {
-                PlaybackParams params = p.getPlaybackParams();
+                lastPlaybackSpeed = selectedSpeed();
+                lastPlaybackPitch = selectedPitch();
+                PlaybackParams params = new PlaybackParams();
                 params.setSpeed(lastPlaybackSpeed);
-                params.setPitch(1.0f);
+                params.setPitch(lastPlaybackPitch);
                 p.setPlaybackParams(params);
             }
             p.start();
-            log("Playing: " + lastWav.getName() + " @ " + lastPlaybackSpeed + "x");
+            log(String.format(Locale.ROOT,
+                    "Playing: %s speed=%.2fx pitch=%.2fx",
+                    lastWav.getName(), lastPlaybackSpeed, lastPlaybackPitch));
         } catch (Throwable t) {
             log("PLAY FAILED: " + t);
         }
