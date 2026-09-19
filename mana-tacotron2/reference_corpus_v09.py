@@ -189,10 +189,13 @@ def summarize_within(metrics):
 def locate_synth_model(syn):
     import torch
     for name,obj in vars(syn).items():
-        m=getattr(obj,"_model",None)
-        if isinstance(m,torch.nn.Module) and all(hasattr(m,k) for k in ("encoder","decoder","postnet","post_proj")):
-            return name,obj,m
-    raise RuntimeError("could not locate loaded Tacotron Synthesizer model in locked Space module")
+        if obj.__class__.__name__ == "Synthesizer" and hasattr(obj,"load"):
+            if hasattr(obj,"is_loaded") and not obj.is_loaded():
+                obj.load()
+            m=getattr(obj,"_model",None)
+            if isinstance(m,torch.nn.Module) and all(hasattr(m,k) for k in ("encoder","decoder","postnet","post_proj")):
+                return name,obj,m
+    raise RuntimeError("could not locate/load Tacotron Synthesizer model in locked Space module")
 
 def locate_vocoder_model(syn):
     import torch
