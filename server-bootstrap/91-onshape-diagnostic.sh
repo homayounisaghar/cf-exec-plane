@@ -25,6 +25,17 @@ if getent passwd 19191 >/dev/null 2>&1; then echo HOST_UID_19191=assigned; else 
 if [[ -d "$profile" && "$(stat -c '%a %u:%g' "$profile")" == "700 19191:19191" ]]; then echo NEW_PROFILE_EXPECTATION=pass; else echo NEW_PROFILE_EXPECTATION=fail; fi
 if [[ -d "$profile" && "$(stat -c '%a %U:%G' "$profile")" == "700 root:root" ]]; then echo OLD_PROFILE_EXPECTATION=pass; else echo OLD_PROFILE_EXPECTATION=fail; fi
 
+if [[ -d "$profile" ]]; then
+  bad_dirs="$(find "$profile" -xdev -type d ! -perm 0700 -print | wc -l | tr -d '[:space:]')"
+  bad_files="$(find "$profile" -xdev -type f -perm /077 -print | wc -l | tr -d '[:space:]')"
+  echo "PROFILE_BAD_DIR_MODES=$bad_dirs"
+  echo "PROFILE_BAD_FILE_MODES=$bad_files"
+  first_bad_dir="$(find "$profile" -xdev -type d ! -perm 0700 -printf '%P\n' -quit)"
+  first_bad_file="$(find "$profile" -xdev -type f -perm /077 -printf '%P\n' -quit)"
+  [[ -n "$first_bad_dir" ]] && echo "PROFILE_FIRST_BAD_DIR=$first_bad_dir" || echo "PROFILE_FIRST_BAD_DIR=none"
+  [[ -n "$first_bad_file" ]] && echo "PROFILE_FIRST_BAD_FILE=$first_bad_file" || echo "PROFILE_FIRST_BAD_FILE=none"
+fi
+
 if docker inspect capability-fabric-onshape-chromium >/dev/null 2>&1; then echo "CONTAINER_CHROMIUM=$(docker inspect -f '{{.State.Status}}/{{.State.Running}}' capability-fabric-onshape-chromium)"; else echo CONTAINER_CHROMIUM=missing; fi
 if docker inspect capability-fabric-onshape-server >/dev/null 2>&1; then echo "CONTAINER_SERVER=$(docker inspect -f '{{.State.Status}}/{{.State.Running}}' capability-fabric-onshape-server)"; else echo CONTAINER_SERVER=missing; fi
 
