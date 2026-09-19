@@ -1,0 +1,5 @@
+request_id=mana-playground-boundaries-v040-20260919t1631z
+operation=build-disposable-interactive-apk
+source_commit=78d79547212c93527144cf20026c4cefb6363a6f
+package=com.mana.local.tacotron2.playground.v4
+version=0.4.0-boundaries
