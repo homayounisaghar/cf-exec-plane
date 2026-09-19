@@ -5,7 +5,7 @@
 
     <application
         android:allowBackup="false"
-        android:label="Mana Tacotron2 Bench"
+        android:label="Mana Voice Playground"
         android:theme="@style/AppTheme">
         <activity
             android:name=".MainActivity"
