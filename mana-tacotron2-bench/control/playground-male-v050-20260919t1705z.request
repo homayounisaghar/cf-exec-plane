@@ -1,0 +1,5 @@
+request_id=mana-playground-male-v050-20260919t1705z
+operation=build-disposable-interactive-apk
+source_commit=e75f0eb8c8d26d88c9d20561d80699dd5a95a6c8
+package=com.mana.local.tacotron2.playground.male
+version=0.5.0-male-simple
