@@ -20,6 +20,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowInsets;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -71,6 +72,7 @@ public final class MainActivity extends Activity {
     private SeekBar pitchBar;
     private SeekBar pauseBar;
     private SeekBar wordGapBar;
+    private CheckBox maleFilter;
     private TextView speedValue;
     private TextView pitchValue;
     private TextView pauseValue;
@@ -96,14 +98,14 @@ public final class MainActivity extends Activity {
         body.setBackgroundColor(Color.WHITE);
 
         TextView title = new TextView(this);
-        title.setText("Mana Voice Playground");
+        title.setText("Mana Voice Playground — Male Filter");
         title.setTextSize(20f);
         title.setTextColor(Color.BLACK);
         body.addView(title, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         TextView note = new TextView(this);
-        note.setText("کاملاً آفلاین. Voice Pack را یک بار وارد کن، متن فارسی خودت را بنویس و صدای Mana را روی همین گوشی بساز.");
+        note.setText("کاملاً آفلاین. این نسخه یک فیلتر مردانهٔ ساده روی پخش دارد؛ مدل Mana و Voice Pack همان نسخهٔ اصلی‌اند.");
         note.setTextSize(14f);
         note.setTextColor(Color.DKGRAY);
         note.setPadding(0, 8, 0, 16);
@@ -133,7 +135,16 @@ public final class MainActivity extends Activity {
         pitchValue = controlLabel("زیر و بمی");
         pitchBar = new SeekBar(this);
         pitchBar.setMax(60);
-        pitchBar.setProgress(30);
+        pitchBar.setProgress(8);
+
+        maleFilter = new CheckBox(this);
+        maleFilter.setText("فیلتر مردانهٔ ساده");
+        maleFilter.setChecked(true);
+        maleFilter.setTextColor(Color.BLACK);
+        maleFilter.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            pitchBar.setProgress(isChecked ? 8 : 30);
+            refreshControlLabels();
+        });
 
         pauseValue = controlLabel("مکث بعد از علائم");
         pauseBar = new SeekBar(this);
@@ -174,6 +185,7 @@ public final class MainActivity extends Activity {
         body.addView(speedBar);
         body.addView(pitchValue);
         body.addView(pitchBar);
+        body.addView(maleFilter);
         body.addView(pauseValue);
         body.addView(pauseBar);
         body.addView(wordGapValue);
@@ -265,7 +277,8 @@ public final class MainActivity extends Activity {
             speedValue.setText(String.format(Locale.ROOT, "سرعت پخش: %.2fx", selectedSpeed()));
         }
         if (pitchValue != null && pitchBar != null) {
-            pitchValue.setText(String.format(Locale.ROOT, "زیر و بمی: %.2fx", selectedPitch()));
+            String mode = (maleFilter != null && maleFilter.isChecked()) ? " — مردانهٔ ساده" : "";
+            pitchValue.setText(String.format(Locale.ROOT, "زیر و بمی: %.2fx%s", selectedPitch(), mode));
         }
         if (pauseValue != null && pauseBar != null) {
             pauseValue.setText("مکث بعد از علائم: " + selectedPunctuationPauseMs() + " ms");
