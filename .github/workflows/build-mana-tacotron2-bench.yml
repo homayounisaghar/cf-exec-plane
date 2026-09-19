@@ -60,7 +60,12 @@ jobs:
 
           BT="$ANDROID_HOME/build-tools/35.0.0"
           "$BT/aapt" dump badging "$apk" | tee mana-tacotron2-bench-badging.txt
-          grep -q "package: name='com.mana.local.tacotron2.bench' versionCode='3' versionName='0.2.0-playground'" mana-tacotron2-bench-badging.txt
+          grep -q "package: name='com.mana.local.tacotron2.bench' versionCode='4' versionName='0.3.0-controls'" mana-tacotron2-bench-badging.txt
+          grep -q "native-code: 'arm64-v8a'" mana-tacotron2-bench-badging.txt
+          if grep -qE "native-code:.*(armeabi-v7a|x86|x86_64)" mana-tacotron2-bench-badging.txt; then
+            echo "unexpected non-arm64 ABI" >&2
+            exit 1
+          fi
 
           "$BT/aapt" dump permissions "$apk" | tee mana-tacotron2-bench-permissions.txt
           if grep -q "android.permission.INTERNET" mana-tacotron2-bench-permissions.txt; then
@@ -71,11 +76,11 @@ jobs:
           "$BT/apksigner" verify --verbose --print-certs "$apk" | tee mana-tacotron2-bench-apksigner.txt
           "$BT/zipalign" -c -P 16 -v 4 "$apk" | tee mana-tacotron2-bench-zipalign.txt
 
-          cp "$apk" mana-tacotron2-playground-v0.2.0-disposable.apk
-          sha256sum mana-tacotron2-playground-v0.2.0-disposable.apk | tee mana-tacotron2-playground-v0.2.0-disposable.sha256
+          cp "$apk" mana-tacotron2-playground-v0.3.0-controls-disposable.apk
+          sha256sum mana-tacotron2-playground-v0.3.0-controls-disposable.apk | tee mana-tacotron2-playground-v0.3.0-controls-disposable.sha256
 
           cat > mana-tacotron2-bench-RUN_SHEET.txt <<'EOF'
-          Mana Voice Playground v0.2.0
+          Mana Voice Playground v0.3.0 Controls
           Package: com.mana.local.tacotron2.bench
           Installability: signed Android debug APK; explicitly disposable diagnostic line
           Network: no INTERNET permission
@@ -83,18 +88,18 @@ jobs:
           Voice pack: imported locally with Android Storage Access Framework
           First action after install: open app -> Import voice pack ZIP
           Then: enter Persian text and tap the custom synthesis button.
-          Pause syntax: [700] inserts 700 ms silence between generated sections.
-          Playback speed: numeric 0.5x..2.0x, pitch held at 1.0.
+          Controls: speed 0.50x..2.00x; pitch 0.70x..1.30x; default pause 0..1500 ms.
+          Pause syntax: [700] overrides one boundary. Speed/pitch are playback-only; pause is written into WAV.
           Benchmark buttons remain available for canonical Phase-3 measurements.
           The app records JSON on screen and writes local WAV renders.
           EOF
 
       - uses: actions/upload-artifact@v4
         with:
-          name: mana-tacotron2-playground-v0.2.0
+          name: mana-tacotron2-playground-v0.3.0-controls
           path: |
-            mana-tacotron2-playground-v0.2.0-disposable.apk
-            mana-tacotron2-playground-v0.2.0-disposable.sha256
+            mana-tacotron2-playground-v0.3.0-controls-disposable.apk
+            mana-tacotron2-playground-v0.3.0-controls-disposable.sha256
             mana-tacotron2-bench-badging.txt
             mana-tacotron2-bench-permissions.txt
             mana-tacotron2-bench-apksigner.txt
