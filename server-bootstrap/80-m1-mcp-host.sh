@@ -9,6 +9,8 @@ set -euo pipefail
 
 CF_MCP_HOST="cf-onshape.duckdns.org"
 CF_MCP_UPSTREAM_PORT="8787"
+scheme="https"
+base="${scheme}://${CF_MCP_HOST}"
 
 token_src="server-bootstrap/.m1-mcp-token"
 secrets_dir="/etc/capability-fabric/secrets"
@@ -59,10 +61,10 @@ if ! command -v caddy >/dev/null 2>&1; then
   apt-get update
   apt-get install -y debian-keyring debian-archive-keyring apt-transport-https curl gnupg
   if [[ ! -s /usr/share/keyrings/caddy-stable-archive-keyring.gpg ]]; then
-    curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' \
+    curl -1sLf "${scheme}://dl.cloudsmith.io/public/caddy/stable/gpg.key" \
       | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
   fi
-  curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' \
+  curl -1sLf "${scheme}://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt" \
     > /etc/apt/sources.list.d/caddy-stable.list
   apt-get update
   apt-get install -y caddy
@@ -109,7 +111,7 @@ systemctl restart caddy
 # proven together over the public name.
 tls_ok=no
 for _ in $(seq 1 36); do
-  body="$(curl -fsS --max-time 10 "https://${CF_MCP_HOST}/" 2>/dev/null || true)"
+  body="$(curl -fsS --max-time 10 "${base}/" 2>/dev/null || true)"
   if [[ "$body" == "cf-mcp-host ok" ]]; then tls_ok=yes; break; fi
   sleep 5
 done
@@ -121,11 +123,11 @@ if [[ "$tls_ok" == "yes" ]]; then
   [[ -n "$cert_end" ]] || cert_end="unknown"
 fi
 
-notfound_code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 "https://${CF_MCP_HOST}/definitely-not-a-route" 2>/dev/null || true)"
+notfound_code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 "${base}/definitely-not-a-route" 2>/dev/null || true)"
 
 mcp_state=pending
 if curl -fsS --max-time 5 "http://127.0.0.1:${CF_MCP_UPSTREAM_PORT}/" >/dev/null 2>&1; then
-  mcp_code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 "https://${CF_MCP_HOST}/mcp/${token}" 2>/dev/null || true)"
+  mcp_code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 "${base}/mcp/${token}" 2>/dev/null || true)"
   case "$mcp_code" in
     200|400|405|406) mcp_state=reachable ;;
     *) mcp_state="proxy-error-${mcp_code}" ;;
