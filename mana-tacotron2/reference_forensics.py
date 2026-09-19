@@ -157,9 +157,13 @@ def build_checkpoint_dims(space,synth,out):
         derived["encoder_seq_width_with_speaker"]==derived["encoder_proj_in_features"] and
         derived["attn_rnn_input_size"]==derived["encoder_seq_width_with_speaker"]+derived["decoder_prenet_fc2_out"]
     )
+    dim_keys={"in_features","out_features","input_size","hidden_size","num_embeddings","embedding_dim","in_channels","out_channels","num_features"}
+    compact_mods={k:v for k,v in mods.items() if any(key in v for key in dim_keys)}
+    compact_state=[[x["name"],x["shape"],x["dtype"]] for x in state]
     payload={"schema":"mana.checkpoint-dims.v1","serialization":{"encoding":"utf-8","ensure_ascii":False,
-             "sort_keys":True,"separators":[",",":"],"trailing_newline":True},
-             "derived":derived,"modules":mods,"state_dict":state}
+             "sort_keys":True,"separators":[",",":"],"trailing_newline":True,
+             "state_entry_format":["name","shape","dtype"]},
+             "derived":derived,"modules":compact_mods,"state_dict":compact_state}
     p=out/"checkpoint_dims.json"
     p.write_text(stable_json(payload),encoding="utf-8")
     (out/"checkpoint_dims.sha256").write_text(sha256_file(p)+"  checkpoint_dims.json\n",encoding="utf-8")
@@ -306,7 +310,8 @@ def speaker_probe(space,out):
       "partials_n_frames":int(params.partials_n_frames),"partial_default_min_pad_coverage":0.75,
       "partial_default_overlap":0.5,"embedding_shape":list(emb.shape),
       "repeat_count":10,"byte_identical":byte_identical,"max_abs_repeat_diff":maxdiff,
-      "embedding_sha256":sha256_file(emb_path),"corrected_resample_comparison":alt,
+      "embedding_sha256":sha256_file(emb_path),"embedding_base64":__import__("base64").b64encode(emb.tobytes(order="C")).decode("ascii"),
+      "corrected_resample_comparison":alt,
       "encoder_checkpoint_path":str(encoder.relative_to(space)),"encoder_checkpoint_sha256":sha256_file(encoder)
     }
     write_json(out/"p0-6-speaker.json",result)
@@ -315,6 +320,9 @@ def speaker_probe(space,out):
 def vocoder_probe(space,out):
     import yaml
     import librosa
+    import scipy.signal
+    if not hasattr(scipy.signal,"kaiser"):
+        scipy.signal.kaiser=scipy.signal.windows.kaiser
     from parallel_wavegan.utils import load_model
     from parallel_wavegan.bin.preprocess import logmelfilterbank
     sys.path.insert(0,str(space/"pmt2"))
