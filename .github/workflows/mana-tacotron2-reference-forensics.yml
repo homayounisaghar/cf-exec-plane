@@ -53,7 +53,6 @@ jobs:
           python -m pip install --disable-pip-version-check --no-input             "numpy==1.22.4"             "scipy==1.7.3"             "librosa==0.10.2.post1"             "numba==0.57.1"             "soundfile==0.12.1"             "webrtcvad==2.0.10"             "gdown==5.2.0"             "requests==2.32.3"             "PyYAML==6.0.2"             "h5py==3.11.0"             "tensorboardX==2.6.2.2"             "gradio_client==1.8.0"
           python -m pip install --disable-pip-version-check --no-input             "torch==2.2.2" --index-url https://download.pytorch.org/whl/cpu
           python -m pip install --disable-pip-version-check --no-input             "parallel-wavegan==0.6.1" --no-build-isolation
-          python -m pip install --disable-pip-version-check --no-input             "numpy==1.22.4" "scipy==1.7.3"
 
       - name: Run Phase 0 resume probe
         shell: bash
@@ -65,6 +64,20 @@ jobs:
           cat out/phase0-resume-summary.json
           cat out/p0-6-speaker.json
           cat out/p0-10-stop.json
+
+      - name: Emit canonical text payloads
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          for f in checkpoint_dims.json p0-4-reconciliation.json p0-6-speaker.json frontend_fixtures.json frontend_quote_probe.json frontend_verbatim_capture.txt p0-7-vocoder.json p0-8-assets.json p0-9-environment.json requirements.lock p0-10-stop.json p0-11-hosted-attempt.json licenses.md phase0-resume-summary.json STOP_S1_NEW_CONTRACT_MISMATCH.json STOP_S13.txt; do
+            if [[ -f "out/$f" ]]; then
+              echo "<<<MANA_FILE:$f>>>"
+              cat "out/$f"
+              echo
+              echo "<<<END_MANA_FILE:$f>>>"
+            fi
+          done
 
       - uses: actions/upload-artifact@v4
         if: always()
