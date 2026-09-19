@@ -81,4 +81,35 @@ else
   echo detail-log-missing
 fi
 echo CF_PULL_DETAIL_TAIL_END
+
+echo CF_ONSHAPE_STORAGE_FS_DIAG_BEGIN
+if [[ -d "$profile" ]]; then
+  echo "PROFILE_FS=$(stat -f -c '%T' "$profile")"
+  echo "PROFILE_MOUNT=$(findmnt -T "$profile" -n -o FSTYPE,OPTIONS 2>/dev/null | tr ' ' '_' || true)"
+  df -Pk "$profile" | awk 'NR==2{printf "PROFILE_DISK_KB_TOTAL=%s\\nPROFILE_DISK_KB_USED=%s\\nPROFILE_DISK_KB_AVAIL=%s\\nPROFILE_DISK_PCT=%s\\n",$2,$3,$4,$5}'
+  df -Pi "$profile" | awk 'NR==2{printf "PROFILE_INODES_TOTAL=%s\\nPROFILE_INODES_USED=%s\\nPROFILE_INODES_AVAIL=%s\\nPROFILE_INODES_PCT=%s\\n",$2,$3,$4,$5}'
+  for p in \
+    "$profile/Default" \
+    "$profile/Default/IndexedDB" \
+    "$profile/Default/Local Storage" \
+    "$profile/Default/Storage" \
+    "$profile/Default/Service Worker"; do
+    rel="${p#"$profile"/}"
+    if [[ -e "$p" || -L "$p" ]]; then
+      echo "PROFILE_NODE=$(stat -Lc '%F %a %u:%g %s' "$p" 2>/dev/null || stat -c '%F %a %u:%g %s' "$p") rel=$rel"
+    else
+      echo "PROFILE_NODE=missing rel=$rel"
+    fi
+  done
+  find "$profile" -xdev -maxdepth 6 \( -iname '*indexeddb*' -o -iname '*quota*' -o -iname '*storage*' -o -name 'Singleton*' -o -name 'LOCK' \) \
+    -printf 'PROFILE_RELEVANT=%y %m %u:%g %s %P\\n' 2>/dev/null | head -n 160
+else
+  echo PROFILE_STORAGE_DIAG=profile-missing
+fi
+if docker inspect capability-fabric-onshape-server >/dev/null 2>&1; then
+  docker top capability-fabric-onshape-server -eo pid,ppid,user,stat,comm 2>/dev/null \
+    | sed -n '1,80p' | sed 's/^/PROFILE_PROCESS=/'
+fi
+echo CF_ONSHAPE_STORAGE_FS_DIAG_END
+
 echo CF_ONSHAPE_DIAG_END
