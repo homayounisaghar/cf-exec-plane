@@ -283,7 +283,11 @@ def speaker_probe(space,out):
     emb_path.write_bytes(emb.tobytes(order="C"))
     alt=None
     try:
-        corrected=enc.preprocess_wav(loaded,source_sr=24000)
+        # Compare the reference's omitted source_sr against the intended 24k->16k path.
+        # The locked encoder helper uses the legacy positional librosa.resample API;
+        # call modern librosa explicitly here so this diagnostic remains environment-stable.
+        corrected=librosa.resample(np.asarray(loaded,dtype=np.float32),orig_sr=24000,target_sr=int(params.sampling_rate))
+        corrected=enc.preprocess_wav(corrected,source_sr=None)
         corr=np.asarray(enc.embed_utterance(corrected),dtype=np.float32)
         cosine=float(np.dot(emb,corr)/(np.linalg.norm(emb)*np.linalg.norm(corr)))
         alt={"corrected_resample_samples":int(len(corrected)),"cosine_similarity":cosine,
