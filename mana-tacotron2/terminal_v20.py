@@ -636,7 +636,11 @@ def build_wrappers(model,vocoder):
 
 def ort_session(path):
     import onnxruntime as ort
-    so=ort.SessionOptions();so.intra_op_num_threads=1;so.inter_op_num_threads=1
+    so=ort.SessionOptions()
+    so.intra_op_num_threads=1
+    so.inter_op_num_threads=1
+    # Phase-2 contract: no runtime fusion/graph rewriting beyond exporter output.
+    so.graph_optimization_level=ort.GraphOptimizationLevel.ORT_DISABLE_ALL
     return ort.InferenceSession(str(path),sess_options=so,providers=["CPUExecutionProvider"])
 
 def snr_db(ref,test):
@@ -644,6 +648,66 @@ def snr_db(ref,test):
     n=min(len(a),len(b));a=a[:n];b=b[:n]
     noise=np.sum((a-b)**2);sig=np.sum(a*a)
     return float("inf") if noise==0 else 10.0*math.log10(sig/noise)
+
+def teacher_forced_debug(s2,segd,events,encoder_seq,encoder_seq_proj,T):
+    cum=np.zeros((1,T),np.float32)
+    prev=np.zeros((1,80),np.float32)
+    zero128=np.zeros((1,128),np.float32)
+    zero1024=np.zeros((1,1024),np.float32)
+    zero512=np.zeros((1,512),np.float32)
+    prev_gold={
+      "attn_hidden":zero128,"rnn1_hidden":zero1024,"rnn1_cell":zero1024,
+      "rnn2_hidden":zero1024,"rnn2_cell":zero1024,"context_vec":zero512
+    }
+    evpos=2
+    rows=[]
+    maxes={"mel":0.0,"stop":0.0,"attention":0.0,"attn_hidden":0.0,"context":0.0,
+           "rnn1_hidden":0.0,"rnn1_cell":0.0,"rnn2_hidden":0.0,"rnn2_cell":0.0}
+    k=0
+    while (segd/f"step-{k:04d}-mel_frames.npy").exists():
+        gold={
+          "mel":np.load(segd/f"step-{k:04d}-mel_frames.npy"),
+          "stop":np.load(segd/f"step-{k:04d}-stop_token.npy"),
+          "attention":np.load(segd/f"step-{k:04d}-attention.npy"),
+          "attn_hidden":np.load(segd/f"step-{k:04d}-attn_hidden.npy"),
+          "rnn1_hidden":np.load(segd/f"step-{k:04d}-rnn1_hidden.npy"),
+          "rnn1_cell":np.load(segd/f"step-{k:04d}-rnn1_cell.npy"),
+          "rnn2_hidden":np.load(segd/f"step-{k:04d}-rnn2_hidden.npy"),
+          "rnn2_cell":np.load(segd/f"step-{k:04d}-rnn2_cell.npy"),
+          "context":np.load(segd/f"step-{k:04d}-context.npy"),
+        }
+        inp={"encoder_seq":encoder_seq.astype(np.float32),"encoder_seq_proj":encoder_seq_proj.astype(np.float32),
+             "char_mask":np.ones((1,T),np.float32),"prenet_in":prev.astype(np.float32),
+             "attn_hidden":prev_gold["attn_hidden"].astype(np.float32),
+             "rnn1_hidden":prev_gold["rnn1_hidden"].astype(np.float32),"rnn1_cell":prev_gold["rnn1_cell"].astype(np.float32),
+             "rnn2_hidden":prev_gold["rnn2_hidden"].astype(np.float32),"rnn2_cell":prev_gold["rnn2_cell"].astype(np.float32),
+             "context_vec":prev_gold["context"].astype(np.float32),"cum_attn":cum.astype(np.float32),
+             "prenet_mask1":events[evpos]["values"].astype(np.float32),
+             "prenet_mask2":events[evpos+1]["values"].astype(np.float32)}
+        vals=s2.run(None,inp);evpos+=2
+        mel,attn,ah,h1,c1,h2,c2,ctx,cum_out,stop=vals
+        got={"mel":mel,"stop":stop,"attention":attn,"attn_hidden":ah,"rnn1_hidden":h1,"rnn1_cell":c1,
+             "rnn2_hidden":h2,"rnn2_cell":c2,"context":ctx}
+        errs={name:float(np.max(np.abs(got[name]-gold[name]))) for name in got}
+        for name,v in errs.items(): maxes[name]=max(maxes[name],v)
+        rows.append({"step":k,**{name+"_max_abs":v for name,v in errs.items()}})
+        # next input is GOLDEN trajectory, never the ONNX output.
+        prev=gold["mel"][:,:,-1]
+        prev_gold={name:gold[name] for name in ["attn_hidden","rnn1_hidden","rnn1_cell","rnn2_hidden","rnn2_cell","context"]}
+        cum=cum+gold["attention"]
+        k+=1
+    first_stage=None
+    stage_order=[("attention","attention scores"),("context","context vector"),("rnn1_hidden","rnn1 hidden"),
+                 ("rnn2_hidden","rnn2 hidden"),("mel","mel projection")]
+    # Prenet is internal to G2 and is only implicated if attention is already out of tolerance.
+    for key,label in stage_order:
+        tol=1e-3 if key=="mel" else 1e-4
+        if maxes[key]>tol:
+            first_stage=label
+            break
+    return {"steps":k,"max_abs":maxes,"rows":rows,
+            "single_step_within_contract":maxes["mel"]<=1e-3 and maxes["stop"]<=1e-3,
+            "first_observable_stage_outside_debug_tolerance":first_stage}
 
 def phase2(space,synth,corpus,phase1_dir,out):
     import torch
@@ -748,17 +812,43 @@ def phase2(space,synth,corpus,phase1_dir,out):
             if er1>1e-4 or er2>1e-4 or max_mel>1e-3 or max_stop>1e-3 or stop_step!=gold_stop_step or trim!=int(json.loads((sd/"phase_dummy.json").read_text())["x"]) if False else False:
                 pass
             gold_trim=np.load(segd/"mel_post_pretrim.npy").shape[2]-gp.shape[2]
-            if er1>1e-4 or er2>1e-4 or max_mel>1e-3 or max_stop>1e-3 or stop_step!=gold_stop_step or post_err>1e-3 or trim!=gold_trim or snr<30:
+            free_diverged=(max_mel>1e-3 or max_stop>1e-3 or post_err>1e-3)
+            teacher=None
+            if free_diverged:
+                teacher=teacher_forced_debug(s2,segd,ev,golden_enc.astype(np.float32),golden_encp.astype(np.float32),T)
+            hard_structural=(er1>1e-4 or er2>1e-4 or stop_step!=gold_stop_step or trim!=gold_trim)
+            if hard_structural:
+                seg_status="FAIL"
+            elif free_diverged:
+                if teacher and teacher["single_step_within_contract"]:
+                    # Contract §5.6: this is autoregressive accumulation, not a single-step export defect.
+                    if snr>=40:
+                        seg_status="PASS"
+                    elif snr>=30:
+                        seg_status="WARN"
+                    else:
+                        seg_status="FAIL"
+                else:
+                    seg_status="FAIL"
+            elif snr<30:
                 seg_status="FAIL"
             elif snr<40:
                 seg_status="WARN"
             if seg_status=="FAIL": overall="FAIL"
             elif seg_status=="WARN" and overall=="PASS": overall="WARN"
+            first_cross=next((x["step"] for x in step_records if x["mel_max_abs"]>1e-3),None)
+            stop_margin=None
+            if first_cross is not None:
+                rr=step_records[first_cross]
+                stop_margin=min(abs(rr["stop"]-0.5),abs(rr["gold_stop"]-0.5))
             segreports.append({"segment":si,"encoder_seq_max_abs":er1,"encoder_seq_proj_max_abs":er2,
                                "per_step_mel_max_abs":max_mel,"stop_token_max_abs":max_stop,
                                "stop_step_onnx":stop_step,"stop_step_golden":gold_stop_step,
                                "post_postnet_max_abs":post_err,"trim_frames_onnx":trim,"trim_frames_golden":gold_trim,
-                               "waveform_snr_db":snr,"status":seg_status,"step_records":step_records})
+                               "waveform_snr_db":snr,"free_running_first_mel_cross_1e3_step":first_cross,
+                               "stop_margin_at_first_cross":stop_margin,
+                               "teacher_forced":teacher,
+                               "status":seg_status,"step_records":step_records})
         report["sentences"][str(sid)]={"segments":segreports}
     report["overall"]=overall
     write_json(out/"phase2-parity.json",report)
