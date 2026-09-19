@@ -25,6 +25,9 @@ case "$token" in
 esac
 (( ${#token} >= 32 )) || { echo "M1 token is shorter than policy minimum" >&2; exit 20; }
 
+# The restrictive umask below is scoped to secret material only. It is reset
+# before any package-manager work, because apt reads its keyring and source
+# lists as the unprivileged _apt user.
 umask 077
 install -d -m 0700 -o root -g root "$secrets_dir"
 printf '%s\n' "$token" > "${token_dst}.new"
@@ -39,6 +42,7 @@ else
 fi
 token_mode="$(stat -c '%a %U:%G' "$token_dst")"
 [[ "$token_mode" == "600 root:root" ]] || { echo "token permissions are not root-only" >&2; exit 20; }
+umask 022
 
 # ------------------------------------------------------------- firewall
 command -v ufw >/dev/null 2>&1 || { echo "ufw is unavailable; refusing" >&2; exit 21; }
@@ -57,15 +61,21 @@ fi
 
 # ---------------------------------------------------------------- caddy
 export DEBIAN_FRONTEND=noninteractive
+caddy_keyring=/usr/share/keyrings/caddy-stable-archive-keyring.gpg
+caddy_list=/etc/apt/sources.list.d/caddy-stable.list
 if ! command -v caddy >/dev/null 2>&1; then
   apt-get update
   apt-get install -y debian-keyring debian-archive-keyring apt-transport-https curl gnupg
-  if [[ ! -s /usr/share/keyrings/caddy-stable-archive-keyring.gpg ]]; then
-    curl -1sLf "${scheme}://dl.cloudsmith.io/public/caddy/stable/gpg.key" \
-      | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
-  fi
+  rm -f "$caddy_keyring"
+  curl -1sLf "${scheme}://dl.cloudsmith.io/public/caddy/stable/gpg.key" \
+    | gpg --dearmor -o "$caddy_keyring"
   curl -1sLf "${scheme}://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt" \
-    > /etc/apt/sources.list.d/caddy-stable.list
+    > "$caddy_list"
+  # apt evaluates these as the unprivileged _apt user; both must be readable.
+  chmod 0644 "$caddy_keyring" "$caddy_list"
+  chown root:root "$caddy_keyring" "$caddy_list"
+  [[ -s "$caddy_keyring" ]] || { echo "caddy keyring is empty" >&2; exit 22; }
+  [[ -s "$caddy_list" ]] || { echo "caddy source list is empty" >&2; exit 22; }
   apt-get update
   apt-get install -y caddy
 fi
@@ -102,6 +112,7 @@ else
   mv /etc/caddy/Caddyfile.new /etc/caddy/Caddyfile
   caddy_state=updated
 fi
+chmod 0644 /etc/caddy/Caddyfile
 systemctl enable caddy >/dev/null 2>&1 || true
 systemctl restart caddy
 [[ "$(systemctl is-enabled caddy 2>/dev/null)" == "enabled" ]] || { echo "caddy is not enabled at boot" >&2; exit 22; }
