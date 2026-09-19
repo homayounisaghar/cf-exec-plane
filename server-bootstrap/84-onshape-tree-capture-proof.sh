@@ -79,6 +79,7 @@ out={
  "handcrafted_request":r.get("handcrafted_request"),
  "comparison":r.get("comparison"),
  "target_folder_name":r.get("target_folder_name"),
+ "storage_probe":r.get("storage_probe"),
 }
 print("CF_ONSHAPE_TREE_CAPTURE="+json.dumps(out,separators=(",",":")))
 '
