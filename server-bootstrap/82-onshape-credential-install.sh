@@ -20,8 +20,8 @@ case "$password_size" in ''|*[!0-9]*) exit 20 ;; esac
 (( account_size >= 1 && account_size <= 320 )) || { echo "Onshape account length is outside policy" >&2; exit 20; }
 (( password_size >= 8 && password_size <= 1024 )) || { echo "Onshape password length is outside policy" >&2; exit 20; }
 
-account_clean_size="$(LC_ALL=C tr -d '\\r\\n' < "$account_src" | wc -c | tr -d '[:space:]')"
-password_clean_size="$(LC_ALL=C tr -d '\\r\\n' < "$password_src" | wc -c | tr -d '[:space:]')"
+account_clean_size="$(LC_ALL=C tr -d '\r\n' < "$account_src" | wc -c | tr -d '[:space:]')"
+password_clean_size="$(LC_ALL=C tr -d '\r\n' < "$password_src" | wc -c | tr -d '[:space:]')"
 [[ "$account_clean_size" == "$account_size" ]] || { echo "Onshape account contains a line break" >&2; exit 20; }
 [[ "$password_clean_size" == "$password_size" ]] || { echo "Onshape password contains a line break" >&2; exit 20; }
 
