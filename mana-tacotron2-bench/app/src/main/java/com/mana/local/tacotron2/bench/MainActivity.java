@@ -9,6 +9,8 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.media.MediaPlayer;
+import android.media.PlaybackParams;
+import android.text.InputType;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -19,6 +21,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowInsets;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -46,6 +49,8 @@ import java.util.Map;
 import java.util.Random;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public final class MainActivity extends Activity {
     private static final int REQ_PACK = 1001;
@@ -61,12 +66,17 @@ public final class MainActivity extends Activity {
 
     private TextView status;
     private Button choosePack;
+    private EditText customText;
+    private EditText speedInput;
+    private Button synthesizeText;
     private Button quickBench;
     private Button fullRender;
     private Button playLast;
     private File packDir;
     private File lastWav;
     private String lastReport = "";
+    private float lastPlaybackSpeed = 1.0f;
+    private static final Pattern PAUSE_MARKER = Pattern.compile("\\[(\\d{1,5})\\]");
 
     @Override
     protected void onCreate(Bundle state) {
@@ -78,31 +88,57 @@ public final class MainActivity extends Activity {
         body.setBackgroundColor(Color.WHITE);
 
         TextView title = new TextView(this);
-        title.setText("Mana Tacotron2 Phase 3 Benchmark");
+        title.setText("Mana Voice Playground");
         title.setTextSize(20f);
         title.setTextColor(Color.BLACK);
         body.addView(title, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         TextView note = new TextView(this);
-        note.setText("Offline diagnostic app. No INTERNET permission. Import the Phase-3 voice pack, then run the benchmark.");
+        note.setText("کاملاً آفلاین. Voice Pack را یک بار وارد کن، متن فارسی خودت را بنویس و صدای Mana را روی همین گوشی بساز.");
         note.setTextSize(14f);
         note.setTextColor(Color.DKGRAY);
         note.setPadding(0, 8, 0, 16);
         body.addView(note);
 
-        choosePack = button("1) Import voice pack ZIP");
-        quickBench = button("2) Run quick benchmark");
-        fullRender = button("3) Render all pack cases");
-        playLast = button("Play last WAV");
+        choosePack = button("۱) وارد کردن Voice Pack");
+
+        customText = new EditText(this);
+        customText.setHint("متن فارسی خودت را اینجا بنویس");
+        customText.setMinLines(4);
+        customText.setMaxLines(10);
+        customText.setTextDirection(View.TEXT_DIRECTION_RTL);
+        customText.setTextAlignment(View.TEXT_ALIGNMENT_VIEW_END);
+        customText.setText("سلام دنیا. این یک آزمایش صدای مانا است.");
+
+        TextView syntaxHelp = new TextView(this);
+        syntaxHelp.setText("برای مکث داخل متن بنویس: [700]  یعنی ۷۰۰ میلی ثانیه سکوت.");
+        syntaxHelp.setTextSize(13f);
+        syntaxHelp.setTextColor(Color.DKGRAY);
+        syntaxHelp.setPadding(0, 8, 0, 4);
+
+        speedInput = new EditText(this);
+        speedInput.setHint("سرعت پخش، مثلاً 1.0");
+        speedInput.setText("1.0");
+        speedInput.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
+
+        synthesizeText = button("۲) خواندن متن من");
+        quickBench = button("Benchmark سریع");
+        fullRender = button("Render تست های مرجع");
+        playLast = button("پخش دوباره آخرین صدا");
+        synthesizeText.setEnabled(false);
         quickBench.setEnabled(false);
         fullRender.setEnabled(false);
         playLast.setEnabled(false);
 
         body.addView(choosePack);
+        body.addView(customText);
+        body.addView(syntaxHelp);
+        body.addView(speedInput);
+        body.addView(synthesizeText);
+        body.addView(playLast);
         body.addView(quickBench);
         body.addView(fullRender);
-        body.addView(playLast);
 
         status = new TextView(this);
         status.setTextSize(12f);
@@ -135,6 +171,7 @@ public final class MainActivity extends Activity {
         scroll.requestApplyInsets();
 
         choosePack.setOnClickListener(v -> selectPack());
+        synthesizeText.setOnClickListener(v -> synthesizeCustomText());
         quickBench.setOnClickListener(v -> runAsync(false));
         fullRender.setOnClickListener(v -> runAsync(true));
         playLast.setOnClickListener(v -> playLast());
@@ -156,6 +193,7 @@ public final class MainActivity extends Activity {
     }
 
     private void setReady(boolean ready) {
+        synthesizeText.setEnabled(ready);
         quickBench.setEnabled(ready);
         fullRender.setEnabled(ready);
     }
@@ -240,6 +278,153 @@ public final class MainActivity extends Activity {
         } catch (Throwable t) {
             if (strict) logFromWorker("PACK INVALID: " + t);
             return false;
+        }
+    }
+
+
+    private void synthesizeCustomText() {
+        final String raw = customText.getText().toString();
+        if (raw.trim().isEmpty()) {
+            log("متن خالی است.");
+            return;
+        }
+        final float speed = parseSpeed(speedInput.getText().toString());
+
+        choosePack.setEnabled(false);
+        synthesizeText.setEnabled(false);
+        quickBench.setEnabled(false);
+        fullRender.setEnabled(false);
+        playLast.setEnabled(false);
+
+        new Thread(() -> {
+            try {
+                List<CustomPart> parts = parseCustomParts(raw);
+                if (parts.isEmpty()) throw new IllegalArgumentException("هیچ بخش قابل خواندنی پیدا نشد.");
+
+                List<File> rendered = new ArrayList<>();
+                List<Integer> pausesAfter = new ArrayList<>();
+                int renderIndex = 0;
+
+                try (ModelSessions sessions = ModelSessions.load(packDir, 2)) {
+                    for (CustomPart part : parts) {
+                        String normalized = PersianFrontend.normalizeTextForSynthesis(part.text);
+                        List<String> segments = PersianFrontend.splitNormalized(normalized);
+                        for (int si = 0; si < segments.size(); si++) {
+                            PersianFrontend.Encoded encoded = PersianFrontend.encodeOovGuard(segments.get(si));
+                            if (!encoded.dropped.isEmpty()) {
+                                logFromWorker("کاراکترهای پشتیبانی نشده حذف شدند: " + encoded.dropped);
+                            }
+                            if (encoded.ids.length == 0) continue;
+
+                            logFromWorker("در حال ساخت بخش " + (renderIndex + 1) + "...");
+                            SynthesisResult result = synthesize(
+                                    sessions,
+                                    encoded.ids,
+                                    new Random(2026091900L + (renderIndex * 10L)),
+                                    true
+                            );
+                            rendered.add(new File(result.wavPath));
+                            int pause = (si == segments.size() - 1) ? part.pauseAfterMs : 120;
+                            pausesAfter.add(pause);
+                            renderIndex++;
+                        }
+                    }
+                }
+
+                if (rendered.isEmpty()) throw new IllegalStateException("مدل هیچ صدایی تولید نکرد.");
+                File combined = combineRenderedWavs(rendered, pausesAfter);
+                lastWav = combined;
+                lastPlaybackSpeed = speed;
+                logFromWorker("آماده است. سرعت پخش: " + speed + "x");
+                runOnUiThread(this::playLast);
+            } catch (Throwable t) {
+                logFromWorker("SYNTHESIS FAILED: " + t);
+            } finally {
+                runOnUiThread(() -> {
+                    choosePack.setEnabled(true);
+                    synthesizeText.setEnabled(true);
+                    quickBench.setEnabled(true);
+                    fullRender.setEnabled(true);
+                    playLast.setEnabled(lastWav != null && lastWav.isFile());
+                });
+            }
+        }, "mana-custom-text").start();
+    }
+
+    private float parseSpeed(String raw) {
+        try {
+            float v = Float.parseFloat(raw.trim());
+            return Math.max(0.5f, Math.min(2.0f, v));
+        } catch (Throwable ignored) {
+            return 1.0f;
+        }
+    }
+
+    private List<CustomPart> parseCustomParts(String raw) {
+        List<CustomPart> out = new ArrayList<>();
+        Matcher m = PAUSE_MARKER.matcher(raw);
+        int pos = 0;
+        while (m.find()) {
+            String text = raw.substring(pos, m.start()).trim();
+            int pause = Math.max(0, Math.min(10000, Integer.parseInt(m.group(1))));
+            if (!text.isEmpty()) {
+                out.add(new CustomPart(text, pause));
+            } else if (!out.isEmpty()) {
+                out.get(out.size() - 1).pauseAfterMs =
+                        Math.min(10000, out.get(out.size() - 1).pauseAfterMs + pause);
+            }
+            pos = m.end();
+        }
+        String tail = raw.substring(pos).trim();
+        if (!tail.isEmpty()) out.add(new CustomPart(tail, 0));
+        return out;
+    }
+
+    private File combineRenderedWavs(List<File> wavs, List<Integer> pausesAfter) throws Exception {
+        if (wavs.size() != pausesAfter.size()) throw new IllegalArgumentException("wav/pause size mismatch");
+        List<float[]> audio = new ArrayList<>();
+        long total = 0L;
+        for (int i = 0; i < wavs.size(); i++) {
+            float[] a = readWavMono16(wavs.get(i));
+            audio.add(a);
+            total += a.length;
+            total += (24000L * pausesAfter.get(i)) / 1000L;
+        }
+        if (total > Integer.MAX_VALUE) throw new IllegalStateException("متن برای ترکیب صدا بیش از حد بلند است.");
+
+        float[] merged = new float[(int) total];
+        int cursor = 0;
+        for (int i = 0; i < audio.size(); i++) {
+            float[] a = audio.get(i);
+            System.arraycopy(a, 0, merged, cursor, a.length);
+            cursor += a.length;
+            cursor += (24000 * pausesAfter.get(i)) / 1000;
+        }
+
+        File outDir = new File(getFilesDir(), "renders");
+        if (!outDir.isDirectory() && !outDir.mkdirs()) throw new IllegalStateException("cannot create renders");
+        File out = new File(outDir, "mana-custom-" + System.currentTimeMillis() + ".wav");
+        writeWav(out, merged, 24000);
+        return out;
+    }
+
+    private static float[] readWavMono16(File f) throws Exception {
+        byte[] b = readAll(new FileInputStream(f));
+        if (b.length < 44) throw new IllegalStateException("bad WAV");
+        int dataBytes = b.length - 44;
+        if ((dataBytes & 1) != 0) throw new IllegalStateException("bad WAV PCM length");
+        float[] out = new float[dataBytes / 2];
+        ByteBuffer bb = ByteBuffer.wrap(b, 44, dataBytes).order(ByteOrder.LITTLE_ENDIAN);
+        for (int i = 0; i < out.length; i++) out[i] = bb.getShort() / 32768f;
+        return out;
+    }
+
+    private static final class CustomPart {
+        final String text;
+        int pauseAfterMs;
+        CustomPart(String text, int pauseAfterMs) {
+            this.text = text;
+            this.pauseAfterMs = pauseAfterMs;
         }
     }
 
@@ -565,8 +750,14 @@ public final class MainActivity extends Activity {
             p.setDataSource(lastWav.getAbsolutePath());
             p.setOnCompletionListener(MediaPlayer::release);
             p.prepare();
+            if (Build.VERSION.SDK_INT >= 23) {
+                PlaybackParams params = p.getPlaybackParams();
+                params.setSpeed(lastPlaybackSpeed);
+                params.setPitch(1.0f);
+                p.setPlaybackParams(params);
+            }
             p.start();
-            log("Playing: " + lastWav.getName());
+            log("Playing: " + lastWav.getName() + " @ " + lastPlaybackSpeed + "x");
         } catch (Throwable t) {
             log("PLAY FAILED: " + t);
         }
