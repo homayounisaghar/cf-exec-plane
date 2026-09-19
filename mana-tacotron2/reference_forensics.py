@@ -266,6 +266,7 @@ def run_setup(space,synth):
 def speaker_probe(space,out):
     import torch
     import soundfile as sf
+    import librosa
     sys.path.insert(0,str(space/"pmt2"))
     Synthesizer=load_module(space/"pmt2/synthesizer/inference.py","v08_syninf").Synthesizer
     enc=load_module(space/"pmt2/encoder/inference.py","v08_encinf")
