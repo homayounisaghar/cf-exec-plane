@@ -234,4 +234,32 @@ else
 fi
 echo CF_ONSHAPE_PROFILE_CLONE_DIAG_END
 
+
+echo CF_ONSHAPE_PROFILE_OWNERSHIP_DIAG_BEGIN
+if [[ -d "$profile" ]]; then
+  echo PROFILE_OWNER_DISTRIBUTION_BEGIN
+  find "$profile" -xdev -printf '%U:%G\n' 2>/dev/null | sort | uniq -c | sed 's/^/PROFILE_OWNER_COUNT=/'
+  echo PROFILE_OWNER_DISTRIBUTION_END
+  echo DEFAULT_OWNER_DISTRIBUTION_BEGIN
+  find "$profile/Default" -xdev -printf '%U:%G\n' 2>/dev/null | sort | uniq -c | sed 's/^/DEFAULT_OWNER_COUNT=/'
+  echo DEFAULT_OWNER_DISTRIBUTION_END
+  find "$profile" -xdev -maxdepth 3 \( ! -uid 19191 -o ! -gid 19191 \) -printf 'PROFILE_NON_19191=%y %m %U:%G %P\n' 2>/dev/null | head -n 120
+fi
+if docker inspect capability-fabric-onshape-server >/dev/null 2>&1; then
+  docker exec capability-fabric-onshape-server sh -lc '
+    echo "CONTAINER_UID=$(id -u)"
+    echo "CONTAINER_GID=$(id -g)"
+    for p in /profile /profile/Default /profile/Default/IndexedDB "/profile/Default/WebStorage" "/profile/Default/WebStorage/QuotaManager" /profile/log; do
+      if [ -e "$p" ] || [ -L "$p" ]; then
+        echo "CONTAINER_NODE=$(stat -Lc "%F %a %u:%g %s" "$p" 2>/dev/null || stat -c "%F %a %u:%g %s" "$p") path=$p"
+        if [ -r "$p" ]; then echo "CONTAINER_READABLE=yes path=$p"; else echo "CONTAINER_READABLE=no path=$p"; fi
+        if [ -w "$p" ]; then echo "CONTAINER_WRITABLE=yes path=$p"; else echo "CONTAINER_WRITABLE=no path=$p"; fi
+      else
+        echo "CONTAINER_NODE=missing path=$p"
+      fi
+    done
+  '
+fi
+echo CF_ONSHAPE_PROFILE_OWNERSHIP_DIAG_END
+
 echo CF_ONSHAPE_DIAG_END
