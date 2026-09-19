@@ -8,12 +8,13 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
   phase0:
     if: github.actor == 'homayounisaghar'
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
         with:
@@ -21,6 +22,7 @@ jobs:
           persist-credentials: false
 
       - name: Validate immutable request
+        id: request
         shell: bash
         run: |
           set -euo pipefail
@@ -32,6 +34,13 @@ jobs:
           rid="$(basename "$request_path" .request)"
           got="$(awk -F= '$1=="request_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
           [[ "$rid" == "$got" ]] || exit 13
+          mode="$(awk -F= '$1=="mode"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          mode="${mode:-phase0-v08}"
+          case "$mode" in
+            phase0-v08|corpus-v09) ;;
+            *) echo "unsupported mode: $mode" >&2; exit 14 ;;
+          esac
+          echo "mode=$mode" >> "$GITHUB_OUTPUT"
 
       - uses: actions/setup-python@v5
         with:
@@ -55,6 +64,7 @@ jobs:
           python -m pip install --disable-pip-version-check --no-input             "parallel-wavegan==0.6.1" --no-build-isolation
 
       - name: Run Phase 0 resume probe
+        if: steps.request.outputs.mode == 'phase0-v08'
         shell: bash
         run: |
           set -euo pipefail
@@ -65,8 +75,42 @@ jobs:
           cat out/p0-6-speaker.json
           cat out/p0-10-stop.json
 
-      - name: Emit canonical text payloads
-        if: always()
+      - name: Fetch already-captured hosted anchor WAVs
+        if: steps.request.outputs.mode == 'corpus-v09'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          rm -rf hosted
+          mkdir -p hosted
+          for spec in "10583472060:hosted-400d4d55" "10583332472:hosted-1cb6a07b"; do
+            aid="${spec%%:*}"
+            label="${spec#*:}"
+            zip="$RUNNER_TEMP/${aid}.zip"
+            dir="$RUNNER_TEMP/${aid}"
+            curl -L --fail --retry 3               -H "Authorization: Bearer $GH_TOKEN"               -H "X-GitHub-Api-Version: 2022-11-28"               "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/${aid}/zip"               -o "$zip"
+            mkdir -p "$dir"
+            unzip -q "$zip" -d "$dir"
+            test -f "$dir/reference_audio/ref-00.wav"
+            cp "$dir/reference_audio/ref-00.wav" "hosted/${label}.wav"
+          done
+          sha256sum hosted/*.wav
+
+      - name: Run v0.9 local reference corpus and asset budget
+        if: steps.request.outputs.mode == 'corpus-v09'
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf out
+          mkdir -p out
+          python mana-tacotron2/reference_corpus_v09.py             "$RUNNER_TEMP/space" "$RUNNER_TEMP/synthesizer.pt" out hosted
+          cat out/corpus-summary.json
+          cat out/p0-12-asset-budget.json
+          cat out/p0-11-comparison.json
+
+      - name: Emit Phase 0 canonical text payloads
+        if: always() && steps.request.outputs.mode == 'phase0-v08'
         shell: bash
         run: |
           set -euo pipefail
@@ -80,8 +124,15 @@ jobs:
           done
 
       - uses: actions/upload-artifact@v4
-        if: always()
+        if: always() && steps.request.outputs.mode == 'phase0-v08'
         with:
           name: mana-tacotron2-phase0-v08
+          path: out/
+          retention-days: 7
+
+      - uses: actions/upload-artifact@v4
+        if: always() && steps.request.outputs.mode == 'corpus-v09'
+        with:
+          name: mana-tacotron2-corpus-v09
           path: out/
           retention-days: 7
