@@ -101,12 +101,10 @@ fi
 if ! grep -Fxq "$browser_profile" "$exclude_file"; then
   [[ "$mode" == prove ]] || { echo "browser profile exclusion missing outside prove mode" >&2; exit 31; }
   tmp_exclude="$(mktemp /etc/capability-fabric/.backup.exclude.XXXXXX)"
-  trap 'rm -f "$tmp_exclude"' RETURN
   { cat "$exclude_file"; printf '%s\n' "$browser_profile"; } | awk 'NF && !seen[$0]++' > "$tmp_exclude"
   chown root:root "$tmp_exclude"
   chmod 0600 "$tmp_exclude"
   mv -f "$tmp_exclude" "$exclude_file"
-  trap - RETURN
 fi
 
 python3 - "$exclude_file" "$browser_profile" <<'PY'
