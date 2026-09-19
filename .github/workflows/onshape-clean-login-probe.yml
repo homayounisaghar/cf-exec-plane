@@ -1,0 +1,57 @@
+name: Onshape Clean Login Probe
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - server-bootstrap/control/onshape-clean-login-probe/**
+
+permissions:
+  contents: read
+
+concurrency:
+  group: personal-server-onshape-clean-login-probe
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  probe:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+
+      - name: Validate immutable clean-login request
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || { echo "clean-login trigger commit must add exactly one request file" >&2; exit 10; }
+          IFS=$'\t' read -r status request_path <<<"${changes[0]}"
+          [[ "$status" == A ]] || { echo "clean-login request must be newly added" >&2; exit 11; }
+          [[ "$request_path" == server-bootstrap/control/onshape-clean-login-probe/*.request ]] || { echo "unexpected clean-login request path" >&2; exit 12; }
+          request_id="$(basename "$request_path" .request)"
+          file_request_id="$(awk -F= '$1=="request_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          [[ "$request_id" =~ ^[A-Za-z0-9_.-]{8,96}$ && "$file_request_id" == "$request_id" ]] || { echo "bad request id" >&2; exit 13; }
+
+      - name: Mask host and login
+        run: |
+          set -euo pipefail
+          printf '::add-mask::%s\n' "$VPS_HOST"
+          printf '::add-mask::%s\n' "$VPS_SSH_USER"
+          while IFS= read -r addr; do [[ -n "$addr" ]] && printf '::add-mask::%s\n' "$addr"; done < <(getent ahosts "$VPS_HOST" 2>/dev/null | awk '{print $1}' | sort -u)
+
+      - name: Run isolated clean-login classification
+        run: bash server-bootstrap/runner/remote-bundle-exec.sh server-bootstrap/83-onshape-clean-login-probe.sh
