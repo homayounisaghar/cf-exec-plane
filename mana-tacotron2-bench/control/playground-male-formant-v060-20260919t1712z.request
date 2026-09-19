@@ -1,0 +1,5 @@
+request_id=mana-playground-male-formant-v060-20260919t1712z
+operation=build-disposable-interactive-apk
+source_commit=22dff45acf4885020d5c76f8fa58d3e3bf6a1502
+package=com.mana.local.tacotron2.playground.maleformant
+version=0.6.0-male-formant
