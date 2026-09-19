@@ -173,4 +173,65 @@ else
 fi
 echo CF_ONSHAPE_STORAGE_ISOLATION_DIAG_END
 
+
+echo CF_ONSHAPE_PROFILE_CLONE_DIAG_BEGIN
+if docker inspect capability-fabric-onshape-server >/dev/null 2>&1; then
+  docker exec -i capability-fabric-onshape-server sh -lc 'cd /tmp/app && node --input-type=module' <<'NODE'
+import { chromium } from "playwright";
+import fs from "node:fs";
+const source="/profile";
+const clone="/tmp/cf-persistent-profile-clone-"+process.pid;
+const sensitive=(n)=>/cookie|authorization|token|secret|key|csrf|xsrf|session|code/i.test(n);
+const errorShape=(e)=>({name:String(e?.name||"Error").slice(0,120),message:String(e?.message||"error").slice(0,500),code:e?.code==null?null:String(e.code).slice(0,80)});
+let context=null;
+try {
+  fs.cpSync(source,clone,{recursive:true,dereference:false,errorOnExist:false,force:true});
+  for(const n of ["SingletonLock","SingletonCookie","SingletonSocket","DevToolsActivePort"]) fs.rmSync(clone+"/"+n,{recursive:true,force:true});
+  context=await chromium.launchPersistentContext(clone,{headless:true,chromiumSandbox:false,args:["--no-sandbox","--disable-dev-shm-usage"],viewport:{width:1440,height:1000}});
+  const page=context.pages()[0] || await context.newPage();
+  const traffic=[], consoleErrors=[];
+  page.on("response",(resp)=>{
+    try {
+      const req=resp.request();
+      if(!["xhr","fetch"].includes(req.resourceType())) return;
+      const u=new URL(req.url()), raw=req.headers(), headers={}, sensitive_headers=[];
+      for(const [name,value] of Object.entries(raw)){
+        if(sensitive(name)) sensitive_headers.push({name,present:true,value_length:String(value??"").length});
+        else headers[name]=String(value??"").slice(0,500);
+      }
+      if(traffic.length<100) traffic.push({
+        resource_type:req.resourceType(),method:req.method(),status:resp.status(),
+        origin:u.origin,path:u.pathname,query_entries:Array.from(u.searchParams.entries()).map(([k,v])=>[k,sensitive(k)?"<redacted>":String(v).slice(0,300)]),
+        headers,sensitive_headers,content_type:String(resp.headers()["content-type"]||"").slice(0,160)
+      });
+    } catch {}
+  });
+  page.on("console",(msg)=>{
+    if(msg.type()!=="error" || consoleErrors.length>=20) return;
+    const loc=msg.location();
+    consoleErrors.push({text:msg.text().slice(0,800),url:String(loc?.url||"").slice(0,400),line:loc?.lineNumber??null,column:loc?.columnNumber??null});
+  });
+  await page.goto("https://cad.onshape.com/documents",{waitUntil:"domcontentloaded",timeout:45000}).catch(()=>null);
+  await page.waitForLoadState("networkidle",{timeout:15000}).catch(()=>null);
+  const storage=await page.evaluate(async()=>{
+    const shape=(e)=>({name:String(e?.name||"Error").slice(0,120),message:String(e?.message||"error").slice(0,400),code:e?.code==null?null:String(e.code).slice(0,80)});
+    const r={estimate:null,indexeddb:null};
+    try{const e=await navigator.storage.estimate();r.estimate={ok:true,usage:Number(e.usage||0),quota:Number(e.quota||0)}}catch(e){r.estimate={ok:false,error:shape(e)}}
+    try{const d=await indexedDB.databases();r.indexeddb={ok:true,count:d.length,names:d.map(x=>String(x?.name||"").slice(0,120)).filter(Boolean).slice(0,40)}}catch(e){r.indexeddb={ok:false,error:shape(e)}}
+    return r;
+  });
+  const snap=await page.evaluate(()=>({href:location.href,origin:location.origin,title:document.title,ready_state:document.readyState,body_text_length:document.body?.innerText?.length??null,body_child_count:document.body?.children?.length??null}));
+  console.log("CLONED_PERSISTENT_PROFILE="+JSON.stringify({snapshot:snap,storage,xhr_fetch_traffic:traffic,console_errors:consoleErrors}));
+} catch(e) {
+  console.log("CLONED_PERSISTENT_PROFILE="+JSON.stringify({outer_error:errorShape(e)}));
+} finally {
+  if(context) await context.close().catch(()=>{});
+  fs.rmSync(clone,{recursive:true,force:true});
+}
+NODE
+else
+  echo 'CLONED_PERSISTENT_PROFILE={"outer_error":{"name":"ContainerMissing"}}'
+fi
+echo CF_ONSHAPE_PROFILE_CLONE_DIAG_END
+
 echo CF_ONSHAPE_DIAG_END
