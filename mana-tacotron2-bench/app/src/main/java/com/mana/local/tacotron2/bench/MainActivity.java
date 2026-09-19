@@ -70,11 +70,13 @@ public final class MainActivity extends Activity {
     private EditText customText;
     private SeekBar speedBar;
     private SeekBar pitchBar;
+    private SeekBar formantBar;
     private SeekBar pauseBar;
     private SeekBar wordGapBar;
     private CheckBox maleFilter;
     private TextView speedValue;
     private TextView pitchValue;
+    private TextView formantValue;
     private TextView pauseValue;
     private TextView wordGapValue;
     private Button synthesizeText;
@@ -98,14 +100,14 @@ public final class MainActivity extends Activity {
         body.setBackgroundColor(Color.WHITE);
 
         TextView title = new TextView(this);
-        title.setText("Mana Voice Playground — Male Filter");
+        title.setText("Mana Voice Playground — Male + Formant");
         title.setTextSize(20f);
         title.setTextColor(Color.BLACK);
         body.addView(title, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
         TextView note = new TextView(this);
-        note.setText("کاملاً آفلاین. این نسخه یک فیلتر مردانهٔ ساده روی پخش دارد؛ مدل Mana و Voice Pack همان نسخهٔ اصلی‌اند.");
+        note.setText("کاملاً آفلاین. این نسخه Pitch و Formant را جدا کنترل می‌کند؛ مدل Mana و Voice Pack همان نسخهٔ اصلی‌اند.");
         note.setTextSize(14f);
         note.setTextColor(Color.DKGRAY);
         note.setPadding(0, 8, 0, 16);
@@ -137,12 +139,18 @@ public final class MainActivity extends Activity {
         pitchBar.setMax(60);
         pitchBar.setProgress(8);
 
+        formantValue = controlLabel("فرمنت");
+        formantBar = new SeekBar(this);
+        formantBar.setMax(40);
+        formantBar.setProgress(10);
+
         maleFilter = new CheckBox(this);
-        maleFilter.setText("فیلتر مردانهٔ ساده");
+        maleFilter.setText("پریست مردانه (Pitch + Formant)");
         maleFilter.setChecked(true);
         maleFilter.setTextColor(Color.BLACK);
         maleFilter.setOnCheckedChangeListener((buttonView, isChecked) -> {
             pitchBar.setProgress(isChecked ? 8 : 30);
+            formantBar.setProgress(isChecked ? 10 : 25);
             refreshControlLabels();
         });
 
@@ -165,6 +173,7 @@ public final class MainActivity extends Activity {
         };
         speedBar.setOnSeekBarChangeListener(controlsListener);
         pitchBar.setOnSeekBarChangeListener(controlsListener);
+        formantBar.setOnSeekBarChangeListener(controlsListener);
         pauseBar.setOnSeekBarChangeListener(controlsListener);
         wordGapBar.setOnSeekBarChangeListener(controlsListener);
         refreshControlLabels();
@@ -185,6 +194,8 @@ public final class MainActivity extends Activity {
         body.addView(speedBar);
         body.addView(pitchValue);
         body.addView(pitchBar);
+        body.addView(formantValue);
+        body.addView(formantBar);
         body.addView(maleFilter);
         body.addView(pauseValue);
         body.addView(pauseBar);
@@ -264,6 +275,10 @@ public final class MainActivity extends Activity {
         return 0.70f + (pitchBar.getProgress() / 100.0f);
     }
 
+    private float selectedFormant() {
+        return 0.75f + (formantBar.getProgress() / 100.0f);
+    }
+
     private int selectedPunctuationPauseMs() {
         return pauseBar.getProgress();
     }
@@ -277,8 +292,11 @@ public final class MainActivity extends Activity {
             speedValue.setText(String.format(Locale.ROOT, "سرعت پخش: %.2fx", selectedSpeed()));
         }
         if (pitchValue != null && pitchBar != null) {
-            String mode = (maleFilter != null && maleFilter.isChecked()) ? " — مردانهٔ ساده" : "";
+            String mode = (maleFilter != null && maleFilter.isChecked()) ? " — پریست مردانه" : "";
             pitchValue.setText(String.format(Locale.ROOT, "زیر و بمی: %.2fx%s", selectedPitch(), mode));
+        }
+        if (formantValue != null && formantBar != null) {
+            formantValue.setText(String.format(Locale.ROOT, "فرمنت: %.2fx", selectedFormant()));
         }
         if (pauseValue != null && pauseBar != null) {
             pauseValue.setText("مکث بعد از علائم: " + selectedPunctuationPauseMs() + " ms");
@@ -386,6 +404,7 @@ public final class MainActivity extends Activity {
         }
         final float speed = selectedSpeed();
         final float pitch = selectedPitch();
+        final float formant = selectedFormant();
         final int punctuationPauseMs = selectedPunctuationPauseMs();
         final int wordGapMs = selectedWordGapMs();
 
@@ -445,12 +464,13 @@ public final class MainActivity extends Activity {
 
                 if (rendered.isEmpty()) throw new IllegalStateException("مدل هیچ صدایی تولید نکرد.");
                 File combined = combineRenderedWavs(rendered, pausesAfter);
-                lastWav = combined;
+                File voiced = applyFormantShift(combined, formant);
+                lastWav = voiced;
                 lastPlaybackSpeed = speed;
                 lastPlaybackPitch = pitch;
                 logFromWorker(String.format(Locale.ROOT,
-                        "آماده است. speed=%.2fx pitch=%.2fx punctuationPause=%dms wordGap=%dms",
-                        speed, pitch, punctuationPauseMs, wordGapMs));
+                        "آماده است. speed=%.2fx pitch=%.2fx formant=%.2fx punctuationPause=%dms wordGap=%dms",
+                        speed, pitch, formant, punctuationPauseMs, wordGapMs));
                 runOnUiThread(this::playLast);
             } catch (Throwable t) {
                 logFromWorker("SYNTHESIS FAILED: " + t);
@@ -511,6 +531,20 @@ public final class MainActivity extends Activity {
         if (!outDir.isDirectory() && !outDir.mkdirs()) throw new IllegalStateException("cannot create renders");
         File out = new File(outDir, "mana-custom-" + System.currentTimeMillis() + ".wav");
         writeWav(out, merged, 24000);
+        return out;
+    }
+
+    private File applyFormantShift(File input, float ratio) throws Exception {
+        if (Math.abs(ratio - 1.0f) < 0.005f) return input;
+        float[] pcm = readWavMono16(input);
+        long started = System.nanoTime();
+        float[] shifted = FormantShift.process(pcm, ratio);
+        File outDir = new File(getFilesDir(), "renders");
+        if (!outDir.isDirectory() && !outDir.mkdirs()) throw new IllegalStateException("cannot create renders");
+        File out = new File(outDir, "mana-formant-" + System.currentTimeMillis() + ".wav");
+        writeWav(out, shifted, 24000);
+        double ms = (System.nanoTime() - started) / 1e6;
+        logFromWorker(String.format(Locale.ROOT, "Formant shift %.2fx: %.0f ms", ratio, ms));
         return out;
     }
 
