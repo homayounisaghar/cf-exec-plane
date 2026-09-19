@@ -1,0 +1,4 @@
+request_id=mana-playground-v070-formant-wordgap-20260919t1722z
+operation=build-disposable-interactive-apk
+package=com.mana.local.tacotron2.playground.maleformant.v7
+version=0.7.0-formant-wordgap
