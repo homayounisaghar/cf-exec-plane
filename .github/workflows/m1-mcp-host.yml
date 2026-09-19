@@ -1,0 +1,62 @@
+name: M1 MCP Host Prepare
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: personal-server-m1-mcp-host
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  prepare:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+      CF_MCP_TOKEN: ${{ secrets.CF_MCP_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Mask host, login and resolved addresses
+        run: |
+          set -euo pipefail
+          printf '::add-mask::%s\n' "$VPS_HOST"
+          printf '::add-mask::%s\n' "$VPS_SSH_USER"
+          while IFS= read -r addr; do [[ -n "$addr" ]] && printf '::add-mask::%s\n' "$addr"; done < <(getent ahosts "$VPS_HOST" 2>/dev/null | awk '{print $1}' | sort -u)
+
+      - name: Validate M1 material presence
+        run: |
+          set -euo pipefail
+          for v in VPS_SSH_KEY VPS_HOST VPS_SSH_USER VPS_HOST_KEY CF_MCP_TOKEN; do
+            [[ -n "${!v:-}" ]] || { echo "missing required Secret: $v" >&2; exit 30; }
+          done
+          case "$CF_MCP_TOKEN" in
+            *[!A-Za-z0-9_-]*) echo "CF_MCP_TOKEN contains unsupported characters" >&2; exit 30 ;;
+          esac
+          (( ${#CF_MCP_TOKEN} >= 32 )) || { echo "CF_MCP_TOKEN is shorter than policy minimum" >&2; exit 30; }
+
+      - name: Stage token material into the transfer bundle
+        run: |
+          set -euo pipefail
+          umask 077
+          printf '%s' "$CF_MCP_TOKEN" > "$GITHUB_WORKSPACE/server-bootstrap/.m1-mcp-token"
+
+      - name: Prepare public MCP host surface on the VPS
+        run: bash server-bootstrap/runner/remote-bundle-exec.sh server-bootstrap/80-m1-mcp-host.sh
+
+      - name: Remove staged token material
+        if: always()
+        run: rm -f "$GITHUB_WORKSPACE/server-bootstrap/.m1-mcp-token"
