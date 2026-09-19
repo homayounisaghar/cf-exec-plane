@@ -9,6 +9,8 @@ case "$mode" in run|prove) ;; *) echo "backup mode must be run or prove" >&2; ex
 exclude_file=/etc/capability-fabric/backup.exclude
 browser_profile=/var/lib/capability-fabric/onshape/browser-profile
 browser_sentinel="$browser_profile/.backup-exclusion-sentinel"
+interactive_browser_root=/var/lib/capability-fabric/onshape/interactive-browser
+interactive_browser_sentinel="$interactive_browser_root/.backup-exclusion-sentinel"
 
 config=/etc/capability-fabric/backup.env
 [[ -s "$config" ]] || { echo "BLOCKED: backup destination configuration is not provisioned" >&2; exit 30; }
@@ -90,6 +92,20 @@ if [[ ! -e "$browser_sentinel" ]]; then
 fi
 [[ "$(stat -c '%U:%G:%a' "$browser_sentinel")" == root:root:600 ]] || { echo "backup exclusion sentinel permissions are unsafe" >&2; exit 31; }
 
+if [[ ! -d "$interactive_browser_root" ]]; then
+  [[ "$mode" == prove ]] || { echo "interactive browser root missing outside prove mode" >&2; exit 31; }
+  install -d -m 0700 -o root -g root "$interactive_browser_root"
+fi
+[[ "$(stat -c '%U:%G:%a' "$interactive_browser_root")" == root:root:700 ]] || { echo "interactive browser root permissions are unsafe" >&2; exit 31; }
+
+if [[ ! -e "$interactive_browser_sentinel" ]]; then
+  [[ "$mode" == prove ]] || { echo "interactive browser exclusion sentinel missing outside prove mode" >&2; exit 31; }
+  printf 'capability-fabric interactive browser backup exclusion proof\n' > "$interactive_browser_sentinel"
+  chown root:root "$interactive_browser_sentinel"
+  chmod 0600 "$interactive_browser_sentinel"
+fi
+[[ "$(stat -c '%U:%G:%a' "$interactive_browser_sentinel")" == root:root:600 ]] || { echo "interactive browser exclusion sentinel permissions are unsafe" >&2; exit 31; }
+
 if [[ ! -e "$exclude_file" ]]; then
   [[ "$mode" == prove ]] || { echo "backup exclusion file missing outside prove mode" >&2; exit 31; }
   printf '%s\n' "$browser_profile" > "$exclude_file"
@@ -107,9 +123,18 @@ if ! grep -Fxq "$browser_profile" "$exclude_file"; then
   mv -f "$tmp_exclude" "$exclude_file"
 fi
 
-python3 - "$exclude_file" "$browser_profile" <<'PY'
+if ! grep -Fxq "$interactive_browser_root" "$exclude_file"; then
+  [[ "$mode" == prove ]] || { echo "interactive browser exclusion missing outside prove mode" >&2; exit 31; }
+  tmp_exclude="$(mktemp /etc/capability-fabric/.backup.exclude.XXXXXX)"
+  { cat "$exclude_file"; printf '%s\n' "$interactive_browser_root"; } | awk 'NF && !seen[$0]++' > "$tmp_exclude"
+  chown root:root "$tmp_exclude"
+  chmod 0600 "$tmp_exclude"
+  mv -f "$tmp_exclude" "$exclude_file"
+fi
+
+python3 - "$exclude_file" "$browser_profile" "$interactive_browser_root" <<'PY'
 import os,sys
-exclude_file,required=sys.argv[1:]
+exclude_file,*required_paths=sys.argv[1:]
 lines=[]
 with open(exclude_file,encoding='utf-8') as f:
     for raw in f:
@@ -122,8 +147,9 @@ with open(exclude_file,encoding='utf-8') as f:
         if norm != p or '/..' in p:
             raise SystemExit(f'non-canonical backup exclusion path: {p!r}')
         lines.append(p)
-if required not in lines:
-    raise SystemExit('required browser profile exclusion missing')
+for required in required_paths:
+    if required not in lines:
+        raise SystemExit(f'required backup exclusion missing: {required}')
 PY
 
 pull_timer_was_enabled=no
@@ -176,6 +202,10 @@ if [[ "$mode" == prove ]]; then
     echo "CF_BACKUP_BROWSER_PROFILE_EXCLUDE=failed" >&2
     exit 33
   fi
+  if [[ -e "$restore_dir$interactive_browser_root" || -L "$restore_dir$interactive_browser_root" ]]; then
+    echo "CF_BACKUP_INTERACTIVE_BROWSER_EXCLUDE=failed" >&2
+    exit 33
+  fi
   restored_manifest="/var/backups/capability-fabric/restored-${timestamp}.manifest"
   python3 - "$restored_manifest" "$restore_dir" "$exclude_file" "${roots[@]}" <<'PY'
 import hashlib,os,stat,sys
@@ -209,7 +239,7 @@ PY
   chmod 0600 /var/lib/capability-fabric/state/backup-restore-proof; chown root:root /var/lib/capability-fabric/state/backup-restore-proof
   rm -rf "$restore_dir" "$source_manifest" "$restored_manifest"
   systemctl enable --now capability-fabric-backup.timer >/dev/null
-  printf 'CF_BACKUP_PROOF_BEGIN\nSNAPSHOT_ID=%s\nRESTIC_CHECK=pass\nISOLATED_RESTORE=pass\nRESTORE_TREE_COMPARE=pass\nBROWSER_PROFILE_EXCLUDED=pass\nBACKUP_EXCLUDE_PERMS=pass\nBACKUP_TIMER_ENABLED=yes\nCF_BACKUP_PROOF_END\n' "$snapshot_id"
+  printf 'CF_BACKUP_PROOF_BEGIN\nSNAPSHOT_ID=%s\nRESTIC_CHECK=pass\nISOLATED_RESTORE=pass\nRESTORE_TREE_COMPARE=pass\nBROWSER_PROFILE_EXCLUDED=pass\nINTERACTIVE_BROWSER_PROFILE_EXCLUDED=pass\nBACKUP_EXCLUDE_PERMS=pass\nBACKUP_TIMER_ENABLED=yes\nCF_BACKUP_PROOF_END\n' "$snapshot_id"
 else
   rm -f "$source_manifest"
   restic forget --tag capability-fabric-personal-server --keep-last 3 --keep-daily 7 --keep-weekly 4 --keep-monthly 6 --prune >>"$log" 2>&1
