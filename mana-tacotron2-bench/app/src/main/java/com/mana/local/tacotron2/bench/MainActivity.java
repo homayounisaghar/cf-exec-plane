@@ -124,7 +124,7 @@ public final class MainActivity extends Activity {
         customText.setText("سلام دنیا. این یک آزمایش صدای مانا است.");
 
         TextView syntaxHelp = new TextView(this);
-        syntaxHelp.setText("علائم ، ؛ . ؟ ! حالا مرز گفتاری واقعی‌اند. مکث بعد از علائم و فاصله بین واژه‌ها مستقل‌اند. فاصلهٔ واژه روی ۰ یعنی گفتار طبیعیِ یک‌تکه؛ بالاتر از ۰ واژه‌ها جدا ساخته می‌شوند. [700] یک مرز خاص را روی ۷۰۰ میلی‌ثانیه تنظیم می‌کند.");
+        syntaxHelp.setText("علائم ، ؛ . ؟ ! مرز گفتاری واقعی‌اند. «سکوت اضافه بین واژه‌ها» دیگر کلمه‌ها را جداگانه به مدل نمی‌دهد؛ جمله یک‌تکه ساخته می‌شود و سکوت با استفاده از attention روی WAV درج می‌شود. [700] یک مرز خاص را روی ۷۰۰ میلی‌ثانیه تنظیم می‌کند.");
         syntaxHelp.setTextSize(13f);
         syntaxHelp.setTextColor(Color.DKGRAY);
         syntaxHelp.setPadding(0, 8, 0, 8);
@@ -159,7 +159,7 @@ public final class MainActivity extends Activity {
         pauseBar.setMax(1500);
         pauseBar.setProgress(220);
 
-        wordGapValue = controlLabel("فاصله بین واژه‌ها");
+        wordGapValue = controlLabel("سکوت اضافه بین واژه‌ها");
         wordGapBar = new SeekBar(this);
         wordGapBar.setMax(400);
         wordGapBar.setProgress(0);
@@ -302,7 +302,7 @@ public final class MainActivity extends Activity {
             pauseValue.setText("مکث بعد از علائم: " + selectedPunctuationPauseMs() + " ms");
         }
         if (wordGapValue != null && wordGapBar != null) {
-            wordGapValue.setText("فاصله بین واژه‌ها: " + selectedWordGapMs() + " ms");
+            wordGapValue.setText("سکوت اضافه بین واژه‌ها: " + selectedWordGapMs() + " ms");
         }
     }
 
@@ -428,7 +428,7 @@ public final class MainActivity extends Activity {
                         CustomPart part = parts.get(pi);
                         String normalized = PersianFrontend.normalizeTextForSynthesis(part.text);
                         List<AuditionSegmenter.Segment> segments =
-                                AuditionSegmenter.segment(normalized, wordGapMs > 0);
+                                AuditionSegmenter.segment(normalized);
                         for (int si = 0; si < segments.size(); si++) {
                             AuditionSegmenter.Segment segment = segments.get(si);
                             PersianFrontend.Encoded encoded = PersianFrontend.encodeOovGuard(segment.text);
@@ -442,7 +442,8 @@ public final class MainActivity extends Activity {
                                     sessions,
                                     encoded.ids,
                                     new Random(2026091900L + (renderIndex * 10L)),
-                                    true
+                                    true,
+                                    wordGapMs
                             );
                             rendered.add(new File(result.wavPath));
                             boolean finalSegment = (pi == parts.size() - 1) && (si == segments.size() - 1);
@@ -451,8 +452,6 @@ public final class MainActivity extends Activity {
                                 pause = 0;
                             } else if (si == segments.size() - 1 && part.pauseAfterMs >= 0) {
                                 pause = part.pauseAfterMs;
-                            } else if (segment.boundaryAfter == AuditionSegmenter.Boundary.WORD) {
-                                pause = wordGapMs;
                             } else {
                                 pause = punctuationPauseMs;
                             }
@@ -664,6 +663,10 @@ public final class MainActivity extends Activity {
     }
 
     private SynthesisResult synthesize(ModelSessions s, int[] ids, Random rng, boolean saveWav) throws Exception {
+        return synthesize(s, ids, rng, saveWav, 0);
+    }
+
+    private SynthesisResult synthesize(ModelSessions s, int[] ids, Random rng, boolean saveWav, int wordGapMs) throws Exception {
         long t0 = System.nanoTime();
         OrtEnvironment env = OrtEnvironment.getEnvironment();
 
@@ -701,6 +704,7 @@ public final class MainActivity extends Activity {
         float[][] cumAttn = new float[1][ids.length];
 
         List<float[]> frames = new ArrayList<>();
+        List<Float> attentionCenters = new ArrayList<>();
         long decoderNs = 0L;
         int stopStep = -1;
 
@@ -737,6 +741,8 @@ public final class MainActivity extends Activity {
                 r2h = value2(rr, "rnn2_hidden_out");
                 r2c = value2(rr, "rnn2_cell_out");
                 context = value2(rr, "context_vec_out");
+                float[][] attnScores = value2(rr, "attn_scores");
+                attentionCenters.add(attentionCenter(attnScores[0]));
                 cumAttn = value2(rr, "cum_attn_out");
                 float stop = value2(rr, "stop_token")[0][0];
                 int frameIndex = step * 2;
@@ -795,6 +801,15 @@ public final class MainActivity extends Activity {
             closeMap(vIn);
         }
         long vocoderNs = System.nanoTime() - tv;
+
+        if (wordGapMs > 0) {
+            WordGapPostProcessor.Result gapResult =
+                    WordGapPostProcessor.insertByAttention(wav, ids, attentionCenters, wordGapMs);
+            wav = gapResult.audio;
+            logFromWorker("word-gap: inserted " + gapResult.insertedBoundaries +
+                    " attention-aligned gaps; skipped " + gapResult.skippedBoundaries);
+        }
+
         long totalNs = System.nanoTime() - t0;
 
         // Reference/demo gain path: peak-normalize to 0.97.
@@ -833,6 +848,17 @@ public final class MainActivity extends Activity {
         out.postnetFraction = postnetNs / (double) Math.max(1L, totalNs);
         out.wavPath = saved == null ? "" : saved.getAbsolutePath();
         return out;
+    }
+
+    private static float attentionCenter(float[] scores) {
+        double sum = 0.0;
+        double weighted = 0.0;
+        for (int i = 0; i < scores.length; i++) {
+            double w = Math.max(0.0, scores[i]);
+            sum += w;
+            weighted += w * i;
+        }
+        return sum <= 1e-12 ? 0.0f : (float) (weighted / sum);
     }
 
     private static void put(Map<String, OnnxTensor> m, String k, OnnxTensor v) {
