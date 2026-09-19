@@ -109,7 +109,7 @@ jobs:
                 url:
                     'https://huggingface.co/mazrba/Chatterbox-TTS-Persian-gguf/resolve/main/chatterbox-t3-fa-f16.gguf',
                 sizeBytes: 1140 * 1024 * 1024,
-                checksum: '9f1aaab2b0841c94b6c9185bdb9b52dfa358e300d1ae4e9e9078fb6cca07f23d',
+                checksum: '',
                 description:
                     'Persian Chatterbox T3 audition model; requires Chatterbox S3Gen q8_0',
                 quantization: 'f16',
