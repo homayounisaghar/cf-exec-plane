@@ -60,7 +60,7 @@ jobs:
 
           BT="$ANDROID_HOME/build-tools/35.0.0"
           "$BT/aapt" dump badging "$apk" | tee mana-tacotron2-bench-badging.txt
-          grep -q "package: name='com.mana.local.tacotron2.bench' versionCode='1' versionName='0.1.0-phase3'" mana-tacotron2-bench-badging.txt
+          grep -q "package: name='com.mana.local.tacotron2.bench' versionCode='2' versionName='0.1.1-phase3'" mana-tacotron2-bench-badging.txt
 
           "$BT/aapt" dump permissions "$apk" | tee mana-tacotron2-bench-permissions.txt
           if grep -q "android.permission.INTERNET" mana-tacotron2-bench-permissions.txt; then
@@ -71,11 +71,11 @@ jobs:
           "$BT/apksigner" verify --verbose --print-certs "$apk" | tee mana-tacotron2-bench-apksigner.txt
           "$BT/zipalign" -c -P 16 -v 4 "$apk" | tee mana-tacotron2-bench-zipalign.txt
 
-          cp "$apk" mana-tacotron2-bench-phase3-v0.1-disposable.apk
-          sha256sum mana-tacotron2-bench-phase3-v0.1-disposable.apk | tee mana-tacotron2-bench-phase3-v0.1-disposable.sha256
+          cp "$apk" mana-tacotron2-bench-phase3-v0.1.1.1-disposable.apk
+          sha256sum mana-tacotron2-bench-phase3-v0.1.1.1-disposable.apk | tee mana-tacotron2-bench-phase3-v0.1.1.1-disposable.sha256
 
           cat > mana-tacotron2-bench-RUN_SHEET.txt <<'EOF'
-          Mana Tacotron2 Phase 3 benchmark v0.1
+          Mana Tacotron2 Phase 3 benchmark v0.1.1
           Package: com.mana.local.tacotron2.bench
           Installability: signed Android debug APK; explicitly disposable diagnostic line
           Network: no INTERNET permission
@@ -88,10 +88,10 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: mana-tacotron2-bench-phase3-v0.1
+          name: mana-tacotron2-bench-phase3-v0.1.1
           path: |
-            mana-tacotron2-bench-phase3-v0.1-disposable.apk
-            mana-tacotron2-bench-phase3-v0.1-disposable.sha256
+            mana-tacotron2-bench-phase3-v0.1.1.1-disposable.apk
+            mana-tacotron2-bench-phase3-v0.1.1.1-disposable.sha256
             mana-tacotron2-bench-badging.txt
             mana-tacotron2-bench-permissions.txt
             mana-tacotron2-bench-apksigner.txt
