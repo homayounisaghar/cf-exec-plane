@@ -1,0 +1,191 @@
+name: Build Chatterbox Persian Audition APK
+
+on:
+  push:
+    branches:
+      - experiment/chatterbox-persian-audition
+    paths:
+      - .github/workflows/build-chatterbox-persian-audition.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout CrisperWeaver
+        uses: actions/checkout@v4
+        with:
+          repository: CrispStrobe/CrisperWeaver
+          ref: v0.11.0
+          path: work/CrisperWeaver
+
+      - name: Checkout CrispASR Dart package
+        uses: actions/checkout@v4
+        with:
+          repository: CrispStrobe/CrispASR
+          ref: v0.8.30
+          path: work/CrispASR
+          submodules: false
+
+      - name: Checkout CrispEmbed Dart package
+        uses: actions/checkout@v4
+        with:
+          repository: CrispStrobe/CrispEmbed
+          ref: 40e7b7dd00bb6b1505c9e6ac74bef0c97efef337
+          path: work/CrispEmbed
+          submodules: false
+
+      - name: Checkout glint Dart package
+        uses: actions/checkout@v4
+        with:
+          repository: CrispStrobe/glint
+          ref: 77738f3ed9b15f627196cc5bbd7f6406814ba2fb
+          path: work/glint
+          submodules: false
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.44.1"
+          channel: stable
+          cache: true
+
+      - name: Reuse verified native arm64 libraries from official v0.11.0 APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          URL="https://github.com/CrispStrobe/CrisperWeaver/releases/download/v0.11.0/crisper_weaver-android-arm64.apk"
+          curl -L --fail --retry 3 "$URL" -o /tmp/upstream.apk
+          echo "c646e8ae96002cfd5cc052d2c27296d705ca949dd91712dad65bf1db1ad0a669  /tmp/upstream.apk" | sha256sum -c -
+          rm -rf /tmp/upstream-apk
+          mkdir -p /tmp/upstream-apk
+          unzip -q /tmp/upstream.apk 'lib/arm64-v8a/*' -d /tmp/upstream-apk
+          DEST=work/CrisperWeaver/android/app/src/main/jniLibs/arm64-v8a
+          rm -rf "$DEST"
+          mkdir -p "$DEST"
+          cp /tmp/upstream-apk/lib/arm64-v8a/*.so "$DEST"/
+          ls -lh "$DEST"
+
+      - name: Patch standalone Persian audition app
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          root = Path("work/CrisperWeaver")
+
+          gradle = root / "android/app/build.gradle.kts"
+          s = gradle.read_text()
+          old = 'applicationId = "com.crispstrobe.crisperweaver"'
+          new = 'applicationId = "com.homayounisaghar.chatterboxpersiantest"'
+          assert old in s
+          gradle.write_text(s.replace(old, new, 1))
+
+          manifest = root / "android/app/src/main/AndroidManifest.xml"
+          s = manifest.read_text()
+          assert 'android:label="CrisperWeaver"' in s
+          manifest.write_text(s.replace('android:label="CrisperWeaver"',
+                                        'android:label="Chatterbox Persian Test"', 1))
+
+          cat = root / "lib/services/model_catalog.dart"
+          s = cat.read_text()
+          marker = "    'chatterbox-en-q8_0': ModelDefinition("
+          assert marker in s
+          entry = """    'chatterbox-fa-f16': ModelDefinition(
+                name: 'chatterbox-fa-f16',
+                displayName: 'Chatterbox Persian (F16)',
+                fileName: 'chatterbox-t3-fa-f16.gguf',
+                url:
+                    'https://huggingface.co/mazrba/Chatterbox-TTS-Persian-gguf/resolve/main/chatterbox-t3-fa-f16.gguf',
+                sizeBytes: 1140 * 1024 * 1024,
+                checksum: '9f1aaab2b0841c94b6c9185bdb9b52dfa358e300d1ae4e9e9078fb6cca07f23d',
+                description:
+                    'Persian Chatterbox T3 audition model; requires Chatterbox S3Gen q8_0',
+                quantization: 'f16',
+                backend: 'chatterbox',
+                kind: ModelKind.tts,
+                companions: ['chatterbox-s3gen-q8_0'],
+                languages: ['fa'],
+                license: 'cc-by-nc-4.0',
+              ),
+          """
+          cat.write_text(s.replace(marker, entry + marker, 1))
+
+          mm = root / "lib/screens/model_management_screen.dart"
+          s = mm.read_text()
+          block = """    WidgetsBinding.instance.addPostFrameCallback((_) {
+                final svc = ref.read(modelServiceProvider);
+                if (ref.read(settingsServiceProvider).experimentalFeatures &&
+                    !svc.hasProbedQuants) {
+                  _probeHf();
+                }
+              });
+          """
+          assert block in s
+          mm.write_text(s.replace(
+              block,
+              "    // Audition build: skip the global first-open Hugging Face probe.\n",
+              1,
+          ))
+
+          main = root / "lib/main.dart"
+          s = main.read_text()
+          gate = """    if (!mounted || settings.onboardingCompleted) return;
+              _router.go('/onboarding');
+          """
+          assert gate in s
+          s = s.replace(
+              gate,
+              "    // Audition build: skip generic onboarding.\n    return;\n",
+              1,
+          )
+          assert "initialLocation: '/'," in s
+          s = s.replace("initialLocation: '/',", "initialLocation: '/synthesize',", 1)
+          main.write_text(s)
+
+          pub = root / "pubspec.yaml"
+          s = pub.read_text()
+          assert "version: 0.11.0+84" in s
+          pub.write_text(s.replace("version: 0.11.0+84", "version: 0.11.0+1", 1))
+          PY
+
+          grep -n "chatterbox-fa-f16" work/CrisperWeaver/lib/services/model_catalog.dart
+          grep -n "chatterboxpersiantest" work/CrisperWeaver/android/app/build.gradle.kts
+          grep -n "initialLocation" work/CrisperWeaver/lib/main.dart | head
+
+      - name: Flutter dependencies
+        working-directory: work/CrisperWeaver
+        run: flutter pub get
+
+      - name: Build arm64 APK
+        working-directory: work/CrisperWeaver
+        run: flutter build apk --release --target-platform=android-arm64
+
+      - name: Verify and package
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p out
+          cp work/CrisperWeaver/build/app/outputs/flutter-apk/app-release.apk out/chatterbox-persian-test-v1.apk
+          sha256sum out/chatterbox-persian-test-v1.apk | tee out/SHA256SUMS.txt
+          unzip -t out/chatterbox-persian-test-v1.apk >/dev/null
+          printf '%s\n'             'source_upstream=CrispStrobe/CrisperWeaver@v0.11.0'             'native_runtime=official CrisperWeaver v0.11.0 Android arm64 APK'             'persian_model=mazrba/Chatterbox-TTS-Persian-gguf::chatterbox-t3-fa-f16.gguf'             'codec=chatterbox-s3gen-q8_0.gguf'             'package=com.homayounisaghar.chatterboxpersiantest'             'purpose=disposable diagnostic audition build; not an update line'             > out/BUILD_INFO.txt
+
+      - name: Upload audition APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: chatterbox-persian-test-v1
+          path: out/
+          if-no-files-found: error
+          retention-days: 14
