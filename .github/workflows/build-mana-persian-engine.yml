@@ -70,6 +70,7 @@ jobs:
           rm -rf "$app/src/main/assets"
           mkdir -p "$app/src/main/assets" "$app/src/main/jniLibs/arm64-v8a"
           cp -a "$work/base/assets/." "$app/src/main/assets/"
+          rm -rf "$app/src/main/assets/dexopt"
           cp "$work/base/lib/arm64-v8a/"*.so "$app/src/main/jniLibs/arm64-v8a/"
 
           model_rel="$(find "$app/src/main/assets" -type f -name '*ganji_adabi*onnx' | head -n1)"
