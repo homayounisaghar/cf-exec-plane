@@ -261,11 +261,27 @@ def main():
         rerender_hash(space,syn,by[0][0]),
         rerender_hash(space,syn,by[12][0]),
     ]
+    db_all=all(x["match"] for x in db)
+    if not db_all:
+        result={
+            "schema":"mana.phase0-diagnosis.v1.0",
+            "d_a":da,
+            "d_b":{"results":db,"all_match":False},
+            "d_c":None,
+            "d_d_triggered":False,
+            "d_e_triggered":False,
+            "d12_untouched":True,
+            "s17_untouched":True,
+            "stop":"S15",
+        }
+        (out/"phase0-diagnosis-v10.json").write_text(stable_json(result),encoding="utf-8")
+        print(stable_json(result),end="")
+        raise SystemExit(15)
     dc=d_c(space,corpus)
     result={
         "schema":"mana.phase0-diagnosis.v1.0",
         "d_a":da,
-        "d_b":{"results":db,"all_match":all(x["match"] for x in db)},
+        "d_b":{"results":db,"all_match":True},
         "d_c":dc,
         "d_d_triggered":da["verdict"]=="FAIL",
         "d_e_triggered":da["verdict"]=="FAIL",
@@ -274,8 +290,6 @@ def main():
     }
     (out/"phase0-diagnosis-v10.json").write_text(stable_json(result),encoding="utf-8")
     print(stable_json(result),end="")
-    if not result["d_b"]["all_match"]:
-        raise SystemExit(15)
 
 if __name__=="__main__":
     main()
