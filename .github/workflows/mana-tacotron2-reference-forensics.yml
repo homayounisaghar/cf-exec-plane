@@ -41,7 +41,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          git clone --filter=blob:none https://huggingface.co/spaces/abreza/mana-tts "$RUNNER_TEMP/space"
+          git clone https://huggingface.co/spaces/abreza/mana-tts "$RUNNER_TEMP/space"
           git -C "$RUNNER_TEMP/space" checkout 3784ae7afc431cf333ad5961900db37a8297e5c6
           git clone https://github.com/MahtaFetrat/Persian-MultiSpeaker-Tacotron2.git "$RUNNER_TEMP/upstream"
           git -C "$RUNNER_TEMP/upstream" checkout master
