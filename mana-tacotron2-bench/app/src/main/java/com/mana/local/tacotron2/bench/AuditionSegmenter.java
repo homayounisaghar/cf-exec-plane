@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Audition-only segmentation layer.
- *
- * It does not change the locked symbol table/model frontend. It only decides
- * where independently synthesized chunks are joined for owner listening tests.
+ * Audition-only phrase segmentation.
+ * Ordinary words are never split into separate Tacotron inference jobs.
+ * Punctuation/long-text safety chunks may be independent, while adjustable
+ * word gaps are inserted after rendering using decoder attention.
  */
 final class AuditionSegmenter {
-    enum Boundary { NONE, WORD, PUNCTUATION, HARD_CHUNK }
+    enum Boundary { NONE, PUNCTUATION, HARD_CHUNK }
 
     static final class Segment {
         final String text;
@@ -32,31 +32,18 @@ final class AuditionSegmenter {
         }
     }
 
-    static List<Segment> segment(String normalized, boolean splitWords) {
+    static List<Segment> segment(String normalized) {
         List<Segment> out = new ArrayList<>();
         for (Phrase phrase : splitAtPunctuation(normalized)) {
             List<String> bounded = PersianFrontend.splitNormalized(phrase.text);
             for (int ci = 0; ci < bounded.size(); ci++) {
                 String chunk = bounded.get(ci).trim();
                 if (chunk.isEmpty()) continue;
-
                 boolean lastChunk = ci == bounded.size() - 1;
                 Boundary tail = lastChunk
                         ? (phrase.punctuationBoundary ? Boundary.PUNCTUATION : Boundary.NONE)
                         : Boundary.HARD_CHUNK;
-
-                if (!splitWords) {
-                    out.add(new Segment(chunk, tail));
-                    continue;
-                }
-
-                String[] words = chunk.split(" +");
-                for (int wi = 0; wi < words.length; wi++) {
-                    String word = words[wi].trim();
-                    if (word.isEmpty()) continue;
-                    boolean lastWord = wi == words.length - 1;
-                    out.add(new Segment(word, lastWord ? tail : Boundary.WORD));
-                }
+                out.add(new Segment(chunk, tail));
             }
         }
         return out;
