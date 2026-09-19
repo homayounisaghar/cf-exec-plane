@@ -63,3 +63,18 @@ else
 fi
 printf 'CF_ONSHAPE_STATIC_LOADER_SHA256=%s\n' "$(sha256sum "$tmp/loader.js" | awk '{print $1}')"
 printf 'CF_ONSHAPE_STATIC_MAIN_SHA256=%s\n' "$(sha256sum "$tmp/main.js" | awk '{print $1}')"
+
+
+python3 - "$tmp/main.js" <<'PY'
+import json,sys
+p=sys.argv[1]
+data=open(p,"r",encoding="utf-8",errors="replace").read()
+pos=4605173
+lo=max(0,pos-1200)
+hi=min(len(data),pos+1200)
+print("CF_ONSHAPE_STATIC_MAIN_LENGTH="+str(len(data)))
+print("CF_ONSHAPE_STATIC_ERROR_OFFSET_IN_RANGE="+("yes" if pos < len(data) else "no"))
+print("CF_ONSHAPE_STATIC_ERROR_CONTEXT="+json.dumps(data[lo:hi],ensure_ascii=True,separators=(",",":")))
+tail=data[-1000:]
+print("CF_ONSHAPE_STATIC_MAIN_HAS_SOURCEMAP="+("yes" if "sourceMappingURL=" in tail else "no"))
+PY
