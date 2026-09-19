@@ -70,9 +70,11 @@ public final class MainActivity extends Activity {
     private SeekBar speedBar;
     private SeekBar pitchBar;
     private SeekBar pauseBar;
+    private SeekBar wordGapBar;
     private TextView speedValue;
     private TextView pitchValue;
     private TextView pauseValue;
+    private TextView wordGapValue;
     private Button synthesizeText;
     private Button quickBench;
     private Button fullRender;
@@ -118,7 +120,7 @@ public final class MainActivity extends Activity {
         customText.setText("سلام دنیا. این یک آزمایش صدای مانا است.");
 
         TextView syntaxHelp = new TextView(this);
-        syntaxHelp.setText("سه کنترل پایین برای ارزیابی شنیداری‌اند. سرعت و زیر و بمی هنگام پخش اعمال می‌شوند؛ مکث واقعاً بین بخش‌های ساخته شده داخل WAV قرار می‌گیرد. برای یک مرز خاص می‌توانی مثل [700] مکث ۷۰۰ میلی‌ثانیه‌ای بدهی.");
+        syntaxHelp.setText("علائم ، ؛ . ؟ ! حالا مرز گفتاری واقعی‌اند. مکث بعد از علائم و فاصله بین واژه‌ها مستقل‌اند. فاصلهٔ واژه روی ۰ یعنی گفتار طبیعیِ یک‌تکه؛ بالاتر از ۰ واژه‌ها جدا ساخته می‌شوند. [700] یک مرز خاص را روی ۷۰۰ میلی‌ثانیه تنظیم می‌کند.");
         syntaxHelp.setTextSize(13f);
         syntaxHelp.setTextColor(Color.DKGRAY);
         syntaxHelp.setPadding(0, 8, 0, 8);
@@ -133,10 +135,15 @@ public final class MainActivity extends Activity {
         pitchBar.setMax(60);
         pitchBar.setProgress(30);
 
-        pauseValue = controlLabel("مکث بین بخش‌ها");
+        pauseValue = controlLabel("مکث بعد از علائم");
         pauseBar = new SeekBar(this);
         pauseBar.setMax(1500);
-        pauseBar.setProgress(180);
+        pauseBar.setProgress(220);
+
+        wordGapValue = controlLabel("فاصله بین واژه‌ها");
+        wordGapBar = new SeekBar(this);
+        wordGapBar.setMax(400);
+        wordGapBar.setProgress(0);
 
         SeekBar.OnSeekBarChangeListener controlsListener = new SeekBar.OnSeekBarChangeListener() {
             @Override public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -148,6 +155,7 @@ public final class MainActivity extends Activity {
         speedBar.setOnSeekBarChangeListener(controlsListener);
         pitchBar.setOnSeekBarChangeListener(controlsListener);
         pauseBar.setOnSeekBarChangeListener(controlsListener);
+        wordGapBar.setOnSeekBarChangeListener(controlsListener);
         refreshControlLabels();
 
         synthesizeText = button("۲) خواندن متن من");
@@ -168,6 +176,8 @@ public final class MainActivity extends Activity {
         body.addView(pitchBar);
         body.addView(pauseValue);
         body.addView(pauseBar);
+        body.addView(wordGapValue);
+        body.addView(wordGapBar);
         body.addView(synthesizeText);
         body.addView(playLast);
         body.addView(quickBench);
@@ -242,8 +252,12 @@ public final class MainActivity extends Activity {
         return 0.70f + (pitchBar.getProgress() / 100.0f);
     }
 
-    private int selectedPauseMs() {
+    private int selectedPunctuationPauseMs() {
         return pauseBar.getProgress();
+    }
+
+    private int selectedWordGapMs() {
+        return wordGapBar.getProgress();
     }
 
     private void refreshControlLabels() {
@@ -254,7 +268,10 @@ public final class MainActivity extends Activity {
             pitchValue.setText(String.format(Locale.ROOT, "زیر و بمی: %.2fx", selectedPitch()));
         }
         if (pauseValue != null && pauseBar != null) {
-            pauseValue.setText("مکث بین بخش‌ها: " + selectedPauseMs() + " ms");
+            pauseValue.setText("مکث بعد از علائم: " + selectedPunctuationPauseMs() + " ms");
+        }
+        if (wordGapValue != null && wordGapBar != null) {
+            wordGapValue.setText("فاصله بین واژه‌ها: " + selectedWordGapMs() + " ms");
         }
     }
 
@@ -356,7 +373,8 @@ public final class MainActivity extends Activity {
         }
         final float speed = selectedSpeed();
         final float pitch = selectedPitch();
-        final int defaultPauseMs = selectedPauseMs();
+        final int punctuationPauseMs = selectedPunctuationPauseMs();
+        final int wordGapMs = selectedWordGapMs();
 
         choosePack.setEnabled(false);
         synthesizeText.setEnabled(false);
@@ -377,9 +395,11 @@ public final class MainActivity extends Activity {
                     for (int pi = 0; pi < parts.size(); pi++) {
                         CustomPart part = parts.get(pi);
                         String normalized = PersianFrontend.normalizeTextForSynthesis(part.text);
-                        List<String> segments = PersianFrontend.splitNormalized(normalized);
+                        List<AuditionSegmenter.Segment> segments =
+                                AuditionSegmenter.segment(normalized, wordGapMs > 0);
                         for (int si = 0; si < segments.size(); si++) {
-                            PersianFrontend.Encoded encoded = PersianFrontend.encodeOovGuard(segments.get(si));
+                            AuditionSegmenter.Segment segment = segments.get(si);
+                            PersianFrontend.Encoded encoded = PersianFrontend.encodeOovGuard(segment.text);
                             if (!encoded.dropped.isEmpty()) {
                                 logFromWorker("کاراکترهای پشتیبانی نشده حذف شدند: " + encoded.dropped);
                             }
@@ -399,8 +419,10 @@ public final class MainActivity extends Activity {
                                 pause = 0;
                             } else if (si == segments.size() - 1 && part.pauseAfterMs >= 0) {
                                 pause = part.pauseAfterMs;
+                            } else if (segment.boundaryAfter == AuditionSegmenter.Boundary.WORD) {
+                                pause = wordGapMs;
                             } else {
-                                pause = defaultPauseMs;
+                                pause = punctuationPauseMs;
                             }
                             pausesAfter.add(pause);
                             renderIndex++;
@@ -414,8 +436,8 @@ public final class MainActivity extends Activity {
                 lastPlaybackSpeed = speed;
                 lastPlaybackPitch = pitch;
                 logFromWorker(String.format(Locale.ROOT,
-                        "آماده است. speed=%.2fx pitch=%.2fx pause=%dms",
-                        speed, pitch, defaultPauseMs));
+                        "آماده است. speed=%.2fx pitch=%.2fx punctuationPause=%dms wordGap=%dms",
+                        speed, pitch, punctuationPauseMs, wordGapMs));
                 runOnUiThread(this::playLast);
             } catch (Throwable t) {
                 logFromWorker("SYNTHESIS FAILED: " + t);
