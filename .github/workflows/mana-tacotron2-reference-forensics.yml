@@ -37,7 +37,7 @@ jobs:
           mode="$(awk -F= '$1=="mode"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
           mode="${mode:-phase0-v08}"
           case "$mode" in
-            phase0-v08|corpus-v09|diagnosis-v10) ;;
+            phase0-v08|corpus-v09|diagnosis-v10|terminal-v20) ;;
             *) echo "unsupported mode: $mode" >&2; exit 14 ;;
           esac
           echo "mode=$mode" >> "$GITHUB_OUTPUT"
@@ -164,6 +164,100 @@ jobs:
           name: mana-tacotron2-diagnosis-v10
           path: diagnosis-out/
           retention-days: 7
+
+      - name: Prepare v2.0 corpus and isolated environments
+        if: steps.request.outputs.mode == 'terminal-v20'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          rm -rf corpus-v09 terminal-v20
+          mkdir -p corpus-v09 terminal-v20
+          zip="$RUNNER_TEMP/corpus-v09.zip"
+          curl -L --fail --retry 3 \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/10583826662/zip" \
+            -o "$zip"
+          unzip -q "$zip" -d corpus-v09
+          test -f corpus-v09/reference_corpus_manifest.json
+          test -f corpus-v09/local_reference_audio/s00-r0.wav
+          test -f corpus-v09/local_reference_audio/s12-r0.wav
+
+          python -m venv "$RUNNER_TEMP/venv-old"
+          python -m venv "$RUNNER_TEMP/venv-lock"
+
+          OLD="$RUNNER_TEMP/venv-old/bin/python"
+          LOCK="$RUNNER_TEMP/venv-lock/bin/python"
+
+          "$OLD" -m pip install --disable-pip-version-check --no-input \
+            "numpy==1.22.4" "scipy==1.7.3" "librosa==0.10.2.post1" "numba==0.57.1" \
+            "soundfile==0.12.1" "webrtcvad==2.0.10" "gdown==5.2.0" "requests==2.32.3" \
+            "PyYAML==6.0.2" "h5py==3.11.0" "tensorboardX==2.6.2.2" "gradio_client==1.8.0"
+          "$OLD" -m pip install --disable-pip-version-check --no-input "torch==2.2.2" --index-url https://download.pytorch.org/whl/cpu
+          "$OLD" -m pip install --disable-pip-version-check --no-input "parallel-wavegan==0.6.1" --no-build-isolation
+          "$OLD" -m pip install --disable-pip-version-check --no-input "onnx==1.16.2" "onnxruntime==1.18.1"
+
+          "$LOCK" -m pip install --disable-pip-version-check --no-input \
+            "numpy==1.24.4" "scipy==1.15.3" "librosa==0.10.2.post1" "numba==0.57.1" \
+            "soundfile==0.12.1" "webrtcvad==2.0.10" "gdown==5.2.0" "requests==2.32.3" \
+            "PyYAML==6.0.2" "h5py==3.11.0" "tensorboardX==2.6.2.2" "gradio_client==1.8.0"
+          "$LOCK" -m pip install --disable-pip-version-check --no-input "torch==2.2.2" --index-url https://download.pytorch.org/whl/cpu
+          "$LOCK" -m pip install --disable-pip-version-check --no-input "parallel-wavegan==0.6.1" --no-build-isolation
+          "$LOCK" -m pip install --disable-pip-version-check --no-input "onnx==1.16.2" "onnxruntime==1.18.1"
+
+      - name: Run v2.0 D-B2 D-C Gate0N Phase1 Phase2
+        if: steps.request.outputs.mode == 'terminal-v20'
+        shell: bash
+        env:
+          OMP_NUM_THREADS: "1"
+          MKL_NUM_THREADS: "1"
+          PYTHONHASHSEED: "0"
+        run: |
+          set -euo pipefail
+          OLD="$RUNNER_TEMP/venv-old/bin/python"
+          LOCK="$RUNNER_TEMP/venv-lock/bin/python"
+
+          mkdir -p terminal-v20/old terminal-v20/phase0n terminal-v20/phase1 terminal-v20/phase2
+
+          "$OLD" mana-tacotron2/terminal_v20.py old-capture \
+            --space "$RUNNER_TEMP/space" --synth "$RUNNER_TEMP/synthesizer.pt" \
+            --corpus corpus-v09 --out terminal-v20/old --tag corpus-generating-environment
+
+          "$LOCK" mana-tacotron2/terminal_v20.py phase0n \
+            --space "$RUNNER_TEMP/space" --synth "$RUNNER_TEMP/synthesizer.pt" \
+            --corpus corpus-v09 --old-capture terminal-v20/old --out terminal-v20/phase0n
+
+          "$LOCK" - <<'PY'
+          import json
+          j=json.load(open("terminal-v20/phase0n/phase0n-v20.json"))
+          assert j["gate0n_closed"] is True
+          print("GATE0N_CLOSED=1")
+          print("DB2_CLASS="+j["d_b2"]["classification"])
+          PY
+
+          "$LOCK" mana-tacotron2/terminal_v20.py phase1 \
+            --space "$RUNNER_TEMP/space" --synth "$RUNNER_TEMP/synthesizer.pt" \
+            --corpus corpus-v09 --out terminal-v20/phase1
+
+          "$LOCK" mana-tacotron2/terminal_v20.py phase2 \
+            --space "$RUNNER_TEMP/space" --synth "$RUNNER_TEMP/synthesizer.pt" \
+            --corpus corpus-v09 --phase1-dir terminal-v20/phase1 --out terminal-v20/phase2
+
+          echo "=== PHASE0N ==="
+          cat terminal-v20/phase0n/phase0n-v20.json
+          echo "=== PHASE1 ==="
+          cat terminal-v20/phase1/phase1-golden-fingerprints.json
+          echo "=== PHASE2 ==="
+          cat terminal-v20/phase2/phase2-parity.json
+
+      - uses: actions/upload-artifact@v4
+        if: always() && steps.request.outputs.mode == 'terminal-v20'
+        with:
+          name: mana-tacotron2-terminal-v20
+          path: terminal-v20/
+          retention-days: 14
 
       - name: Emit Phase 0 canonical text payloads
         if: always() && steps.request.outputs.mode == 'phase0-v08'
