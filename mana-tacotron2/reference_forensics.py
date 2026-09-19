@@ -206,6 +206,23 @@ def frontend_capture(space,symbols,mapping,out):
       "### synthesis.py::normalize_text_for_synthesis\n"+normalize_text
     )
     (out/"frontend_verbatim_capture.txt").write_text(port,encoding="utf-8")
+    executable_port=(
+      "# Locked public-source frontend port. Source: abreza/mana-tts @ "+SPACE_COMMIT+"\n"
+      "import re\nfrom typing import List\n\n"
+      + number_text + "\n" + splitter_text + "\n" + normalize_text + "\n"
+      + """
+def encode_segment_exact(segment, symbol_to_id):
+    return [symbol_to_id[c] for c in segment.strip()]
+
+def encode_segment_oov_guard(segment, symbol_to_id):
+    stripped=segment.strip()
+    dropped=[ord(c) for c in stripped if c not in symbol_to_id]
+    filtered="".join(c for c in stripped if c in symbol_to_id)
+    return [symbol_to_id[c] for c in filtered], dropped
+"""
+    )
+    port_path=out/"reference_frontend.py"
+    port_path.write_text(executable_port,encoding="utf-8")
 
     nums=load_module(space/"persian_numbers.py","v08_numbers")
     splitter_mod=load_module(space/"sentence_splitter.py","v08_splitter")
@@ -249,6 +266,50 @@ def frontend_capture(space,symbols,mapping,out):
                               "in_symbols":{q:(q in mapping) for q in ["«","»",'"',"'"]}}
     write_json(out/"frontend_fixtures.json",{"schema":"mana.frontend-fixtures.v1","count":len(fixtures),"fixtures":fixtures})
     write_json(out/"frontend_quote_probe.json",quote_probe)
+
+    # Independent locked-reference vs emitted-port conformance on the P0-11 sentence set.
+    port_mod=load_module(port_path,"v08_frontend_port")
+    text_mod=load_module(space/"pmt2/synthesizer/persian_utils/text.py","v08_reference_text")
+    ref_splitter=Splitter(max_chars=150,min_chars=30)
+    port_splitter=port_mod.PersianSentenceSplitter(max_chars=150,min_chars=30)
+    p011=[
+      "سلام دنیا.","امروز هوا خوب است.","این یک جمله کوتاه برای آزمایش صدا است.",
+      "عدد ۱۲۳ را بخوان.","شماره من ۰۹۱۲۳۴۵۶۷۸۹ است.","تماس بین المللی +۹۸۹۱۵۱۰۰۲۰۳۰ است.",
+      "قیمت این کالا ۵,۴۰۰ تومان است.","سال 2026 سال خوبی است.","عدد منفی -5 را بخوان.",
+      "می‌خواهم نیم‌فاصله درست خوانده شود.","این یک پرسش است؟","سلام، حال شما چطور است؟",
+      "این متن کمی طولانی‌تر است تا آهنگ جمله و مکث میان بخش‌ها بررسی شود و رفتار مدل در جمله متوسط مشخص باشد.",
+      "الف، ب، پ، ت، ث، ج، چ، ح، خ، د، ذ، ر، ز، ژ، س و ش.",
+      "کد تایید ۸۸۹۹۱۱۰۰ است.","شماره ثابت ۰۲۱-۸۸۸۰۳۳۵۴ را بخوان.",
+      "ABC در کنار متن فارسی قرار دارد.","واژهٔ آزمایشی با نشانه درصد 50٪.",
+      "«این نقل قول گیومه دارد»","این متن شامل نماد € است."
+    ]
+    checks=[]
+    for raw in p011:
+        ref_norm=normalize(raw); port_norm=port_mod.normalize_text_for_synthesis(raw)
+        ref_segs=ref_splitter.split(ref_norm); port_segs=port_splitter.split(port_norm)
+        row={"input":raw,"normalization_match":ref_norm==port_norm,"segments_match":ref_segs==port_segs,
+             "segments":[]}
+        for rs,ps in zip(ref_segs,port_segs):
+            ref_status={"ok":True}; port_status={"ok":True}
+            try: ref_status["ids"]=text_mod.text_to_sequence(rs.strip(),["persian_cleaners"])
+            except Exception as e: ref_status={"ok":False,"error_type":type(e).__name__,"error":repr(e)}
+            try: port_status["ids"]=port_mod.encode_segment_exact(ps,mapping)
+            except Exception as e: port_status={"ok":False,"error_type":type(e).__name__,"error":repr(e)}
+            guarded_ids,dropped=port_mod.encode_segment_oov_guard(ps,mapping)
+            semantic_match=(ref_status.get("ok")==port_status.get("ok"))
+            if ref_status.get("ok") and port_status.get("ok"):
+                semantic_match=semantic_match and ref_status["ids"]==port_status["ids"]
+            if not ref_status.get("ok") and not port_status.get("ok"):
+                semantic_match=semantic_match and ref_status["error_type"]==port_status["error_type"]
+            row["segments"].append({"reference":ref_status,"port_exact":port_status,
+                                    "declared_oov_guard_ids":guarded_ids,
+                                    "declared_oov_dropped_codepoints":[f"U+{cp:04X}" for cp in dropped],
+                                    "exact_match":semantic_match})
+        row["all_match"]=row["normalization_match"] and row["segments_match"] and all(x["exact_match"] for x in row["segments"])
+        checks.append(row)
+    write_json(out/"frontend_id_match_20.json",{"schema":"mana.frontend-id-match.v1","count":len(checks),
+               "all_match":all(x["all_match"] for x in checks),"checks":checks,
+               "port_sha256":sha256_file(port_path)})
     return fixtures
 
 def run_setup(space,synth):
