@@ -460,8 +460,10 @@ def hosted_reference_attempt(out):
     ]
     result={"endpoint":"https://abreza-mana-tts.hf.space/","sentences":sentences,"attempted":False,
             "success_count":0,"error":None,"records":[]}
+    audio_dir=out/"reference_audio"; audio_dir.mkdir(exist_ok=True)
     try:
         from gradio_client import Client
+        import soundfile as sf
         client=Client("https://abreza-mana-tts.hf.space/",verbose=False)
         result["attempted"]=True
         try:
@@ -469,28 +471,63 @@ def hosted_reference_attempt(out):
             result["api"]=str(api)
         except Exception as e:
             result["api_error"]=repr(e)
-        # Try the first endpoint signatures commonly exposed by this Space; stop on quota/access failure.
+
+        def existing_paths(obj):
+            found=[]
+            if isinstance(obj,str) and os.path.isfile(obj):
+                found.append(obj)
+            elif isinstance(obj,dict):
+                for k,v in obj.items():
+                    if k in ("path","name") and isinstance(v,str) and os.path.isfile(v):
+                        found.append(v)
+                    else:
+                        found.extend(existing_paths(v))
+            elif isinstance(obj,(list,tuple)):
+                for v in obj: found.extend(existing_paths(v))
+            return found
+
         for i,text in enumerate(sentences):
-            try:
-                prediction=None
-                last=None
-                for api_name in ["/generate_speech","/synthesize","/predict"]:
-                    try:
-                        prediction=client.predict(text,api_name=api_name)
-                        last=None
-                        break
-                    except Exception as e:
-                        last=e
-                if prediction is None:
-                    raise last if last else RuntimeError("no callable endpoint")
-                rec={"index":i,"text":text,"result":str(prediction)}
-                result["records"].append(rec); result["success_count"]+=1
-            except Exception as e:
-                result["records"].append({"index":i,"text":text,"error":repr(e)})
-                msg=repr(e).lower()
-                if "quota" in msg or "gpu" in msg or "rate" in msg:
-                    result["error"]="quota_or_gpu_gate"
+            prediction=None; last=None
+            for api_name in ["/generate_speech","/synthesize","/predict"]:
+                try:
+                    job=client.submit(text,api_name=api_name)
+                    prediction=job.result(timeout=45)
+                    last=None
                     break
+                except Exception as e:
+                    last=e
+            if prediction is None:
+                msg=repr(last).lower() if last else "no callable endpoint"
+                result["records"].append({"index":i,"text":text,"error":repr(last)})
+                if any(x in msg for x in ["quota","gpu","rate","timeout","timed out"]):
+                    result["error"]="quota_gpu_or_timeout_gate"
+                else:
+                    result["error"]="endpoint_error"
+                break
+            paths=existing_paths(prediction)
+            rec={"index":i,"text":text,"result_type":type(prediction).__name__,"local_paths":[]}
+            copied=False
+            for src in paths:
+                try:
+                    info=sf.info(src)
+                    if info.channels!=1:
+                        continue
+                    dst=audio_dir/f"ref-{i:02d}.wav"
+                    shutil.copy2(src,dst)
+                    rec.update({"wav":dst.name,"sha256":sha256_file(dst),"duration":float(info.duration),
+                                "sample_rate":int(info.samplerate),"channels":int(info.channels),"size":int(dst.stat().st_size)})
+                    copied=True
+                    break
+                except Exception:
+                    continue
+            if not copied:
+                rec["raw_result"]=str(prediction)
+                rec["error"]="no_local_mono_wav_found"
+            else:
+                result["success_count"]+=1
+            result["records"].append(rec)
+            if not copied:
+                break
     except Exception as e:
         result["error"]=repr(e)
     write_json(out/"p0-11-hosted-attempt.json",result)
