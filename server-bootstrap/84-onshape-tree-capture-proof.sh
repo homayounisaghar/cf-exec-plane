@@ -62,16 +62,23 @@ d=json.load(sys.stdin)
 r=d.get("result") or {}
 out={
  "build_id":d.get("build_id"),
- "operation_id":d.get("operation_id"),
  "status":d.get("status"),
  "capture":r.get("capture"),
- "page_origin":r.get("page_origin"),
+ "page_snapshot":r.get("page_snapshot"),
  "cookie_metadata_without_values":r.get("cookie_metadata_without_values"),
- "natural_request":r.get("natural_request"),
+ "resource_response_count":r.get("resource_response_count"),
+ "resource_responses":r.get("resource_responses"),
+ "xhr_fetch_count":r.get("xhr_fetch_count"),
+ "xhr_fetch_traffic":r.get("xhr_fetch_traffic"),
+ "target_response_count":r.get("target_response_count"),
+ "target_responses":r.get("target_responses"),
+ "failed_requests":r.get("failed_requests"),
+ "page_errors":r.get("page_errors"),
+ "console_errors":r.get("console_errors"),
+ "websockets":r.get("websockets"),
  "handcrafted_request":r.get("handcrafted_request"),
  "comparison":r.get("comparison"),
  "target_folder_name":r.get("target_folder_name"),
- "folder_candidates_from_natural_tree_response":r.get("folder_candidates_from_natural_tree_response"),
 }
 print("CF_ONSHAPE_TREE_CAPTURE="+json.dumps(out,separators=(",",":")))
 '
