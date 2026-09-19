@@ -60,7 +60,7 @@ jobs:
 
           BT="$ANDROID_HOME/build-tools/35.0.0"
           "$BT/aapt" dump badging "$apk" | tee mana-tacotron2-bench-badging.txt
-          grep -q "package: name='com.mana.local.tacotron2.bench' versionCode='4' versionName='0.3.0-controls'" mana-tacotron2-bench-badging.txt
+          grep -q "package: name='com.mana.local.tacotron2.playground' versionCode='4' versionName='0.3.0-controls'" mana-tacotron2-bench-badging.txt
           grep -q "native-code: 'arm64-v8a'" mana-tacotron2-bench-badging.txt
           if grep -qE "native-code:.*(armeabi-v7a|x86|x86_64)" mana-tacotron2-bench-badging.txt; then
             echo "unexpected non-arm64 ABI" >&2
@@ -81,7 +81,7 @@ jobs:
 
           cat > mana-tacotron2-bench-RUN_SHEET.txt <<'EOF'
           Mana Voice Playground v0.3.0 Controls
-          Package: com.mana.local.tacotron2.bench
+          Package: com.mana.local.tacotron2.playground
           Installability: signed Android debug APK; explicitly disposable diagnostic line
           Network: no INTERNET permission
           Runtime: ONNX Runtime Android 1.30.0
