@@ -37,7 +37,7 @@ jobs:
           mode="$(awk -F= '$1=="mode"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
           mode="${mode:-phase0-v08}"
           case "$mode" in
-            phase0-v08|corpus-v09) ;;
+            phase0-v08|corpus-v09|diagnosis-v10) ;;
             *) echo "unsupported mode: $mode" >&2; exit 14 ;;
           esac
           echo "mode=$mode" >> "$GITHUB_OUTPUT"
@@ -108,6 +108,62 @@ jobs:
           cat out/corpus-summary.json
           cat out/p0-12-asset-budget.json
           cat out/p0-11-comparison.json
+
+      - name: Align v1.0 diagnosis with frozen P0-9 runtime
+        if: steps.request.outputs.mode == 'diagnosis-v10'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check --no-input --upgrade \
+            "numpy==1.24.4" "scipy==1.15.3"
+          python - <<'PY'
+          import numpy, scipy, librosa, torch
+          assert numpy.__version__ == "1.24.4"
+          assert scipy.__version__ == "1.15.3"
+          assert librosa.__version__ == "0.10.2.post1"
+          assert torch.__version__.startswith("2.2.2")
+          print("frozen-runtime-ok", numpy.__version__, scipy.__version__, librosa.__version__, torch.__version__)
+          PY
+
+      - name: Fetch accepted v0.9 corpus artifact for diagnosis
+        if: steps.request.outputs.mode == 'diagnosis-v10'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          rm -rf corpus-v09
+          mkdir -p corpus-v09
+          zip="$RUNNER_TEMP/corpus-v09.zip"
+          curl -L --fail --retry 3 \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/10583826662/zip" \
+            -o "$zip"
+          unzip -q "$zip" -d corpus-v09
+          test -f corpus-v09/reference_corpus_manifest.json
+          test -f corpus-v09/p0-11-comparison.json
+          test -f corpus-v09/local_reference_audio/s00-r0.wav
+          test -f corpus-v09/local_reference_audio/s12-r0.wav
+          sha256sum corpus-v09/local_reference_audio/s00-r0.wav corpus-v09/local_reference_audio/s12-r0.wav
+
+      - name: Run v1.0 bounded diagnosis D-A D-B D-C
+        if: steps.request.outputs.mode == 'diagnosis-v10'
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf diagnosis-out
+          mkdir -p diagnosis-out
+          python mana-tacotron2/diagnosis_v10.py \
+            "$RUNNER_TEMP/space" "$RUNNER_TEMP/synthesizer.pt" corpus-v09 diagnosis-out
+          cat diagnosis-out/phase0-diagnosis-v10.json
+
+      - uses: actions/upload-artifact@v4
+        if: always() && steps.request.outputs.mode == 'diagnosis-v10'
+        with:
+          name: mana-tacotron2-diagnosis-v10
+          path: diagnosis-out/
+          retention-days: 7
 
       - name: Emit Phase 0 canonical text payloads
         if: always() && steps.request.outputs.mode == 'phase0-v08'
