@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 umask 077
-release=/var/lib/capability-fabric/releases/onshape-three-session-v46-fabric-shadow-r10-pointer-ui
+release=/var/lib/capability-fabric/releases/onshape-three-session-v46-fabric-shadow-r11-ui-input-capability
 image='mcr.microsoft.com/playwright:v1.62.1-resolute@sha256:aebd85bce8056dcdc2269853fd94ea432b6a201da4f0ef125b509489ecd52ddb'
 name=cf-onshape-semantic-only-proof
 [[ "$(readlink -f /opt/capability-fabric/current)" == "$release" ]] || { echo CF_FABRIC_SEMANTIC_ONLY_RELEASE=not-current; exit 20; }
@@ -64,16 +64,18 @@ const transport=new StreamableHTTPClientTransport(new URL("http://127.0.0.1:8787
 await client.connect(transport);
 const listed=await client.listTools();
 const names=(listed.tools||[]).map(x=>x.name).sort();
-const expected=["cf_echo","onshape_fabric_capabilities","onshape_fabric_invoke","onshape_fabric_reconcile"].sort();
+const expected=["cf_echo","onshape_fabric_capabilities","onshape_fabric_invoke","onshape_ui_input","onshape_fabric_reconcile"].sort();
 if(JSON.stringify(names)!==JSON.stringify(expected)) throw new Error("semantic-only public catalog mismatch: "+JSON.stringify(names));
 for(const forbidden of ["onshape_session_status","onshape_browser_open","onshape_browser_top_view","onshape_browser_mouse_probe","onshape_browser_pointer","onshape_pool_status","onshape_pool_warmup","onshape_login_start","onshape_operation_status","onshape_documents_get_elements","onshape_partstudio_get_features","onshape_documents_create","onshape_artifact","onshape_request","onshape_openapi","onshape_openapi_coverage","onshape_openapi_refresh"]) {
   if(names.includes(forbidden)) throw new Error("raw effect-capable tool exposed: "+forbidden);
 }
+if(!names.includes("onshape_ui_input")) throw new Error("semantic UI input adapter missing");
 console.log("CF_FABRIC_SEMANTIC_ONLY_CATALOG=pass");
+console.log("CF_FABRIC_SEMANTIC_ONLY_UI_INPUT_PRESENT=pass");
 const echo=await client.callTool({name:"cf_echo",arguments:{text:"semantic-only-proof"}});
 const body=(echo.content||[]).filter(x=>x.type==="text").map(x=>x.text||"").join("\n");
 const value=JSON.parse(body);
-if(value.build_id!=="onshape-three-session-v46-fabric-ingress-pointer-ui") throw new Error("wrong build: "+value.build_id);
+if(value.build_id!=="onshape-three-session-v46-fabric-ui-input-capability") throw new Error("wrong build: "+value.build_id);
 if(value.public_surface!=="semantic-only") throw new Error("wrong public surface: "+value.public_surface);
 console.log("CF_FABRIC_SEMANTIC_ONLY_RAW_EFFECT_DENY=pass");
 console.log("CF_FABRIC_SEMANTIC_ONLY_BROWSER_UI_HIDDEN=pass");
