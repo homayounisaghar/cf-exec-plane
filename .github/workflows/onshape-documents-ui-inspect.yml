@@ -59,14 +59,14 @@ jobs:
               echo "CF_ONSHAPE_BROWSER_OPEN_DOCUMENT_ID=$document_id"
               echo "CF_ONSHAPE_BROWSER_OPEN_WORKSPACE_ID=$workspace_id"
               echo "CF_ONSHAPE_BROWSER_OPEN_ELEMENT_ID=$element_id"
-              [[ -n "$browser_action" ]] && echo "CF_ONSHAPE_BROWSER_ACTION=$browser_action"
-              [[ -n "$pointer_action" ]] && echo "CF_ONSHAPE_POINTER_ACTION=$pointer_action"
-              [[ -n "$x_fraction" ]] && echo "CF_ONSHAPE_POINTER_X_FRACTION=$x_fraction"
-              [[ -n "$y_fraction" ]] && echo "CF_ONSHAPE_POINTER_Y_FRACTION=$y_fraction"
-              [[ -n "$wheel_steps" ]] && echo "CF_ONSHAPE_POINTER_WHEEL_STEPS=$wheel_steps"
-              [[ -n "$wheel_delta_y" ]] && echo "CF_ONSHAPE_POINTER_WHEEL_DELTA_Y=$wheel_delta_y"
-              [[ -n "$delta_x" ]] && echo "CF_ONSHAPE_POINTER_DELTA_X=$delta_x"
-              [[ -n "$delta_y" ]] && echo "CF_ONSHAPE_POINTER_DELTA_Y=$delta_y"
+              if [[ -n "$browser_action" ]]; then echo "CF_ONSHAPE_BROWSER_ACTION=$browser_action"; fi
+              if [[ -n "$pointer_action" ]]; then echo "CF_ONSHAPE_POINTER_ACTION=$pointer_action"; fi
+              if [[ -n "$x_fraction" ]]; then echo "CF_ONSHAPE_POINTER_X_FRACTION=$x_fraction"; fi
+              if [[ -n "$y_fraction" ]]; then echo "CF_ONSHAPE_POINTER_Y_FRACTION=$y_fraction"; fi
+              if [[ -n "$wheel_steps" ]]; then echo "CF_ONSHAPE_POINTER_WHEEL_STEPS=$wheel_steps"; fi
+              if [[ -n "$wheel_delta_y" ]]; then echo "CF_ONSHAPE_POINTER_WHEEL_DELTA_Y=$wheel_delta_y"; fi
+              if [[ -n "$delta_x" ]]; then echo "CF_ONSHAPE_POINTER_DELTA_X=$delta_x"; fi
+              if [[ -n "$delta_y" ]]; then echo "CF_ONSHAPE_POINTER_DELTA_Y=$delta_y"; fi
             } >> "$GITHUB_ENV"
           fi
       - name: Mask host and login
