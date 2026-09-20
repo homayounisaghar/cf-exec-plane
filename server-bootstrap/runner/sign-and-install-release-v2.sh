@@ -17,6 +17,12 @@ docker compose version >/dev/null 2>&1 || { echo "docker compose unavailable on 
 
 repo_url=https://github.com/homayounisaghar/capability-fabric.git
 deploy_dir=server-deploy/current
+source_commit="${CF_DEPLOY_SOURCE_COMMIT:-}"
+manifest_path="${CF_DEPLOY_MANIFEST_PATH:-$deploy_dir/manifest.json}"
+files_dir="${CF_DEPLOY_FILES_DIR:-$deploy_dir}"
+if [[ -n "$source_commit" && ! "$source_commit" =~ ^[0-9a-f]{40}$ ]]; then echo "invalid source commit" >&2; exit 2; fi
+if [[ "$manifest_path" != "$deploy_dir/manifest.json" && ! "$manifest_path" =~ ^server-deploy/candidates/[A-Za-z0-9._-]+/manifest\.json$ ]]; then echo "invalid candidate manifest path" >&2; exit 2; fi
+[[ "$files_dir" == "$deploy_dir" ]] || { echo "deployment files directory is fixed" >&2; exit 2; }
 sign_id=capability-fabric-deploy
 sign_namespace=capability-fabric-deploy
 tmp="$(mktemp -d "${RUNNER_TEMP:-/tmp}/cf-deploy-signer.XXXXXX")"
@@ -38,12 +44,18 @@ esac
 ASKPASS
 chmod 0700 "$tmp/askpass"
 git init --bare "$tmp/repo.git" >/dev/null
-GIT_ASKPASS="$tmp/askpass" GIT_TERMINAL_PROMPT=0 git --git-dir="$tmp/repo.git" fetch --quiet --depth=1 "$repo_url" refs/heads/main:refs/heads/source-main
-commit="$(git --git-dir="$tmp/repo.git" rev-parse refs/heads/source-main)"
+if [[ -n "$source_commit" ]]; then
+  GIT_ASKPASS="$tmp/askpass" GIT_TERMINAL_PROMPT=0 git --git-dir="$tmp/repo.git" fetch --quiet --depth=1 "$repo_url" "$source_commit"
+  commit="$(git --git-dir="$tmp/repo.git" rev-parse FETCH_HEAD)"
+  [[ "$commit" == "$source_commit" ]] || { echo "source commit mismatch" >&2; exit 3; }
+else
+  GIT_ASKPASS="$tmp/askpass" GIT_TERMINAL_PROMPT=0 git --git-dir="$tmp/repo.git" fetch --quiet --depth=1 "$repo_url" refs/heads/main:refs/heads/source-main
+  commit="$(git --git-dir="$tmp/repo.git" rev-parse refs/heads/source-main)"
+fi
 [[ "$commit" =~ ^[0-9a-f]{40}$ ]] || exit 3
 
 candidate="$tmp/candidate"; mkdir -m 0700 "$candidate"
-if ! git --git-dir="$tmp/repo.git" show "$commit:$deploy_dir/manifest.json" > "$candidate/manifest.json" 2>/dev/null; then echo "CF_SIGNER_NO_CANDIDATE"; exit 0; fi
+if ! git --git-dir="$tmp/repo.git" show "$commit:$manifest_path" > "$candidate/manifest.json" 2>/dev/null; then echo "CF_SIGNER_NO_CANDIDATE"; exit 0; fi
 manifest_sha="$(sha256sum "$candidate/manifest.json" | awk '{print $1}')"
 [[ "$manifest_sha" =~ ^[0-9a-f]{64}$ ]] || exit 3
 
@@ -72,7 +84,7 @@ PY
 while IFS=$'\t' read -r rel expected_hash; do
   [[ -n "$rel" ]] || continue
   install -d -m 0700 "$(dirname "$candidate/$rel")"
-  git --git-dir="$tmp/repo.git" show "$commit:$deploy_dir/$rel" > "$candidate/$rel"
+  git --git-dir="$tmp/repo.git" show "$commit:$files_dir/$rel" > "$candidate/$rel"
   [[ "$(sha256sum "$candidate/$rel" | awk '{print $1}')" == "$expected_hash" ]] || { echo "candidate file hash mismatch" >&2; exit 4; }
 done < "$tmp/files"
 docker compose -f "$candidate/compose.yaml" config --format json > "$tmp/compose.json"
@@ -119,4 +131,11 @@ ssh-keygen -Y verify -f "$tmp/allowed_signers" -I "$sign_id" -n "$sign_namespace
   printf '%s\n' "$manifest_sha"
   cat "$candidate/manifest.json.sig"
 } | "${ssh_base[@]}" 'set -euo pipefail; umask 077; read -r h; [[ "$h" =~ ^[0-9a-f]{64}$ ]] || exit 2; d=/var/lib/capability-fabric/signatures; install -d -m 0750 -o root -g root "$d"; t=$(mktemp "$d/.signature.XXXXXX"); trap '\''rm -f "$t"'\'' EXIT; cat > "$t"; grep -q "BEGIN SSH SIGNATURE" "$t"; grep -q "END SSH SIGNATURE" "$t"; chown root:root "$t"; chmod 0640 "$t"; mv -f "$t" "$d/${h}.sig"; trap - EXIT; ls -1t "$d"/*.sig 2>/dev/null | tail -n +33 | xargs -r rm -f'
+release_id="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["release_id"])' "$candidate/manifest.json")"
+sequence="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["sequence"])' "$candidate/manifest.json")"
+echo "CF_SIGNER_SOURCE_COMMIT=$commit"
+echo "CF_SIGNER_MANIFEST_PATH=$manifest_path"
+echo "CF_SIGNER_SEQUENCE=$sequence"
+echo "CF_SIGNER_RELEASE_ID=$release_id"
+echo "CF_SIGNER_MANIFEST_SHA256=$manifest_sha"
 echo "CF_SIGNER_SIGNATURE=installed"
