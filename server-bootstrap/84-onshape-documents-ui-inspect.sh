@@ -37,13 +37,24 @@ try {
     await new Promise((resolve) => setTimeout(resolve, 250));
   }
   if (!terminal) throw new Error("write-path evidence capture did not reach terminal state");
-  const encoded = Buffer.from(JSON.stringify(terminal)).toString("base64");
-  const chunkSize = 3000;
-  const chunks = Math.ceil(encoded.length / chunkSize);
-  console.log("CF_ONSHAPE_WRITE_EVIDENCE_CHUNKS=" + chunks);
-  for (let i = 0; i < chunks; i++) {
-    console.log("CF_ONSHAPE_WRITE_EVIDENCE_CHUNK_" + String(i).padStart(4, "0") + "=" + encoded.slice(i * chunkSize, (i + 1) * chunkSize));
-  }
+  const evidence = terminal?.result || {};
+  console.log("CF_ONSHAPE_EVIDENCE_META=" + JSON.stringify({
+    build_id: terminal?.build_id ?? null,
+    operation_id: terminal?.operation_id ?? null,
+    status: terminal?.status ?? null,
+    capturedAt: evidence?.capturedAt ?? null,
+    navigation: evidence?.navigation ?? null,
+  }));
+  console.log("CF_ONSHAPE_EVIDENCE_ITEM1=" + JSON.stringify(evidence?.item1_apiRequestsObserved ?? null));
+  console.log("CF_ONSHAPE_EVIDENCE_ITEM2=" + JSON.stringify(evidence?.item2_antiForgeryCookie ?? null));
+  console.log("CF_ONSHAPE_EVIDENCE_ITEM3=" + JSON.stringify(evidence?.item3_origin ?? null));
+  console.log("CF_ONSHAPE_EVIDENCE_ITEM4=" + JSON.stringify(evidence?.item4_sampleReadReplay ?? null));
+  const item5 = Array.isArray(evidence?.item5_treeRequestContract) ? evidence.item5_treeRequestContract : [];
+  console.log("CF_ONSHAPE_EVIDENCE_ITEM5_COUNT=" + item5.length);
+  item5.forEach((entry, i) => console.log("CF_ONSHAPE_EVIDENCE_ITEM5_" + i + "=" + JSON.stringify(entry)));
+  const item6 = Array.isArray(evidence?.item6_writeRequestContract) ? evidence.item6_writeRequestContract : [];
+  console.log("CF_ONSHAPE_EVIDENCE_ITEM6_COUNT=" + item6.length);
+  item6.forEach((entry, i) => console.log("CF_ONSHAPE_EVIDENCE_ITEM6_" + i + "=" + JSON.stringify(entry)));
   if (terminal.status !== "SUCCEEDED") process.exit(31);
 } finally {
   await client.close().catch(() => {});
