@@ -82,6 +82,9 @@ jobs:
       - name: Node 24 syntax and agent gate
         working-directory: ${{ runner.temp }}/capability-fabric
         run: |
+          node --check server-deploy/current/browser.js
+          node --check server-deploy/current/browser-native.js
+          node --check server-deploy/current/core.js
           node --check server-deploy/current/server.js
           node --check server-deploy/current/fabric-agent.js
           node --test server-deploy/current/fabric-agent.test.mjs
