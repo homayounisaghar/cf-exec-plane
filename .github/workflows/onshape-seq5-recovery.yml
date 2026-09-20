@@ -1,4 +1,4 @@
-name: Onshape Seq5 Health Recovery
+name: Onshape Profile Recovery
 
 on:
   push:
@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: onshape-seq5-health-recovery
+  group: onshape-profile-recovery
   cancel-in-progress: false
 
 jobs:
