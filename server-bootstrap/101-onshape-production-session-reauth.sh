@@ -6,7 +6,7 @@ container=capability-fabric-onshape-server
 session_id="${CF_REAUTH_SESSION_ID:-}"
 [[ "$session_id" =~ ^session-[123]$ ]] || { echo CF_PROD_REAUTH_SESSION_ID_INVALID >&2; exit 3; }
 [[ "$(docker inspect -f '{{.State.Running}}' "$container" 2>/dev/null || echo false)" == true ]] || { echo CF_PROD_REAUTH_CONTAINER_NOT_RUNNING >&2; exit 20; }
-docker exec -i "$container" sh -lc 'cd /tmp/app && node --input-type=module' <<'NODE'
+docker exec -e CF_REAUTH_SESSION_ID="$session_id" -i "$container" sh -lc 'cd /tmp/app && node --input-type=module' <<'NODE'
 import fs from "node:fs";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
