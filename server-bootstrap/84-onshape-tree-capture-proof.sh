@@ -148,7 +148,20 @@ try{
 
     const auth=await authProbe(page);
     const snap=await page.evaluate(()=>({href:location.href,origin:location.origin,title:document.title,ready_state:document.readyState,body_text_length:document.body?.innerText?.length??null,body_child_count:document.body?.children?.length??null}));
-    const out={capture:natural?"TREE_REQUEST_OBSERVED":"NO_TREE_REQUEST",auth,page_snapshot:snap,natural_request:natural,handcrafted_request:handcrafted,comparison:compareRequest(natural,handcrafted),tree_exact_matches:treeMatches,xhr_fetch_count:traffic.length,xhr_fetch_traffic:traffic,failed_requests:failed,console_errors:consoleErrors};
+    const comparison=compareRequest(natural,handcrafted);
+    const out={capture:natural?"TREE_REQUEST_OBSERVED":"NO_TREE_REQUEST",auth,page_snapshot:snap,natural_request:natural,handcrafted_request:handcrafted,comparison,tree_exact_matches:treeMatches,xhr_fetch_count:traffic.length,xhr_fetch_traffic:traffic,failed_requests:failed,console_errors:consoleErrors};
+    const folderIds=[...new Set(treeMatches.flatMap((x)=>{const v=x?.match?.value||{};return [v.id,v.nodeId,v.resourceId].filter((y)=>y!=null&&String(y).length>0).map(String)}))];
+    console.log("CF_ONSHAPE_D005_CAPTURE="+out.capture);
+    console.log("CF_ONSHAPE_D005_AUTH="+String(auth?.state||"UNKNOWN"));
+    console.log("CF_ONSHAPE_D005_NATURAL="+String(natural?.status??"null")+" "+String(natural?.origin||"null")+String(natural?.path||"null"));
+    console.log("CF_ONSHAPE_D005_HANDCRAFTED="+String(handcrafted?.status??"null")+" "+String(handcrafted?.origin||"null")+String(handcrafted?.path||"null"));
+    console.log("CF_ONSHAPE_D005_SAME_ORIGIN="+String(comparison?.same_origin??false));
+    console.log("CF_ONSHAPE_D005_SAME_PATH="+String(comparison?.same_path??false));
+    console.log("CF_ONSHAPE_D005_SAME_QUERY="+String(comparison?.same_query??false));
+    console.log("CF_ONSHAPE_D005_NATURAL_ONLY_HEADERS="+(comparison?.natural_only_headers||[]).join(","));
+    console.log("CF_ONSHAPE_D005_HANDCRAFTED_ONLY_HEADERS="+(comparison?.handcrafted_only_headers||[]).join(","));
+    console.log("CF_ONSHAPE_D006_MATCH_COUNT="+treeMatches.length);
+    console.log("CF_ONSHAPE_D006_FOLDER_IDS="+folderIds.join(","));
     console.log("CF_ONSHAPE_D005_CAPTURE_B64="+Buffer.from(JSON.stringify(out)).toString("base64"));
   }
 }catch(e){
