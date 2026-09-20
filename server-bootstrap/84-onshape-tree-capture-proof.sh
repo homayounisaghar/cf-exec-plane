@@ -93,6 +93,21 @@ async function requestShape(response){
   return {resource_type:req.resourceType(),method:req.method(),status:response.status(),origin:u.origin,path:u.pathname,query_entries:safeQuery(u),headers,sensitive_headers,content_type:String((await response.allHeaders().catch(()=>response.headers()))?.["content-type"]||"").slice(0,200)};
 }
 function headerNames(x){return [...Object.keys(x?.headers||{}),...(x?.sensitive_headers||[]).map(v=>v.name)].sort();}
+function collectNamed(value,wanted,out,path="$",depth=0){
+  if(depth>12||value==null)return;
+  if(Array.isArray(value)){for(let i=0;i<value.length;i++)collectNamed(value[i],wanted,out,path+"["+i+"]",depth+1);return;}
+  if(typeof value!=="object")return;
+  const label=value.name??value.displayName??value.title??null;
+  if(label===wanted){
+    const keep={};
+    for(const k of ["id","nodeId","resourceId","parentId","resourceType","objectType","type","name","displayName","title"]){
+      const v=value[k];
+      if(v==null||["string","number","boolean"].includes(typeof v))keep[k]=v??null;
+    }
+    out.push({json_path:path,value:keep});
+  }
+  for(const [k,v] of Object.entries(value))collectNamed(v,wanted,out,path+"."+k,depth+1);
+}
 function compareRequest(a,b){
   if(!a||!b)return {available:false};
   const A=new Set(headerNames(a)),B=new Set(headerNames(b)),diff=[];
@@ -113,8 +128,8 @@ try{
     console.log("CF_ONSHAPE_D005_CAPTURE_B64="+Buffer.from(JSON.stringify(out)).toString("base64"));
     process.exitCode=32;
   }else{
-    const traffic=[],targets=[],failed=[],consoleErrors=[],pending=[];
-    page.on("response",(resp)=>{const p=requestShape(resp).then(d=>{if(["xhr","fetch"].includes(d.resource_type)&&traffic.length<300)traffic.push(d);if(/globaltree|treenode/i.test(d.path)&&targets.length<40)targets.push(d)}).catch(()=>{});pending.push(p);});
+    const traffic=[],targets=[],treeMatches=[],failed=[],consoleErrors=[],pending=[];
+    page.on("response",(resp)=>{const p=requestShape(resp).then(async d=>{if(["xhr","fetch"].includes(d.resource_type)&&traffic.length<300)traffic.push(d);if(/globaltree|treenode/i.test(d.path)&&targets.length<40){targets.push(d);const body=await resp.text().catch(()=>null);if(body){try{const parsed=JSON.parse(body),found=[];collectNamed(parsed,"View:TOP",found);for(const match of found.slice(0,20))treeMatches.push({request:{status:d.status,origin:d.origin,path:d.path,query_entries:d.query_entries},match})}catch{}}}}).catch(()=>{});pending.push(p);});
     page.on("requestfailed",(req)=>{if(failed.length>=30)return;try{const u=new URL(req.url());failed.push({resource_type:req.resourceType(),method:req.method(),origin:u.origin,path:u.pathname,query_entries:safeQuery(u),failure:String(req.failure()?.errorText||"").slice(0,300)})}catch{}});
     page.on("console",(msg)=>{if(msg.type()!=="error"||consoleErrors.length>=30)return;const loc=msg.location();consoleErrors.push({text:msg.text().slice(0,1000),url:String(loc?.url||"").slice(0,500),line:loc?.lineNumber??null,column:loc?.columnNumber??null})});
 
@@ -133,7 +148,7 @@ try{
 
     const auth=await authProbe(page);
     const snap=await page.evaluate(()=>({href:location.href,origin:location.origin,title:document.title,ready_state:document.readyState,body_text_length:document.body?.innerText?.length??null,body_child_count:document.body?.children?.length??null}));
-    const out={capture:natural?"TREE_REQUEST_OBSERVED":"NO_TREE_REQUEST",auth,page_snapshot:snap,natural_request:natural,handcrafted_request:handcrafted,comparison:compareRequest(natural,handcrafted),xhr_fetch_count:traffic.length,xhr_fetch_traffic:traffic,failed_requests:failed,console_errors:consoleErrors};
+    const out={capture:natural?"TREE_REQUEST_OBSERVED":"NO_TREE_REQUEST",auth,page_snapshot:snap,natural_request:natural,handcrafted_request:handcrafted,comparison:compareRequest(natural,handcrafted),tree_exact_matches:treeMatches,xhr_fetch_count:traffic.length,xhr_fetch_traffic:traffic,failed_requests:failed,console_errors:consoleErrors};
     console.log("CF_ONSHAPE_D005_CAPTURE_B64="+Buffer.from(JSON.stringify(out)).toString("base64"));
   }
 }catch(e){
