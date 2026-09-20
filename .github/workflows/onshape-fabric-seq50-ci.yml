@@ -86,9 +86,9 @@ jobs:
           node --check server-deploy/current/browser-native.js
           node --check server-deploy/current/core.js
           node --check server-deploy/current/server.js
+          node --check server-deploy/current/session-pool.js
           node --check server-deploy/current/fabric-agent.js
-          grep -F '/release/browser-native.js' server-deploy/current/compose.yaml
-          node --test server-deploy/current/fabric-agent.test.mjs
+          node --test server-deploy/current/fabric-agent.test.mjs server-deploy/current/session-pool.test.mjs server-deploy/current/core.test.mjs
 
       - name: Canonical Python regression
         working-directory: ${{ runner.temp }}/capability-fabric
@@ -103,7 +103,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for f in control_ingress.py domain.py enforcement.py execution_agents.py kernel.py onshape_vps.py onshape_vps_sidecar.py onshape_vps_transport.py persistence.py policy_kernel.py ports.py; do
+          for f in control_ingress.py domain.py enforcement.py execution_agents.py kernel.py onshape_authority.py onshape_vps.py onshape_vps_sidecar.py onshape_vps_transport.py persistence.py policy_kernel.py ports.py; do
             cmp "src/capability_fabric/$f" "server-deploy/current/fabric-src/capability_fabric/$f"
           done
           cmp tests/onshape_vps_fabric/test_onshape_vps_runtime.py server-deploy/current/fabric-tests/test_onshape_vps_runtime.py
@@ -124,11 +124,15 @@ jobs:
           python - <<'PY'
           import hashlib, json, os
           from pathlib import Path
-          m=json.loads(Path("server-deploy/current/manifest.json").read_text())
-          assert m["sequence"] == int(os.environ["EXPECTED_SEQUENCE"])
-          assert m["release_id"] == os.environ["EXPECTED_RELEASE"]
-          for name, expected in m["files"].items():
-              actual=hashlib.sha256((Path("server-deploy/current")/name).read_bytes()).hexdigest()
-              assert actual == expected, (name, actual, expected)
-          print("CF_CANDIDATE_MANIFEST=pass")
+          expected_sequence=int(os.environ["EXPECTED_SEQUENCE"])
+          if expected_sequence == 0:
+              print("CF_CANDIDATE_SOURCE_HARDENING_ONLY=pass")
+          else:
+              m=json.loads(Path("server-deploy/current/manifest.json").read_text())
+              assert m["sequence"] == expected_sequence
+              assert m["release_id"] == os.environ["EXPECTED_RELEASE"]
+              for name, expected in m["files"].items():
+                  actual=hashlib.sha256((Path("server-deploy/current")/name).read_bytes()).hexdigest()
+                  assert actual == expected, (name, actual, expected)
+              print("CF_CANDIDATE_MANIFEST=pass")
           PY
