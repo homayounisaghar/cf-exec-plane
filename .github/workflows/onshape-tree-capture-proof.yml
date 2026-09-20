@@ -1,6 +1,7 @@
 name: Onshape Tree Capture Proof
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
@@ -37,6 +38,9 @@ jobs:
       - name: Validate immutable diagnostic request
         run: |
           set -euo pipefail
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            exit 0
+          fi
           mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
           [[ "${#changes[@]}" -eq 1 ]] || { echo "diagnostic trigger commit must add exactly one request file" >&2; exit 10; }
           IFS=$'\t' read -r status request_path <<<"${changes[0]}"
