@@ -35,6 +35,7 @@ remote_env=("VPS_SSH_PORT=$port")
 [[ -n "${CF_ONSHAPE_BROWSER_OPEN_DOCUMENT_ID:-}" ]] && remote_env+=("CF_ONSHAPE_BROWSER_OPEN_DOCUMENT_ID=$CF_ONSHAPE_BROWSER_OPEN_DOCUMENT_ID")
 [[ -n "${CF_ONSHAPE_BROWSER_OPEN_WORKSPACE_ID:-}" ]] && remote_env+=("CF_ONSHAPE_BROWSER_OPEN_WORKSPACE_ID=$CF_ONSHAPE_BROWSER_OPEN_WORKSPACE_ID")
 [[ -n "${CF_ONSHAPE_BROWSER_OPEN_ELEMENT_ID:-}" ]] && remote_env+=("CF_ONSHAPE_BROWSER_OPEN_ELEMENT_ID=$CF_ONSHAPE_BROWSER_OPEN_ELEMENT_ID")
+[[ -n "${CF_ONSHAPE_BROWSER_ACTION:-}" ]] && remote_env+=("CF_ONSHAPE_BROWSER_ACTION=$CF_ONSHAPE_BROWSER_ACTION")
 remote_cmd='set -euo pipefail; d=$(mktemp -d /root/.cf-bootstrap.XXXXXX); trap '\''rm -rf "$d"'\'' EXIT; tar -xzf - -C "$d"; cd "$d"; env'
 for kv in "${remote_env[@]}"; do
   printf -v q '%q' "$kv"
