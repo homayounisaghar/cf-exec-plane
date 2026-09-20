@@ -11,6 +11,9 @@ browser_profile=/var/lib/capability-fabric/onshape/browser-profile
 browser_sentinel="$browser_profile/.backup-exclusion-sentinel"
 interactive_browser_root=/var/lib/capability-fabric/onshape/interactive-browser
 interactive_browser_sentinel="$interactive_browser_root/.backup-exclusion-sentinel"
+fabric_state_db=/var/lib/capability-fabric/onshape/fabric-state/execution.sqlite3
+fabric_state_backup_dir=/var/lib/capability-fabric/onshape/fabric-state/backup
+fabric_state_backup="$fabric_state_backup_dir/execution-consistent.sqlite3"
 
 config=/etc/capability-fabric/backup.env
 [[ -s "$config" ]] || { echo "BLOCKED: backup destination configuration is not provisioned" >&2; exit 30; }
@@ -163,6 +166,43 @@ if systemctl is-active --quiet capability-fabric-pull.service; then echo "pull s
 
 roots=(/etc/capability-fabric /var/lib/capability-fabric /opt/capability-fabric /usr/local/libexec/capability-fabric-pull-agent /etc/systemd/system/capability-fabric-pull.service /etc/systemd/system/capability-fabric-pull.timer)
 for p in "${roots[@]}"; do [[ -e "$p" || -L "$p" ]] || { echo "required backup root missing: $p" >&2; exit 31; }; done
+
+sqlite_snapshot=not-present
+if [[ -f "$fabric_state_db" ]]; then
+  install -d -m 0700 -o root -g root "$fabric_state_backup_dir"
+  python3 - "$fabric_state_db" "$fabric_state_backup" <<'PY'
+import os,sqlite3,sys
+src,dst=sys.argv[1:]
+tmp=dst+".tmp"
+try:
+    os.unlink(tmp)
+except FileNotFoundError:
+    pass
+source=sqlite3.connect(src, isolation_level=None, timeout=5.0)
+target=sqlite3.connect(tmp, isolation_level=None, timeout=5.0)
+try:
+    source.backup(target)
+    row=target.execute("PRAGMA integrity_check").fetchone()
+    if row is None or str(row[0]).lower() != "ok":
+        raise SystemExit("SQLite backup integrity check failed")
+    schema=target.execute("SELECT value FROM schema_meta WHERE key='schema_version'").fetchone()
+    if schema is None or str(schema[0]) != "1":
+        raise SystemExit("SQLite backup schema version mismatch")
+finally:
+    target.close()
+    source.close()
+os.chmod(tmp,0o600)
+with open(tmp,'rb') as f:
+    os.fsync(f.fileno())
+os.replace(tmp,dst)
+PY
+  [[ "$(stat -c '%U:%G:%a' "$fabric_state_backup")" == root:root:600 ]] || {
+    echo "consistent SQLite backup permissions are unsafe" >&2
+    exit 31
+  }
+  sqlite_snapshot=pass
+fi
+
 if ! restic cat config >>"$log" 2>&1; then restic init >>"$log" 2>&1; fi
 
 timestamp="$(date -u +%Y%m%dT%H%M%SZ)"
@@ -237,11 +277,40 @@ with open(out,'w',encoding='utf-8') as fh:
         emit(r,p,fh)
 PY
   cmp -s "$source_manifest" "$restored_manifest" || { echo "CF_BACKUP_RESTORE_COMPARE=failed" >&2; exit 33; }
-  printf 'snapshot_id=%s\nrestore_verified=yes\nverified_at=%s\n' "$snapshot_id" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > /var/lib/capability-fabric/state/backup-restore-proof
+
+  sqlite_restore_integrity=not-present
+  sqlite_recoverable_count=0
+  if [[ "$sqlite_snapshot" == pass ]]; then
+    restored_sqlite="$restore_dir$fabric_state_backup"
+    [[ -f "$restored_sqlite" ]] || { echo "CF_BACKUP_SQLITE_RESTORE=missing" >&2; exit 33; }
+    sqlite_recoverable_count="$(python3 - "$restored_sqlite" <<'PY'
+import sqlite3,sys
+path=sys.argv[1]
+conn=sqlite3.connect(f"file:{path}?mode=ro", uri=True, isolation_level=None, timeout=5.0)
+try:
+    row=conn.execute("PRAGMA integrity_check").fetchone()
+    if row is None or str(row[0]).lower() != "ok":
+        raise SystemExit("restored SQLite integrity check failed")
+    schema=conn.execute("SELECT value FROM schema_meta WHERE key='schema_version'").fetchone()
+    if schema is None or str(schema[0]) != "1":
+        raise SystemExit("restored SQLite schema version mismatch")
+    count=conn.execute(
+        "SELECT COUNT(*) FROM invocations WHERE phase IN ('DISPATCH_FINALIZED','DISPATCH_INTENT','OBSERVED')"
+    ).fetchone()[0]
+    print(int(count))
+finally:
+    conn.close()
+PY
+)"
+    [[ "$sqlite_recoverable_count" =~ ^[0-9]+$ ]] || { echo "CF_BACKUP_SQLITE_RECOVERABLE_COUNT=invalid" >&2; exit 33; }
+    sqlite_restore_integrity=pass
+  fi
+
+  printf 'snapshot_id=%s\nrestore_verified=yes\nverified_at=%s\nsqlite_snapshot=%s\nsqlite_restore_integrity=%s\nsqlite_recoverable_count=%s\n' "$snapshot_id" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$sqlite_snapshot" "$sqlite_restore_integrity" "$sqlite_recoverable_count" > /var/lib/capability-fabric/state/backup-restore-proof
   chmod 0600 /var/lib/capability-fabric/state/backup-restore-proof; chown root:root /var/lib/capability-fabric/state/backup-restore-proof
   rm -rf "$restore_dir" "$source_manifest" "$restored_manifest"
   systemctl enable --now capability-fabric-backup.timer >/dev/null
-  printf 'CF_BACKUP_PROOF_BEGIN\nSNAPSHOT_ID=%s\nRESTIC_CHECK=pass\nISOLATED_RESTORE=pass\nRESTORE_TREE_COMPARE=pass\nBROWSER_PROFILE_EXCLUDED=pass\nINTERACTIVE_BROWSER_PROFILE_EXCLUDED=pass\nBACKUP_EXCLUDE_PERMS=pass\nBACKUP_TIMER_ENABLED=yes\nCF_BACKUP_PROOF_END\n' "$snapshot_id"
+  printf 'CF_BACKUP_PROOF_BEGIN\nSNAPSHOT_ID=%s\nRESTIC_CHECK=pass\nISOLATED_RESTORE=pass\nRESTORE_TREE_COMPARE=pass\nBROWSER_PROFILE_EXCLUDED=pass\nINTERACTIVE_BROWSER_PROFILE_EXCLUDED=pass\nBACKUP_EXCLUDE_PERMS=pass\nSQLITE_CONSISTENT_SNAPSHOT=%s\nSQLITE_RESTORE_INTEGRITY=%s\nSQLITE_RECOVERABLE_COUNT=%s\nBACKUP_TIMER_ENABLED=yes\nCF_BACKUP_PROOF_END\n' "$snapshot_id" "$sqlite_snapshot" "$sqlite_restore_integrity" "$sqlite_recoverable_count"
 else
   rm -f "$source_manifest"
   restic forget --tag capability-fabric-personal-server --keep-last 3 --keep-daily 7 --keep-weekly 4 --keep-monthly 6 --prune >>"$log" 2>&1
