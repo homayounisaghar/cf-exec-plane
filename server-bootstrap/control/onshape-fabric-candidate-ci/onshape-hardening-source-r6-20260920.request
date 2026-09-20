@@ -1,0 +1,4 @@
+request_id=onshape-hardening-source-r6-20260920
+candidate_commit=dffb2ae09eaf0d47a40487bb581cd1c8c9272472
+expected_sequence=0
+expected_release=source-hardening-r6
