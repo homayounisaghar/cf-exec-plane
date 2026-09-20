@@ -47,6 +47,6 @@ jobs:
           printf '::add-mask::%s\n' "$VPS_HOST"
           printf '::add-mask::%s\n' "$VPS_SSH_USER"
           while IFS= read -r addr; do [[ -n "$addr" ]] && printf '::add-mask::%s\n' "$addr"; done < <(getent ahosts "$VPS_HOST" 2>/dev/null | awk '{print $1}' | sort -u)
-      - name: Restore seq5 health invariants
+      - name: Repair persistent profile ownership
         shell: bash
-        run: bash server-bootstrap/runner/remote-bundle-exec.sh server-bootstrap/92-onshape-seq5-recovery.sh
+        run: bash server-bootstrap/runner/remote-bundle-exec.sh server-bootstrap/93-onshape-profile-ownership-repair.sh
