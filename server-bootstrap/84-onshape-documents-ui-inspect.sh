@@ -18,9 +18,9 @@ const client = new Client({ name: "cf-local-browser-open", version: "1.0.0" });
 const transport = new StreamableHTTPClientTransport(new URL(`http://127.0.0.1:8787/mcp/${token}`));
 await client.connect(transport);
 try {
-  const action = process.env.CF_OPEN_ACTION === "top_view" ? "top_view" : "open";
+  const action = ["top_view", "mouse_probe"].includes(process.env.CF_OPEN_ACTION) ? process.env.CF_OPEN_ACTION : "open";
   const open = await client.callTool({
-    name: action === "top_view" ? "onshape_browser_top_view" : "onshape_browser_open",
+    name: action === "top_view" ? "onshape_browser_top_view" : action === "mouse_probe" ? "onshape_browser_mouse_probe" : "onshape_browser_open",
     arguments: {
       document_id: process.env.CF_OPEN_DID,
       workspace_id: process.env.CF_OPEN_WID,
