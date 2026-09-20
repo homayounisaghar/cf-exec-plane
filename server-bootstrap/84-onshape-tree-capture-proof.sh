@@ -24,7 +24,7 @@ rm -rf "$host_clone/log"
 find "$host_clone" -maxdepth 2 \( -name 'SingletonLock' -o -name 'SingletonCookie' -o -name 'SingletonSocket' -o -name 'DevToolsActivePort' \) -exec rm -rf {} + 2>/dev/null || true
 
 docker exec "$container" rm -rf /tmp/cf-d005-profile
-tar -C "$host_clone" -cf - . | docker exec -i "$container" sh -lc 'mkdir -p /tmp/cf-d005-profile && tar -C /tmp/cf-d005-profile -xf - && chown -R 0:0 /tmp/cf-d005-profile'
+tar -C "$host_clone" -cf - . | docker exec -i "$container" sh -lc 'mkdir -p /tmp/cf-d005-profile && tar --no-same-owner -C /tmp/cf-d005-profile -xf - && chown -R 0:0 /tmp/cf-d005-profile'
 
 docker exec -i "$container" sh -lc 'cd /tmp/app && node --input-type=module' <<'NODE'
 import { chromium } from "playwright";
