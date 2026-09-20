@@ -124,6 +124,37 @@ jobs:
           python -m compileall -q server-deploy/current/fabric-src server-deploy/current/fabric-tests
           python -m unittest discover -s server-deploy/current/fabric-tests -p 'test_*.py' -v
 
+      - name: Emit source-freeze release closure hashes
+        if: env.EXPECTED_SEQUENCE == '0'
+        working-directory: ${{ runner.temp }}/capability-fabric
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+          root=Path("server-deploy/current")
+          closure=json.loads((root/"release-closure.json").read_text())
+          files={}
+          for rel in closure["files"]:
+              p=root/rel
+              if not p.is_file():
+                  raise SystemExit(f"missing release closure file: {rel}")
+              files[rel]=hashlib.sha256(p.read_bytes()).hexdigest()
+          for forbidden in closure.get("forbidden_release_files", []):
+              if forbidden in files:
+                  raise SystemExit(f"forbidden file listed in closure: {forbidden}")
+          out={
+              "schema":"capability-fabric.deploy.v1",
+              "compose_file":"compose.yaml",
+              "health_file":"health.sh",
+              "health_timeout_seconds":300,
+              "files":files,
+              "images":closure["images"],
+          }
+          print("CF_RELEASE_CLOSURE_JSON="+json.dumps(out,separators=(",",":"),sort_keys=True))
+          PY
+
       - name: Confirm immutable candidate identity
         working-directory: ${{ runner.temp }}/capability-fabric
         run: |
