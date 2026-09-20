@@ -36,8 +36,9 @@ const client=new Client({name:"cf-production-boundary-proof",version:"1.0.0"});
 const transport=new StreamableHTTPClientTransport(new URL("http://127.0.0.1:8788/mcp/"+token));
 await client.connect(transport);
 const names=(await client.listTools()).tools.map(x=>x.name).sort();
-const expected=["cf_echo","onshape_fabric_capabilities","onshape_fabric_invoke","onshape_fabric_reconcile"].sort();
+const expected=["cf_echo","onshape_fabric_capabilities","onshape_fabric_invoke","onshape_fabric_reconcile","onshape_pool_status","onshape_pool_session_reauth","onshape_verification_submit","onshape_operation_status"].sort();
 if(JSON.stringify(names)!==JSON.stringify(expected)) throw new Error("catalog:"+JSON.stringify(names));
+for(const forbidden of ["onshape_ui_native","onshape_ui_input","onshape_request","onshape_artifact","onshape_openapi","onshape_openapi_refresh","onshape_documents_create"]){ if(names.includes(forbidden)) throw new Error("forbidden raw tool exposed:"+forbidden); }
 for(const capability_id of ["onshape.ui.native","onshape.ui.input.sequence"]){
   const denied=await client.callTool({name:"onshape_fabric_invoke",arguments:{capability_id,arguments:{}}});
   const body=denied.content.filter(x=>x.type==="text").map(x=>x.text||"").join("\n");
