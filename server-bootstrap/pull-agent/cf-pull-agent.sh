@@ -12,6 +12,7 @@ CACHE=/var/lib/capability-fabric/repo.git
 RELEASES=/var/lib/capability-fabric/releases
 SIGNATURES=/var/lib/capability-fabric/signatures
 STATE=/var/lib/capability-fabric/state
+RELEASE_GATE="$STATE/release-in-progress"
 ACTIVE=/opt/capability-fabric/current
 PREVIOUS=/opt/capability-fabric/previous
 DETAIL_LOG=/var/log/capability-fabric/pull-agent-detail.log
@@ -44,7 +45,9 @@ trap cleanup EXIT
 
 timestamp() { date -u +%Y-%m-%dT%H:%M:%SZ; }
 detail() { printf '[%s] %s\n' "$(timestamp)" "$*" >> "$DETAIL_LOG"; }
-atomic_write() { local path="$1" value="$2" tmp; tmp="${path}.tmp.$$"; printf '%s\n' "$value" > "$tmp"; chmod 0600 "$tmp"; mv -f "$tmp" "$path"; }
+atomic_write() { local path="$1" value="$2" tmp; tmp="${path}.tmp.$"; printf '%s\n' "$value" > "$tmp"; chmod 0600 "$tmp"; mv -f "$tmp" "$path"; }
+release_gate_begin() { atomic_write "$RELEASE_GATE" "RELEASE_IN_PROGRESS"; }
+release_gate_end() { rm -f "$RELEASE_GATE"; }
 atomic_link() { local target="$1" link="$2" tmp; tmp="${link}.tmp.$$"; rm -f "$tmp"; ln -s "$target" "$tmp"; mv -Tf "$tmp" "$link"; }
 read_state() { local path="$1" fallback="$2"; if [[ -r "$path" ]]; then cat "$path"; else printf '%s' "$fallback"; fi; }
 manifest_value() {
@@ -90,12 +93,13 @@ if [[ "$MODE" == rollback-drill ]]; then
 exit 1
 DRILL
   chmod 0750 "$drill/health.sh"
+  release_gate_begin
   atomic_link "$old" "$PREVIOUS"; atomic_link "$drill" "$ACTIVE"
   if ! compose_apply "$drill"; then detail "rollback drill candidate apply failed before forced health"; fi
-  if health_check "$drill"; then atomic_link "$old" "$ACTIVE"; compose_apply "$old" || true; rm -rf "$drill"; echo "CF_ROLLBACK_DRILL_UNEXPECTED_HEALTH_PASS" >&2; exit 61; fi
+  if health_check "$drill"; then atomic_link "$old" "$ACTIVE"; compose_apply "$old" || true; rm -rf "$drill"; release_gate_end; echo "CF_ROLLBACK_DRILL_UNEXPECTED_HEALTH_PASS" >&2; exit 61; fi
   if ! rollback_to "$old" "$drill"; then rm -rf "$drill"; echo "CF_ROLLBACK_DRILL=failed" >&2; exit 62; fi
   if [[ -n "$saved_previous" && -d "$saved_previous" ]]; then atomic_link "$saved_previous" "$PREVIOUS"; else rm -f "$PREVIOUS"; fi
-  rm -rf "$drill"; echo "CF_ROLLBACK_DRILL=success"; exit 0
+  rm -rf "$drill"; release_gate_end; echo "CF_ROLLBACK_DRILL=success"; exit 0
 fi
 
 askpass="$work/askpass"
@@ -221,11 +225,13 @@ mv "$stage" "$release"; chown -R root:root "$release"; chmod -R go-w "$release"
 if ! compose_pull "$release"; then atomic_write "$STATE/last-failed-commit" "$commit"; echo "CF_PULL_IMAGE_PULL_FAILED" >&2; exit 40; fi
 old=''
 if [[ -L "$ACTIVE" ]]; then old="$(readlink -f "$ACTIVE")"; [[ "$old" == "$RELEASES/"* && -d "$old" ]] || { atomic_write "$STATE/last-failed-commit" "$commit"; echo "CF_PULL_INVALID_CURRENT_POINTER" >&2; exit 41; }; fi
+release_gate_begin
 [[ -z "$old" ]] || atomic_link "$old" "$PREVIOUS"; atomic_link "$release" "$ACTIVE"
 if ! compose_apply "$release" || ! health_check "$release"; then
   atomic_write "$STATE/last-failed-commit" "$commit"
-  if rollback_to "$old" "$release"; then echo "CF_PULL_APPLY_FAILED_ROLLED_BACK" >&2; exit 42; fi
+  if rollback_to "$old" "$release"; then release_gate_end; echo "CF_PULL_APPLY_FAILED_ROLLED_BACK" >&2; exit 42; fi
   echo "CF_PULL_APPLY_FAILED_ROLLBACK_FAILED" >&2; exit 43
 fi
 atomic_write "$STATE/last-good-sequence" "$sequence"; atomic_write "$STATE/last-good-release" "$release_id"; atomic_write "$STATE/last-good-commit" "$commit"; rm -f "$STATE/last-failed-commit"
+release_gate_end
 detail "activation success sequence=$sequence"; echo "CF_PULL_APPLY=success"
