@@ -1,10 +1,10 @@
-name: Onshape Fabric Seq50 Qualification
+name: Onshape Fabric Candidate Qualification
 
 on:
   push:
     branches: [main]
     paths:
-      - server-bootstrap/control/onshape-fabric-seq50-ci/*.request
+      - server-bootstrap/control/onshape-fabric-candidate-ci/*.request
 
 permissions:
   contents: read
@@ -30,8 +30,20 @@ jobs:
           [[ "${#changes[@]}" -eq 1 ]] || { echo "request commit must add exactly one file" >&2; exit 10; }
           IFS=$'\t' read -r status request_path <<<"${changes[0]}"
           [[ "$status" == A ]] || { echo "request must be newly added" >&2; exit 11; }
-          [[ "$request_path" == server-bootstrap/control/onshape-fabric-seq50-ci/*.request ]] || { echo "unexpected request path" >&2; exit 12; }
-          grep -Fxq 'candidate_commit=c77d0359d81b2943811281d03bfe9027b1d96a7d' "$request_path"
+          [[ "$request_path" == server-bootstrap/control/onshape-fabric-candidate-ci/*.request ]] || { echo "unexpected request path" >&2; exit 12; }
+          request_id="$(awk -F= '$1=="request_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          candidate_commit="$(awk -F= '$1=="candidate_commit"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          expected_sequence="$(awk -F= '$1=="expected_sequence"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          expected_release="$(awk -F= '$1=="expected_release"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          [[ "$request_id" =~ ^[A-Za-z0-9_.-]{8,96}$ ]] || exit 13
+          [[ "$candidate_commit" =~ ^[0-9a-f]{40}$ ]] || exit 14
+          [[ "$expected_sequence" =~ ^[0-9]+$ ]] || exit 15
+          [[ "$expected_release" =~ ^[A-Za-z0-9_.-]{8,120}$ ]] || exit 16
+          {
+            echo "CANDIDATE_COMMIT=$candidate_commit"
+            echo "EXPECTED_SEQUENCE=$expected_sequence"
+            echo "EXPECTED_RELEASE=$expected_release"
+          } >> "$GITHUB_ENV"
 
       - name: Checkout exact private Capability Fabric candidate
         shell: bash
@@ -50,10 +62,10 @@ jobs:
           chmod 0700 "$askpass"
           git init "$tmp" >/dev/null
           git -C "$tmp" remote add origin https://github.com/homayounisaghar/capability-fabric.git
-          GIT_ASKPASS="$askpass" GIT_TERMINAL_PROMPT=0 git -C "$tmp" fetch --quiet --depth=1 origin c77d0359d81b2943811281d03bfe9027b1d96a7d
+          GIT_ASKPASS="$askpass" GIT_TERMINAL_PROMPT=0 git -C "$tmp" fetch --quiet --depth=1 origin "$CANDIDATE_COMMIT"
           git -C "$tmp" checkout --quiet --detach FETCH_HEAD
-          [[ "$(git -C "$tmp" rev-parse HEAD)" == c77d0359d81b2943811281d03bfe9027b1d96a7d ]]
-          printf 'CF_SEQ50_CHECKOUT=pass\n'
+          [[ "$(git -C "$tmp" rev-parse HEAD)" == "$CANDIDATE_COMMIT" ]]
+          printf 'CF_CANDIDATE_CHECKOUT=pass\n'
 
       - uses: actions/setup-python@v5
         with:
@@ -67,7 +79,7 @@ jobs:
         working-directory: ${{ runner.temp }}/capability-fabric
         run: python -m pip install -e .
 
-      - name: Node 24 strict-mode syntax gate
+      - name: Node 24 syntax and agent gate
         working-directory: ${{ runner.temp }}/capability-fabric
         run: |
           node --check server-deploy/current/server.js
@@ -101,16 +113,17 @@ jobs:
           python -m compileall -q server-deploy/current/fabric-src server-deploy/current/fabric-tests
           python -m unittest discover -s server-deploy/current/fabric-tests -p 'test_*.py' -v
 
-      - name: Confirm immutable retry identity
+      - name: Confirm immutable candidate identity
         working-directory: ${{ runner.temp }}/capability-fabric
         run: |
           python - <<'PY'
-          import json,hashlib
+          import hashlib, json, os
           from pathlib import Path
           m=json.loads(Path("server-deploy/current/manifest.json").read_text())
-          assert m["sequence"] == 50
-          assert m["release_id"] == "onshape-three-session-v46-fabric-shadow-r2"
-          actual=hashlib.sha256(Path("server-deploy/current/server.js").read_bytes()).hexdigest()
-          assert m["files"]["server.js"] == actual
-          print("CF_SEQ50_MANIFEST=pass")
+          assert m["sequence"] == int(os.environ["EXPECTED_SEQUENCE"])
+          assert m["release_id"] == os.environ["EXPECTED_RELEASE"]
+          for name, expected in m["files"].items():
+              actual=hashlib.sha256((Path("server-deploy/current")/name).read_bytes()).hexdigest()
+              assert actual == expected, (name, actual, expected)
+          print("CF_CANDIDATE_MANIFEST=pass")
           PY
