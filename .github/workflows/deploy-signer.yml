@@ -4,6 +4,10 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '*/10 * * * *'
+  push:
+    branches: [main]
+    paths:
+      - server-bootstrap/control/deploy-signer-requests/*.request
 
 permissions:
   contents: read
@@ -33,5 +37,27 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+      - name: Validate immutable candidate-sign request
+        if: github.event_name == 'push'
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || { echo "sign request commit must add exactly one file" >&2; exit 10; }
+          IFS=      - name: Validate, sign if needed, and install detached signature
+        run: bash server-bootstrap/runner/sign-and-install-release-v2.sh
+\t' read -r status request_path <<<"${changes[0]}"
+          [[ "$status" == A ]] || { echo "sign request must be newly added" >&2; exit 11; }
+          [[ "$request_path" == server-bootstrap/control/deploy-signer-requests/*.request ]] || exit 12
+          request_id="$(awk -F= '$1=="request_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          candidate_commit="$(awk -F= '$1=="candidate_commit"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          candidate_manifest="$(awk -F= '$1=="candidate_manifest"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 13
+          [[ "$candidate_commit" =~ ^[0-9a-f]{40}$ ]] || exit 14
+          [[ "$candidate_manifest" =~ ^server-deploy/candidates/[A-Za-z0-9._-]+/manifest\.json$ ]] || exit 15
+          {
+            echo "CF_DEPLOY_SOURCE_COMMIT=$candidate_commit"
+            echo "CF_DEPLOY_MANIFEST_PATH=$candidate_manifest"
+            echo "CF_DEPLOY_FILES_DIR=server-deploy/current"
+          } >> "$GITHUB_ENV"
       - name: Validate, sign if needed, and install detached signature
         run: bash server-bootstrap/runner/sign-and-install-release-v2.sh
