@@ -79,6 +79,12 @@ jobs:
         working-directory: ${{ runner.temp }}/capability-fabric
         run: python -m pip install -e .
 
+      - name: Install candidate Node dependencies
+        working-directory: ${{ runner.temp }}/capability-fabric/server-deploy/current
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+        run: npm install --omit=dev --ignore-scripts --no-audit --no-fund --package-lock=false
+
       - name: Node 24 syntax and agent gate
         working-directory: ${{ runner.temp }}/capability-fabric
         run: |
