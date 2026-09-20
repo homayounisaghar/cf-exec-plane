@@ -12,6 +12,11 @@ CACHE=/var/lib/capability-fabric/repo.git
 RELEASES=/var/lib/capability-fabric/releases
 SIGNATURES=/var/lib/capability-fabric/signatures
 STATE=/var/lib/capability-fabric/state
+RUNTIME_CONTROL_PATH=runtime/onshape/ONSHAPE_RUNTIME_CONTROL.json
+RUNTIME_CONTROL_DIR=/var/lib/capability-fabric/onshape/runtime-control
+RUNTIME_CONTROL_FILE="$RUNTIME_CONTROL_DIR/ONSHAPE_RUNTIME_CONTROL.json"
+RUNTIME_CONTROL_BLOB_FILE="$RUNTIME_CONTROL_DIR/git-blob-sha"
+RUNTIME_CONTROL_COMMIT_FILE="$RUNTIME_CONTROL_DIR/source-commit"
 RELEASE_GATE="$STATE/release-in-progress"
 ACTIVE=/opt/capability-fabric/current
 PREVIOUS=/opt/capability-fabric/previous
@@ -31,7 +36,7 @@ for cmd in git ssh-keygen python3 docker flock sha256sum timeout; do
 done
 docker compose version >/dev/null 2>&1 || { echo "CF_PULL_MISSING_DOCKER_COMPOSE" >&2; exit 22; }
 
-install -d -m 0750 -o root -g root "$RELEASES" "$SIGNATURES" "$STATE" /var/log/capability-fabric /var/lib/capability-fabric/agent-home
+install -d -m 0750 -o root -g root "$RELEASES" "$SIGNATURES" "$STATE" "$RUNTIME_CONTROL_DIR" /var/log/capability-fabric /var/lib/capability-fabric/agent-home
 install -d -m 0755 -o root -g root /opt/capability-fabric /run/lock
 : >> "$DETAIL_LOG"
 chmod 0640 "$DETAIL_LOG"
@@ -57,6 +62,58 @@ import json,sys
 with open(sys.argv[1], encoding='utf-8') as f: m=json.load(f)
 print(m[sys.argv[2]])
 PY
+}
+sync_runtime_control() {
+  local commit="$1" tmp expected_blob actual_blob tmp_target
+  tmp="$work/runtime-control.json"
+
+  if ! git --git-dir="$CACHE" cat-file -e "$commit:$RUNTIME_CONTROL_PATH" 2>>"$DETAIL_LOG"; then
+    echo "CF_RUNTIME_CONTROL_MISSING" >&2
+    return 1
+  fi
+  expected_blob="$(git --git-dir="$CACHE" rev-parse "$commit:$RUNTIME_CONTROL_PATH" 2>>"$DETAIL_LOG" || true)"
+  [[ "$expected_blob" =~ ^[0-9a-f]{40}$ ]] || { echo "CF_RUNTIME_CONTROL_BLOB_INVALID" >&2; return 1; }
+
+  if ! git --git-dir="$CACHE" show "$commit:$RUNTIME_CONTROL_PATH" > "$tmp" 2>>"$DETAIL_LOG"; then
+    echo "CF_RUNTIME_CONTROL_READ_FAILED" >&2
+    return 1
+  fi
+  actual_blob="$(git hash-object "$tmp" 2>>"$DETAIL_LOG" || true)"
+  [[ "$actual_blob" == "$expected_blob" ]] || { echo "CF_RUNTIME_CONTROL_BLOB_MISMATCH" >&2; return 1; }
+
+  if ! python3 - "$tmp" <<'PY' >>"$DETAIL_LOG" 2>&1
+import json,sys
+with open(sys.argv[1],encoding="utf-8") as f:
+    root=json.load(f)
+if not isinstance(root,dict):
+    raise SystemExit("runtime control root must be an object")
+if root.get("schema") != "capability-fabric.onshape-runtime-control.v1":
+    raise SystemExit("runtime control schema mismatch")
+revision=root.get("controlRevision")
+if not isinstance(revision,int) or isinstance(revision,bool) or revision <= 0:
+    raise SystemExit("runtime control revision invalid")
+authority=root.get("authority")
+if authority is not None:
+    if not isinstance(authority,dict):
+        raise SystemExit("authority must be an object")
+    if authority.get("schema") != "capability-fabric.onshape-production-authority.v1":
+        raise SystemExit("authority schema mismatch")
+    epoch=authority.get("productionEpoch")
+    if not isinstance(epoch,int) or isinstance(epoch,bool) or epoch <= 0:
+        raise SystemExit("production epoch invalid")
+PY
+  then
+    echo "CF_RUNTIME_CONTROL_REJECTED" >&2
+    return 1
+  fi
+
+  tmp_target="${RUNTIME_CONTROL_FILE}.tmp.$"
+  install -m 0640 -o root -g root "$tmp" "$tmp_target"
+  mv -f "$tmp_target" "$RUNTIME_CONTROL_FILE"
+  atomic_write "$RUNTIME_CONTROL_BLOB_FILE" "$expected_blob"
+  atomic_write "$RUNTIME_CONTROL_COMMIT_FILE" "$commit"
+  detail "runtime-control mirror commit=$commit blob=$expected_blob"
+  echo "CF_RUNTIME_CONTROL_MIRROR=updated"
 }
 health_check() {
   local release="$1" timeout_s
@@ -122,6 +179,14 @@ if ! GIT_ASKPASS="$askpass" GIT_TERMINAL_PROMPT=0 HOME=/var/lib/capability-fabri
 fi
 commit="$(git --git-dir="$CACHE" rev-parse "refs/remotes/origin/${BRANCH}")"
 [[ "$commit" =~ ^[0-9a-f]{40}$ ]] || { echo "CF_PULL_INVALID_HEAD" >&2; exit 30; }
+
+# Mirror the exact canonical runtime-control blob on every successful main fetch,
+# even when the signed deployment manifest/release is unchanged.
+if ! sync_runtime_control "$commit"; then
+  echo "CF_PULL_RUNTIME_CONTROL_SYNC_FAILED" >&2
+  exit 30
+fi
+
 last_good_commit="$(read_state "$STATE/last-good-commit" '')"; last_failed_commit="$(read_state "$STATE/last-failed-commit" '')"
 if [[ "$commit" == "$last_good_commit" ]]; then echo "CF_PULL_NO_CHANGE"; exit 0; fi
 if [[ "$commit" == "$last_failed_commit" ]]; then echo "CF_PULL_SKIPPED_PREVIOUSLY_FAILED_HEAD"; exit 0; fi
