@@ -65,6 +65,28 @@ for p in 5800 8787 9222; do
   if ss -lnt | awk -v x="$p" '$4 == "0.0.0.0:"x || $4 == "[::]:"x || $4 == "*:"x {f=1} END {exit f?0:1}'; then echo "WILDCARD_$p=present"; else echo "WILDCARD_$p=absent"; fi
 done
 
+echo CF_ONSHAPE_FABRIC_PORT_DIAG_BEGIN
+for p in 8788 8789 8791; do
+  if ss -lnt | awk -v x="127.0.0.1:$p" '$4 == x {f=1} END {exit f?0:1}'; then echo "FABRIC_LOOPBACK_$p=present"; else echo "FABRIC_LOOPBACK_$p=absent"; fi
+  if ss -lnt | awk -v x="$p" '$4 == "0.0.0.0:"x || $4 == "[::]:"x || $4 == "*:"x {f=1} END {exit f?0:1}'; then echo "FABRIC_WILDCARD_$p=present"; else echo "FABRIC_WILDCARD_$p=absent"; fi
+done
+candidate=/var/lib/capability-fabric/releases/onshape-three-session-v46-fabric-shadow
+if [[ -d "$candidate" ]]; then
+  echo FABRIC_FAILED_RELEASE=present
+  echo "FABRIC_FAILED_RELEASE_SOURCE=$(cat "$candidate/source-commit" 2>/dev/null || echo missing)"
+  echo "FABRIC_FAILED_RELEASE_MANIFEST=$(cat "$candidate/manifest.sha256" 2>/dev/null || echo missing)"
+  for f in server.js fabric-agent.js compose.yaml health.sh; do
+    [[ -s "$candidate/$f" ]] && echo "FABRIC_FAILED_RELEASE_FILE_$f=present" || echo "FABRIC_FAILED_RELEASE_FILE_$f=missing"
+  done
+else
+  echo FABRIC_FAILED_RELEASE=absent
+fi
+for d in /var/lib/capability-fabric/onshape/fabric-agent /var/lib/capability-fabric/onshape/fabric-state; do
+  base="$(basename "$d")"
+  if [[ -d "$d" ]]; then echo "FABRIC_STATE_DIR=$(stat -c '%a %U:%G' "$d") path=$base"; else echo "FABRIC_STATE_DIR=missing path=$base"; fi
+done
+echo CF_ONSHAPE_FABRIC_PORT_DIAG_END
+
 root_body="$(curl -fsS --max-time 3 http://127.0.0.1:8787/ 2>/dev/null || true)"
 [[ "$root_body" == "cf-onshape-single ok" ]] && echo MCP_ROOT=pass || echo MCP_ROOT=fail
 curl -fsS --max-time 3 http://127.0.0.1:5800/ >/dev/null 2>&1 && echo DESKTOP_HTTP=pass || echo DESKTOP_HTTP=fail
