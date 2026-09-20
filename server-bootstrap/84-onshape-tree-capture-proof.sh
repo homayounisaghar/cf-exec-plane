@@ -128,6 +128,20 @@ function collectFolders(value,out,path="$",depth=0){
   }
   for(const [k,v] of Object.entries(value))collectFolders(v,out,path+"."+k,depth+1);
 }
+
+function collectTopLevelItems(parsed){
+  const items=Array.isArray(parsed?.items)?parsed.items:[];
+  return items.slice(0,200).map((value,index)=>({
+    index,
+    id:value?.id??value?.nodeId??value?.resourceId??null,
+    name:value?.name??value?.displayName??value?.title??null,
+    parentId:value?.parentId??null,
+    resourceType:value?.resourceType??null,
+    objectType:value?.objectType??null,
+    type:value?.type??null,
+    ownerId:value?.ownerId??value?.owner?.id??null
+  }));
+}
 function compareRequest(a,b){
   if(!a||!b)return {available:false};
   const A=new Set(headerNames(a)),B=new Set(headerNames(b)),diff=[];
@@ -148,8 +162,8 @@ try{
     console.log("CF_ONSHAPE_D005_CAPTURE_B64="+Buffer.from(JSON.stringify(out)).toString("base64"));
     process.exitCode=32;
   }else{
-    const traffic=[],targets=[],treeMatches=[],treeFolders=[],failed=[],consoleErrors=[],pending=[];
-    page.on("response",(resp)=>{const p=requestShape(resp).then(async d=>{if(["xhr","fetch"].includes(d.resource_type)&&traffic.length<300)traffic.push(d);if(/globaltree|treenode/i.test(d.path)&&targets.length<40){targets.push(d);const body=await resp.text().catch(()=>null);if(body){try{const parsed=JSON.parse(body),found=[],folders=[];collectNamed(parsed,"View:TOP",found);collectFolders(parsed,folders);for(const match of found.slice(0,20))treeMatches.push({request:{status:d.status,origin:d.origin,path:d.path,query_entries:d.query_entries},match});for(const folder of folders.slice(0,500))treeFolders.push(folder)}catch{}}}}).catch(()=>{});pending.push(p);});
+    const traffic=[],targets=[],treeMatches=[],treeFolders=[],topLevelItems=[],failed=[],consoleErrors=[],pending=[];
+    page.on("response",(resp)=>{const p=requestShape(resp).then(async d=>{if(["xhr","fetch"].includes(d.resource_type)&&traffic.length<300)traffic.push(d);if(/globaltree|treenode/i.test(d.path)&&targets.length<40){targets.push(d);const body=await resp.text().catch(()=>null);if(body){try{const parsed=JSON.parse(body),found=[],folders=[];collectNamed(parsed,"View:TOP",found);collectFolders(parsed,folders);for(const match of found.slice(0,20))treeMatches.push({request:{status:d.status,origin:d.origin,path:d.path,query_entries:d.query_entries},match});for(const folder of folders.slice(0,500))treeFolders.push(folder);if(topLevelItems.length===0){for(const item of collectTopLevelItems(parsed))topLevelItems.push(item)}}catch{}}}}).catch(()=>{});pending.push(p);});
     page.on("requestfailed",(req)=>{if(failed.length>=30)return;try{const u=new URL(req.url());failed.push({resource_type:req.resourceType(),method:req.method(),origin:u.origin,path:u.pathname,query_entries:safeQuery(u),failure:String(req.failure()?.errorText||"").slice(0,300)})}catch{}});
     page.on("console",(msg)=>{if(msg.type()!=="error"||consoleErrors.length>=30)return;const loc=msg.location();consoleErrors.push({text:msg.text().slice(0,1000),url:String(loc?.url||"").slice(0,500),line:loc?.lineNumber??null,column:loc?.columnNumber??null})});
 
@@ -184,6 +198,7 @@ try{
     console.log("CF_ONSHAPE_D006_MATCH_COUNT="+treeMatches.length);
     console.log("CF_ONSHAPE_D006_FOLDER_IDS="+folderIds.join(","));
     console.log("CF_ONSHAPE_FOLDER_LIST_B64="+Buffer.from(JSON.stringify(uniqueFolders)).toString("base64"));
+    console.log("CF_ONSHAPE_TOP_LEVEL_B64="+Buffer.from(JSON.stringify(topLevelItems)).toString("base64"));
     console.log("CF_ONSHAPE_D005_CAPTURE_B64="+Buffer.from(JSON.stringify(out)).toString("base64"));
   }
 }catch(e){
