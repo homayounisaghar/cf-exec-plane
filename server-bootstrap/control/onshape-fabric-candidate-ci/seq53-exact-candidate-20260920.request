@@ -1,0 +1,4 @@
+request_id=seq53-exact-candidate-20260920
+candidate_commit=c450d00e822088146f65e617f544fa8daf5232ab
+expected_sequence=53
+expected_release=onshape-three-session-v46-fabric-shadow-r5
