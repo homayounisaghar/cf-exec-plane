@@ -47,7 +47,7 @@ jobs:
           browser_action="$(awk -F= '$1=="browser_action"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
           if [[ -n "$document_id$workspace_id$element_id" ]]; then
             [[ "$document_id" =~ ^[0-9a-fA-F]{24}$ && "$workspace_id" =~ ^[0-9a-fA-F]{24}$ && "$element_id" =~ ^[0-9a-fA-F]{24}$ ]] || { echo "bad browser-open target" >&2; exit 14; }
-            [[ -z "$browser_action" || "$browser_action" == "open" || "$browser_action" == "top_view" ]] || { echo "bad browser action" >&2; exit 15; }
+            [[ -z "$browser_action" || "$browser_action" == "open" || "$browser_action" == "top_view" || "$browser_action" == "mouse_probe" ]] || { echo "bad browser action" >&2; exit 15; }
             {
               echo "CF_ONSHAPE_BROWSER_OPEN_DOCUMENT_ID=$document_id"
               echo "CF_ONSHAPE_BROWSER_OPEN_WORKSPACE_ID=$workspace_id"
