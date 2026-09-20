@@ -115,10 +115,14 @@ stored_commit="$(tr -d '\r\n' < "$mirror_commit")"
   exit 29
 }
 
-verified=yes
 if [[ "$timer_was_active" == yes ]]; then
   systemctl start "$timer"
+  systemctl is-active --quiet "$timer" || {
+    echo "CF_AUTHORITY_REFRESH_TIMER_RESTORE_FAILED" >&2
+    exit 30
+  }
 fi
+verified=yes
 
 echo "CF_AUTHORITY_REFRESH_BEGIN"
 echo "PREVIOUS_AGENT_SHA256=$before_sha"
