@@ -17,7 +17,7 @@ if [[ -e /var/lib/capability-fabric/state/release-in-progress ]]; then
 else
   echo CF_FABRIC_PRECUTOVER_RELEASE_GATE=clear
 fi
-docker exec "$container" python - <<'PY'
+docker exec -i "$container" python - <<'PY'
 import sqlite3
 db="file:/fabric-state/execution.sqlite3?mode=ro"
 con=sqlite3.connect(db, uri=True)
@@ -36,7 +36,7 @@ print(f"CF_FABRIC_PRECUTOVER_IN_DOUBT_OPERATIONS={in_doubt_ops}")
 print(f"CF_FABRIC_PRECUTOVER_IN_DOUBT_ATTEMPTS={in_doubt_attempts}")
 con.close()
 PY
-docker exec "$server" node --input-type=module - <<'NODE'
+docker exec -i "$server" node --input-type=module - <<'NODE'
 import fs from "node:fs";
 const dir="/agent-state";
 let executing=0, uncertain=0, records=0;
