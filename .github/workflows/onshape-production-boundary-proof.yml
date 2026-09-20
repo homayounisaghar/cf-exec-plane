@@ -1,0 +1,71 @@
+name: Onshape Production Boundary Proof
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - server-bootstrap/control/onshape-production-boundary-proof/*.request
+
+permissions:
+  contents: read
+
+concurrency:
+  group: onshape-production-boundary-proof
+  cancel-in-progress: false
+
+jobs:
+  prove:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+
+      - name: Validate immutable proof request
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || exit 10
+          IFS=$'\t' read -r status request_path <<<"${changes[0]}"
+          [[ "$status" == A ]] || exit 11
+          [[ "$request_path" == server-bootstrap/control/onshape-production-boundary-proof/*.request ]] || exit 12
+          request_id="$(basename "$request_path" .request)"
+          file_request_id="$(awk -F= '$1=="request_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          action="$(awk -F= '$1=="action"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          [[ "$file_request_id" == "$request_id" ]] || exit 13
+          [[ "$action" == "prove-production-boundary" ]] || exit 14
+
+      - name: Mask endpoint
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf '::add-mask::%s\n' "$VPS_HOST"
+          printf '::add-mask::%s\n' "$VPS_SSH_USER"
+          while IFS= read -r addr; do [[ -n "$addr" ]] && printf '::add-mask::%s\n' "$addr"; done < <(getent ahosts "$VPS_HOST" 2>/dev/null | awk '{print $1}' | sort -u)
+
+      - name: Prove internal ports are unreachable from external runner
+        shell: bash
+        run: |
+          set -euo pipefail
+          for p in 8787 8788 8789 8791; do
+            if timeout 3 bash -c "exec 3<>/dev/tcp/$VPS_HOST/$p" 2>/dev/null; then
+              echo "internal port unexpectedly reachable: $p" >&2
+              exit 20
+            fi
+            echo "EXTERNAL_PORT_${p}=blocked"
+          done
+          echo CF_PROD_BOUNDARY_EXTERNAL_INTERNAL_PORTS=pass
+
+      - name: Prove active production boundary on host
+        shell: bash
+        run: bash server-bootstrap/runner/remote-bundle-exec.sh server-bootstrap/100-onshape-production-boundary-proof.sh
