@@ -174,6 +174,7 @@ fi
 echo CF_ONSHAPE_STORAGE_ISOLATION_DIAG_END
 
 
+set +e
 echo CF_ONSHAPE_PROFILE_CLONE_DIAG_BEGIN
 if docker inspect capability-fabric-onshape-server >/dev/null 2>&1; then
   docker exec -i capability-fabric-onshape-server sh -lc 'cd /tmp/app && node --input-type=module' <<'NODE'
@@ -233,6 +234,7 @@ else
   echo 'CLONED_PERSISTENT_PROFILE={"outer_error":{"name":"ContainerMissing"}}'
 fi
 echo CF_ONSHAPE_PROFILE_CLONE_DIAG_END
+set -e
 
 
 echo CF_ONSHAPE_PROFILE_OWNERSHIP_DIAG_BEGIN
