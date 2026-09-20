@@ -36,6 +36,7 @@ try {
   const listed=await client.listTools();
   const names=new Set((listed?.tools||[]).map(x=>x.name));
   assert(names.has("onshape_ui_input"), "onshape_ui_input missing from MCP catalog");
+  assert(names.has("onshape_ui_native"), "onshape_ui_native missing from MCP catalog");
   for (const retired of ["onshape_browser_open","onshape_browser_top_view","onshape_browser_mouse_probe","onshape_browser_pointer"]) {
     assert(!names.has(retired), "retired one-off tool still present: "+retired);
   }
@@ -71,6 +72,29 @@ try {
   assert(typeof r?.attemptId==="string" && r.attemptId.length>8, "Attempt id missing");
   console.log("CF_UI_INPUT_LIVE_SEQUENCE=pass");
   console.log("CF_UI_INPUT_ATTEMPT_BOUND=pass");
+
+  const native=await call("onshape_ui_native", {
+    document_id:"84d077d8370c21c4b3045263",
+    workspace_id:"aa8c5ad631e1836645149d09",
+    element_id:"7fde3930aaf98b87b30b63ed",
+    action:"page.screenshot",
+    params:{full_page:false}
+  });
+  assert(native?.capability_id==="onshape.ui.native", "typed native adapter returned wrong capability");
+  const nr=native.result;
+  assert(nr?.outcome?.state==="ACHIEVED", "native screenshot outcome not ACHIEVED");
+  assert(nr?.observation?.ackState==="ACKNOWLEDGED", "native screenshot not acknowledged");
+  assert(nr?.observation?.evidence?.nativeCompleted===true, "native action incomplete");
+  assert(nr?.observation?.evidence?.nativeAction==="page.screenshot", "wrong native action evidence");
+  const art=nr?.observation?.evidence?.result?.artifact;
+  assert(art?.content_type==="image/png" && Number(art?.size)>0, "native screenshot artifact invalid");
+  const artifact=await call("onshape_artifact",{action:"status",artifact_id:art.artifact_id});
+  assert(artifact?.size===art.size && artifact?.sha256===art.sha256, "native screenshot artifact mismatch");
+  await call("onshape_artifact",{action:"delete",artifact_id:art.artifact_id});
+  console.log("CF_UI_NATIVE_TOOL_CATALOG=pass");
+  console.log("CF_UI_NATIVE_SCREENSHOT=pass");
+  console.log("CF_UI_NATIVE_ARTIFACT=pass");
+  console.log("CF_UI_NATIVE_ATTEMPT_BOUND=pass");
 } finally {
   await client.close().catch(()=>{});
 }
