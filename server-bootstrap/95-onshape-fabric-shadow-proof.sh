@@ -14,6 +14,7 @@ tmp="$(mktemp -d /var/lib/capability-fabric/.fabric-shadow-proof.XXXXXX)"
 trap 'rm -rf "$tmp"' EXIT
 out="$tmp/node.out"
 
+set +e
 docker exec -i "$container" sh -lc 'cd /tmp/app && node --input-type=module' >"$out" <<'NODE'
 import fs from "node:fs";
 import crypto from "node:crypto";
@@ -215,8 +216,17 @@ try {
 }
 assert(cleanupOk, "disposable document cleanup failed");
 NODE
+node_rc=$?
+set -e
 
 cat "$out"
+if (( node_rc != 0 )); then
+  echo CF_FABRIC_SHADOW_NODE_RC="$node_rc"
+  echo CF_FABRIC_SHADOW_SIDECAR_LOG_BEGIN
+  docker logs --tail 160 "$sidecar" 2>&1 | sed -E 's#https?://[^[:space:]"]+#<url>#g' || true
+  echo CF_FABRIC_SHADOW_SIDECAR_LOG_END
+  exit "$node_rc"
+fi
 encoded="$(sed -n 's/^CF_FABRIC_PROOF_IDS=//p' "$out" | tail -n1)"
 [[ -n "$encoded" ]] || { echo "missing proof provenance ids" >&2; exit 40; }
 
