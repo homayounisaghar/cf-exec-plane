@@ -9,7 +9,7 @@ if [[ -n "${CF_ONSHAPE_BROWSER_OPEN_DOCUMENT_ID:-}" || -n "${CF_ONSHAPE_BROWSER_
   [[ "${CF_ONSHAPE_BROWSER_OPEN_DOCUMENT_ID:-}" =~ ^[0-9a-fA-F]{24}$ ]] || { echo "bad document id" >&2; exit 21; }
   [[ "${CF_ONSHAPE_BROWSER_OPEN_WORKSPACE_ID:-}" =~ ^[0-9a-fA-F]{24}$ ]] || { echo "bad workspace id" >&2; exit 21; }
   [[ "${CF_ONSHAPE_BROWSER_OPEN_ELEMENT_ID:-}" =~ ^[0-9a-fA-F]{24}$ ]] || { echo "bad element id" >&2; exit 21; }
-  docker exec -i     -e CF_OPEN_DID="$CF_ONSHAPE_BROWSER_OPEN_DOCUMENT_ID"     -e CF_OPEN_WID="$CF_ONSHAPE_BROWSER_OPEN_WORKSPACE_ID"     -e CF_OPEN_EID="$CF_ONSHAPE_BROWSER_OPEN_ELEMENT_ID"     "$container" sh -lc 'cd /tmp/app && node --input-type=module' <<'NODE'
+  docker exec -i     -e CF_OPEN_DID="$CF_ONSHAPE_BROWSER_OPEN_DOCUMENT_ID"     -e CF_OPEN_WID="$CF_ONSHAPE_BROWSER_OPEN_WORKSPACE_ID"     -e CF_OPEN_EID="$CF_ONSHAPE_BROWSER_OPEN_ELEMENT_ID"     -e CF_OPEN_ACTION="${CF_ONSHAPE_BROWSER_ACTION:-open}"     "$container" sh -lc 'cd /tmp/app && node --input-type=module' <<'NODE'
 import fs from "node:fs";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
@@ -18,8 +18,9 @@ const client = new Client({ name: "cf-local-browser-open", version: "1.0.0" });
 const transport = new StreamableHTTPClientTransport(new URL(`http://127.0.0.1:8787/mcp/${token}`));
 await client.connect(transport);
 try {
+  const action = process.env.CF_OPEN_ACTION === "top_view" ? "top_view" : "open";
   const open = await client.callTool({
-    name: "onshape_browser_open",
+    name: action === "top_view" ? "onshape_browser_top_view" : "onshape_browser_open",
     arguments: {
       document_id: process.env.CF_OPEN_DID,
       workspace_id: process.env.CF_OPEN_WID,
@@ -29,6 +30,7 @@ try {
   const openText = open?.content?.find?.((x) => x?.type === "text")?.text || "{}";
   const status = await client.callTool({ name: "onshape_session_status", arguments: {} });
   const statusText = status?.content?.find?.((x) => x?.type === "text")?.text || "{}";
+  console.log("CF_ONSHAPE_BROWSER_ACTION=" + action);
   console.log("CF_ONSHAPE_BROWSER_OPEN_RESULT=" + openText);
   console.log("CF_ONSHAPE_BROWSER_OPEN_STATUS=" + statusText);
   const parsed = JSON.parse(openText);
