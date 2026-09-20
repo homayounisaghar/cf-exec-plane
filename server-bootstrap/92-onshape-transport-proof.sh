@@ -80,15 +80,15 @@ try {
   assert(/^[0-9a-f]{24}$/i.test(documentId || ""), "proof document id missing");
   assert(/^[0-9a-f]{24}$/i.test(workspaceId || ""), "proof workspace id missing");
 
-  const bytes = Buffer.from("capability-fabric-v44-transport-proof\n", "utf8");
+  const bytes = Buffer.from([0x00,0xff,0x01,0xfe,0x02,0xfd,0x03,0xfc,0x10,0x80,0x20,0x81,0x30,0x82,0x40,0x83,0x50,0x84,0x60,0x85,0x70,0x86,0x7f,0x87,0xaa,0x55,0xde,0xad,0xbe,0xef,0x00,0x7f]);
   const expectedSha = crypto.createHash("sha256").update(bytes).digest("hex");
 
   const staged = await call("onshape_artifact", {
     action: "write",
     offset: 0,
     data_base64: bytes.toString("base64"),
-    filename: "cf-v44-proof.txt",
-    content_type: "text/plain"
+    filename: "cf-v44-proof.bin",
+    content_type: "application/octet-stream"
   });
   uploadArtifactId = staged.artifact_id;
   assert(/^[0-9a-f]{32}$/.test(uploadArtifactId || ""), "upload artifact id missing");
@@ -99,13 +99,13 @@ try {
     multipart: {
       fields: {
         translate: false,
-        encodedFilename: "cf-v44-proof.txt"
+        encodedFilename: "cf-v44-proof.bin"
       },
       files: [{
         field: "file",
         artifact_id: uploadArtifactId,
-        filename: "cf-v44-proof.txt",
-        content_type: "text/plain"
+        filename: "cf-v44-proof.bin",
+        content_type: "application/octet-stream"
       }]
     }
   });
