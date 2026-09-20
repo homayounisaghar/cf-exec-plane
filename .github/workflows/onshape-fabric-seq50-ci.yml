@@ -104,6 +104,7 @@ jobs:
           done
           cmp tests/onshape_vps_fabric/test_onshape_vps_runtime.py server-deploy/current/fabric-tests/test_onshape_vps_runtime.py
           cmp tests/onshape_vps_fabric/test_onshape_vps_transport.py server-deploy/current/fabric-tests/test_onshape_vps_transport.py
+          cmp tests/onshape_vps_fabric/test_onshape_vps_sidecar_json.py server-deploy/current/fabric-tests/test_onshape_vps_sidecar_json.py
 
       - name: Staged Python regression
         working-directory: ${{ runner.temp }}/capability-fabric
