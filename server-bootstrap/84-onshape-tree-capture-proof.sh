@@ -108,6 +108,26 @@ function collectNamed(value,wanted,out,path="$",depth=0){
   }
   for(const [k,v] of Object.entries(value))collectNamed(v,wanted,out,path+"."+k,depth+1);
 }
+function collectFolders(value,out,path="$",depth=0){
+  if(depth>12||value==null)return;
+  if(Array.isArray(value)){for(let i=0;i<value.length;i++)collectFolders(value[i],out,path+"["+i+"]",depth+1);return;}
+  if(typeof value!=="object")return;
+  const typeText=[value.resourceType,value.objectType,value.type].filter(v=>v!=null).map(String).join(" ").toLowerCase();
+  const label=value.name??value.displayName??value.title??null;
+  const id=value.id??value.nodeId??value.resourceId??null;
+  if(label&&id&&typeText.includes("folder")){
+    out.push({
+      id:String(id),
+      name:String(label).slice(0,300),
+      parentId:value.parentId==null?null:String(value.parentId),
+      resourceType:value.resourceType==null?null:String(value.resourceType),
+      objectType:value.objectType==null?null:String(value.objectType),
+      type:value.type==null?null:String(value.type),
+      json_path:path
+    });
+  }
+  for(const [k,v] of Object.entries(value))collectFolders(v,out,path+"."+k,depth+1);
+}
 function compareRequest(a,b){
   if(!a||!b)return {available:false};
   const A=new Set(headerNames(a)),B=new Set(headerNames(b)),diff=[];
@@ -128,8 +148,8 @@ try{
     console.log("CF_ONSHAPE_D005_CAPTURE_B64="+Buffer.from(JSON.stringify(out)).toString("base64"));
     process.exitCode=32;
   }else{
-    const traffic=[],targets=[],treeMatches=[],failed=[],consoleErrors=[],pending=[];
-    page.on("response",(resp)=>{const p=requestShape(resp).then(async d=>{if(["xhr","fetch"].includes(d.resource_type)&&traffic.length<300)traffic.push(d);if(/globaltree|treenode/i.test(d.path)&&targets.length<40){targets.push(d);const body=await resp.text().catch(()=>null);if(body){try{const parsed=JSON.parse(body),found=[];collectNamed(parsed,"View:TOP",found);for(const match of found.slice(0,20))treeMatches.push({request:{status:d.status,origin:d.origin,path:d.path,query_entries:d.query_entries},match})}catch{}}}}).catch(()=>{});pending.push(p);});
+    const traffic=[],targets=[],treeMatches=[],treeFolders=[],failed=[],consoleErrors=[],pending=[];
+    page.on("response",(resp)=>{const p=requestShape(resp).then(async d=>{if(["xhr","fetch"].includes(d.resource_type)&&traffic.length<300)traffic.push(d);if(/globaltree|treenode/i.test(d.path)&&targets.length<40){targets.push(d);const body=await resp.text().catch(()=>null);if(body){try{const parsed=JSON.parse(body),found=[],folders=[];collectNamed(parsed,"View:TOP",found);collectFolders(parsed,folders);for(const match of found.slice(0,20))treeMatches.push({request:{status:d.status,origin:d.origin,path:d.path,query_entries:d.query_entries},match});for(const folder of folders.slice(0,500))treeFolders.push(folder)}catch{}}}}).catch(()=>{});pending.push(p);});
     page.on("requestfailed",(req)=>{if(failed.length>=30)return;try{const u=new URL(req.url());failed.push({resource_type:req.resourceType(),method:req.method(),origin:u.origin,path:u.pathname,query_entries:safeQuery(u),failure:String(req.failure()?.errorText||"").slice(0,300)})}catch{}});
     page.on("console",(msg)=>{if(msg.type()!=="error"||consoleErrors.length>=30)return;const loc=msg.location();consoleErrors.push({text:msg.text().slice(0,1000),url:String(loc?.url||"").slice(0,500),line:loc?.lineNumber??null,column:loc?.columnNumber??null})});
 
@@ -149,7 +169,8 @@ try{
     const auth=await authProbe(page);
     const snap=await page.evaluate(()=>({href:location.href,origin:location.origin,title:document.title,ready_state:document.readyState,body_text_length:document.body?.innerText?.length??null,body_child_count:document.body?.children?.length??null}));
     const comparison=compareRequest(natural,handcrafted);
-    const out={capture:natural?"TREE_REQUEST_OBSERVED":"NO_TREE_REQUEST",auth,page_snapshot:snap,natural_request:natural,handcrafted_request:handcrafted,comparison,tree_exact_matches:treeMatches,xhr_fetch_count:traffic.length,xhr_fetch_traffic:traffic,failed_requests:failed,console_errors:consoleErrors};
+    const uniqueFolders=[...new Map(treeFolders.map(f=>[(f.id||"")+"\u0000"+(f.name||""),f])).values()].sort((a,b)=>a.name.localeCompare(b.name));
+    const out={capture:natural?"TREE_REQUEST_OBSERVED":"NO_TREE_REQUEST",auth,page_snapshot:snap,natural_request:natural,handcrafted_request:handcrafted,comparison,tree_exact_matches:treeMatches,folders:uniqueFolders,xhr_fetch_count:traffic.length,xhr_fetch_traffic:traffic,failed_requests:failed,console_errors:consoleErrors};
     const folderIds=[...new Set(treeMatches.flatMap((x)=>{const v=x?.match?.value||{};return [v.id,v.nodeId,v.resourceId].filter((y)=>y!=null&&String(y).length>0).map(String)}))];
     console.log("CF_ONSHAPE_D005_CAPTURE="+out.capture);
     console.log("CF_ONSHAPE_D005_AUTH="+String(auth?.state||"UNKNOWN"));
@@ -162,6 +183,7 @@ try{
     console.log("CF_ONSHAPE_D005_HANDCRAFTED_ONLY_HEADERS="+(comparison?.handcrafted_only_headers||[]).join(","));
     console.log("CF_ONSHAPE_D006_MATCH_COUNT="+treeMatches.length);
     console.log("CF_ONSHAPE_D006_FOLDER_IDS="+folderIds.join(","));
+    console.log("CF_ONSHAPE_FOLDER_LIST_B64="+Buffer.from(JSON.stringify(uniqueFolders)).toString("base64"));
     console.log("CF_ONSHAPE_D005_CAPTURE_B64="+Buffer.from(JSON.stringify(out)).toString("base64"));
   }
 }catch(e){
