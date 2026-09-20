@@ -87,6 +87,7 @@ jobs:
           node --check server-deploy/current/core.js
           node --check server-deploy/current/server.js
           node --check server-deploy/current/fabric-agent.js
+          grep -F '/release/browser-native.js' server-deploy/current/compose.yaml
           node --test server-deploy/current/fabric-agent.test.mjs
 
       - name: Canonical Python regression
