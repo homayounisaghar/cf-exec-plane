@@ -1,0 +1,116 @@
+name: Onshape Fabric Seq50 Qualification
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - server-bootstrap/control/onshape-fabric-seq50-ci/*.request
+
+permissions:
+  contents: read
+
+jobs:
+  qualify:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      CF_REPO_READ_TOKEN: ${{ secrets.CF_REPO_READ_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+
+      - name: Validate immutable qualification request
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || { echo "request commit must add exactly one file" >&2; exit 10; }
+          IFS=$'\t' read -r status request_path <<<"${changes[0]}"
+          [[ "$status" == A ]] || { echo "request must be newly added" >&2; exit 11; }
+          [[ "$request_path" == server-bootstrap/control/onshape-fabric-seq50-ci/*.request ]] || { echo "unexpected request path" >&2; exit 12; }
+          grep -Fxq 'candidate_commit=c77d0359d81b2943811281d03bfe9027b1d96a7d' "$request_path"
+
+      - name: Checkout exact private Capability Fabric candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          tmp="$RUNNER_TEMP/capability-fabric"
+          askpass="$RUNNER_TEMP/cf-askpass"
+          cat > "$askpass" <<'ASKPASS'
+          #!/usr/bin/env bash
+          case "${1:-}" in
+            *Username*) printf '%s\n' 'x-access-token' ;;
+            *Password*) printf '%s\n' "$CF_REPO_READ_TOKEN" ;;
+            *) exit 1 ;;
+          esac
+          ASKPASS
+          chmod 0700 "$askpass"
+          git init "$tmp" >/dev/null
+          git -C "$tmp" remote add origin https://github.com/homayounisaghar/capability-fabric.git
+          GIT_ASKPASS="$askpass" GIT_TERMINAL_PROMPT=0 git -C "$tmp" fetch --quiet --depth=1 origin c77d0359d81b2943811281d03bfe9027b1d96a7d
+          git -C "$tmp" checkout --quiet --detach FETCH_HEAD
+          [[ "$(git -C "$tmp" rev-parse HEAD)" == c77d0359d81b2943811281d03bfe9027b1d96a7d ]]
+          printf 'CF_SEQ50_CHECKOUT=pass\n'
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install canonical Python package
+        working-directory: ${{ runner.temp }}/capability-fabric
+        run: python -m pip install -e .
+
+      - name: Node 24 strict-mode syntax gate
+        working-directory: ${{ runner.temp }}/capability-fabric
+        run: |
+          node --check server-deploy/current/server.js
+          node --check server-deploy/current/fabric-agent.js
+          node --test server-deploy/current/fabric-agent.test.mjs
+
+      - name: Canonical Python regression
+        working-directory: ${{ runner.temp }}/capability-fabric
+        run: |
+          python -m compileall -q src/capability_fabric tests/v1_kernel tests/v1_persistence tests/onshape_vps_fabric
+          python -m unittest discover -s tests/v1_kernel -p 'test_*.py' -v
+          python -m unittest discover -s tests/v1_persistence -p 'test_*.py' -v
+          python -m unittest discover -s tests/onshape_vps_fabric -p 'test_*.py' -v
+
+      - name: Verify staged source mirrors canonical source
+        working-directory: ${{ runner.temp }}/capability-fabric
+        shell: bash
+        run: |
+          set -euo pipefail
+          for f in control_ingress.py domain.py enforcement.py execution_agents.py kernel.py onshape_vps.py onshape_vps_sidecar.py onshape_vps_transport.py persistence.py policy_kernel.py ports.py; do
+            cmp "src/capability_fabric/$f" "server-deploy/current/fabric-src/capability_fabric/$f"
+          done
+          cmp tests/onshape_vps_fabric/test_onshape_vps_runtime.py server-deploy/current/fabric-tests/test_onshape_vps_runtime.py
+          cmp tests/onshape_vps_fabric/test_onshape_vps_transport.py server-deploy/current/fabric-tests/test_onshape_vps_transport.py
+
+      - name: Staged Python regression
+        working-directory: ${{ runner.temp }}/capability-fabric
+        env:
+          PYTHONPATH: server-deploy/current/fabric-src
+        run: |
+          python -m compileall -q server-deploy/current/fabric-src server-deploy/current/fabric-tests
+          python -m unittest discover -s server-deploy/current/fabric-tests -p 'test_*.py' -v
+
+      - name: Confirm immutable retry identity
+        working-directory: ${{ runner.temp }}/capability-fabric
+        run: |
+          python - <<'PY'
+          import json,hashlib
+          from pathlib import Path
+          m=json.loads(Path("server-deploy/current/manifest.json").read_text())
+          assert m["sequence"] == 50
+          assert m["release_id"] == "onshape-three-session-v46-fabric-shadow-r2"
+          actual=hashlib.sha256(Path("server-deploy/current/server.js").read_bytes()).hexdigest()
+          assert m["files"]["server.js"] == actual
+          print("CF_SEQ50_MANIFEST=pass")
+          PY
