@@ -1,0 +1,41 @@
+name: Onshape Fabric Sidecar Diagnostic
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - server-bootstrap/control/onshape-fabric-sidecar-diagnostic/*.request
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Validate immutable diagnostic request
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || exit 10
+          IFS=$'\t' read -r status path <<<"${changes[0]}"
+          [[ "$status" == A && "$path" == server-bootstrap/control/onshape-fabric-sidecar-diagnostic/*.request ]] || exit 11
+      - name: Mask endpoint
+        run: |
+          printf '::add-mask::%s\n' "$VPS_HOST"
+          printf '::add-mask::%s\n' "$VPS_SSH_USER"
+      - name: Inspect Fabric sidecar only
+        run: bash server-bootstrap/runner/remote-bundle-exec.sh server-bootstrap/96-onshape-fabric-sidecar-diagnostic.sh
