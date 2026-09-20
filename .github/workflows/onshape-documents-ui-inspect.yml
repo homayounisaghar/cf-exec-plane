@@ -41,34 +41,6 @@ jobs:
           request_id="$(basename "$request_path" .request)"
           file_request_id="$(awk -F= '$1=="request_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
           [[ "$request_id" =~ ^[A-Za-z0-9_.-]{8,96}$ && "$file_request_id" == "$request_id" ]] || { echo "bad request id" >&2; exit 13; }
-          document_id="$(awk -F= '$1=="document_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
-          workspace_id="$(awk -F= '$1=="workspace_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
-          element_id="$(awk -F= '$1=="element_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
-          browser_action="$(awk -F= '$1=="browser_action"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
-          pointer_action="$(awk -F= '$1=="pointer_action"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
-          x_fraction="$(awk -F= '$1=="x_fraction"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
-          y_fraction="$(awk -F= '$1=="y_fraction"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
-          wheel_steps="$(awk -F= '$1=="wheel_steps"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
-          wheel_delta_y="$(awk -F= '$1=="wheel_delta_y"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
-          delta_x="$(awk -F= '$1=="delta_x"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
-          delta_y="$(awk -F= '$1=="delta_y"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
-          if [[ -n "$document_id$workspace_id$element_id" ]]; then
-            [[ "$document_id" =~ ^[0-9a-fA-F]{24}$ && "$workspace_id" =~ ^[0-9a-fA-F]{24}$ && "$element_id" =~ ^[0-9a-fA-F]{24}$ ]] || { echo "bad browser-open target" >&2; exit 14; }
-            [[ -z "$browser_action" || "$browser_action" == "open" || "$browser_action" == "top_view" || "$browser_action" == "mouse_probe" || "$browser_action" == "pointer" ]] || { echo "bad browser action" >&2; exit 15; }
-            {
-              echo "CF_ONSHAPE_BROWSER_OPEN_DOCUMENT_ID=$document_id"
-              echo "CF_ONSHAPE_BROWSER_OPEN_WORKSPACE_ID=$workspace_id"
-              echo "CF_ONSHAPE_BROWSER_OPEN_ELEMENT_ID=$element_id"
-              if [[ -n "$browser_action" ]]; then echo "CF_ONSHAPE_BROWSER_ACTION=$browser_action"; fi
-              if [[ -n "$pointer_action" ]]; then echo "CF_ONSHAPE_POINTER_ACTION=$pointer_action"; fi
-              if [[ -n "$x_fraction" ]]; then echo "CF_ONSHAPE_POINTER_X_FRACTION=$x_fraction"; fi
-              if [[ -n "$y_fraction" ]]; then echo "CF_ONSHAPE_POINTER_Y_FRACTION=$y_fraction"; fi
-              if [[ -n "$wheel_steps" ]]; then echo "CF_ONSHAPE_POINTER_WHEEL_STEPS=$wheel_steps"; fi
-              if [[ -n "$wheel_delta_y" ]]; then echo "CF_ONSHAPE_POINTER_WHEEL_DELTA_Y=$wheel_delta_y"; fi
-              if [[ -n "$delta_x" ]]; then echo "CF_ONSHAPE_POINTER_DELTA_X=$delta_x"; fi
-              if [[ -n "$delta_y" ]]; then echo "CF_ONSHAPE_POINTER_DELTA_Y=$delta_y"; fi
-            } >> "$GITHUB_ENV"
-          fi
       - name: Mask host and login
         shell: bash
         run: |
