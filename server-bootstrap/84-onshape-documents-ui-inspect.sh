@@ -37,7 +37,13 @@ try {
     await new Promise((resolve) => setTimeout(resolve, 250));
   }
   if (!terminal) throw new Error("write-path evidence capture did not reach terminal state");
-  console.log("CF_ONSHAPE_WRITE_EVIDENCE_B64=" + Buffer.from(JSON.stringify(terminal)).toString("base64"));
+  const encoded = Buffer.from(JSON.stringify(terminal)).toString("base64");
+  const chunkSize = 3000;
+  const chunks = Math.ceil(encoded.length / chunkSize);
+  console.log("CF_ONSHAPE_WRITE_EVIDENCE_CHUNKS=" + chunks);
+  for (let i = 0; i < chunks; i++) {
+    console.log("CF_ONSHAPE_WRITE_EVIDENCE_CHUNK_" + String(i).padStart(4, "0") + "=" + encoded.slice(i * chunkSize, (i + 1) * chunkSize));
+  }
   if (terminal.status !== "SUCCEEDED") process.exit(31);
 } finally {
   await client.close().catch(() => {});
