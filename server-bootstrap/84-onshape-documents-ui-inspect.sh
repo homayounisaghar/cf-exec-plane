@@ -11,19 +11,19 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 
 const token = fs.readFileSync("/run/secrets/mcp-token", "utf8").trim();
-const client = new Client({ name: "cf-local-documents-inspect", version: "1.0.0" });
+const client = new Client({ name: "cf-local-write-evidence", version: "1.0.0" });
 const transport = new StreamableHTTPClientTransport(new URL(`http://127.0.0.1:8787/mcp/${token}`));
 await client.connect(transport);
 try {
   const start = await client.callTool({
-    name: "onshape_documents_inspect_ui",
-    arguments: { query: "View top" },
+    name: "onshape_write_path_evidence_capture",
+    arguments: {},
   });
   const text = start?.content?.find?.((x) => x?.type === "text")?.text;
   const payload = JSON.parse(text || "{}");
-  if (!payload.operation_id) throw new Error("inspect tool returned no operation id");
+  if (!payload.operation_id) throw new Error("evidence tool returned no operation id");
   let terminal = null;
-  for (let i = 0; i < 40; i++) {
+  for (let i = 0; i < 120; i++) {
     const status = await client.callTool({
       name: "onshape_operation_status",
       arguments: { operation_id: payload.operation_id },
@@ -36,8 +36,8 @@ try {
     }
     await new Promise((resolve) => setTimeout(resolve, 250));
   }
-  if (!terminal) throw new Error("Documents UI inspect did not reach terminal state");
-  console.log("CF_ONSHAPE_DOCUMENTS_UI_INSPECT=" + JSON.stringify(terminal));
+  if (!terminal) throw new Error("write-path evidence capture did not reach terminal state");
+  console.log("CF_ONSHAPE_WRITE_EVIDENCE_B64=" + Buffer.from(JSON.stringify(terminal)).toString("base64"));
   if (terminal.status !== "SUCCEEDED") process.exit(31);
 } finally {
   await client.close().catch(() => {});
