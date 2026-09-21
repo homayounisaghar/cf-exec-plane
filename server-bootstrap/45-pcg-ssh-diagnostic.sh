@@ -27,7 +27,7 @@ echo "PCG_FORWARD_EFFECTIVE_END"
 
 echo "PCG_FORWARD_GATE_STATE_BEGIN"
 test -x /usr/local/libexec/capability-fabric-pcg-provision-ssh-gate && echo "gate=present" || echo "gate=missing"
-test -f /run/capability-fabric/pcg-provision/bootstrap-url && echo "bootstrap=present" || echo "bootstrap=missing"
+test -f /run/capability-fabric-pcg-forward/bootstrap-url && echo "bootstrap=present" || echo "bootstrap=missing"
 test -e /var/lib/capability-fabric/pcg/run/provision-complete && echo "complete=yes" || echo "complete=no"
 echo "PCG_FORWARD_GATE_STATE_END"
 
@@ -43,7 +43,7 @@ echo "PCG_FORWARD_SSH_LOG_END"
 
 
 echo "PCG_FORWARD_VISIBILITY_BEGIN"
-bootstrap=/run/capability-fabric/pcg-provision/bootstrap-url
+bootstrap=/run/capability-fabric-pcg-forward/bootstrap-url
 token=/run/capability-fabric/pcg-provision/token
 complete=/var/lib/capability-fabric/pcg/run/provision-complete
 date -u '+utc=%Y-%m-%dT%H:%M:%SZ'
@@ -54,7 +54,7 @@ for p in "$bootstrap" "$token" "$complete"; do
   if [[ -e "$p" ]]; then stat -c "path=$p mode=%a owner=%U group=%G size=%s mtime=%y" "$p"; else echo "path=$p missing=yes"; fi
 done
 runuser -u "$user_name" -- bash -c '
-  bootstrap=/run/capability-fabric/pcg-provision/bootstrap-url
+  bootstrap=/run/capability-fabric-pcg-forward/bootstrap-url
   complete=/var/lib/capability-fabric/pcg/run/provision-complete
   [[ -e "$complete" ]] && echo complete_visible=yes || echo complete_visible=no
   [[ -f "$bootstrap" ]] && echo bootstrap_file=yes || echo bootstrap_file=no
