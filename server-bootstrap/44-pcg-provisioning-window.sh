@@ -12,9 +12,10 @@ key_dir=/var/lib/capability-fabric/pcg/db-key
 db_key="$key_dir/tdlib-db-key"
 run_dir=/var/lib/capability-fabric/pcg/run
 complete="$run_dir/provision-complete"
-handoff_dir=/run/capability-fabric/pcg-provision
-token_file="$handoff_dir/token"
-bootstrap="$handoff_dir/bootstrap-url"
+token_dir=/run/capability-fabric/pcg-provision
+bootstrap_dir=/run/capability-fabric-pcg-forward
+token_file="$token_dir/token"
+bootstrap="$bootstrap_dir/bootstrap-url"
 authorized_keys=/etc/capability-fabric/pcg-forward/authorized_keys
 active=/opt/capability-fabric/channels/pcg/current
 cleanup=/usr/local/libexec/capability-fabric-pcg-provision-cleanup
@@ -32,7 +33,8 @@ ensure_layout() {
   install -d -m 0700 -o 65534 -g 65534 "$api_dir"
   install -d -m 0750 -o root -g 65534 "$key_dir"
   install -d -m 0770 -o 65534 -g 65534 "$run_dir"
-  install -d -m 0755 -o root -g root "$handoff_dir"
+  install -d -m 0755 -o root -g root "$token_dir"
+  install -d -m 0750 -o root -g pcg-forward "$bootstrap_dir"
 
   if [[ -e "$db_key" ]]; then
     [[ -f "$db_key" && ! -L "$db_key" ]] || { echo "unsafe TDLib DB key path" >&2; exit 21; }
@@ -62,7 +64,7 @@ install_cleanup() {
 #!/usr/bin/env bash
 set -euo pipefail
 rm -f /run/capability-fabric/pcg-provision/token
-rm -f /run/capability-fabric/pcg-provision/bootstrap-url
+rm -f /run/capability-fabric-pcg-forward/bootstrap-url
 CLEANUP
   chown root:root "$cleanup"
   chmod 0755 "$cleanup"
@@ -80,7 +82,7 @@ UMask=0077
 NoNewPrivileges=yes
 ProtectHome=yes
 ProtectSystem=full
-ReadWritePaths=$handoff_dir
+ReadWritePaths=$token_dir $bootstrap_dir
 EOF
 
   cat > "$cleanup_timer" <<EOF
@@ -183,13 +185,13 @@ release_id="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["r
 rm -f "$complete"
 "$cleanup"
 token="$(python3 -c 'import secrets; print(secrets.token_urlsafe(36))')"
-tmp_token="$(mktemp "$handoff_dir/.token.XXXXXX")"
+tmp_token="$(mktemp "$token_dir/.token.XXXXXX")"
 printf '%s\n' "$token" > "$tmp_token"
 chown root:65534 "$tmp_token"
 chmod 0640 "$tmp_token"
 mv -f "$tmp_token" "$token_file"
 
-tmp_bootstrap="$(mktemp "$handoff_dir/.bootstrap.XXXXXX")"
+tmp_bootstrap="$(mktemp "$bootstrap_dir/.bootstrap.XXXXXX")"
 printf 'http://127.0.0.1:%s/#token=%s\n' "$port" "$token" > "$tmp_bootstrap"
 chown root:pcg-forward "$tmp_bootstrap"
 chmod 0640 "$tmp_bootstrap"
