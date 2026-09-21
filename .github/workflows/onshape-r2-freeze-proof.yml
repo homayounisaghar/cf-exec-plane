@@ -1,0 +1,79 @@
+name: Onshape Hardened R2 Freeze Proof
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'server-bootstrap/control/onshape-r2-freeze-proof/*.request'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: onshape-r2-freeze-proof
+  cancel-in-progress: false
+
+jobs:
+  prove:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      CF_REPO_READ_TOKEN: ${{ secrets.CF_REPO_READ_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Validate immutable proof request
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || exit 10
+          IFS=$'\t' read -r status request_path <<<"${changes[0]}"
+          [[ "$status" == A ]] || exit 11
+          [[ "$request_path" == server-bootstrap/control/onshape-r2-freeze-proof/*.request ]] || exit 12
+          request_id="$(awk -F= '$1=="request_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          action="$(awk -F= '$1=="action"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          commit="$(awk -F= '$1=="candidate_commit"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 13
+          [[ "$action" == "prove-isolated-r2-freeze" ]] || exit 14
+          [[ "$commit" =~ ^[0-9a-f]{40}$ ]] || exit 15
+          echo "CF_R2_CANDIDATE_COMMIT=$commit" >> "$GITHUB_ENV"
+      - name: Fetch exact private candidate commit and prove fixed config
+        shell: bash
+        run: |
+          set -euo pipefail
+          tmp="$(mktemp -d)"
+          trap 'rm -rf "$tmp"' EXIT
+          cat >"$tmp/askpass" <<'ASK'
+          #!/usr/bin/env bash
+          case "${1:-}" in
+            *Username*) printf '%s\n' 'x-access-token' ;;
+            *Password*) printf '%s\n' "$CF_REPO_READ_TOKEN" ;;
+            *) exit 1 ;;
+          esac
+          ASK
+          chmod 0700 "$tmp/askpass"
+          git init --bare "$tmp/repo.git" >/dev/null
+          GIT_ASKPASS="$tmp/askpass" GIT_TERMINAL_PROMPT=0 git --git-dir="$tmp/repo.git" fetch --quiet --depth=1             https://github.com/homayounisaghar/capability-fabric.git "$CF_R2_CANDIDATE_COMMIT"
+          got="$(git --git-dir="$tmp/repo.git" rev-parse FETCH_HEAD)"
+          [[ "$got" == "$CF_R2_CANDIDATE_COMMIT" ]] || exit 20
+          for f in compose.yaml release-closure.json server.js; do
+            git --git-dir="$tmp/repo.git" show "$got:server-deploy/current/$f" >"$tmp/$f"
+          done
+          ! grep -Eq '\$\{[^}]+\}' "$tmp/compose.yaml"
+          ! grep -Eq '^[[:space:]]*env_file[[:space:]]*:' "$tmp/compose.yaml"
+          grep -Eq 'CF_PUBLIC_SURFACE:[[:space:]]*semantic-only' "$tmp/compose.yaml"
+          grep -Eq 'CF_FABRIC_REQUIRE_PRODUCTION_AUTHORITY:[[:space:]]*"1"' "$tmp/compose.yaml"
+          grep -Eq 'CF_PRIVILEGED_NATIVE_ENABLED:[[:space:]]*"0"' "$tmp/compose.yaml"
+          grep -Eq 'CF_FABRIC_QUALIFICATION_MODE:[[:space:]]*"0"' "$tmp/compose.yaml"
+          grep -Fq '"build_id": "onshape-vps-hardened-r2"' "$tmp/release-closure.json"
+          grep -Fq 'const BUILD_ID = "onshape-vps-hardened-r2";' "$tmp/server.js"
+          echo "CF_R2_COMPOSE_SHA256=$(sha256sum "$tmp/compose.yaml" | awk '{print $1}')"
+          echo "CF_R2_CLOSURE_SHA256=$(sha256sum "$tmp/release-closure.json" | awk '{print $1}')"
+          echo "CF_R2_SERVER_SHA256=$(sha256sum "$tmp/server.js" | awk '{print $1}')"
+          echo "CF_R2_INTERPOLATION=absent"
+          echo "CF_R2_ENV_FILE=absent"
+          echo "CF_R2_FREEZE_PROOF=pass"
