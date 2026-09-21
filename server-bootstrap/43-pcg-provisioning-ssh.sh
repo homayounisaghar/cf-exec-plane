@@ -110,13 +110,14 @@ if [[ "$mode" == install ]]; then
 #!/usr/bin/env bash
 set -euo pipefail
 bootstrap=/run/capability-fabric/pcg-provision/bootstrap-url
+complete=/var/lib/capability-fabric/pcg/run/provision-complete
 
 if [[ -n "${SSH_ORIGINAL_COMMAND:-}" ]]; then
   echo "PCG provisioning account does not accept remote commands." >&2
   exit 64
 fi
 
-if [[ ! -f "$bootstrap" || -L "$bootstrap" ]]; then
+if [[ -e "$complete" || ! -f "$bootstrap" || -L "$bootstrap" ]]; then
   echo "PCG provisioning is not active." >&2
   exit 65
 fi
