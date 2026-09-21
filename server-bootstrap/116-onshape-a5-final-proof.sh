@@ -99,7 +99,7 @@ echo CF_A5_ENV_FILE=absent
 grep -Fq 'if not self.require_material_authority:' "$candidate/fabric-src/capability_fabric/onshape_vps.py"
 grep -Fq 'UI input mutation-risk capability is not admitted on initial production surface' "$candidate/fabric-src/capability_fabric/onshape_vps.py"
 grep -Fq 'native browser capability is not admitted on production surface' "$candidate/fabric-src/capability_fabric/onshape_vps.py"
-PYTHONPATH="$candidate/fabric-src" python3 -m unittest   "$candidate/fabric-tests/test_onshape_vps_runtime.py" >/dev/null
+PYTHONPATH="$candidate/fabric-src" python3 -m unittest discover -s "$candidate/fabric-tests" -p 'test_onshape_vps_runtime.py' -v >/dev/null
 echo CF_A5_UI_EFFECTFUL_PRODUCTION_CLOSED=pass
 echo CF_A5_UI_STEP_JOURNAL_QUALIFIED=false
 
