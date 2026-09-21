@@ -1,0 +1,4 @@
+request_id=test-target-finalize-closed-20260921-1930z
+action=finalize-disposable-target-closed
+expected_script_blob=017cd74edf964280daeb64c4de241244165ce518
+expected_control_blob=499a1372a0416d5f8d0bbcecbef39cee20373f5b
