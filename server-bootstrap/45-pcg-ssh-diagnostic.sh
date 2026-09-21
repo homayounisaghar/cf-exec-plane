@@ -225,6 +225,11 @@ if buf:
 else:
     print("debug_health=empty")
 PY
+    set +e
+    docker exec "$debug_name" node -e 'const net=require("net");const s=net.createConnection("/run/pcg/web.sock");s.setTimeout(2000);s.on("connect",()=>s.write("{\"op\":\"health\"}\n"));let b="";s.on("data",d=>{b+=d;if(b.includes("\n")){const x=JSON.parse(b.split("\n")[0]);process.exit(x.ok===true&&x.phase!=="BROWSER_CLOSED"?0:1)}});s.on("timeout",()=>process.exit(1));s.on("error",()=>process.exit(1));'
+    health_cmd_rc=$?
+    set -e
+    echo "debug_docker_health_command_rc=$health_cmd_rc"
   else
     echo "debug_socket=missing"
   fi
