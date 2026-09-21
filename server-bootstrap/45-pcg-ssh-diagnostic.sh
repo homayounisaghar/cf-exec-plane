@@ -181,3 +181,61 @@ else
   echo "web_container=absent_after_rollback"
 fi
 echo "PCG_WEB_DEPLOY_DIAG_END"
+
+echo "PCG_WEB_ISOLATED_SMOKE_BEGIN"
+release=/var/lib/capability-fabric/deploy/pcg/releases/pcg-web-login-r6
+image='mcr.microsoft.com/playwright:v1.62.1-resolute@sha256:aebd85bce8056dcdc2269853fd94ea432b6a201da4f0ef125b509489ecd52ddb'
+debug_name=capability-fabric-pcg-web-debug
+tmp_debug="$(mktemp -d /var/lib/capability-fabric/pcg/.web-debug.XXXXXX)"
+cleanup_debug() {
+  docker rm -f "$debug_name" >/dev/null 2>&1 || true
+  rm -rf "$tmp_debug"
+}
+trap cleanup_debug EXIT
+install -d -m 0700 -o 65534 -g 65534 "$tmp_debug/run" "$tmp_debug/profile"
+(
+  exec 8>/run/lock/capability-fabric-pull.lock
+  flock 8
+  docker rm -f "$debug_name" >/dev/null 2>&1 || true
+  docker run -d --name "$debug_name"     --user 65534:65534     --network bridge     --read-only     --tmpfs /tmp:rw,nosuid,nodev,size=512m     --shm-size 128m     -v "$release:/release:ro"     -v "$tmp_debug/run:/run/pcg:rw"     -v "$tmp_debug/profile:/profile:rw"     -e PCG_WEB_PROFILE_DIR=/profile     -e PCG_WEB_SOCKET=/run/pcg/web.sock     -e PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1     -e NPM_CONFIG_CACHE=/tmp/npm-cache     -e HOME=/tmp     -e NODE_ENV=production     "$image" sh -lc 'umask 077 && chmod 0700 /profile && mkdir -p /tmp/app && cp /release/pcg_web_browser.mjs /tmp/app/pcg_web_browser.mjs && cp /release/pcg_web_package.json /tmp/app/package.json && cd /tmp/app && PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm install --omit=dev --ignore-scripts --no-audit --no-fund --package-lock=false && exec node pcg_web_browser.mjs' >/dev/null
+)
+for _ in $(seq 1 45); do
+  state="$(docker inspect -f '{{.State.Status}}' "$debug_name" 2>/dev/null || true)"
+  [[ "$state" == running ]] || break
+  if [[ -S "$tmp_debug/run/web.sock" ]]; then break; fi
+  sleep 1
+done
+if docker inspect "$debug_name" >/dev/null 2>&1; then
+  docker inspect -f 'debug_running={{.State.Running}} debug_status={{.State.Status}} debug_exit={{.State.ExitCode}} started={{.State.StartedAt}}' "$debug_name"
+  if [[ -S "$tmp_debug/run/web.sock" ]]; then
+    python3 - "$tmp_debug/run/web.sock" <<'PY'
+import json,socket,sys
+s=socket.socket(socket.AF_UNIX,socket.SOCK_STREAM); s.settimeout(3); s.connect(sys.argv[1])
+s.sendall(b'{"op":"health"}\n')
+buf=b''
+while b'\n' not in buf:
+    c=s.recv(4096)
+    if not c: break
+    buf+=c
+s.close()
+if buf:
+    d=json.loads(buf.split(b'\n',1)[0])
+    safe={k:d.get(k) for k in ('ok','phase','origin','pathname','logged_in','error') if k in d}
+    print("debug_health="+json.dumps(safe,separators=(',',':')))
+else:
+    print("debug_health=empty")
+PY
+  else
+    echo "debug_socket=missing"
+  fi
+  echo "debug_logs_begin"
+  docker logs --tail 160 "$debug_name" 2>&1 |
+    sed -E 's#https?://[^[:space:]]+#URL_REDACTED#g; s/[A-Za-z0-9_+\/-]{48,}/[REDACTED]/g' |
+    tail -n 160
+  echo "debug_logs_end"
+else
+  echo "debug_container=missing"
+fi
+cleanup_debug
+trap - EXIT
+echo "PCG_WEB_ISOLATED_SMOKE_END"
