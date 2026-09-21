@@ -61,6 +61,10 @@ echo CF_R4_Q_RELEASE_GATE=active
 echo CF_R4_Q_PULL_TIMER=stopped
 echo CF_R4_Q_GATEWAY=stopped
 
+exec 9>"$LOCK"
+flock -w 30 9 || { echo CF_R4_Q_PULL_LOCK=busy >&2; exit 22; }
+echo CF_R4_Q_PULL_LOCK=held
+
 sig="$SIGS/$expected_manifest.sig"
 [[ -s "$sig" ]]
 work="$(mktemp -d /var/lib/capability-fabric/.qual67.XXXXXX)"
@@ -115,6 +119,18 @@ c.close()
 PY
 )"
 before_reservations="$(find "$AGENT_DIR/mutation-budgets" -type f -name '*.json' 2>/dev/null | wc -l | tr -d ' ')"
+
+# Local qualification window only. External ingress is already stopped, the pull
+# timer is stopped, and the pull lock is held. Removing RELEASE_IN_PROGRESS is
+# required because safeTool intentionally rejects every semantic tool while the
+# gate file exists. The trap restores the gate on every failure path.
+rm -f "$GATE"
+gate_window_open=yes
+[[ ! -e "$GATE" ]]
+[[ "$(docker inspect -f '{{.State.Running}}' "$GATEWAY")" == false ]]
+if systemctl is-active --quiet "$TIMER"; then exit 23; fi
+[[ "$(git hash-object "$CONTROL")" == "$expected_control" ]]
+echo CF_R4_Q_LOCAL_WINDOW=open
 
 node_out="$(docker exec -i "$SERVER" sh -lc 'cd /tmp/app && node --input-type=module' <<'NODE'
 import fs from "node:fs";
@@ -188,6 +204,15 @@ await client.close();
 NODE
 )"
 printf '%s\n' "$node_out"
+
+tmp="$GATE.tmp.$"
+printf '%s\n' RELEASE_IN_PROGRESS >"$tmp"
+chmod 0600 "$tmp"
+chown root:root "$tmp"
+mv -f "$tmp" "$GATE"
+gate_window_open=no
+grep -Fxq RELEASE_IN_PROGRESS "$GATE"
+echo CF_R4_Q_LOCAL_WINDOW=closed
 
 after_mutations="$(python3 - "$DB" <<'PY'
 import json,sqlite3,sys
