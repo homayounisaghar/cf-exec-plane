@@ -1,0 +1,59 @@
+name: Onshape First Material Canary
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'server-bootstrap/control/onshape-first-material-canary/*.request'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: onshape-first-material-canary
+  cancel-in-progress: false
+
+jobs:
+  canary:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Validate immutable canary request
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || exit 10
+          IFS=$'\t' read -r status request_path <<<"${changes[0]}"
+          [[ "$status" == A ]] || exit 11
+          [[ "$request_path" == server-bootstrap/control/onshape-first-material-canary/*.request ]] || exit 12
+          request_id="$(awk -F= '$1=="request_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          action="$(awk -F= '$1=="action"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          expected_script_blob="$(awk -F= '$1=="expected_script_blob"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          expected_control_blob="$(awk -F= '$1=="expected_control_blob"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          canary_document_id="$(awk -F= '$1=="canary_document_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 13
+          [[ "$action" == "run-first-material-canary" ]] || exit 14
+          [[ "$expected_script_blob" =~ ^[0-9a-f]{40}$ ]] || exit 15
+          [[ "$expected_control_blob" == "81f73bb89c5517080a80ada3047c58c287874c50" ]] || exit 16
+          [[ "$canary_document_id" == "84d077d8370c21c4b3045263" ]] || exit 17
+          actual_script_blob="$(git rev-parse "$GITHUB_SHA:server-bootstrap/129-onshape-first-material-canary.sh")"
+          [[ "$actual_script_blob" == "$expected_script_blob" ]] || exit 18
+          mapfile -t keys < <(awk -F= 'NF && $1 !~ /^#/ {print $1}' "$request_path" | sort)
+          [[ "${#keys[@]}" -eq 5 ]] || exit 19
+          [[ "${keys[0]}" == action && "${keys[1]}" == canary_document_id && "${keys[2]}" == expected_control_blob && "${keys[3]}" == expected_script_blob && "${keys[4]}" == request_id ]] || exit 19
+          bash -n server-bootstrap/129-onshape-first-material-canary.sh
+      - name: Run bounded first material canary
+        shell: bash
+        run: bash server-bootstrap/runner/remote-bundle-exec.sh server-bootstrap/129-onshape-first-material-canary.sh
