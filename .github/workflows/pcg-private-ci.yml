@@ -90,8 +90,12 @@ jobs:
             src/capability_fabric/telegram_correlation.py \
             src/capability_fabric/telegram_execution.py \
             src/capability_fabric/telegram_runtime.py \
+            src/capability_fabric/telegram_payload_bound.py \
             src/capability_fabric/telegram_host.py \
-            src/capability_fabric/pcg_live.py
+            src/capability_fabric/pcg_live.py \
+            src/capability_fabric/pcg_live_unified.py \
+            src/capability_fabric/pcg_provision.py
+          bash -n server-bootstrap/43-pcg-provisioning-ssh.sh
 
       - name: Install core package without private-repo credential
         run: |
@@ -107,3 +111,6 @@ jobs:
           python tests/test_telegram_kernel_integration_v01.py
           python tests/test_communications_runtime_v01.py
           python tests/test_telegram_host_v01.py
+          python tests/test_pcg_live_host_v01.py
+          python tests/test_pcg_provision_v02.py
+          python tests/test_telegram_payload_bound.py
