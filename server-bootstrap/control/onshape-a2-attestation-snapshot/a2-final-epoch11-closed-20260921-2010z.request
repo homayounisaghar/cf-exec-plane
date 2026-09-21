@@ -1,0 +1,5 @@
+request_id=a2-final-epoch11-closed-20260921-2010z
+action=verify-android-attestation-snapshot
+snapshot_commit=98d9d96ea2f6eaa55a3beede2dfccdfce84be897
+snapshot_path=evidence/onshape/android-attestation/issue33-final-epoch11-closed-20260921T200923Z.json
+expected=closed
