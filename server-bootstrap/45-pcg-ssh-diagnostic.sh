@@ -246,3 +246,66 @@ fi
 cleanup_debug
 trap - EXIT
 echo "PCG_WEB_ISOLATED_SMOKE_END"
+
+
+echo "PCG_WEB_COMPOSE_SMOKE_BEGIN"
+r7=/var/lib/capability-fabric/deploy/pcg/releases/pcg-web-login-r7
+debug_project=capability-fabric-pcg-web-smoke
+if [[ -d "$r7" ]]; then
+  existing_web="$(docker ps -a --filter name='^/capability-fabric-pcg-web$' --format '{{.ID}}' | head -n1)"
+  if [[ -n "$existing_web" ]]; then
+    echo "compose_smoke=skipped-existing-web-container"
+  else
+    (
+      exec 8>/run/lock/capability-fabric-pull.lock
+      flock 8
+      docker compose -p "$debug_project" -f "$r7/compose.yaml" up -d --no-deps pcg_web >/dev/null
+    )
+    for _ in $(seq 1 40); do
+      cid="$(docker ps -a --filter name='^/capability-fabric-pcg-web$' --format '{{.ID}}' | head -n1)"
+      [[ -n "$cid" ]] || { sleep 1; continue; }
+      health="$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' "$cid" 2>/dev/null || true)"
+      [[ "$health" == healthy || "$health" == unhealthy ]] && break
+      sleep 1
+    done
+    cid="$(docker ps -a --filter name='^/capability-fabric-pcg-web$' --format '{{.ID}}' | head -n1)"
+    if [[ -n "$cid" ]]; then
+      docker inspect -f 'compose_web_running={{.State.Running}} compose_web_status={{.State.Status}} compose_web_exit={{.State.ExitCode}} compose_web_oom={{.State.OOMKilled}} compose_web_health={{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' "$cid"
+      docker inspect -f '{{if .State.Health}}{{range .State.Health.Log}}compose_health_exit={{.ExitCode}} compose_health_output={{json .Output}}{{println}}{{end}}{{end}}' "$cid" | tail -n 12
+      if [[ -S /var/lib/capability-fabric/pcg/run/web.sock ]]; then
+        python3 - /var/lib/capability-fabric/pcg/run/web.sock <<'PY'
+import json,socket,sys
+s=socket.socket(socket.AF_UNIX,socket.SOCK_STREAM); s.settimeout(3); s.connect(sys.argv[1])
+s.sendall(b'{"op":"health"}\n')
+buf=b''
+while b'\n' not in buf:
+    c=s.recv(4096)
+    if not c: break
+    buf+=c
+s.close()
+if buf:
+    d=json.loads(buf.split(b'\n',1)[0])
+    safe={k:d.get(k) for k in ('ok','phase','origin','pathname','logged_in','error') if k in d}
+    print("compose_web_uds="+json.dumps(safe,separators=(',',':')))
+PY
+      else
+        echo "compose_web_socket=missing"
+      fi
+      echo "compose_web_logs_begin"
+      docker logs --tail 100 "$cid" 2>&1 |
+        sed -E 's#https?://[^[:space:]]+#URL_REDACTED#g; s/[A-Za-z0-9_+\/-]{48,}/[REDACTED]/g' |
+        tail -n 100
+      echo "compose_web_logs_end"
+    else
+      echo "compose_web_container=missing"
+    fi
+    (
+      exec 8>/run/lock/capability-fabric-pull.lock
+      flock 8
+      docker compose -p "$debug_project" -f "$r7/compose.yaml" down --remove-orphans >/dev/null 2>&1 || true
+    )
+  fi
+else
+  echo "staged_r7=missing"
+fi
+echo "PCG_WEB_COMPOSE_SMOKE_END"
