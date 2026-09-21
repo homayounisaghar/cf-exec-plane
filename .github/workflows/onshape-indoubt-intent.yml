@@ -90,7 +90,7 @@ jobs:
         if: steps.classify.outputs.shapes == 'TEXT_TEXT'
         run: echo matched
       - name: Values OTHER_PAIR
-        if: "!contains(fromJSON('[\"NUMERIC_NUMERIC\",\"NUMERIC_QUANTITY\",\"QUANTITY_NUMERIC\",\"QUANTITY_QUANTITY\",\"TEXT_TEXT\"]'), steps.classify.outputs.shapes)"
+        if: steps.classify.outputs.shapes != 'NUMERIC_NUMERIC' && steps.classify.outputs.shapes != 'NUMERIC_QUANTITY' && steps.classify.outputs.shapes != 'QUANTITY_NUMERIC' && steps.classify.outputs.shapes != 'QUANTITY_QUANTITY' && steps.classify.outputs.shapes != 'TEXT_TEXT'
         run: echo matched
 
       - name: Selectors FEATURE_PARAMETER pair
@@ -106,7 +106,7 @@ jobs:
         if: contains(steps.classify.outputs.selectors, 'GENERIC_INPUT')
         run: echo matched
       - name: Selectors OTHER pair
-        if: "!contains(steps.classify.outputs.selectors, 'FEATURE_PARAMETER') && !contains(steps.classify.outputs.selectors, 'SEARCH') && !contains(steps.classify.outputs.selectors, 'NAMING') && !contains(steps.classify.outputs.selectors, 'GENERIC_INPUT')"
+        if: contains(steps.classify.outputs.selectors, 'FEATURE_PARAMETER') == false && contains(steps.classify.outputs.selectors, 'SEARCH') == false && contains(steps.classify.outputs.selectors, 'NAMING') == false && contains(steps.classify.outputs.selectors, 'GENERIC_INPUT') == false
         run: echo matched
 
       - name: Selectors SAME
