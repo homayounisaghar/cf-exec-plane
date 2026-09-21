@@ -1,0 +1,49 @@
+name: Onshape Activate Seq67 Quiesced
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'server-bootstrap/control/onshape-activate-seq67/*.request'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: onshape-r4-transition
+  cancel-in-progress: false
+
+jobs:
+  activate:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 2, persist-credentials: false}
+      - name: Validate immutable activation request
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || exit 10
+          IFS=$'\t' read -r status request_path <<<"${changes[0]}"
+          [[ "$status" == A && "$request_path" == server-bootstrap/control/onshape-activate-seq67/*.request ]] || exit 11
+          request_id="$(awk -F= '$1=="request_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          action="$(awk -F= '$1=="action"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          source_commit="$(awk -F= '$1=="source_commit"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          manifest_sha="$(awk -F= '$1=="manifest_sha256"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 12
+          [[ "$action" == "activate-seq67-while-epoch4-quiesced" ]] || exit 13
+          [[ "$source_commit" == "0f5d0ea4692964e7cbb3de964f8c5b6ffaf62006" ]] || exit 14
+          [[ "$manifest_sha" == "f2631a7f94ec5f6e5af5e9d3b3211cf440354eef0b55ff6fee7ab65cec50bfb9" ]] || exit 15
+          bash -n server-bootstrap/138-onshape-activate-seq67-quiesced.sh
+      - name: Activate exact signed seq67 while material authority stays closed
+        shell: bash
+        run: bash server-bootstrap/runner/remote-bundle-exec.sh server-bootstrap/138-onshape-activate-seq67-quiesced.sh
