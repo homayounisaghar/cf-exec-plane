@@ -50,14 +50,68 @@ jobs:
           out="$(bash server-bootstrap/runner/remote-bundle-exec.sh server-bootstrap/126-onshape-indoubt-intent-classifier.sh)"
           printf '%s\n' "$out"
           intent="$(printf '%s\n' "$out" | awk -F= '$1=="CF_INTENT_CLASS"{print $2}' | tail -n1)"
-          [[ -n "$intent" ]] || exit 20
+          shapes="$(printf '%s\n' "$out" | awk -F= '$1=="CF_INTENT_VALUE_SHAPES"{print $2}' | tail -n1)"
+          selectors="$(printf '%s\n' "$out" | awk -F= '$1=="CF_INTENT_SELECTOR_CLASSES"{print $2}' | tail -n1)"
+          same="$(printf '%s\n' "$out" | awk -F= '$1=="CF_INTENT_SELECTORS_SAME"{print $2}' | tail -n1)"
+          [[ -n "$intent" && -n "$shapes" && -n "$selectors" && -n "$same" ]] || exit 20
           echo "intent=$intent" >> "$GITHUB_OUTPUT"
+          echo "shapes=$shapes" >> "$GITHUB_OUTPUT"
+          echo "selectors=$selectors" >> "$GITHUB_OUTPUT"
+          echo "same=$same" >> "$GITHUB_OUTPUT"
       - name: Intent LINEAR_PATTERN_UI_SEQUENCE
         if: steps.classify.outputs.intent == 'LINEAR_PATTERN_UI_SEQUENCE'
         run: echo matched
       - name: Intent DOCUMENT_COMMAND_SEARCH_SEQUENCE
         if: steps.classify.outputs.intent == 'DOCUMENT_COMMAND_SEARCH_SEQUENCE'
         run: echo matched
+      - name: Intent FEATURE_PARAMETER_COMMIT_SEQUENCE
+        if: steps.classify.outputs.intent == 'FEATURE_PARAMETER_COMMIT_SEQUENCE'
+        run: echo matched
+      - name: Intent NAMING_COMMIT_SEQUENCE
+        if: steps.classify.outputs.intent == 'NAMING_COMMIT_SEQUENCE'
+        run: echo matched
       - name: Intent OTHER_DOCUMENT_INPUT_SEQUENCE
         if: steps.classify.outputs.intent == 'OTHER_DOCUMENT_INPUT_SEQUENCE'
+        run: echo matched
+
+      - name: Values NUMERIC_NUMERIC
+        if: steps.classify.outputs.shapes == 'NUMERIC_NUMERIC'
+        run: echo matched
+      - name: Values NUMERIC_QUANTITY
+        if: steps.classify.outputs.shapes == 'NUMERIC_QUANTITY'
+        run: echo matched
+      - name: Values QUANTITY_NUMERIC
+        if: steps.classify.outputs.shapes == 'QUANTITY_NUMERIC'
+        run: echo matched
+      - name: Values QUANTITY_QUANTITY
+        if: steps.classify.outputs.shapes == 'QUANTITY_QUANTITY'
+        run: echo matched
+      - name: Values TEXT_TEXT
+        if: steps.classify.outputs.shapes == 'TEXT_TEXT'
+        run: echo matched
+      - name: Values OTHER_PAIR
+        if: "!contains(fromJSON('[\"NUMERIC_NUMERIC\",\"NUMERIC_QUANTITY\",\"QUANTITY_NUMERIC\",\"QUANTITY_QUANTITY\",\"TEXT_TEXT\"]'), steps.classify.outputs.shapes)"
+        run: echo matched
+
+      - name: Selectors FEATURE_PARAMETER pair
+        if: contains(steps.classify.outputs.selectors, 'FEATURE_PARAMETER')
+        run: echo matched
+      - name: Selectors SEARCH pair
+        if: contains(steps.classify.outputs.selectors, 'SEARCH')
+        run: echo matched
+      - name: Selectors NAMING pair
+        if: contains(steps.classify.outputs.selectors, 'NAMING')
+        run: echo matched
+      - name: Selectors GENERIC_INPUT pair
+        if: contains(steps.classify.outputs.selectors, 'GENERIC_INPUT')
+        run: echo matched
+      - name: Selectors OTHER pair
+        if: "!contains(steps.classify.outputs.selectors, 'FEATURE_PARAMETER') && !contains(steps.classify.outputs.selectors, 'SEARCH') && !contains(steps.classify.outputs.selectors, 'NAMING') && !contains(steps.classify.outputs.selectors, 'GENERIC_INPUT')"
+        run: echo matched
+
+      - name: Selectors SAME
+        if: steps.classify.outputs.same == 'yes'
+        run: echo matched
+      - name: Selectors DIFFERENT
+        if: steps.classify.outputs.same == 'no'
         run: echo matched
