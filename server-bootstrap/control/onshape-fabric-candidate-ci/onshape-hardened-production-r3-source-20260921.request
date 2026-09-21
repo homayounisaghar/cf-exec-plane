@@ -1,0 +1,4 @@
+request_id=onshape-hardened-production-r3-source-20260921
+candidate_commit=87747aded998784e67fb0ffa1f6eca926ff65727
+expected_sequence=0
+expected_release=onshape-vps-hardened-production-r3
