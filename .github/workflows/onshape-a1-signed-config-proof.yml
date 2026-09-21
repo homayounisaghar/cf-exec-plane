@@ -41,7 +41,7 @@ jobs:
           request_id="$(awk -F= '$1=="request_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
           action="$(awk -F= '$1=="action"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
           [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 13
-          [[ "$action" == "prove-seq64-signed-config-identity" ]] || exit 14
-      - name: Prove seq64 signed configuration identity
+          [[ "$action" == "prove-seq65-signed-config-identity" ]] || exit 14
+      - name: Prove seq65 signed configuration identity
         shell: bash
         run: bash server-bootstrap/runner/remote-bundle-exec.sh server-bootstrap/110-onshape-a1-signed-config-proof.sh
