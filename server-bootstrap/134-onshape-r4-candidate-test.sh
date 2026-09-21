@@ -3,7 +3,7 @@ set -euo pipefail
 umask 077
 [[ "$(id -u)" -eq 0 ]] || exit 2
 
-candidate_commit="243dbf162f3e20a63bef32c73263089fc29dfca9"
+candidate_commit="d63124e171c21244899459d359834146ac1d2791"
 candidate_dir="server-deploy/candidates/onshape-vps-hardened-production-r4"
 cache=/var/lib/capability-fabric/repo.git
 token=/etc/capability-fabric/secrets/repo-read-token
