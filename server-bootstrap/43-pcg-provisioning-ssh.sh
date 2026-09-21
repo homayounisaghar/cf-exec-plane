@@ -67,6 +67,20 @@ if [[ "$mode" == verify ]]; then
 fi
 
 if [[ "$mode" == install ]]; then
+  prior_dropin=""
+  if [[ -f "$sshd_dropin" && ! -L "$sshd_dropin" ]]; then
+    prior_dropin="$(mktemp)"
+    cp -- "$sshd_dropin" "$prior_dropin"
+    rm -f -- "$sshd_dropin"
+  fi
+  restore_prior_dropin() {
+    if [[ -n "$prior_dropin" && -f "$prior_dropin" && ! -f "$sshd_dropin" ]]; then
+      install -m 0644 -o root -g root "$prior_dropin" "$sshd_dropin"
+    fi
+    [[ -z "$prior_dropin" ]] || rm -f -- "$prior_dropin"
+  }
+  trap restore_prior_dropin EXIT
+
   existing_effective="$(sshd -T -C user="$user_name",host=localhost,addr=127.0.0.1)"
   existing_allowusers="$(awk '$1=="allowusers"{for(i=2;i<=NF;i++)printf "%s%s",$i,(i==NF?"":" ")}' <<<"$existing_effective")"
   if [[ -n "$existing_allowusers" ]]; then
@@ -141,6 +155,8 @@ EOF
 
   sshd -t
   verify_effective
+  trap - EXIT
+  [[ -z "$prior_dropin" ]] || rm -f -- "$prior_dropin"
   if systemctl list-unit-files ssh.service >/dev/null 2>&1; then
     systemctl reload ssh.service
   elif systemctl list-unit-files sshd.service >/dev/null 2>&1; then
