@@ -1,0 +1,5 @@
+request_id=onshape-step4-closed-attestation-20260921-1419z
+action=verify-android-attestation-snapshot
+snapshot_commit=2d884b4152fe3457dd91ff435043ad6e66c3e994
+snapshot_path=evidence/onshape/android-attestation/issue33-step4-closed-20260921T141818Z.json
+expected=closed
