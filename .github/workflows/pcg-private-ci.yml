@@ -96,8 +96,11 @@ jobs:
             src/capability_fabric/pcg_live_unified.py \
             src/capability_fabric/pcg_provision.py \
             server-deploy/channels/pcg/current/pcg_core_stub.py \
-            server-deploy/channels/pcg/current/pcg_telegram_tdlib_unprovisioned.py
+            server-deploy/channels/pcg/current/pcg_telegram_tdlib_unprovisioned.py \
+            server-deploy/channels/pcg/current/pcg_telegram_provisioning_runtime.py
+          bash -n server-bootstrap/42-pcg-pull-agent.sh
           bash -n server-bootstrap/43-pcg-provisioning-ssh.sh
+          bash -n server-bootstrap/44-pcg-provisioning-window.sh
           bash -n server-deploy/channels/pcg/current/health.sh
 
       - name: Enforce Telegram V1 no-presence-manipulation invariant
@@ -109,6 +112,40 @@ jobs:
             exit 31
           fi
           echo "PCG_TDLIB_PRESENCE_MUTATION=absent"
+
+      - name: Smoke real single-writer provisioning runtime without credentials
+        run: |
+          set -euo pipefail
+          work="$RUNNER_TEMP/pcg-final-smoke"
+          rm -rf "$work"
+          mkdir -p "$work"/{run,state,api,db,provision}
+          chmod 0777 "$work/run" "$work/state" "$work/api"
+          chmod 0755 "$work/db" "$work/provision"
+          printf '%s\n' 'T0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJK' > "$work/provision/token"
+          chmod 0640 "$work/provision/token"
+          image='ghcr.io/homayounisaghar/pcg-tdlib-python@sha256:eccb8b5e73ac504aafd8a8b316e2fda951bd7cb23280cccf99c5e6206c4826e4'
+          docker pull "$image" >/dev/null
+          cid="$(docker run -d --rm --network none \
+            --user 65534:65534 \
+            -v "$PCG_PRIVATE_WORKTREE/server-deploy/channels/pcg/current:/release:ro" \
+            -v "$work/run:/run/pcg:rw" \
+            -v "$work/state:/state:rw" \
+            -v "$work/api:/api-credentials:rw" \
+            -v "$work/db:/db-key:ro" \
+            -v "$work/provision:/provision:ro" \
+            "$image" python /release/pcg_telegram_provisioning_runtime.py)"
+          trap 'docker rm -f "$cid" >/dev/null 2>&1 || true' EXIT
+          for i in $(seq 1 30); do
+            if docker exec "$cid" python -c "import json,socket; s=socket.socket(socket.AF_UNIX); s.settimeout(1); s.connect('/run/pcg/telegram.sock'); s.sendall(b'{\"op\":\"health\"}'); d=json.loads(s.recv(4096)); s.close(); assert d['mode']=='REAL_TDLIB_PROVISIONABLE'; assert d['authorization']=='PROVISIONING_REQUIRED'; assert d['tdlib_client']=='NOT_CREATED'; assert d['material_send_admission']=='CLOSED'; assert d['model_content_admission']=='CLOSED'" 2>/dev/null; then
+              break
+            fi
+            sleep 1
+          done
+          docker exec "$cid" python -c "import urllib.request; r=urllib.request.urlopen('http://127.0.0.1:8766/healthz',timeout=2); assert r.status==200; assert b'one-time-loopback-same-writer' in r.read()"
+          test ! -e "$work/api/telegram-api.json"
+          echo "PCG_FINAL_SINGLE_WRITER_SMOKE=pass"
+          docker rm -f "$cid" >/dev/null
+          trap - EXIT
 
       - name: Install PCG live package without private-repo credential
         run: |
