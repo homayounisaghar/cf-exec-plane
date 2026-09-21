@@ -4,6 +4,7 @@ import hashlib
 import json
 from pathlib import Path
 import sys
+from datetime import datetime, timezone
 
 EXPECTED_RUNTIME="bridge-0.6.7-code24-coord-v2"
 EXPECTED_PACKAGE="dev.capabilityfabric.onshapebridge"
@@ -38,6 +39,18 @@ def load(control_path: str, status_path: str):
     return raw,root,status
 
 
+def _ts(value: str) -> datetime:
+    value=str(value).strip()
+    if " • " in value:
+        value=value.split(" • ",1)[0].strip()
+    if value.endswith("Z"):
+        value=value[:-1]+"+00:00"
+    dt=datetime.fromisoformat(value)
+    if dt.tzinfo is None:
+        dt=dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc)
+
+
 def common(raw,root,status):
     assert root["schema"]=="capability-fabric.onshape-runtime-control.v1"
     assert status["observedRuntimeControlSha"]==blob_sha(raw)
@@ -55,6 +68,10 @@ def common(raw,root,status):
     assert status["leaseState"]=="FREE"
     assert status["queueDepth"]==0
     assert status.get("currentCommandSourceId") is None
+    control_updated=_ts(root["updatedAt"])
+    assert _ts(status["lastControlReadAt"]) >= control_updated
+    assert _ts(status["reportedAt"]) >= control_updated
+    assert _ts(status["heartbeatPublishedAt"]) >= control_updated
 
 
 def current(raw,root,status):
