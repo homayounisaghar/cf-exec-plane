@@ -141,3 +141,39 @@ PY
   docker logs --tail 80 "$cid" 2>&1 | sed -E 's/[A-Za-z0-9_-]{32,}/[REDACTED]/g' | tail -n 80
 fi
 echo "PCG_PROVISION_RUNTIME_DIAG_END"
+
+echo "PCG_WEB_DEPLOY_DIAG_BEGIN"
+detail=/var/log/capability-fabric/pcg-pull-agent-detail.log
+if [[ -f "$detail" ]]; then
+  grep -E 'pcg-web-login-r6|pcg_web|compose|health|unhealthy|error|ERROR|failed|FAIL|npm|node|socket|profile' "$detail" 2>/dev/null |
+    tail -n 240 |
+    sed -E 's#https?://[^[:space:]]+#URL_REDACTED#g; s/[A-Za-z0-9_+\/-]{48,}/[REDACTED]/g' || true
+else
+  echo "pcg_pull_detail=missing"
+fi
+release=/var/lib/capability-fabric/deploy/pcg/releases/pcg-web-login-r6
+if [[ -d "$release" ]]; then
+  echo "staged_release=present"
+  stat -c 'release_mode=%a owner=%U group=%G' "$release"
+  if [[ -s "$release/manifest.json" ]]; then
+    python3 - "$release/manifest.json" <<'PY'
+import json,sys
+m=json.load(open(sys.argv[1],encoding='utf-8'))
+print("release_id="+str(m.get("release_id")))
+print("sequence="+str(m.get("sequence")))
+print("health_timeout_seconds="+str(m.get("health_timeout_seconds")))
+PY
+  fi
+else
+  echo "staged_release=missing"
+fi
+web_cid="$(docker ps -a --filter name='^/capability-fabric-pcg-web$' --format '{{.ID}}' | head -n1)"
+if [[ -n "$web_cid" ]]; then
+  docker inspect -f 'web_running={{.State.Running}} web_status={{.State.Status}} web_exit={{.State.ExitCode}} web_health={{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' "$web_cid"
+  docker logs --tail 160 "$web_cid" 2>&1 |
+    sed -E 's#https?://[^[:space:]]+#URL_REDACTED#g; s/[A-Za-z0-9_+\/-]{48,}/[REDACTED]/g' |
+    tail -n 160
+else
+  echo "web_container=absent_after_rollback"
+fi
+echo "PCG_WEB_DEPLOY_DIAG_END"
