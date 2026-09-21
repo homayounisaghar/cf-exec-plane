@@ -1,0 +1,121 @@
+name: PCG TDLib Base Image
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'server-bootstrap/control/pcg-tdlib-image-requests/*.request'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: personal-server-pcg-tdlib-base-image
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build-load:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+
+      - id: request
+        name: Validate immutable TDLib image request
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || { echo "request commit must add exactly one file" >&2; exit 10; }
+          IFS=$'\t' read -r status request_path <<<"${changes[0]}"
+          [[ "$status" == A ]] || { echo "request must be newly added" >&2; exit 11; }
+          [[ "$request_path" == server-bootstrap/control/pcg-tdlib-image-requests/*.request ]] || exit 12
+          request_id="$(awk -F= '$1=="request_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          phase="$(awk -F= '$1=="phase"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          tdlib_commit="$(awk -F= '$1=="tdlib_commit"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          tdlib_version="$(awk -F= '$1=="tdlib_version"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 13
+          [[ "$phase" == pcg-tdlib-base-image ]] || exit 14
+          [[ "$tdlib_commit" =~ ^[0-9a-f]{40}$ ]] || exit 15
+          [[ "$tdlib_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || exit 16
+          echo "tdlib_commit=$tdlib_commit" >> "$GITHUB_OUTPUT"
+          echo "tdlib_version=$tdlib_version" >> "$GITHUB_OUTPUT"
+
+      - name: Mask endpoint and login
+        run: |
+          set -euo pipefail
+          printf '::add-mask::%s\n' "$VPS_HOST"
+          printf '::add-mask::%s\n' "$VPS_SSH_USER"
+          while IFS= read -r addr; do
+            [[ -n "$addr" ]] && printf '::add-mask::%s\n' "$addr"
+          done < <(getent ahosts "$VPS_HOST" 2>/dev/null | awk '{print $1}' | sort -u)
+
+      - id: build
+        name: Build exact public TDLib runtime
+        env:
+          TDLIB_COMMIT: ${{ steps.request.outputs.tdlib_commit }}
+          TDLIB_VERSION: ${{ steps.request.outputs.tdlib_version }}
+        run: |
+          set -euo pipefail
+          short="${TDLIB_COMMIT:0:12}"
+          image_ref="capability-fabric/pcg-tdlib-python:tdlib-${TDLIB_VERSION}-${short}"
+          docker build \
+            -f pcg-runtime/Dockerfile.tdlib-python \
+            --build-arg "TDLIB_COMMIT=$TDLIB_COMMIT" \
+            --build-arg "TDLIB_VERSION=$TDLIB_VERSION" \
+            -t "$image_ref" .
+          image_id="$(docker image inspect "$image_ref" --format '{{.Id}}')"
+          [[ "$image_id" =~ ^sha256:[0-9a-f]{64}$ ]] || exit 20
+          echo "image_ref=$image_ref" >> "$GITHUB_OUTPUT"
+          echo "image_id=$image_id" >> "$GITHUB_OUTPUT"
+
+      - name: Smoke tdjson ABI and exact version
+        env:
+          IMAGE_REF: ${{ steps.build.outputs.image_ref }}
+          EXPECTED_VERSION: ${{ steps.request.outputs.tdlib_version }}
+        run: |
+          set -euo pipefail
+          docker run --rm --network none "$IMAGE_REF" python -c '
+          import ctypes,json,os
+          lib=ctypes.CDLL("libtdjson.so")
+          lib.td_execute.restype=ctypes.c_char_p
+          lib.td_execute.argtypes=[ctypes.c_char_p]
+          raw=lib.td_execute(json.dumps({"@type":"getOption","name":"version"}).encode())
+          value=json.loads(raw.decode())
+          assert value.get("@type")=="optionValueString", value
+          assert value.get("value")==os.environ["EXPECTED_VERSION"], value
+          print("TDJSON_ABI=pass")
+          print("TDLIB_VERSION="+value["value"])
+          ' --env "EXPECTED_VERSION=$EXPECTED_VERSION"
+
+      - name: Transfer image to VPS and verify exact image id
+        env:
+          IMAGE_REF: ${{ steps.build.outputs.image_ref }}
+        run: bash server-bootstrap/runner/docker-load-remote.sh "$IMAGE_REF"
+
+      - name: Emit immutable image evidence
+        env:
+          IMAGE_REF: ${{ steps.build.outputs.image_ref }}
+          IMAGE_ID: ${{ steps.build.outputs.image_id }}
+          TDLIB_COMMIT: ${{ steps.request.outputs.tdlib_commit }}
+          TDLIB_VERSION: ${{ steps.request.outputs.tdlib_version }}
+        run: |
+          set -euo pipefail
+          echo "PCG_TDLIB_SOURCE_COMMIT=$TDLIB_COMMIT"
+          echo "PCG_TDLIB_VERSION=$TDLIB_VERSION"
+          echo "PCG_TDLIB_IMAGE_REF=$IMAGE_REF"
+          echo "PCG_TDLIB_IMAGE_ID=$IMAGE_ID"
+          echo "PCG_TDLIB_BASE_IMAGE=pass"
