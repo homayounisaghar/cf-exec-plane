@@ -30,7 +30,7 @@ chmod 0600 "$known_hosts"
 ssh_opts=(-i "$key_file" -p "$port" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$known_hosts" -o ConnectTimeout=15)
 
 printf -v qref '%q' "$image_ref"
-remote_output="$(ssh "${ssh_opts[@]}" "${VPS_SSH_USER}@${VPS_HOST}" "set -euo pipefail; docker logout ghcr.io >/dev/null 2>&1 || true; docker pull $qref >/dev/null; docker image inspect $qref --format '{{json .RepoDigests}}'")"
+remote_output="$(ssh "${ssh_opts[@]}" "${VPS_SSH_USER}@${VPS_HOST}" "set -euo pipefail; d=\$(mktemp -d); trap 'rm -rf \"\$d\"' EXIT; DOCKER_CONFIG=\$d docker pull $qref >/dev/null; docker image inspect $qref --format '{{json .RepoDigests}}'")"
 grep -Fq "$digest" <<<"$remote_output" || {
   echo "remote image digest verification failed" >&2
   exit 4
