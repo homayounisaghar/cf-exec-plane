@@ -1,0 +1,4 @@
+request_id=r4-guarded-finalize-epoch5-20260921-1901z
+action=finalize-r4-guarded-production
+expected_script_blob=fec294131b62f79f56142521004249688066eddc
+expected_control_blob=3b7b05f78c89d7fed2f8bb964cda42347924a329
