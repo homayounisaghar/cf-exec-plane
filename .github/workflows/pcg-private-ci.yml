@@ -1,0 +1,109 @@
+name: PCG Private Branch CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'server-bootstrap/control/pcg-ci-requests/*.request'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pcg-private-branch-ci
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  pcg-core-tests:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+
+      - id: request
+        name: Validate immutable PCG CI request
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || { echo "PCG CI trigger must add exactly one request file" >&2; exit 10; }
+          IFS=$'\t' read -r status request_path <<<"${changes[0]}"
+          [[ "$status" == A ]] || { echo "PCG CI request must be newly added" >&2; exit 11; }
+          [[ "$request_path" == server-bootstrap/control/pcg-ci-requests/*.request ]] || exit 12
+          request_id="$(awk -F= '$1=="request_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          candidate_commit="$(awk -F= '$1=="candidate_commit"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 13
+          [[ "$candidate_commit" =~ ^[0-9a-f]{40}$ ]] || exit 14
+          echo "candidate_commit=$candidate_commit" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Fetch exact private candidate then scrub credential
+        env:
+          CF_REPO_READ_TOKEN: ${{ secrets.CF_REPO_READ_TOKEN }}
+          CANDIDATE_COMMIT: ${{ steps.request.outputs.candidate_commit }}
+        run: |
+          set -euo pipefail
+          : "${CF_REPO_READ_TOKEN:?missing private repository read token}"
+          work="${RUNNER_TEMP}/pcg-private"
+          rm -rf "$work"
+          mkdir -m 700 "$work"
+          git init "$work" >/dev/null
+          askpass="${RUNNER_TEMP}/pcg-askpass"
+          cat > "$askpass" <<'ASKPASS'
+          #!/usr/bin/env bash
+          case "${1:-}" in
+            *Username*) printf '%s\n' 'x-access-token' ;;
+            *Password*) printf '%s\n' "$CF_REPO_READ_TOKEN" ;;
+            *) exit 1 ;;
+          esac
+          ASKPASS
+          chmod 700 "$askpass"
+          GIT_ASKPASS="$askpass" GIT_TERMINAL_PROMPT=0 git -C "$work" fetch --quiet --depth=1 \
+            https://github.com/homayounisaghar/capability-fabric.git "$CANDIDATE_COMMIT"
+          actual="$(git -C "$work" rev-parse FETCH_HEAD)"
+          [[ "$actual" == "$CANDIDATE_COMMIT" ]] || { echo "private candidate commit mismatch" >&2; exit 20; }
+          git -C "$work" checkout --quiet --detach FETCH_HEAD
+          rm -f "$askpass"
+          unset CF_REPO_READ_TOKEN
+          if git -C "$work" remote -v | grep -E 'x-access-token|github_pat_|ghp_' >/dev/null; then
+            echo "credential material persisted in git remote" >&2
+            exit 21
+          fi
+          echo "PCG_PRIVATE_WORKTREE=$work" >> "$GITHUB_ENV"
+
+      - name: Compile changed PCG modules without repository credentials
+        run: |
+          set -euo pipefail
+          test -n "${PCG_PRIVATE_WORKTREE:-}"
+          cd "$PCG_PRIVATE_WORKTREE"
+          python -m compileall -q \
+            src/capability_fabric/telegram_correlation.py \
+            src/capability_fabric/telegram_execution.py \
+            src/capability_fabric/telegram_runtime.py \
+            src/capability_fabric/telegram_host.py \
+            src/capability_fabric/pcg_live.py
+
+      - name: Install core package without private-repo credential
+        run: |
+          set -euo pipefail
+          python -m pip install -e "$PCG_PRIVATE_WORKTREE"
+
+      - name: Run PCG correlation and material-effect regression probes
+        run: |
+          set -euo pipefail
+          cd "$PCG_PRIVATE_WORKTREE"
+          python tests/test_telegram_material_effect_v01.py
+          python tests/test_telegram_recovery_correlation_v02.py
+          python tests/test_telegram_kernel_integration_v01.py
+          python tests/test_communications_runtime_v01.py
+          python tests/test_telegram_host_v01.py
