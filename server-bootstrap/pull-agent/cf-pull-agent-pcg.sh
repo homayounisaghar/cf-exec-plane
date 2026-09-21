@@ -87,9 +87,14 @@ with_host_docker_lock() {
 }
 
 compose_pull_locked() {
-  local release="$1"
+  local release="$1" docker_config
   detail "compose pull release=$release"
-  docker compose -p "$PROJECT" -f "$release/compose.yaml" pull >>"$DETAIL_LOG" 2>&1
+  docker_config="$(mktemp -d "$ROOT/.docker-config.XXXXXX")"
+  if ! DOCKER_CONFIG="$docker_config" docker compose -p "$PROJECT" -f "$release/compose.yaml" pull >>"$DETAIL_LOG" 2>&1; then
+    rm -rf "$docker_config"
+    return 1
+  fi
+  rm -rf "$docker_config"
 }
 
 compose_switch_locked() {
