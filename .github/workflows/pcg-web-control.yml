@@ -46,7 +46,7 @@ jobs:
           phase="$(awk -F= '$1=="phase"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
           ciphertext="$(awk -F= '$1=="ciphertext"{print substr($0,index($0,"=")+1)}' "$request_path" | tail -n1 | tr -d '[:space:]')"
           [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 13
-          case "$phase" in prepare|status|phone|code|password|cleanup) ;; *) exit 14 ;; esac
+          case "$phase" in prepare|status|phone|code|password|cleanup|screenshot) ;; *) exit 14 ;; esac
           case "$phase" in
             phone|code|password)
               [[ "$ciphertext" =~ ^[A-Za-z0-9+/=]{32,8192}$ ]] || { echo "ciphertext required" >&2; exit 15; }
@@ -73,3 +73,40 @@ jobs:
           CF_PCG_WEB_CONTROL_MODE: ${{ steps.request.outputs.phase }}
           CF_PCG_WEB_CONTROL_CIPHERTEXT: ${{ steps.request.outputs.ciphertext }}
         run: bash server-bootstrap/runner/remote-bundle-exec.sh server-bootstrap/45-pcg-web-control.sh
+
+      - name: Fetch Telegram Web screenshot from VPS
+        if: steps.request.outputs.phase == 'screenshot'
+        run: |
+          set -euo pipefail
+          key_file="$(mktemp "${RUNNER_TEMP}/cf-vps-key.XXXXXX")"
+          known_hosts="$(mktemp "${RUNNER_TEMP}/cf-known-hosts.XXXXXX")"
+          cleanup() { rm -f "$key_file" "$known_hosts"; }
+          trap cleanup EXIT
+          umask 077
+          printf '%s\n' "$VPS_SSH_KEY" > "$key_file"
+          chmod 600 "$key_file"
+          host_key_line="${VPS_HOST_KEY//$'\r'/}"
+          read -r key_type key_data extra <<< "$host_key_line"
+          [[ "$key_type" == ssh-ed25519 && -n "$key_data" && -z "${extra:-}" ]]
+          port="${VPS_PORT:-22}"
+          printf '%s %s %s\n' "$VPS_HOST" "$key_type" "$key_data" > "$known_hosts"
+          printf '[%s]:%s %s %s\n' "$VPS_HOST" "$port" "$key_type" "$key_data" >> "$known_hosts"
+          ssh_opts=(-i "$key_file" -p "$port" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$known_hosts" -o ConnectTimeout=15)
+          scp -q -i "$key_file" -P "$port" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$known_hosts"             "$VPS_SSH_USER@$VPS_HOST:/var/lib/capability-fabric/pcg/run/telegram-web-ui.png"             "${RUNNER_TEMP}/telegram-web-ui.png"
+          [[ -s "${RUNNER_TEMP}/telegram-web-ui.png" ]]
+          ssh "${ssh_opts[@]}" "$VPS_SSH_USER@$VPS_HOST"             'rm -f /var/lib/capability-fabric/pcg/run/telegram-web-ui.png'
+          chmod 600 "${RUNNER_TEMP}/telegram-web-ui.png"
+
+      - name: Upload Telegram Web screenshot artifact
+        if: steps.request.outputs.phase == 'screenshot'
+        uses: actions/upload-artifact@v4
+        with:
+          name: pcg-web-screenshot-${{ github.run_id }}
+          path: ${{ runner.temp }}/telegram-web-ui.png
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
+
+      - name: Remove local screenshot copy
+        if: always() && steps.request.outputs.phase == 'screenshot'
+        run: rm -f "${RUNNER_TEMP}/telegram-web-ui.png"
