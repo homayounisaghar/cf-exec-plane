@@ -1,0 +1,5 @@
+request_id=a2-rollback-epoch9-android-open-20260921-2002z
+action=verify-android-attestation-snapshot
+snapshot_commit=2ff1fa78034aecc1d11ec872806e5a58181a900b
+snapshot_path=evidence/onshape/android-attestation/issue33-rollback-epoch9-android-open-20260921T200201Z.json
+expected=current-open-negative
