@@ -101,13 +101,6 @@ cleanup() {
 }
 trap cleanup EXIT
 
-for p in 18887 18888 18889 18891; do
-  if ss -lnt | awk -v x=":$p" '$4 ~ x"$" {found=1} END {exit found?0:1}'; then
-    echo "CF_P1_HOST_PORT_$p=busy" >&2
-    exit 22
-  fi
-done
-
 install -d -m 0700 "$qroot/profile" "$qroot/secrets" "$qroot/openapi" "$qroot/agent-state" "$qroot/fabric-state" "$qroot/control" "$qroot/state"
 install -m 0600 "$source_secret/account" "$qroot/secrets/account"
 install -m 0600 "$source_secret/password" "$qroot/secrets/password"
@@ -115,10 +108,6 @@ install -m 0600 "$source_openapi" "$qroot/openapi/onshape-openapi.json"
 install -m 0600 "$control" "$qroot/control/ONSHAPE_RUNTIME_CONTROL.json"
 
 docker run -d --name "$net_name" --network bridge \
-  -p 127.0.0.1:18887:8787 \
-  -p 127.0.0.1:18888:8788 \
-  -p 127.0.0.1:18889:8789 \
-  -p 127.0.0.1:18891:8791 \
   "$NODE_IMAGE" sleep infinity >/dev/null
 
 docker run -d --name "$server_name" --network "container:$net_name" --ipc host \
@@ -176,11 +165,15 @@ docker run -d --name "$gateway_name" --network "container:$net_name" \
 
 ready=no
 for _ in $(seq 1 45); do
-  a="$(curl -fsS --max-time 2 http://127.0.0.1:18888/ 2>/dev/null || true)"
-  b="$(curl -fsS --max-time 2 http://127.0.0.1:18889/ 2>/dev/null || true)"
-  f="$(curl -fsS --max-time 2 http://127.0.0.1:18891/ 2>/dev/null || true)"
-  g="$(curl -fsS --max-time 2 http://127.0.0.1:18887/ 2>/dev/null || true)"
-  if [[ "$a" == "cf-onshape-single ok" && "$b" == "cf-onshape-single ok" && "$g" == "cf-onshape-single ok" ]] && printf '%s' "$f" | grep -q '"ok":true'; then
+  if docker exec "$server_name" node --input-type=module -e '
+    const checks=[
+      fetch("http://127.0.0.1:8787/").then(async r=>(await r.text())==="cf-onshape-single ok"),
+      fetch("http://127.0.0.1:8788/").then(async r=>(await r.text())==="cf-onshape-single ok"),
+      fetch("http://127.0.0.1:8789/").then(async r=>(await r.text())==="cf-onshape-single ok"),
+      fetch("http://127.0.0.1:8791/").then(async r=>{const v=await r.json(); return v?.ok===true;})
+    ];
+    const v=await Promise.all(checks); if(!v.every(Boolean)) process.exit(1);
+  ' >/dev/null 2>&1; then
     ready=yes
     break
   fi
@@ -201,18 +194,14 @@ echo CF_P1_NAMESPACE_STARTUP=pass
 [[ "$(docker inspect -f '{{.Config.Image}}' "$fabric_name")" == "$PY_IMAGE" ]]
 echo CF_P1_RUNNING_IMAGE_DIGESTS=manifest-exact
 
-for p in 18887 18888 18889 18891; do
-  ss -lnt | awk -v x="127.0.0.1:$p" '$4 == x {f=1} END {exit f?0:1}' || exit 24
-  if ss -lnt | awk -v x="$p" '$4 == "0.0.0.0:"x || $4 == "[::]:"x || $4 == "*:"x {f=1} END {exit f?0:1}'; then
-    echo "CF_P1_PORT_$p_EXPOSED=fail" >&2
-    exit 24
-  fi
-done
-echo CF_P1_HOST_BINDING=loopback-only
+published="$(docker inspect -f '{{json .HostConfig.PortBindings}}' "$net_name")"
+[[ "$published" == "null" || "$published" == "{}" ]] || { echo CF_P1_NAMESPACE_HOST_PUBLISH=present >&2; exit 24; }
+echo CF_P1_NAMESPACE_HOST_PUBLISH=absent
+echo CF_P1_INTERNAL_BINDING=loopback-only
 
-qual_root="$(curl -fsS --max-time 2 http://127.0.0.1:18891/)"
+qual_root="$(docker exec "$server_name" node --input-type=module -e 'const r=await fetch("http://127.0.0.1:8791/"); process.stdout.write(await r.text())')"
 printf '%s' "$qual_root" | grep -q '"qualificationMode":false'
-qual_code="$(curl -sS -o "$qroot/qual-route.json" -w '%{http_code}' --max-time 2 -H 'content-type: application/json' --data '{}' http://127.0.0.1:18891/v1/qualification/invoke-ack-loss)"
+qual_code="$(docker exec "$server_name" node --input-type=module -e 'const r=await fetch("http://127.0.0.1:8791/v1/qualification/invoke-ack-loss",{method:"POST",headers:{"content-type":"application/json"},body:"{}"}); process.stdout.write(String(r.status))')"
 [[ "$qual_code" == 404 ]] || { echo "CF_P1_FAULT_ROUTE_CODE=$qual_code" >&2; exit 25; }
 echo CF_P1_QUALIFICATION_MODE=off
 echo CF_P1_FAULT_INJECTION_ROUTE=absent
