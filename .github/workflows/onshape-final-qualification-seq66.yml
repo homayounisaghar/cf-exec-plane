@@ -1,0 +1,26 @@
+name: Onshape Final Qualification Seq66
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'server-bootstrap/control/onshape-final-qualification/*.request'
+
+permissions:
+  contents: read
+
+jobs:
+  qualify:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Validate request
+        run: |
+          set -euo pipefail
+          test -n "$(git diff --name-only HEAD^ HEAD | grep 'server-bootstrap/control/onshape-final-qualification/')"
+      - name: Run non-authoritative seq66 qualification
+        run: bash server-bootstrap/runner/remote-bundle-exec.sh server-bootstrap/118-onshape-final-qualification-seq66.sh
