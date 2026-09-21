@@ -1,0 +1,5 @@
+request_id=a2-rollback-epoch10-closed-20260921-2007z
+action=verify-android-attestation-snapshot
+snapshot_commit=325bed8d52bbd8ba5d9520c353b8a23cb4f19c73
+snapshot_path=evidence/onshape/android-attestation/issue33-rollback-epoch10-closed-20260921T200718Z.json
+expected=closed
