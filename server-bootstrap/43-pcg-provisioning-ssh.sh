@@ -61,11 +61,20 @@ if [[ "$mode" == verify ]]; then
     echo "PCG forwarding account is unexpectedly shadow-locked" >&2
     exit 27
   fi
+  [[ "$(stat -c '%a %U:%G' "$key_dir")" == "750 root:$user_name" ]] || {
+    echo "PCG forwarding key directory permissions are invalid" >&2
+    exit 28
+  }
+  [[ "$(stat -c '%a %U:%G' "$authorized_keys")" == "640 root:$user_name" ]] || {
+    echo "PCG authorized_keys permissions are invalid" >&2
+    exit 29
+  }
   if [[ -s "$authorized_keys" ]]; then
     echo "PCG_FORWARD_KEY_INSTALLED=yes"
   else
     echo "PCG_FORWARD_KEY_INSTALLED=no"
   fi
+  echo "PCG_FORWARD_AUTHORIZED_KEYS_READABLE=yes"
   echo "PCG_FORWARD_ACCOUNT_LOCKED=no"
   echo "PCG_FORWARD_SSH_CONTRACT=pass"
   exit 0
@@ -114,13 +123,14 @@ if [[ "$mode" == install ]]; then
     unset password_hash
   fi
 
-  install -d -m 0755 -o root -g root "$key_dir" /usr/local/libexec /run/capability-fabric/pcg-provision
+  install -d -m 0750 -o root -g "$user_name" "$key_dir"
+  install -d -m 0755 -o root -g root /usr/local/libexec /run/capability-fabric/pcg-provision
   if [[ ! -e "$authorized_keys" ]]; then
-    install -m 0600 -o root -g root /dev/null "$authorized_keys"
+    install -m 0640 -o root -g "$user_name" /dev/null "$authorized_keys"
   fi
   [[ -f "$authorized_keys" && ! -L "$authorized_keys" ]] || { echo "unsafe authorized_keys path" >&2; exit 25; }
-  chown root:root "$authorized_keys"
-  chmod 0600 "$authorized_keys"
+  chown root:"$user_name" "$authorized_keys"
+  chmod 0640 "$authorized_keys"
 
   cat > "$gate" <<'GATE'
 #!/usr/bin/env bash
@@ -214,8 +224,8 @@ ssh-keygen -lf "$tmp" >/dev/null 2>&1 || { echo "PCG forwarding public key faile
 
 options="command=\"$gate\",no-agent-forwarding,no-X11-forwarding,no-pty,no-user-rc,permitopen=\"127.0.0.1:$port\""
 printf '%s %s %s\n' "$options" "$key_type" "$key_data" > "$authorized_keys"
-chown root:root "$authorized_keys"
-chmod 0600 "$authorized_keys"
+chown root:"$user_name" "$authorized_keys"
+chmod 0640 "$authorized_keys"
 
 sshd -t
 verify_effective
