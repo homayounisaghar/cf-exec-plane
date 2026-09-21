@@ -4,7 +4,7 @@ umask 077
 
 [[ "$(id -u)" -eq 0 ]] || { echo "must run as uid 0" >&2; exit 1; }
 mode="${CF_PCG_WEB_CONTROL_MODE:-}"
-case "$mode" in prepare|status|phone|code|password|cleanup) ;; *) echo "invalid mode" >&2; exit 2 ;; esac
+case "$mode" in prepare|status|phone|code|password|cleanup|screenshot) ;; *) echo "invalid mode" >&2; exit 2 ;; esac
 
 run_root=/var/lib/capability-fabric/pcg/run
 socket="$run_root/web.sock"
@@ -70,6 +70,22 @@ fi
 
 if [[ "$mode" == status ]]; then
   socket_simple health
+  exit 0
+fi
+
+if [[ "$mode" == screenshot ]]; then
+  sequence="$(python3 - "$release/manifest.json" <<'PY'
+import json,sys
+print(int(json.load(open(sys.argv[1],encoding='utf-8')).get('sequence',0)))
+PY
+)"
+  [[ "$sequence" -ge 11 ]] || { echo "PCG_WEB_SCREENSHOT_RUNTIME=too-old" >&2; exit 26; }
+  shot="$run_root/telegram-web-ui.png"
+  rm -f "$shot"
+  socket_simple screenshot
+  [[ -s "$shot" ]] || { echo "PCG_WEB_SCREENSHOT=missing" >&2; exit 27; }
+  chmod 0600 "$shot"
+  printf 'PCG_WEB_SCREENSHOT_READY=yes\n'
   exit 0
 fi
 
