@@ -1,0 +1,42 @@
+name: Onshape Seq67 R4 Quiesced Qualification
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'server-bootstrap/control/onshape-r4-quiesced-qualify/*.request'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: onshape-r4-transition
+  cancel-in-progress: false
+
+jobs:
+  qualify:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 2, persist-credentials: false}
+      - name: Validate immutable qualification request
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || exit 10
+          IFS=$'\t' read -r status request_path <<<"${changes[0]}"
+          [[ "$status" == A && "$request_path" == server-bootstrap/control/onshape-r4-quiesced-qualify/*.request ]] || exit 11
+          [[ "$(awk -F= '$1=="action"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')" == "qualify-seq67-r4-quiesced" ]] || exit 12
+          bash -n server-bootstrap/139-onshape-r4-quiesced-qualify.sh
+      - name: Qualify exact r4 under closed authority
+        shell: bash
+        run: bash server-bootstrap/runner/remote-bundle-exec.sh server-bootstrap/139-onshape-r4-quiesced-qualify.sh
