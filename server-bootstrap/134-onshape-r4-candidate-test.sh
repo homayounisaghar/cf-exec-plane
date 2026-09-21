@@ -3,7 +3,7 @@ set -euo pipefail
 umask 077
 [[ "$(id -u)" -eq 0 ]] || exit 2
 
-candidate_commit="2b440e016e934c15ae61f1934201a1dc4ebee846"
+candidate_commit="243dbf162f3e20a63bef32c73263089fc29dfca9"
 candidate_dir="server-deploy/candidates/onshape-vps-hardened-production-r4"
 cache=/var/lib/capability-fabric/repo.git
 token=/etc/capability-fabric/secrets/repo-read-token
@@ -56,6 +56,13 @@ grep -Fq 'FABRIC_GUARD_BUDGET_EXHAUSTED' "$tmp/release/fabric-agent.js"
 grep -Fq 'require_production_guard' "$tmp/release/fabric-src/capability_fabric/onshape_authority.py"
 grep -Fq 'productionGuardGeneration' "$tmp/release/fabric-src/capability_fabric/onshape_vps.py"
 grep -Fq 'onshape-vps-hardened-r4' "$tmp/release/server.js"
+bash -n "$tmp/release/health.sh"
+python3 - "$tmp/release/release-closure.json" <<'PY'
+import json,sys
+r=json.load(open(sys.argv[1]))
+assert r["build_id"]=="onshape-vps-hardened-r4"
+assert r["required_runtime_config"]["production_guard_required"] is True
+PY
 
 docker run --rm --network none   -v "$tmp/release:/release:ro" -w /release   mcr.microsoft.com/playwright:v1.62.1-resolute@sha256:aebd85bce8056dcdc2269853fd94ea432b6a201da4f0ef125b509489ecd52ddb   node --check /release/fabric-agent.js
 
