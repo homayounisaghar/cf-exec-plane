@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: read
+  packages: write
 
 concurrency:
   group: personal-server-pcg-tdlib-base-image
@@ -63,32 +64,51 @@ jobs:
             [[ -n "$addr" ]] && printf '::add-mask::%s\n' "$addr"
           done < <(getent ahosts "$VPS_HOST" 2>/dev/null | awk '{print $1}' | sort -u)
 
-      - id: build
-        name: Build exact public TDLib runtime
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR for publish
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - id: meta
+        name: Resolve immutable image tag
         env:
           TDLIB_COMMIT: ${{ steps.request.outputs.tdlib_commit }}
           TDLIB_VERSION: ${{ steps.request.outputs.tdlib_version }}
         run: |
           set -euo pipefail
           short="${TDLIB_COMMIT:0:12}"
-          image_ref="capability-fabric/pcg-tdlib-python:tdlib-${TDLIB_VERSION}-${short}"
-          docker build \
-            -f pcg-runtime/Dockerfile.tdlib-python \
-            --build-arg "TDLIB_COMMIT=$TDLIB_COMMIT" \
-            --build-arg "TDLIB_VERSION=$TDLIB_VERSION" \
-            -t "$image_ref" .
-          image_id="$(docker image inspect "$image_ref" --format '{{.Id}}')"
-          [[ "$image_id" =~ ^sha256:[0-9a-f]{64}$ ]] || exit 20
-          echo "image_ref=$image_ref" >> "$GITHUB_OUTPUT"
-          echo "image_id=$image_id" >> "$GITHUB_OUTPUT"
+          image_tag="ghcr.io/homayounisaghar/pcg-tdlib-python:tdlib-${TDLIB_VERSION}-${short}"
+          echo "image_tag=$image_tag" >> "$GITHUB_OUTPUT"
 
-      - name: Smoke tdjson ABI and exact version
+      - id: build
+        name: Build and publish exact public TDLib runtime
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: pcg-runtime/Dockerfile.tdlib-python
+          push: true
+          tags: ${{ steps.meta.outputs.image_tag }}
+          build-args: |
+            TDLIB_COMMIT=${{ steps.request.outputs.tdlib_commit }}
+            TDLIB_VERSION=${{ steps.request.outputs.tdlib_version }}
+          cache-from: type=gha,scope=pcg-tdlib-${{ steps.request.outputs.tdlib_version }}
+          cache-to: type=gha,mode=max,scope=pcg-tdlib-${{ steps.request.outputs.tdlib_version }}
+
+      - name: Smoke tdjson ABI and exact version from published digest
         env:
-          IMAGE_REF: ${{ steps.build.outputs.image_ref }}
+          IMAGE_TAG: ${{ steps.meta.outputs.image_tag }}
+          IMAGE_DIGEST: ${{ steps.build.outputs.digest }}
           EXPECTED_VERSION: ${{ steps.request.outputs.tdlib_version }}
         run: |
           set -euo pipefail
-          docker run --rm --network none "$IMAGE_REF" python -c '
+          [[ "$IMAGE_DIGEST" =~ ^sha256:[0-9a-f]{64}$ ]]
+          image_ref="${IMAGE_TAG%%:*}@$IMAGE_DIGEST"
+          docker pull "$image_ref" >/dev/null
+          docker run --rm --network none --env "EXPECTED_VERSION=$EXPECTED_VERSION" "$image_ref" python -c '
           import ctypes,json,os
           lib=ctypes.CDLL("libtdjson.so")
           lib.td_execute.restype=ctypes.c_char_p
@@ -99,23 +119,29 @@ jobs:
           assert value.get("value")==os.environ["EXPECTED_VERSION"], value
           print("TDJSON_ABI=pass")
           print("TDLIB_VERSION="+value["value"])
-          ' --env "EXPECTED_VERSION=$EXPECTED_VERSION"
+          '
 
-      - name: Transfer image to VPS and verify exact image id
+      - name: Verify anonymous digest-pinned pull on VPS
         env:
-          IMAGE_REF: ${{ steps.build.outputs.image_ref }}
-        run: bash server-bootstrap/runner/docker-load-remote.sh "$IMAGE_REF"
+          IMAGE_TAG: ${{ steps.meta.outputs.image_tag }}
+          IMAGE_DIGEST: ${{ steps.build.outputs.digest }}
+        run: |
+          set -euo pipefail
+          image_ref="${IMAGE_TAG%%:*}@$IMAGE_DIGEST"
+          bash server-bootstrap/runner/remote-pull-image.sh "$image_ref"
 
       - name: Emit immutable image evidence
         env:
-          IMAGE_REF: ${{ steps.build.outputs.image_ref }}
-          IMAGE_ID: ${{ steps.build.outputs.image_id }}
+          IMAGE_TAG: ${{ steps.meta.outputs.image_tag }}
+          IMAGE_DIGEST: ${{ steps.build.outputs.digest }}
           TDLIB_COMMIT: ${{ steps.request.outputs.tdlib_commit }}
           TDLIB_VERSION: ${{ steps.request.outputs.tdlib_version }}
         run: |
           set -euo pipefail
+          [[ "$IMAGE_DIGEST" =~ ^sha256:[0-9a-f]{64}$ ]]
+          image_ref="${IMAGE_TAG%%:*}@$IMAGE_DIGEST"
           echo "PCG_TDLIB_SOURCE_COMMIT=$TDLIB_COMMIT"
           echo "PCG_TDLIB_VERSION=$TDLIB_VERSION"
-          echo "PCG_TDLIB_IMAGE_REF=$IMAGE_REF"
-          echo "PCG_TDLIB_IMAGE_ID=$IMAGE_ID"
+          echo "PCG_TDLIB_IMAGE_REF=$image_ref"
+          echo "PCG_TDLIB_IMAGE_DIGEST=$IMAGE_DIGEST"
           echo "PCG_TDLIB_BASE_IMAGE=pass"
