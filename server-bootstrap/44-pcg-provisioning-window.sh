@@ -108,6 +108,45 @@ status() {
   fi
   if [[ -e "$complete" ]]; then echo "PCG_PROVISION_COMPLETE=yes"; else echo "PCG_PROVISION_COMPLETE=no"; fi
   echo "PCG_TDLIB_DB_KEY=present"
+
+  if [[ -L "$active" && -r "$(readlink -f "$active")/manifest.json" ]]; then
+    release="$(readlink -f "$active")"
+    python3 - "$release/manifest.json" <<'PY'
+import json,sys
+m=json.load(open(sys.argv[1],encoding='utf-8'))
+print("PCG_ACTIVE_SEQUENCE="+str(m.get("sequence","UNKNOWN")))
+print("PCG_ACTIVE_RELEASE="+str(m.get("release_id","UNKNOWN")))
+PY
+  fi
+
+  socket_path=/var/lib/capability-fabric/pcg/run/telegram.sock
+  if [[ -S "$socket_path" ]]; then
+    python3 - "$socket_path" <<'PY'
+import json,socket,sys
+s=socket.socket(socket.AF_UNIX)
+s.settimeout(2)
+s.connect(sys.argv[1])
+s.sendall(b'{"op":"health"}')
+d=json.loads(s.recv(4096).decode('utf-8'))
+s.close()
+for key,label in [
+    ("mode","PCG_RUNTIME_MODE"),
+    ("provider_network","PCG_PROVIDER_NETWORK"),
+    ("authorization","PCG_AUTHORIZATION"),
+    ("material_send_admission","PCG_MATERIAL_SEND_ADMISSION"),
+    ("model_content_admission","PCG_MODEL_CONTENT_ADMISSION"),
+    ("presence_control","PCG_PRESENCE_CONTROL"),
+    ("provisioning_surface","PCG_PROVISIONING_SURFACE"),
+    ("online_effective","PCG_ONLINE_EFFECTIVE"),
+]:
+    value=d.get(key,"UNKNOWN")
+    if not isinstance(value,(str,int,bool)) and value is not None:
+        value="INVALID"
+    print(f"{label}={value}")
+PY
+  else
+    echo "PCG_RUNTIME_MODE=UNAVAILABLE"
+  fi
 }
 
 if [[ "$mode" == install ]]; then
