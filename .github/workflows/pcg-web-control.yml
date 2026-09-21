@@ -46,9 +46,9 @@ jobs:
           phase="$(awk -F= '$1=="phase"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
           ciphertext="$(awk -F= '$1=="ciphertext"{print substr($0,index($0,"=")+1)}' "$request_path" | tail -n1 | tr -d '[:space:]')"
           [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 13
-          case "$phase" in prepare|status|phone|code|password|cleanup|screenshot) ;; *) exit 14 ;; esac
+          case "$phase" in prepare|status|phone|code|password|cleanup|screenshot|mytelegram-start|mytelegram-capture-code|mytelegram-signin|mytelegram-create-app) ;; *) exit 14 ;; esac
           case "$phase" in
-            phone|code|password)
+            phone|code|password|mytelegram-start)
               [[ "$ciphertext" =~ ^[A-Za-z0-9+/=]{32,8192}$ ]] || { echo "ciphertext required" >&2; exit 15; }
               ;;
             *)
