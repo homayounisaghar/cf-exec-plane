@@ -1,0 +1,53 @@
+# syntax=docker/dockerfile:1
+ARG PYTHON_BASE=python:3.12-slim-bookworm@sha256:392307d22300de8b5986851a12d9176dfc0fc073e65bf6523ebd7dcbeb23564e
+
+FROM debian:bookworm-slim AS tdlib-build
+ARG TDLIB_COMMIT
+ARG TDLIB_VERSION
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates git build-essential cmake ninja-build gperf libssl-dev zlib1g-dev \
+    && rm -rf /var/lib/apt/lists/*
+RUN test -n "$TDLIB_COMMIT" && test -n "$TDLIB_VERSION"
+RUN git init /src/td \
+    && git -C /src/td remote add origin https://github.com/tdlib/td.git \
+    && git -C /src/td fetch --depth 1 origin "$TDLIB_COMMIT" \
+    && test "$(git -C /src/td rev-parse FETCH_HEAD)" = "$TDLIB_COMMIT" \
+    && git -C /src/td checkout --detach FETCH_HEAD \
+    && grep -F "project(TDLib VERSION $TDLIB_VERSION " /src/td/CMakeLists.txt
+RUN cmake -S /src/td -B /build -G Ninja \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_TESTING=OFF \
+    -DTD_ENABLE_LTO=OFF \
+    -DTD_INSTALL_STATIC_LIBRARIES=OFF \
+    -DTD_INSTALL_SHARED_LIBRARIES=ON \
+    -DCMAKE_INSTALL_PREFIX=/opt/tdlib
+RUN cmake --build /build --target tdjson --parallel 2 \
+    && cmake --install /build
+RUN test -e /opt/tdlib/lib/libtdjson.so || test -e /opt/tdlib/lib64/libtdjson.so
+
+FROM ${PYTHON_BASE} AS runtime
+ARG TDLIB_COMMIT
+ARG TDLIB_VERSION
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates libssl3 zlib1g libstdc++6 \
+    && rm -rf /var/lib/apt/lists/*
+COPY --from=tdlib-build /opt/tdlib/ /opt/tdlib/
+COPY --from=tdlib-build /src/td/LICENSE_1_0.txt /licenses/TDLib-LICENSE_1_0.txt
+RUN find /opt/tdlib -type f -name 'libtdjson.so*' -exec cp -a {} /usr/local/lib/ \; \
+    && ldconfig \
+    && python - <<'PY'
+from ctypes import CDLL
+CDLL("libtdjson.so")
+print("TDJSON_LOAD=pass")
+PY
+RUN python -m pip install --no-cache-dir "mcp==2.1.1" "uvicorn==0.49.0"
+LABEL org.opencontainers.image.title="Capability Fabric PCG TDLib Python runtime" \
+      org.opencontainers.image.source="https://github.com/tdlib/td" \
+      org.opencontainers.image.licenses="BSL-1.0" \
+      io.capability-fabric.tdlib.commit="$TDLIB_COMMIT" \
+      io.capability-fabric.tdlib.version="$TDLIB_VERSION"
+ENV LD_LIBRARY_PATH=/usr/local/lib:/opt/tdlib/lib:/opt/tdlib/lib64 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+WORKDIR /app
+CMD ["python","-c","import ctypes; ctypes.CDLL('libtdjson.so'); print('PCG_TDLIB_RUNTIME_READY')"]
