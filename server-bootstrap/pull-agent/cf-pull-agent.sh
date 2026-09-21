@@ -107,6 +107,20 @@ PY
     return 1
   fi
 
+  guard=/usr/local/libexec/capability-fabric-runtime-control-guard
+  [[ -x "$guard" ]] || { echo "CF_RUNTIME_CONTROL_GUARD_MISSING" >&2; return 1; }
+  if [[ -s "$RUNTIME_CONTROL_FILE" ]]; then
+    if ! python3 "$guard" "$RUNTIME_CONTROL_FILE" "$tmp" >>"$DETAIL_LOG" 2>&1; then
+      echo "CF_RUNTIME_CONTROL_TRANSITION_REJECTED" >&2
+      return 1
+    fi
+  else
+    if ! python3 "$guard" "$tmp" >>"$DETAIL_LOG" 2>&1; then
+      echo "CF_RUNTIME_CONTROL_TRANSITION_REJECTED" >&2
+      return 1
+    fi
+  fi
+
   tmp_target="${RUNTIME_CONTROL_FILE}.tmp.$"
   install -m 0640 -o root -g root "$tmp" "$tmp_target"
   mv -f "$tmp_target" "$RUNTIME_CONTROL_FILE"
