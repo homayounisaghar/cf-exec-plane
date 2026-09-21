@@ -13,17 +13,17 @@ target=''
 while IFS= read -r manifest; do
   seq="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("sequence",""))' "$manifest" 2>/dev/null || true)"
   rid="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("release_id",""))' "$manifest" 2>/dev/null || true)"
-  if [[ "$seq" == 64 && "$rid" == onshape-vps-hardened-production-r1 ]]; then
+  if [[ "$seq" == 64 && "$rid" == onshape-vps-hardened-production-r2 ]]; then
     d="$(dirname "$manifest")"
-    [[ -z "$target" ]] || { echo CF_A1_SEQ64_DUPLICATE >&2; exit 21; }
+    [[ -z "$target" ]] || { echo CF_A1_SEQ65_DUPLICATE >&2; exit 21; }
     target="$d"
   fi
 done < <(find /var/lib/capability-fabric/releases -mindepth 2 -maxdepth 2 -name manifest.json -type f -print 2>/dev/null | sort)
 
-[[ -n "$target" ]] || { echo CF_A1_SEQ64_NOT_STAGED >&2; exit 21; }
-[[ "$target" != "$active" ]] || { echo CF_A1_SEQ64_ALREADY_ACTIVE >&2; exit 21; }
-echo "CF_A1_SEQ64_RELEASE=$(basename "$target")"
-echo CF_A1_SEQ64_UNACTIVATED=pass
+[[ -n "$target" ]] || { echo CF_A1_SEQ65_NOT_STAGED >&2; exit 21; }
+[[ "$target" != "$active" ]] || { echo CF_A1_SEQ65_ALREADY_ACTIVE >&2; exit 21; }
+echo "CF_A1_SEQ65_RELEASE=$(basename "$target")"
+echo CF_A1_SEQ65_UNACTIVATED=pass
 
 manifest="$target/manifest.json"
 manifest_sha="$(sha256sum "$manifest" | awk '{print $1}')"
@@ -47,8 +47,8 @@ import hashlib,json,os,re,sys
 mp,root=sys.argv[1:3]
 m=json.load(open(mp))
 assert m["schema"]=="capability-fabric.deploy.v1"
-assert m["sequence"]==64
-assert m["release_id"]=="onshape-vps-hardened-production-r1"
+assert m["sequence"]==65
+assert m["release_id"]=="onshape-vps-hardened-production-r2"
 assert m["compose_file"]=="compose.yaml"
 files=m["files"]
 required={
