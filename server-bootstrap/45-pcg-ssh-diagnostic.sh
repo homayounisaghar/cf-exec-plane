@@ -149,13 +149,13 @@ echo "PCG_PROVISION_RUNTIME_DIAG_END"
 echo "PCG_WEB_DEPLOY_DIAG_BEGIN"
 detail=/var/log/capability-fabric/pcg-pull-agent-detail.log
 if [[ -f "$detail" ]]; then
-  grep -E 'pcg-web-login-r6|pcg_web|compose|health|unhealthy|error|ERROR|failed|FAIL|npm|node|socket|profile' "$detail" 2>/dev/null |
+  grep -E 'pcg-web-login-r8|pcg_web|compose|health|unhealthy|error|ERROR|failed|FAIL|npm|node|socket|profile' "$detail" 2>/dev/null |
     tail -n 240 |
     sed -E 's#https?://[^[:space:]]+#URL_REDACTED#g; s/[A-Za-z0-9_+\/-]{48,}/[REDACTED]/g' || true
 else
   echo "pcg_pull_detail=missing"
 fi
-release=/var/lib/capability-fabric/deploy/pcg/releases/pcg-web-login-r6
+release=/var/lib/capability-fabric/deploy/pcg/releases/pcg-web-login-r8
 if [[ -d "$release" ]]; then
   echo "staged_release=present"
   stat -c 'release_mode=%a owner=%U group=%G' "$release"
@@ -183,7 +183,7 @@ fi
 echo "PCG_WEB_DEPLOY_DIAG_END"
 
 echo "PCG_WEB_ISOLATED_SMOKE_BEGIN"
-release=/var/lib/capability-fabric/deploy/pcg/releases/pcg-web-login-r6
+release=/var/lib/capability-fabric/deploy/pcg/releases/pcg-web-login-r8
 image='mcr.microsoft.com/playwright:v1.62.1-resolute@sha256:aebd85bce8056dcdc2269853fd94ea432b6a201da4f0ef125b509489ecd52ddb'
 debug_name=capability-fabric-pcg-web-debug
 tmp_debug="$(mktemp -d /var/lib/capability-fabric/pcg/.web-debug.XXXXXX)"
@@ -249,9 +249,9 @@ echo "PCG_WEB_ISOLATED_SMOKE_END"
 
 
 echo "PCG_WEB_COMPOSE_SMOKE_BEGIN"
-r7=/var/lib/capability-fabric/deploy/pcg/releases/pcg-web-login-r7
+r8=/var/lib/capability-fabric/deploy/pcg/releases/pcg-web-login-r8
 debug_project=capability-fabric-pcg-web-smoke
-if [[ -d "$r7" ]]; then
+if [[ -d "$r8" ]]; then
   existing_web="$(docker ps -a --filter name='^/capability-fabric-pcg-web$' --format '{{.ID}}' | head -n1)"
   if [[ -n "$existing_web" ]]; then
     echo "compose_smoke=skipped-existing-web-container"
@@ -259,7 +259,7 @@ if [[ -d "$r7" ]]; then
     (
       exec 8>/run/lock/capability-fabric-pull.lock
       flock 8
-      docker compose -p "$debug_project" -f "$r7/compose.yaml" up -d --no-deps pcg_web >/dev/null
+      docker compose -p "$debug_project" -f "$r8/compose.yaml" up -d --no-deps pcg_web >/dev/null
     )
     for _ in $(seq 1 40); do
       cid="$(docker ps -a --filter name='^/capability-fabric-pcg-web$' --format '{{.ID}}' | head -n1)"
@@ -302,10 +302,10 @@ PY
     (
       exec 8>/run/lock/capability-fabric-pull.lock
       flock 8
-      docker compose -p "$debug_project" -f "$r7/compose.yaml" down --remove-orphans >/dev/null 2>&1 || true
+      docker compose -p "$debug_project" -f "$r8/compose.yaml" down --remove-orphans >/dev/null 2>&1 || true
     )
   fi
 else
-  echo "staged_r7=missing"
+  echo "staged_r8=missing"
 fi
 echo "PCG_WEB_COMPOSE_SMOKE_END"
