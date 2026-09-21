@@ -45,7 +45,7 @@ jobs:
           request_id="$(awk -F= '$1=="request_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
           phase="$(awk -F= '$1=="phase"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
           [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 13
-          case "$phase" in status|open|close) ;; *) exit 14 ;; esac
+          case "$phase" in install|status|open|close) ;; *) exit 14 ;; esac
           echo "phase=$phase" >> "$GITHUB_OUTPUT"
 
       - name: Mask endpoint and login
