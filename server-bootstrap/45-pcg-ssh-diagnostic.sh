@@ -40,3 +40,30 @@ echo "PCG_FORWARD_SSH_LOG_BEGIN"
   tail -n 50 |
   sed -E 's/rhost=[^ ]+/rhost=REDACTED/g; s/from [0-9a-fA-F:.]+ port [0-9]+/from REDACTED/g; s/port [0-9]+ ssh2/port REDACTED ssh2/g' || true
 echo "PCG_FORWARD_SSH_LOG_END"
+
+
+echo "PCG_FORWARD_VISIBILITY_BEGIN"
+bootstrap=/run/capability-fabric/pcg-provision/bootstrap-url
+token=/run/capability-fabric/pcg-provision/token
+complete=/var/lib/capability-fabric/pcg/run/provision-complete
+date -u '+utc=%Y-%m-%dT%H:%M:%SZ'
+for p in /run/capability-fabric /run/capability-fabric/pcg-provision /var/lib/capability-fabric/pcg/run; do
+  if [[ -e "$p" ]]; then stat -c "path=$p mode=%a owner=%U group=%G" "$p"; else echo "path=$p missing=yes"; fi
+done
+for p in "$bootstrap" "$token" "$complete"; do
+  if [[ -e "$p" ]]; then stat -c "path=$p mode=%a owner=%U group=%G size=%s mtime=%y" "$p"; else echo "path=$p missing=yes"; fi
+done
+runuser -u "$user_name" -- bash -c '
+  bootstrap=/run/capability-fabric/pcg-provision/bootstrap-url
+  complete=/var/lib/capability-fabric/pcg/run/provision-complete
+  [[ -e "$complete" ]] && echo complete_visible=yes || echo complete_visible=no
+  [[ -f "$bootstrap" ]] && echo bootstrap_file=yes || echo bootstrap_file=no
+  [[ -r "$bootstrap" ]] && echo bootstrap_readable=yes || echo bootstrap_readable=no
+  [[ -L "$bootstrap" ]] && echo bootstrap_symlink=yes || echo bootstrap_symlink=no
+  for p in /run/capability-fabric /run/capability-fabric/pcg-provision /var/lib/capability-fabric/pcg/run; do
+    cd "$p" 2>/dev/null && echo "traverse:$p=yes" || echo "traverse:$p=no"
+  done
+'
+systemctl show capability-fabric-pcg-provision-cleanup.timer -p ActiveState -p SubState -p NextElapseUSecRealtime -p LastTriggerUSec --no-pager || true
+systemctl show capability-fabric-pcg-provision-cleanup.service -p ActiveState -p SubState -p ExecMainStatus -p ExecMainStartTimestamp -p ExecMainExitTimestamp --no-pager || true
+echo "PCG_FORWARD_VISIBILITY_END"
