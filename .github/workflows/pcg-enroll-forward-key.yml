@@ -1,0 +1,111 @@
+name: PCG Enroll Phone Forwarding Key
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'server-bootstrap/control/pcg-forward-key-requests/*.request'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: personal-server-pcg-forward-key
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  enroll:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+      CF_REPO_READ_TOKEN: ${{ secrets.CF_REPO_READ_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+
+      - id: request
+        name: Validate immutable phone-key enrollment request
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || { echo "request commit must add exactly one file" >&2; exit 10; }
+          IFS=$'\t' read -r status request_path <<<"${changes[0]}"
+          [[ "$status" == A ]] || { echo "request must be newly added" >&2; exit 11; }
+          [[ "$request_path" == server-bootstrap/control/pcg-forward-key-requests/*.request ]] || exit 12
+          request_id="$(awk -F= '$1=="request_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          phase="$(awk -F= '$1=="phase"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          candidate_commit="$(awk -F= '$1=="candidate_commit"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 13
+          [[ "$phase" == pcg-enroll-forward-key ]] || exit 14
+          [[ "$candidate_commit" =~ ^[0-9a-f]{40}$ ]] || exit 15
+          echo "candidate_commit=$candidate_commit" >> "$GITHUB_OUTPUT"
+
+      - name: Mask endpoint and login
+        run: |
+          set -euo pipefail
+          printf '::add-mask::%s\n' "$VPS_HOST"
+          printf '::add-mask::%s\n' "$VPS_SSH_USER"
+          while IFS= read -r addr; do
+            [[ -n "$addr" ]] && printf '::add-mask::%s\n' "$addr"
+          done < <(getent ahosts "$VPS_HOST" 2>/dev/null | awk '{print $1}' | sort -u)
+
+      - name: Read exact public key from private candidate and scrub repository credential
+        env:
+          CANDIDATE_COMMIT: ${{ steps.request.outputs.candidate_commit }}
+        run: |
+          set -euo pipefail
+          : "${CF_REPO_READ_TOKEN:?missing private repository read token}"
+          tmp="$(mktemp -d "${RUNNER_TEMP}/pcg-forward-key.XXXXXX")"
+          trap 'rm -rf "$tmp"' EXIT
+          git init --bare "$tmp/repo.git" >/dev/null
+          cat > "$tmp/askpass" <<'ASKPASS'
+          #!/usr/bin/env bash
+          case "${1:-}" in
+            *Username*) printf '%s\n' 'x-access-token' ;;
+            *Password*) printf '%s\n' "$CF_REPO_READ_TOKEN" ;;
+            *) exit 1 ;;
+          esac
+          ASKPASS
+          chmod 0700 "$tmp/askpass"
+          GIT_ASKPASS="$tmp/askpass" GIT_TERMINAL_PROMPT=0 git --git-dir="$tmp/repo.git" fetch --quiet --depth=1 \
+            https://github.com/homayounisaghar/capability-fabric.git "$CANDIDATE_COMMIT"
+          actual="$(git --git-dir="$tmp/repo.git" rev-parse FETCH_HEAD)"
+          [[ "$actual" == "$CANDIDATE_COMMIT" ]] || exit 20
+          key_path='projects/personal-communications-gateway/operator/phone-forwarding-key.pub'
+          git --git-dir="$tmp/repo.git" show "$actual:$key_path" > "$tmp/key.pub"
+          rm -f "$tmp/askpass"
+          unset CF_REPO_READ_TOKEN
+          [[ "$(wc -l < "$tmp/key.pub")" -eq 1 ]] || { echo "public key file must contain exactly one line" >&2; exit 21; }
+          read -r key_type key_data key_comment < "$tmp/key.pub" || true
+          [[ "$key_type" == ssh-ed25519 && -n "${key_data:-}" ]] || { echo "phone forwarding key must be ssh-ed25519" >&2; exit 22; }
+          case "$key_data" in *[!A-Za-z0-9+/=]*) echo "invalid public key encoding" >&2; exit 22 ;; esac
+          ssh-keygen -lf "$tmp/key.pub" >/dev/null
+          full_key="$key_type $key_data"
+          [[ -z "${key_comment:-}" ]] || full_key="$full_key $key_comment"
+          printf '::add-mask::%s\n' "$full_key"
+          {
+            echo 'CF_PCG_FORWARD_PUBLIC_KEY<<PCGKEY'
+            printf '%s\n' "$full_key"
+            echo 'PCGKEY'
+          } >> "$GITHUB_ENV"
+
+      - name: Enroll exact phone public key
+        env:
+          CF_PCG_PROVISION_SSH_MODE: install-key
+        run: bash server-bootstrap/runner/remote-bundle-exec.sh server-bootstrap/43-pcg-provisioning-ssh.sh
+
+      - name: Verify restricted forwarding account after key enrollment
+        env:
+          CF_PCG_PROVISION_SSH_MODE: verify
+        run: bash server-bootstrap/runner/remote-bundle-exec.sh server-bootstrap/43-pcg-provisioning-ssh.sh
