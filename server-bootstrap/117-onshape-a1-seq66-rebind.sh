@@ -13,7 +13,7 @@ target=''
 while IFS= read -r manifest; do
   seq="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("sequence",""))' "$manifest" 2>/dev/null || true)"
   rid="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("release_id",""))' "$manifest" 2>/dev/null || true)"
-  if [[ "$seq" == 65 && "$rid" == onshape-vps-hardened-production-r3 ]]; then
+  if [[ "$seq" == 66 && "$rid" == onshape-vps-hardened-production-r3 ]]; then
     d="$(dirname "$manifest")"
     [[ -z "$target" ]] || { echo CF_A1_SEQ66_DUPLICATE >&2; exit 21; }
     target="$d"
