@@ -1,0 +1,5 @@
+request_id=onshape-a2-snapshot-open-20260921-1040z
+action=verify-android-attestation-snapshot
+snapshot_commit=7884a1d1093ec3fb97b8233e4c7e5876ec56f2c4
+snapshot_path=evidence/onshape/android-attestation/issue33-current-20260921T103806Z.json
+expected=current-open-negative
