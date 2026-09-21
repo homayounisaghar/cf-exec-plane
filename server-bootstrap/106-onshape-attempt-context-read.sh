@@ -12,7 +12,7 @@ agent_dir=/var/lib/capability-fabric/onshape/fabric-agent
 [[ -s "$control" && -s "$db" ]] || exit 21
 
 python3 - "$control" "$db" "$agent_dir" <<'PY'
-import hashlib,json,pathlib,re,sqlite3,sys,datetime
+import base64,hashlib,json,pathlib,re,sqlite3,sys,datetime
 
 control_path,db_path,agent_dir=sys.argv[1],sys.argv[2],pathlib.Path(sys.argv[3])
 attempt_id="attempt:f6d80f46-b4ff-4798-9848-9b0b28bca1b8"
@@ -85,7 +85,7 @@ try:
     else:
         context="UNKNOWN"
 
-    print("CF_ATTEMPT_CONTEXT_CLASS="+context)
+    print("CF_ATTEMPT_CONTEXT_CLASS="+context)\n    print("CF_ATTEMPT_CONTEXT_AUTH_HINT="+str(auth_hint).lower())\n    print("CF_ATTEMPT_CONTEXT_DIALOG_HINT="+str(dialog_hint).lower())
     print("CF_ATTEMPT_CONTEXT_EXACT_DOCUMENT_TARGET="+str(exact_doc_target).lower())
     if context=="DOCUMENT":
         print("CF_ATTEMPT_CONTEXT_DOCUMENT_ID="+did)
@@ -120,7 +120,7 @@ try:
     walk(agent)
     if timestamps:
         for k in sorted(timestamps):
-            print("CF_ATTEMPT_CONTEXT_TIMESTAMP="+k+"="+timestamps[k])
+            enc=base64.b64encode(timestamps[k].encode()).decode()\n            print("CF_ATTEMPT_CONTEXT_TIMESTAMP_B64="+k+"="+enc)
     else:
         st=record_path.stat()
         print("CF_ATTEMPT_CONTEXT_TIMESTAMP=agent_file_mtime="+datetime.datetime.fromtimestamp(st.st_mtime,datetime.timezone.utc).isoformat().replace("+00:00","Z"))
