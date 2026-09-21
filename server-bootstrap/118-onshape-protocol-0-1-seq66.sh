@@ -175,7 +175,7 @@ docker run -d --name "$gateway_name" --network "container:$net_name" \
   "$NODE_IMAGE" node /app/gateway.js >/dev/null
 
 ready=no
-for _ in $(seq 1 150); do
+for _ in $(seq 1 45); do
   a="$(curl -fsS --max-time 2 http://127.0.0.1:18888/ 2>/dev/null || true)"
   b="$(curl -fsS --max-time 2 http://127.0.0.1:18889/ 2>/dev/null || true)"
   f="$(curl -fsS --max-time 2 http://127.0.0.1:18891/ 2>/dev/null || true)"
@@ -186,7 +186,14 @@ for _ in $(seq 1 150); do
   fi
   sleep 1
 done
-[[ "$ready" == yes ]] || { echo CF_P1_NAMESPACE_STARTUP=fail >&2; exit 23; }
+if [[ "$ready" != yes ]]; then
+  echo CF_P1_NAMESPACE_STARTUP=fail >&2
+  for x in "$net_name" "$server_name" "$fabric_name" "$gateway_name"; do
+    docker inspect -f 'CF_P1_CONTAINER_STATE={{.Name}}|running={{.State.Running}}|status={{.State.Status}}|exit={{.State.ExitCode}}|error={{.State.Error}}|image={{.Config.Image}}' "$x" 2>/dev/null || true
+    docker logs --tail 120 "$x" 2>/dev/null | sed 's/^/CF_P1_CONTAINER_LOG=/' || true
+  done
+  exit 23
+fi
 echo CF_P1_NAMESPACE_STARTUP=pass
 
 [[ "$(docker inspect -f '{{.Config.Image}}' "$server_name")" == "$NODE_IMAGE" ]]
