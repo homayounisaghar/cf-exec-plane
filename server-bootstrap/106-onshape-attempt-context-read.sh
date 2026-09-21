@@ -122,7 +122,8 @@ try:
     walk(agent)
     if timestamps:
         for k in sorted(timestamps):
-            enc=base64.b64encode(timestamps[k].encode()).decode()\n            print("CF_ATTEMPT_CONTEXT_TIMESTAMP_B64="+k+"="+enc)
+            enc=base64.b64encode(timestamps[k].encode()).decode()
+            print("CF_ATTEMPT_CONTEXT_TIMESTAMP_B64="+k+"="+enc)
     else:
         st=record_path.stat()
         print("CF_ATTEMPT_CONTEXT_TIMESTAMP=agent_file_mtime="+datetime.datetime.fromtimestamp(st.st_mtime,datetime.timezone.utc).isoformat().replace("+00:00","Z"))
