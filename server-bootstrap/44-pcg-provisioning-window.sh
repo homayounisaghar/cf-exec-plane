@@ -180,7 +180,7 @@ fi
 release="$(readlink -f "$active")"
 [[ -r "$release/manifest.json" ]] || { echo "BLOCKED: active PCG manifest unavailable" >&2; exit 31; }
 release_id="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["release_id"])' "$release/manifest.json")"
-[[ "$release_id" == pcg-provisioning-r3 ]] || { echo "BLOCKED: final-channel provisioning release is not active" >&2; exit 31; }
+[[ "$release_id" == pcg-provisioning-r4 ]] || { echo "BLOCKED: final-channel provisioning release is not active" >&2; exit 31; }
 
 rm -f "$complete"
 "$cleanup"
