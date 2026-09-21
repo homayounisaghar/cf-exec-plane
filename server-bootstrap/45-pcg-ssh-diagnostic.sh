@@ -45,3 +45,60 @@ journalctl --since '2026-09-21 14:24:30' --until '2026-09-21 14:28:30' --no-page
   tail -n 160 |
   sed -E 's/from [0-9a-fA-F:.]+ port [0-9]+/from REDACTED/g; s/rhost=[^ ]+/rhost=REDACTED/g; s/port [0-9]+ ssh2/port REDACTED ssh2/g' || true
 echo "PCG_SYSTEM_EVENTS_END"
+
+echo "PCG_PROVISION_SESSION_DIAG_BEGIN"
+host_token=/run/capability-fabric/pcg-provision/token
+if [[ -f "$host_token" ]]; then
+  python3 - "$host_token" <<'PY'
+import hashlib,sys
+p=sys.argv[1]
+data=open(p,'rb').read().strip()
+print("host_token_sha256="+hashlib.sha256(data).hexdigest())
+print("host_token_len="+str(len(data)))
+PY
+else
+  echo "host_token=missing"
+fi
+
+cid="$(docker ps --filter name=^/capability-fabric-pcg-telegram$ --format '{{.ID}}' | head -n1)"
+if [[ -n "$cid" ]]; then
+  docker exec "$cid" python - <<'PY'
+import hashlib,json,socket,urllib.request,urllib.error
+from pathlib import Path
+p=Path('/provision/token')
+if p.exists():
+    data=p.read_bytes().strip()
+    print("container_token_sha256="+hashlib.sha256(data).hexdigest())
+    print("container_token_len="+str(len(data)))
+else:
+    print("container_token=missing")
+s=socket.socket(socket.AF_UNIX)
+s.settimeout(2)
+s.connect('/run/pcg/telegram.sock')
+s.sendall(b'{"op":"health"}')
+h=json.loads(s.recv(4096).decode())
+s.close()
+for k in ('provisioning_surface','authorization','authorization_state','tdlib_client'):
+    print(f"runtime_{k}={h.get(k)}")
+PY
+  python3 - "$host_token" <<'PY'
+import sys,urllib.request,urllib.error
+token=open(sys.argv[1],encoding='utf-8').read().strip()
+req=urllib.request.Request(
+    'http://127.0.0.1:8766/session',
+    data=token.encode(),
+    method='POST',
+    headers={'Content-Type':'text/plain','Origin':'http://127.0.0.1:8766'},
+)
+try:
+    with urllib.request.urlopen(req,timeout=3) as r:
+        print("host_same_token_session_status="+str(r.status))
+except urllib.error.HTTPError as e:
+    print("host_same_token_session_status="+str(e.code))
+except Exception as e:
+    print("host_same_token_session_error="+type(e).__name__)
+PY
+else
+  echo "pcg_telegram_container=missing"
+fi
+echo "PCG_PROVISION_SESSION_DIAG_END"
