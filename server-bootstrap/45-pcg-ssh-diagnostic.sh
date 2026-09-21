@@ -102,3 +102,42 @@ else
   echo "pcg_telegram_container=missing"
 fi
 echo "PCG_PROVISION_SESSION_DIAG_END"
+
+echo "PCG_PROVISION_RUNTIME_DIAG_BEGIN"
+python3 - <<'PY'
+import json,socket
+s=socket.socket(socket.AF_UNIX)
+s.settimeout(2)
+s.connect('/var/lib/capability-fabric/pcg/run/telegram.sock')
+s.sendall(b'{"op":"health"}')
+d=json.loads(s.recv(4096).decode())
+s.close()
+for k in ('provisioning_surface','authorization','authorization_state','tdlib_client'):
+    print(f"host_runtime_{k}={d.get(k)}")
+PY
+cid="$(docker ps --filter name=^/capability-fabric-pcg-telegram$ --format '{{.ID}}' | head -n1)"
+if [[ -n "$cid" ]]; then
+  echo "container_id=present"
+  docker inspect -f 'container_running={{.State.Running}} health={{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}} started={{.State.StartedAt}}' "$cid"
+  docker exec -i "$cid" python - <<'PY'
+import hashlib,http.client
+from pathlib import Path
+p=Path('/provision/token')
+if p.exists():
+    data=p.read_bytes().strip()
+    print("container_token_sha256="+hashlib.sha256(data).hexdigest())
+    print("container_token_len="+str(len(data)))
+else:
+    print("container_token=missing")
+try:
+    c=http.client.HTTPConnection('127.0.0.1',8766,timeout=2)
+    c.request('GET','/healthz')
+    r=c.getresponse()
+    print("container_healthz_status="+str(r.status))
+    print("container_healthz_body="+r.read(128).decode('utf-8','replace'))
+except Exception as e:
+    print("container_healthz_error="+type(e).__name__)
+PY
+  docker logs --tail 80 "$cid" 2>&1 | sed -E 's/[A-Za-z0-9_-]{32,}/[REDACTED]/g' | tail -n 80
+fi
+echo "PCG_PROVISION_RUNTIME_DIAG_END"
