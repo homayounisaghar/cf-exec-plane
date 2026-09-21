@@ -24,7 +24,8 @@ canary_name='Speedtest 2 - VPS CANARY'
 [[ "$(sha256sum "$(readlink -f "$active")/manifest.json" | awk '{print $1}')" == "$expected_manifest" ]] || exit 22
 [[ "$(git hash-object "$control")" == "$expected_control_blob" ]] || exit 23
 [[ "$(docker inspect -f '{{.State.Running}}' "$server")" == true ]] || exit 24
-[[ "$(docker inspect -f '{{.State.Running}}' "$gateway")" == true ]] || exit 25
+gateway_initial="$(docker inspect -f '{{.State.Running}}' "$gateway")"
+[[ "$gateway_initial" == true || "$gateway_initial" == false ]] || exit 25
 
 python3 - "$control" "$expected_control_blob" "$expected_manifest" <<'PY'
 import json,sys
@@ -74,9 +75,13 @@ PY
 
 # One-shot blast-radius fence: make external semantic ingress unavailable while
 # the only local caller below is hard-bound to the exact canary document.
-docker stop "$gateway" >/dev/null
+if [[ "$gateway_initial" == true ]]; then
+  docker stop "$gateway" >/dev/null
+  echo CF_CANARY_PUBLIC_GATEWAY=stopped
+else
+  echo CF_CANARY_PUBLIC_GATEWAY=already-stopped
+fi
 [[ "$(docker inspect -f '{{.State.Running}}' "$gateway")" == false ]]
-echo CF_CANARY_PUBLIC_GATEWAY=stopped
 safe_to_reopen=no
 gateway_reopened=no
 cleanup() {
@@ -114,8 +119,8 @@ function parseTool(res){
   if(!raw) throw new Error("empty MCP tool response");
   return JSON.parse(raw);
 }
-async function fabric(capability_id, arguments){
-  const res=await client.callTool({name:"onshape_fabric_invoke",arguments:{capability_id,arguments}});
+async function fabric(capability_id, argsInput){
+  const res=await client.callTool({name:"onshape_fabric_invoke",arguments:{capability_id,arguments:argsInput}});
   const value=parseTool(res);
   if(value.build_id!=="onshape-vps-hardened-r3") throw new Error("wrong build "+String(value.build_id));
   if(value.public_surface!=="semantic-only"||value.qualification_only!==false) throw new Error("wrong production surface");
