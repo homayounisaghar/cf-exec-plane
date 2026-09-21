@@ -11,6 +11,7 @@ ACTIVE=/opt/capability-fabric/current
 PREVIOUS=/opt/capability-fabric/previous
 CONTROL=/var/lib/capability-fabric/onshape/runtime-control/ONSHAPE_RUNTIME_CONTROL.json
 GATE="$STATE/release-in-progress"
+LOCK=/run/lock/capability-fabric-pull.lock
 TIMER=capability-fabric-pull.timer
 GATEWAY=capability-fabric-onshape-gateway
 SERVER=capability-fabric-onshape-server
