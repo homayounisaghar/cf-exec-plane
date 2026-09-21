@@ -1,0 +1,5 @@
+request_id=first-material-canary-epoch3-20260921-1627z
+action=run-first-material-canary
+expected_script_blob=d899a26c6cdfc9bcb4b003c35cf51669a5b2f862
+expected_control_blob=81f73bb89c5517080a80ada3047c58c287874c50
+canary_document_id=84d077d8370c21c4b3045263
