@@ -1,0 +1,5 @@
+request_id=a2-rollback-epoch8-closed-r2-20260921-2001z
+action=verify-android-attestation-snapshot
+snapshot_commit=91193fb6c38016bd55509c439815800153c7c5ff
+snapshot_path=evidence/onshape/android-attestation/issue33-rollback-epoch8-closed-r2-20260921T200001Z.json
+expected=closed
