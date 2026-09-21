@@ -1,0 +1,4 @@
+request_id=production-guard-repair-20260921-1916z
+action=repair-production-guard-fence-identity
+expected_script_blob=fb6a94cb22efab7f59be72150f1485c123322dcb
+expected_guard_blob=89cb1da64380843b932879b1416dbd579bf7300e
