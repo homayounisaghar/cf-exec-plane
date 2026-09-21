@@ -131,6 +131,16 @@ mode="$(stat -c '%a' "$bootstrap")"
 }
 
 cat "$bootstrap"
+
+# Keep this forced-command session alive while the one-time provisioning window exists so
+# the permitted local forward remains usable. No shell or arbitrary command is exposed.
+deadline=$((SECONDS + 960))
+while [[ $SECONDS -lt $deadline ]]; do
+  [[ -e "$complete" ]] && exit 0
+  [[ -f "$bootstrap" && ! -L "$bootstrap" ]] || exit 0
+  sleep 1
+done
+exit 0
 GATE
   chown root:root "$gate"
   chmod 0755 "$gate"
