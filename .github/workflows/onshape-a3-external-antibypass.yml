@@ -1,0 +1,127 @@
+name: Onshape A3 External Anti-Bypass
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'server-bootstrap/control/onshape-a3-external-antibypass/*.request'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: onshape-a3-external-antibypass
+  cancel-in-progress: false
+
+jobs:
+  prove:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      CF_PUBLIC_HOST: cf-onshape.duckdns.org
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+
+      - name: Validate immutable A3 request
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || exit 10
+          IFS=$'\t' read -r status request_path <<<"${changes[0]}"
+          [[ "$status" == A ]] || exit 11
+          [[ "$request_path" == server-bootstrap/control/onshape-a3-external-antibypass/*.request ]] || exit 12
+          request_id="$(awk -F= '$1=="request_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          action="$(awk -F= '$1=="action"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 13
+          [[ "$action" == "prove-external-anti-bypass" ]] || exit 14
+
+      - name: Prove independent external vantage and public reachability
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo CF_A3_VANTAGE=github-hosted-ubuntu-latest
+          mapfile -t addrs < <(getent ahosts "$CF_PUBLIC_HOST" | awk '{print $1}' | sort -u)
+          [[ "${#addrs[@]}" -ge 1 ]] || { echo CF_A3_DNS=fail >&2; exit 20; }
+          for ip in "${addrs[@]}"; do
+            case "$ip" in
+              127.*|10.*|192.168.*|169.254.*|::1|fc*|fd*|fe80:*)
+                echo "CF_A3_PUBLIC_DNS_NONPUBLIC=fail" >&2
+                exit 20
+                ;;
+              172.*)
+                second="${ip#172.}"; second="${second%%.*}"
+                if [[ "$second" =~ ^[0-9]+$ && "$second" -ge 16 && "$second" -le 31 ]]; then
+                  echo "CF_A3_PUBLIC_DNS_NONPUBLIC=fail" >&2
+                  exit 20
+                fi
+                ;;
+            esac
+          done
+          body="$(curl -fsS --proto '=https' --tlsv1.2 --max-time 10 "https://$CF_PUBLIC_HOST/")"
+          [[ "$body" == "cf-mcp-host ok" ]] || { echo CF_A3_PUBLIC_ROOT=fail >&2; exit 21; }
+          echo CF_A3_DNS_PUBLIC=pass
+          echo CF_A3_PUBLIC_TLS_REACHABLE=pass
+          echo CF_A3_PUBLIC_ROOT=pass
+
+      - name: Prove raw internal TCP listeners are unreachable externally
+        shell: bash
+        run: |
+          set -euo pipefail
+          for p in 8787 8788 8789 8791; do
+            if timeout 4 bash -c "exec 3<>/dev/tcp/$CF_PUBLIC_HOST/$p" 2>/dev/null; then
+              echo "CF_A3_EXTERNAL_PORT_${p}=reachable" >&2
+              exit 22
+            fi
+            echo "CF_A3_EXTERNAL_PORT_${p}=blocked"
+          done
+          echo CF_A3_EXTERNAL_INTERNAL_PORTS=pass
+          echo CF_A3_EXECUTION_AGENT_PORT_8789=blocked
+          echo CF_A3_FABRIC_SIDECAR_PORT_8791=blocked
+
+      - name: Prove raw and internal HTTP paths cannot traverse public gateway
+        shell: bash
+        run: |
+          set -euo pipefail
+          origin="https://$CF_PUBLIC_HOST"
+          paths=(
+            "/internal/fabric/not-a-valid-key"
+            "/v1/capabilities"
+            "/v1/invoke"
+            "/v1/reconcile"
+            "/v1/internal/validate-dispatch"
+            "/v1/qualification/invoke-ack-loss"
+            "/mcp/not-a-valid-token"
+            "/mcp/"
+          )
+          for path in "${paths[@]}"; do
+            code="$(curl -sS -o /dev/null -w '%{http_code}' --proto '=https' --tlsv1.2 --max-time 10 "$origin$path")"
+            [[ "$code" == 404 ]] || {
+              echo "CF_A3_PUBLIC_PATH_UNEXPECTED=${path}:${code}" >&2
+              exit 23
+            }
+          done
+
+          # Repeat effect-bearing internal routes with POST so a method-only
+          # firewall/proxy asymmetry cannot create a bypass.
+          for path in             "/internal/fabric/not-a-valid-key"             "/v1/invoke"             "/v1/reconcile"             "/v1/internal/validate-dispatch"             "/v1/qualification/invoke-ack-loss"; do
+            code="$(curl -sS -o /dev/null -w '%{http_code}' --proto '=https' --tlsv1.2 --max-time 10               -H 'content-type: application/json' --data '{}' "$origin$path")"
+            [[ "$code" == 404 ]] || {
+              echo "CF_A3_PUBLIC_POST_PATH_UNEXPECTED=${path}:${code}" >&2
+              exit 24
+            }
+          done
+
+          echo CF_A3_PUBLIC_RAW_MCP_INVALID_TOKEN=blocked
+          echo CF_A3_PUBLIC_EXECUTION_AGENT_PATH=blocked
+          echo CF_A3_PUBLIC_FABRIC_CAPABILITIES_PATH=blocked
+          echo CF_A3_PUBLIC_FABRIC_INVOKE_PATH=blocked
+          echo CF_A3_PUBLIC_FABRIC_RECONCILE_PATH=blocked
+          echo CF_A3_PUBLIC_VALIDATE_DISPATCH_PATH=blocked
+          echo CF_A3_PUBLIC_QUALIFICATION_PATH=blocked
+          echo CF_A3_PUBLIC_RAW_PATHS=pass
+          echo CF_A3_EXTERNAL_ANTI_BYPASS=pass
