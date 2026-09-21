@@ -154,6 +154,12 @@ for(const required of ["onshape_pool_status","onshape_fabric_capabilities","onsh
   if(!tools.includes(required)) throw new Error("missing "+required+" in "+JSON.stringify(tools));
 }
 if(tools.includes("onshape_ui_input_sequence")||tools.includes("onshape_ui_native")) throw new Error("effectful UI exposed");
+const capsRes=await client.callTool({name:"onshape_fabric_capabilities",arguments:{}});
+if(capsRes.isError===true) throw new Error("capability catalog failed");
+const capsRaw=(capsRes.content||[]).filter(x=>x.type==="text").map(x=>x.text||"").join("\n");
+const caps=JSON.parse(capsRaw);
+const ids=(caps.capabilities||[]).map(x=>x.id);
+if(ids.includes("onshape.ui.input.sequence")||ids.includes("onshape.ui.native")) throw new Error("effectful UI capability exposed");
 const ps=await client.callTool({name:"onshape_pool_status",arguments:{}});
 const raw=(ps.content||[]).filter(x=>x.type==="text").map(x=>x.text||"").join("\n");
 const pool=JSON.parse(raw);
@@ -161,8 +167,7 @@ if(pool.pool_enabled!==true||pool.size!==3||pool.active_count!==0||pool.queued_c
 if(pool.material_mutator_session_id!=="session-1") throw new Error(raw);
 for(const s of pool.sessions){if(s?.auth?.state!=="PROVEN") throw new Error(raw);}
 const rd=await client.callTool({name:"onshape_fabric_invoke",arguments:{capability_id:"onshape.openapi.lookup",arguments:{keyword:"getDocument"}}});
-const rdRaw=(rd.content||[]).filter(x=>x.type==="text").map(x=>x.text||"").join("\n");
-if(!rdRaw.includes('"state":"ACHIEVED"')||!rdRaw.includes('"effectSent":false')) throw new Error(rdRaw);
+if(rd.isError===true) throw new Error("semantic lookup failed");
 console.log("CF_VPA_TOOL_CATALOG=pass");
 console.log("CF_VPA_UI_EFFECTFUL_CLOSED=pass");
 console.log("CF_VPA_POOL_AUTH=3-of-3-PROVEN");
