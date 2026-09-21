@@ -36,6 +36,10 @@ out={
 pretty=json.dumps(out,indent=2)+"\n"
 print("CF_R4_MANIFEST_FILE_COUNT="+str(len(files)))
 print("CF_R4_MANIFEST_SHA256="+hashlib.sha256(pretty.encode()).hexdigest())
-print("CF_R4_MANIFEST_JSON="+json.dumps(out,separators=(",",":")))
+import base64
+compact=json.dumps(out,separators=(",",":"))
+pretty=json.dumps(out,indent=2)+"\\n"
+print("CF_R4_MANIFEST_JSON="+compact)
+print("CF_R4_MANIFEST_B64="+base64.b64encode(pretty.encode()).decode())
 print("CF_R4_MANIFEST_FREEZE=pass")
 PY
