@@ -1,0 +1,162 @@
+name: Onshape A2 Attestation Snapshot Gate
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'server-bootstrap/control/onshape-a2-attestation-snapshot/*.request'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: onshape-a2-attestation-snapshot
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      CF_REPO_READ_TOKEN: ${{ secrets.CF_REPO_READ_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+
+      - name: Validate immutable snapshot request
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || exit 10
+          IFS=$'\t' read -r status request_path <<<"${changes[0]}"
+          [[ "$status" == A ]] || exit 11
+          [[ "$request_path" == server-bootstrap/control/onshape-a2-attestation-snapshot/*.request ]] || exit 12
+
+          request_id="$(awk -F= '$1=="request_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          action="$(awk -F= '$1=="action"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          snapshot_commit="$(awk -F= '$1=="snapshot_commit"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          snapshot_path="$(awk -F= '$1=="snapshot_path"{print $2}' "$request_path" | tail -n1)"
+          expected="$(awk -F= '$1=="expected"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+
+          [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 13
+          [[ "$action" == "verify-android-attestation-snapshot" ]] || exit 14
+          [[ "$snapshot_commit" =~ ^[0-9a-f]{40}$ ]] || exit 15
+          [[ "$snapshot_path" == evidence/onshape/android-attestation/*.json ]] || exit 16
+          [[ "$expected" == "current-open-negative" || "$expected" == "closed" ]] || exit 17
+
+          echo "CF_A2_SNAPSHOT_COMMIT=$snapshot_commit" >> "$GITHUB_ENV"
+          echo "CF_A2_SNAPSHOT_PATH=$snapshot_path" >> "$GITHUB_ENV"
+          echo "CF_A2_EXPECTED=$expected" >> "$GITHUB_ENV"
+
+      - name: Fetch exact private snapshot commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          tmp="$RUNNER_TEMP/a2-snapshot"
+          mkdir -p "$tmp"
+          cat >"$tmp/askpass" <<'ASK'
+          #!/usr/bin/env bash
+          case "${1:-}" in
+            *Username*) printf '%s\n' x-access-token ;;
+            *Password*) printf '%s\n' "$CF_REPO_READ_TOKEN" ;;
+            *) exit 1 ;;
+          esac
+          ASK
+          chmod 0700 "$tmp/askpass"
+          git init --bare "$tmp/repo.git" >/dev/null
+          GIT_ASKPASS="$tmp/askpass" GIT_TERMINAL_PROMPT=0 git --git-dir="$tmp/repo.git" fetch --quiet --depth=1             https://github.com/homayounisaghar/capability-fabric.git "$CF_A2_SNAPSHOT_COMMIT"
+          got="$(git --git-dir="$tmp/repo.git" rev-parse FETCH_HEAD)"
+          [[ "$got" == "$CF_A2_SNAPSHOT_COMMIT" ]] || exit 20
+
+          git --git-dir="$tmp/repo.git" show "$got:runtime/onshape/ONSHAPE_RUNTIME_CONTROL.json" >"$tmp/control.json"
+          git --git-dir="$tmp/repo.git" show "$got:$CF_A2_SNAPSHOT_PATH" >"$tmp/snapshot.json"
+
+          python3 - "$tmp/snapshot.json" "$tmp/body.txt" <<'PY'
+          import json,sys
+          v=json.load(open(sys.argv[1]))
+          assert v["schema"]=="capability-fabric.android-runtime-attestation-snapshot.v1"
+          s=v["source"]
+          assert s["repository"]=="homayounisaghar/capability-fabric"
+          assert s["issueNumber"]==33
+          assert s["issueState"]=="open"
+          assert isinstance(s["issueUpdatedAt"],str) and s["issueUpdatedAt"]
+          body=v["body"]
+          assert isinstance(body,str) and "CF_ONSHAPE_RUNTIME_STATUS_V1" in body
+          open(sys.argv[2],"w").write(body)
+          print("CF_A2_SNAPSHOT_SCHEMA=pass")
+          print("CF_A2_SNAPSHOT_ISSUE=33")
+          print("CF_A2_SNAPSHOT_SOURCE=private-immutable-commit")
+          PY
+
+      - name: Verify attestation gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          tmp="$RUNNER_TEMP/a2-snapshot"
+          if [[ "$CF_A2_EXPECTED" == "current-open-negative" ]]; then
+            python3 server-bootstrap/113-onshape-android-close-attestation-verify.py current "$tmp/control.json" "$tmp/body.txt"
+            set +e
+            out="$(python3 server-bootstrap/113-onshape-android-close-attestation-verify.py closed "$tmp/control.json" "$tmp/body.txt" 2>&1)"
+            rc=$?
+            set -e
+            printf '%s\n' "$out"
+            [[ "$rc" -eq 30 ]]
+            printf '%s\n' "$out" | grep -Fxq 'CF_ANDROID_CLOSE_ATTESTATION=not-closed'
+            echo CF_A2_CLOSE_GATE_REJECTS_OPEN=pass
+          else
+            python3 server-bootstrap/113-onshape-android-close-attestation-verify.py closed "$tmp/control.json" "$tmp/body.txt"
+            echo CF_A2_CLOSE_GATE_LIVE=pass
+          fi
+
+      - name: Synthetic closed positive control
+        if: env.CF_A2_EXPECTED == 'current-open-negative'
+        shell: bash
+        run: |
+          set -euo pipefail
+          tmp="$RUNNER_TEMP/a2-snapshot"
+          python3 - "$tmp/control.json" "$tmp/body.txt" "$tmp/closed-control.json" "$tmp/closed-body.txt" <<'PY'
+          import hashlib,json,sys
+          cp,bp,oc,ob=sys.argv[1:]
+          root=json.load(open(cp))
+          root["controlRevision"]+=1
+          root["updatedAt"]="2026-09-21T10:40:00.000Z"
+          root["routing"]["state"]="CLOSED"
+          root["routing"]["materialCommandsAllowed"]=False
+          a=root["authority"]
+          a["productionEpoch"]+=1
+          a["mode"]="QUIESCED_RECONCILING"
+          a["materialAuthority"]=None
+          a["planes"]["android-v1"]["ingress"]="CLOSED"
+          a["planes"]["android-v1"]["materialEffectsAllowed"]=False
+          a["planes"]["vps-fabric"]["ingress"]="CLOSED"
+          a["planes"]["vps-fabric"]["materialEffectsAllowed"]=False
+          raw=(json.dumps(root,indent=2)+"\n").encode()
+          open(oc,"wb").write(raw)
+          sha=hashlib.sha1(f"blob {len(raw)}\0".encode()+raw).hexdigest()
+
+          body=open(bp).read()
+          p=body.find("CF_ONSHAPE_RUNTIME_STATUS_V1")
+          start=body.find("{",p)
+          status,end=json.JSONDecoder().raw_decode(body[start:])
+          status["state"]="BLOCKED"
+          status["routingState"]="CLOSED"
+          status["materialCommandsAllowed"]=False
+          status["observedRuntimeControlSha"]=sha
+          status["controlRevision"]=root["controlRevision"]
+          status["busGeneration"]=root["routing"]["busGeneration"]
+          status["deviceAdmittedBusGeneration"]=root["routing"]["busGeneration"]
+          status["deviceAdmittedMailboxIssue"]=root["routing"]["activeMailboxIssue"]
+          status["leaseState"]="FREE"
+          status["queueDepth"]=0
+          status["currentCommandSourceId"]=None
+          status["lastControlReadAt"]="2026-09-21T10:40:01Z"
+          status["reportedAt"]="2026-09-21T10:40:01Z"
+          status["heartbeatPublishedAt"]="2026-09-21T10:40:01Z"
+          open(ob,"w").write("CF_ONSHAPE_RUNTIME_STATUS_V1\n"+json.dumps(status))
+          PY
+          python3 server-bootstrap/113-onshape-android-close-attestation-verify.py closed "$tmp/closed-control.json" "$tmp/closed-body.txt"
+          echo CF_A2_CLOSE_GATE_FIXTURE=pass
