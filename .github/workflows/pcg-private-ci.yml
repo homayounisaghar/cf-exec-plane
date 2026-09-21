@@ -100,6 +100,16 @@ jobs:
           bash -n server-bootstrap/43-pcg-provisioning-ssh.sh
           bash -n server-deploy/channels/pcg/current/health.sh
 
+      - name: Enforce Telegram V1 no-presence-manipulation invariant
+        run: |
+          set -euo pipefail
+          cd "$PCG_PRIVATE_WORKTREE"
+          if grep -R -n -E 'setOption.{0,120}online|online.{0,120}setOption' src/capability_fabric server-deploy/channels/pcg/current --include='*.py'; then
+            echo "Telegram V1 must not manipulate the online option" >&2
+            exit 31
+          fi
+          echo "PCG_TDLIB_PRESENCE_MUTATION=absent"
+
       - name: Install PCG live package without private-repo credential
         run: |
           set -euo pipefail
