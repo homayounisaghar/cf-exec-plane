@@ -43,5 +43,21 @@ jobs:
           [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 13
           [[ "$action" == "classify-remaining-attempt-intent" ]] || exit 14
       - name: Classify exact Attempt intent without exposing values
+        id: classify
         shell: bash
-        run: bash server-bootstrap/runner/remote-bundle-exec.sh server-bootstrap/126-onshape-indoubt-intent-classifier.sh
+        run: |
+          set -euo pipefail
+          out="$(bash server-bootstrap/runner/remote-bundle-exec.sh server-bootstrap/126-onshape-indoubt-intent-classifier.sh)"
+          printf '%s\n' "$out"
+          intent="$(printf '%s\n' "$out" | awk -F= '$1=="CF_INTENT_CLASS"{print $2}' | tail -n1)"
+          [[ -n "$intent" ]] || exit 20
+          echo "intent=$intent" >> "$GITHUB_OUTPUT"
+      - name: Intent LINEAR_PATTERN_UI_SEQUENCE
+        if: steps.classify.outputs.intent == 'LINEAR_PATTERN_UI_SEQUENCE'
+        run: echo matched
+      - name: Intent DOCUMENT_COMMAND_SEARCH_SEQUENCE
+        if: steps.classify.outputs.intent == 'DOCUMENT_COMMAND_SEARCH_SEQUENCE'
+        run: echo matched
+      - name: Intent OTHER_DOCUMENT_INPUT_SEQUENCE
+        if: steps.classify.outputs.intent == 'OTHER_DOCUMENT_INPUT_SEQUENCE'
+        run: echo matched
