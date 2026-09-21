@@ -81,7 +81,8 @@ s.close()
 for k in ('provisioning_surface','authorization','authorization_state','tdlib_client'):
     print(f"runtime_{k}={h.get(k)}")
 PY
-  python3 - "$host_token" <<'PY'
+  if [[ -f "$host_token" ]]; then
+    python3 - "$host_token" <<'PY'
 import sys,urllib.request,urllib.error
 token=open(sys.argv[1],encoding='utf-8').read().strip()
 req=urllib.request.Request(
@@ -98,6 +99,9 @@ except urllib.error.HTTPError as e:
 except Exception as e:
     print("host_same_token_session_error="+type(e).__name__)
 PY
+  else
+    echo "host_same_token_session_status=skipped-no-token"
+  fi
 else
   echo "pcg_telegram_container=missing"
 fi
