@@ -1,0 +1,4 @@
+request_id=pcg-tdlib-base-1-8-67-r2
+phase=pcg-tdlib-base-image
+tdlib_commit=d1085f9cebc5a62379991ae1652673954f229c1f
+tdlib_version=1.8.67
