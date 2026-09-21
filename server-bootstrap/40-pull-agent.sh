@@ -29,8 +29,10 @@ command -v docker >/dev/null 2>&1 || { echo "Docker missing; Phase 3 must comple
 docker compose version >/dev/null 2>&1 || { echo "Docker Compose plugin missing" >&2; exit 22; }
 
 src=server-bootstrap/pull-agent/cf-pull-agent.sh
-[[ -s "$src" ]] || { echo "pull-agent source missing from bootstrap bundle" >&2; exit 22; }
+guard_src=server-bootstrap/pull-agent/runtime_control_guard.py
+[[ -s "$src" && -s "$guard_src" ]] || { echo "pull-agent/guard source missing from bootstrap bundle" >&2; exit 22; }
 install -d -m 0755 /usr/local/libexec
+install -m 0750 -o root -g root "$guard_src" /usr/local/libexec/capability-fabric-runtime-control-guard
 install -m 0750 -o root -g root "$src" /usr/local/libexec/capability-fabric-pull-agent
 install -d -m 0750 -o root -g root /var/lib/capability-fabric/state /var/lib/capability-fabric/agent-home /var/log/capability-fabric
 install -d -m 0755 -o root -g root /opt/capability-fabric
