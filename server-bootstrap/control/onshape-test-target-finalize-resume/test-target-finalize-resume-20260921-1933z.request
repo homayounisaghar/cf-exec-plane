@@ -1,0 +1,3 @@
+request_id=test-target-finalize-resume-20260921-1933z
+action=resume-finalize-disposable-target
+expected_script_blob=6cd1e4a1bc5d0b2a3ead90a897e8c21afcb1f11a
