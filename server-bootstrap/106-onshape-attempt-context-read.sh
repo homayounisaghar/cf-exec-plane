@@ -85,7 +85,9 @@ try:
     else:
         context="UNKNOWN"
 
-    print("CF_ATTEMPT_CONTEXT_CLASS="+context)\n    print("CF_ATTEMPT_CONTEXT_AUTH_HINT="+str(auth_hint).lower())\n    print("CF_ATTEMPT_CONTEXT_DIALOG_HINT="+str(dialog_hint).lower())
+    print("CF_ATTEMPT_CONTEXT_CLASS="+context)
+    print("CF_ATTEMPT_CONTEXT_AUTH_HINT="+str(auth_hint).lower())
+    print("CF_ATTEMPT_CONTEXT_DIALOG_HINT="+str(dialog_hint).lower())
     print("CF_ATTEMPT_CONTEXT_EXACT_DOCUMENT_TARGET="+str(exact_doc_target).lower())
     if context=="DOCUMENT":
         print("CF_ATTEMPT_CONTEXT_DOCUMENT_ID="+did)
