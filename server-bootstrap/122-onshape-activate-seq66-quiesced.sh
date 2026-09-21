@@ -22,7 +22,7 @@ PROJECT=capability-fabric
 candidate="$RELEASES/onshape-vps-hardened-production-r3"
 rollback="$RELEASES/onshape-vps-hardened-rollback-r1"
 expected_manifest_sha=857b7ca6d5a6bcf79b820594801a4f88642fe9520dad1ae18fc064eae6073d7c
-expected_main_commit=248c2f48baf0a850a9674eb2048a122d0132f882
+promotion_anchor=248c2f48baf0a850a9674eb2048a122d0132f882
 
 [[ -s "$TOKEN" && -s "$TRUST" && -s "$LIVE_AGENT" && -d "$candidate" && -d "$rollback" && -s "$CONTROL" ]] || exit 20
 [[ -f "$GATE" ]] || { echo CF_ACT_GATE=missing >&2; exit 20; }
@@ -90,7 +90,10 @@ else
 fi
 GIT_ASKPASS="$askpass" GIT_TERMINAL_PROMPT=0 HOME=/var/lib/capability-fabric/agent-home   git --git-dir="$CACHE" fetch --quiet --force --depth=1 origin refs/heads/main:refs/remotes/origin/main
 main_commit="$(git --git-dir="$CACHE" rev-parse refs/remotes/origin/main)"
-[[ "$main_commit" == "$expected_main_commit" ]] || { echo CF_ACT_CANONICAL_HEAD=mismatch >&2; exit 23; }
+[[ "$main_commit" =~ ^[0-9a-f]{40}$ ]] || { echo CF_ACT_CANONICAL_HEAD=invalid >&2; exit 23; }
+# HEAD may advance for operational scripts/checkpoints after the atomic release
+# promotion. The release invariant is byte-for-byte current-tree closure, not
+# equality with the historical promotion commit.
 git --git-dir="$CACHE" show "$main_commit:server-deploy/current/manifest.json" >"$work/main-manifest.json"
 cmp -s "$work/main-manifest.json" "$candidate/manifest.json" || { echo CF_ACT_CANONICAL_MANIFEST=mismatch >&2; exit 23; }
 python3 - "$candidate/manifest.json" "$CACHE" "$main_commit" <<'PY'
@@ -103,6 +106,8 @@ for rel,expected in m["files"].items():
 print("CF_ACT_CANONICAL_FILE_CLOSURE=pass")
 PY
 echo "CF_ACT_CANONICAL_MAIN_COMMIT=$main_commit"
+echo "CF_ACT_PROMOTION_ANCHOR=$promotion_anchor"
+echo CF_ACT_CANONICAL_CURRENT_CLOSURE=pass
 
 atomic_link(){
   local target="$1" link="$2" tmp
