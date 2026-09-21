@@ -33,16 +33,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 COPY --from=tdlib-build /opt/tdlib/ /opt/tdlib/
 COPY --from=tdlib-build /src/td/LICENSE_1_0.txt /licenses/TDLib-LICENSE_1_0.txt
-RUN find /opt/tdlib -type f -name 'libtdjson.so*' -exec cp -a {} /usr/local/lib/ \; \
+RUN test -f "/opt/tdlib/lib/libtdjson.so.${TDLIB_VERSION}" \
+    && cp "/opt/tdlib/lib/libtdjson.so.${TDLIB_VERSION}" "/usr/local/lib/libtdjson.so.${TDLIB_VERSION}" \
+    && ln -s "libtdjson.so.${TDLIB_VERSION}" /usr/local/lib/libtdjson.so \
     && ldconfig \
     && python - <<'PY'
 from ctypes import CDLL
-CDLL("libtdjson.so")
+CDLL("/usr/local/lib/libtdjson.so")
 print("TDJSON_LOAD=pass")
 PY
 RUN python -m pip install --no-cache-dir "mcp==2.1.1" "uvicorn==0.49.0"
 LABEL org.opencontainers.image.title="Capability Fabric PCG TDLib Python runtime" \
-      org.opencontainers.image.source="https://github.com/tdlib/td" \
+      org.opencontainers.image.source="https://github.com/homayounisaghar/cf-exec-plane" \
+      io.capability-fabric.upstream-source="https://github.com/tdlib/td" \
       org.opencontainers.image.licenses="BSL-1.0" \
       io.capability-fabric.tdlib.commit="$TDLIB_COMMIT" \
       io.capability-fabric.tdlib.version="$TDLIB_VERSION"
