@@ -35,7 +35,7 @@ docker compose version >/dev/null 2>&1 || { echo "CF_PCG_PULL_MISSING_DOCKER_COM
 install -d -m 0750 -o root -g root "$ROOT" "$RELEASES" "$SIGNATURES" "$STATE" /var/log/capability-fabric /var/lib/capability-fabric/pcg /var/lib/capability-fabric/agent-home
 install -d -m 0755 -o root -g root /opt/capability-fabric/channels/pcg /run/lock
 install -d -m 0770 -o 65534 -g 65534 /var/lib/capability-fabric/pcg/run
-install -d -m 0700 -o 65534 -g 65534 /var/lib/capability-fabric/pcg/core-state /var/lib/capability-fabric/pcg/telegram-state
+install -d -m 0700 -o 65534 -g 65534 /var/lib/capability-fabric/pcg/core-state /var/lib/capability-fabric/pcg/telegram-state /var/lib/capability-fabric/pcg/telegram-web-profile
 install -d -m 0700 -o root -g root /var/lib/capability-fabric/pcg/correlation
 : >> "$DETAIL_LOG"
 chmod 0640 "$DETAIL_LOG"

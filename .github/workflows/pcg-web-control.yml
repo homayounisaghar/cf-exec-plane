@@ -1,0 +1,75 @@
+name: PCG Telegram Web Control
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'server-bootstrap/control/pcg-web-control-requests/*.request'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: personal-server-pcg-web-control
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  control:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+
+      - id: request
+        name: Validate immutable Telegram Web control request
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || { echo "request commit must add exactly one file" >&2; exit 10; }
+          IFS=$'\t' read -r status request_path <<<"${changes[0]}"
+          [[ "$status" == A ]] || { echo "request must be newly added" >&2; exit 11; }
+          [[ "$request_path" == server-bootstrap/control/pcg-web-control-requests/*.request ]] || exit 12
+          request_id="$(awk -F= '$1=="request_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          phase="$(awk -F= '$1=="phase"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          ciphertext="$(awk -F= '$1=="ciphertext"{print substr($0,index($0,"=")+1)}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 13
+          case "$phase" in prepare|status|phone|code|password|cleanup) ;; *) exit 14 ;; esac
+          case "$phase" in
+            phone|code|password)
+              [[ "$ciphertext" =~ ^[A-Za-z0-9+/=]{32,8192}$ ]] || { echo "ciphertext required" >&2; exit 15; }
+              ;;
+            *)
+              [[ -z "$ciphertext" ]] || { echo "ciphertext forbidden for this phase" >&2; exit 16; }
+              ;;
+          esac
+          [[ -z "$ciphertext" ]] || printf '::add-mask::%s\n' "$ciphertext"
+          echo "phase=$phase" >> "$GITHUB_OUTPUT"
+          echo "ciphertext=$ciphertext" >> "$GITHUB_OUTPUT"
+
+      - name: Mask endpoint and login
+        run: |
+          set -euo pipefail
+          printf '::add-mask::%s\n' "$VPS_HOST"
+          printf '::add-mask::%s\n' "$VPS_SSH_USER"
+          while IFS= read -r addr; do
+            [[ -n "$addr" ]] && printf '::add-mask::%s\n' "$addr"
+          done < <(getent ahosts "$VPS_HOST" 2>/dev/null | awk '{print $1}' | sort -u)
+
+      - name: Execute bounded Telegram Web control
+        env:
+          CF_PCG_WEB_CONTROL_MODE: ${{ steps.request.outputs.phase }}
+          CF_PCG_WEB_CONTROL_CIPHERTEXT: ${{ steps.request.outputs.ciphertext }}
+        run: bash server-bootstrap/runner/remote-bundle-exec.sh server-bootstrap/45-pcg-web-control.sh

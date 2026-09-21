@@ -98,6 +98,7 @@ jobs:
             server-deploy/channels/pcg/current/pcg_core_stub.py \
             server-deploy/channels/pcg/current/pcg_telegram_tdlib_unprovisioned.py \
             server-deploy/channels/pcg/current/pcg_telegram_provisioning_runtime.py
+          node --check server-deploy/channels/pcg/current/pcg_web_browser.mjs
           bash -n server-bootstrap/42-pcg-pull-agent.sh
           bash -n server-bootstrap/43-pcg-provisioning-ssh.sh
           bash -n server-bootstrap/44-pcg-provisioning-window.sh

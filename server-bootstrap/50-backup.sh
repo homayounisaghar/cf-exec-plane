@@ -11,6 +11,7 @@ browser_profile=/var/lib/capability-fabric/onshape/browser-profile
 browser_sentinel="$browser_profile/.backup-exclusion-sentinel"
 interactive_browser_root=/var/lib/capability-fabric/onshape/interactive-browser
 interactive_browser_sentinel="$interactive_browser_root/.backup-exclusion-sentinel"
+pcg_web_profile=/var/lib/capability-fabric/pcg/telegram-web-profile
 fabric_state_db=/var/lib/capability-fabric/onshape/fabric-state/execution.sqlite3
 fabric_state_backup_dir=/var/lib/capability-fabric/onshape/fabric-state/backup
 fabric_state_backup="$fabric_state_backup_dir/execution-consistent.sqlite3"
@@ -103,6 +104,12 @@ if [[ ! -d "$interactive_browser_root" ]]; then
 fi
 [[ "$(stat -c '%U:%G:%a' "$interactive_browser_root")" == root:root:700 ]] || { echo "interactive browser root permissions are unsafe" >&2; exit 31; }
 
+if [[ ! -d "$pcg_web_profile" ]]; then
+  [[ "$mode" == prove ]] || { echo "PCG web profile directory missing outside prove mode" >&2; exit 31; }
+  install -d -m 0700 -o 65534 -g 65534 "$pcg_web_profile"
+fi
+[[ "$(stat -c '%u:%g:%a' "$pcg_web_profile")" == 65534:65534:700 ]] || { echo "PCG web profile directory permissions are unsafe" >&2; exit 31; }
+
 if [[ ! -e "$interactive_browser_sentinel" ]]; then
   [[ "$mode" == prove ]] || { echo "interactive browser exclusion sentinel missing outside prove mode" >&2; exit 31; }
   printf 'capability-fabric interactive browser backup exclusion proof\n' > "$interactive_browser_sentinel"
@@ -137,7 +144,16 @@ if ! grep -Fxq "$interactive_browser_root" "$exclude_file"; then
   mv -f "$tmp_exclude" "$exclude_file"
 fi
 
-python3 - "$exclude_file" "$browser_profile" "$interactive_browser_root" <<'PY'
+if ! grep -Fxq "$pcg_web_profile" "$exclude_file"; then
+  [[ "$mode" == prove ]] || { echo "PCG web profile exclusion missing outside prove mode" >&2; exit 31; }
+  tmp_exclude="$(mktemp /etc/capability-fabric/.backup.exclude.XXXXXX)"
+  { cat "$exclude_file"; printf '%s\n' "$pcg_web_profile"; } | awk 'NF && !seen[$0]++' > "$tmp_exclude"
+  chown root:root "$tmp_exclude"
+  chmod 0600 "$tmp_exclude"
+  mv -f "$tmp_exclude" "$exclude_file"
+fi
+
+python3 - "$exclude_file" "$browser_profile" "$interactive_browser_root" "$pcg_web_profile" <<'PY'
 import os,sys
 exclude_file,*required_paths=sys.argv[1:]
 lines=[]
@@ -248,6 +264,10 @@ if [[ "$mode" == prove ]]; then
     echo "CF_BACKUP_INTERACTIVE_BROWSER_EXCLUDE=failed" >&2
     exit 33
   fi
+  if [[ -e "$restore_dir$pcg_web_profile" || -L "$restore_dir$pcg_web_profile" ]]; then
+    echo "CF_BACKUP_PCG_WEB_PROFILE_EXCLUDE=failed" >&2
+    exit 33
+  fi
   restored_manifest="/var/backups/capability-fabric/restored-${timestamp}.manifest"
   python3 - "$restored_manifest" "$restore_dir" "$exclude_file" "${roots[@]}" <<'PY'
 import hashlib,os,stat,sys
@@ -310,7 +330,7 @@ PY
   chmod 0600 /var/lib/capability-fabric/state/backup-restore-proof; chown root:root /var/lib/capability-fabric/state/backup-restore-proof
   rm -rf "$restore_dir" "$source_manifest" "$restored_manifest"
   systemctl enable --now capability-fabric-backup.timer >/dev/null
-  printf 'CF_BACKUP_PROOF_BEGIN\nSNAPSHOT_ID=%s\nRESTIC_CHECK=pass\nISOLATED_RESTORE=pass\nRESTORE_TREE_COMPARE=pass\nBROWSER_PROFILE_EXCLUDED=pass\nINTERACTIVE_BROWSER_PROFILE_EXCLUDED=pass\nBACKUP_EXCLUDE_PERMS=pass\nSQLITE_CONSISTENT_SNAPSHOT=%s\nSQLITE_RESTORE_INTEGRITY=%s\nSQLITE_RECOVERABLE_COUNT=%s\nBACKUP_TIMER_ENABLED=yes\nCF_BACKUP_PROOF_END\n' "$snapshot_id" "$sqlite_snapshot" "$sqlite_restore_integrity" "$sqlite_recoverable_count"
+  printf 'CF_BACKUP_PROOF_BEGIN\nSNAPSHOT_ID=%s\nRESTIC_CHECK=pass\nISOLATED_RESTORE=pass\nRESTORE_TREE_COMPARE=pass\nBROWSER_PROFILE_EXCLUDED=pass\nINTERACTIVE_BROWSER_PROFILE_EXCLUDED=pass\nPCG_WEB_PROFILE_EXCLUDED=pass\nBACKUP_EXCLUDE_PERMS=pass\nSQLITE_CONSISTENT_SNAPSHOT=%s\nSQLITE_RESTORE_INTEGRITY=%s\nSQLITE_RECOVERABLE_COUNT=%s\nBACKUP_TIMER_ENABLED=yes\nCF_BACKUP_PROOF_END\n' "$snapshot_id" "$sqlite_snapshot" "$sqlite_restore_integrity" "$sqlite_recoverable_count"
 else
   rm -f "$source_manifest"
   restic forget --tag capability-fabric-personal-server --keep-last 3 --keep-daily 7 --keep-weekly 4 --keep-monthly 6 --prune >>"$log" 2>&1

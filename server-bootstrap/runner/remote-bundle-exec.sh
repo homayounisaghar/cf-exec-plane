@@ -36,6 +36,8 @@ remote_env=("VPS_SSH_PORT=$port")
 [[ -n "${CF_PCG_PROVISION_SSH_MODE:-}" ]] && remote_env+=("CF_PCG_PROVISION_SSH_MODE=$CF_PCG_PROVISION_SSH_MODE")
 [[ -n "${CF_PCG_FORWARD_PUBLIC_KEY:-}" ]] && remote_env+=("CF_PCG_FORWARD_PUBLIC_KEY=$CF_PCG_FORWARD_PUBLIC_KEY")
 [[ -n "${CF_PCG_PROVISION_WINDOW_MODE:-}" ]] && remote_env+=("CF_PCG_PROVISION_WINDOW_MODE=$CF_PCG_PROVISION_WINDOW_MODE")
+[[ -n "${CF_PCG_WEB_CONTROL_MODE:-}" ]] && remote_env+=("CF_PCG_WEB_CONTROL_MODE=$CF_PCG_WEB_CONTROL_MODE")
+[[ -n "${CF_PCG_WEB_CONTROL_CIPHERTEXT:-}" ]] && remote_env+=("CF_PCG_WEB_CONTROL_CIPHERTEXT=$CF_PCG_WEB_CONTROL_CIPHERTEXT")
 remote_cmd='set -euo pipefail; d=$(mktemp -d /root/.cf-bootstrap.XXXXXX); trap '\''rm -rf "$d"'\'' EXIT; tar -xzf - -C "$d"; cd "$d"; env'
 for kv in "${remote_env[@]}"; do
   printf -v q '%q' "$kv"

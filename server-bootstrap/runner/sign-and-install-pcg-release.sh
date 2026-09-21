@@ -100,13 +100,14 @@ for n,v in s.items():
     actual.append(i)
 expected=[x.strip() for x in open(sys.argv[2],encoding='utf-8') if x.strip()]
 if sorted(set(actual))!=sorted(expected): raise SystemExit('image set mismatch')
-if set(s) != {'pcg_core','pcg_telegram'}:
+if set(s) != {'pcg_core','pcg_telegram','pcg_web'}:
     raise SystemExit('unexpected PCG service set')
 for n,v in s.items():
     if v.get('read_only') is not True:
         raise SystemExit(f'PCG service must be read_only: {n}')
 core=s['pcg_core']
 telegram=s['pcg_telegram']
+web=s['pcg_web']
 if core.get('network_mode') != 'none':
     raise SystemExit('pcg_core must remain network_mode none')
 if core.get('ports') not in (None, []):
@@ -121,6 +122,10 @@ if not isinstance(p,dict):
     raise SystemExit('pcg_telegram provisioning port must be structured')
 if p.get('host_ip') != '127.0.0.1' or int(p.get('target',0)) != 8766 or int(p.get('published',0)) != 8766 or p.get('protocol','tcp') != 'tcp':
     raise SystemExit('pcg_telegram provisioning port must be 127.0.0.1:8766->8766/tcp')
+if web.get('network_mode') != 'bridge':
+    raise SystemExit('pcg_web must use bridge network')
+if web.get('ports') not in (None, []):
+    raise SystemExit('pcg_web must not publish ports')
 PY
 
 vps_key="$tmp/vps-key"; known_hosts="$tmp/known-hosts"

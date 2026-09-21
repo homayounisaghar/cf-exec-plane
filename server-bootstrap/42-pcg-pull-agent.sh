@@ -31,7 +31,7 @@ CF_PCG_PROVISION_WINDOW_MODE=install /usr/local/libexec/capability-fabric-pcg-pr
 install -d -m 0750 -o root -g root /var/lib/capability-fabric/deploy/pcg/state /var/lib/capability-fabric/deploy/pcg/releases /var/lib/capability-fabric/deploy/pcg/signatures /var/log/capability-fabric
 install -d -m 0750 -o root -g root /var/lib/capability-fabric/pcg
 install -d -m 0770 -o 65534 -g 65534 /var/lib/capability-fabric/pcg/run
-install -d -m 0700 -o 65534 -g 65534 /var/lib/capability-fabric/pcg/core-state /var/lib/capability-fabric/pcg/telegram-state
+install -d -m 0700 -o 65534 -g 65534 /var/lib/capability-fabric/pcg/core-state /var/lib/capability-fabric/pcg/telegram-state /var/lib/capability-fabric/pcg/telegram-web-profile
 install -d -m 0700 -o root -g root /var/lib/capability-fabric/pcg/correlation
 
 cat > /etc/systemd/system/capability-fabric-pcg-pull.service <<'UNIT'

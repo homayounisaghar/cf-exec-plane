@@ -1,0 +1,124 @@
+#!/usr/bin/env bash
+set -euo pipefail
+umask 077
+
+[[ "$(id -u)" -eq 0 ]] || { echo "must run as uid 0" >&2; exit 1; }
+mode="${CF_PCG_WEB_CONTROL_MODE:-}"
+case "$mode" in prepare|status|phone|code|password|cleanup) ;; *) echo "invalid mode" >&2; exit 2 ;; esac
+
+run_root=/var/lib/capability-fabric/pcg/run
+socket="$run_root/web.sock"
+key_root=/run/capability-fabric/pcg-web-control
+private_key="$key_root/ephemeral-rsa.pem"
+public_key="$key_root/ephemeral-rsa.pub.pem"
+
+for cmd in python3 openssl base64 docker; do
+  command -v "$cmd" >/dev/null 2>&1 || { echo "missing required tool: $cmd" >&2; exit 20; }
+done
+
+active=/opt/capability-fabric/channels/pcg/current
+[[ -L "$active" ]] || { echo "PCG_WEB_ACTIVE_RELEASE=missing" >&2; exit 21; }
+release="$(readlink -f "$active")"
+[[ -s "$release/manifest.json" ]] || exit 21
+python3 - "$release/manifest.json" <<'PY'
+import json,sys
+m=json.load(open(sys.argv[1],encoding='utf-8'))
+if int(m.get('sequence',0)) < 6:
+    raise SystemExit('Telegram Web control requires PCG sequence >= 6')
+PY
+
+cid="$(docker ps --filter name='^/capability-fabric-pcg-web$' --format '{{.ID}}' | head -n1)"
+[[ -n "$cid" ]] || { echo "PCG_WEB_CONTAINER=absent" >&2; exit 22; }
+[[ "$(docker inspect -f '{{.State.Health.Status}}' "$cid")" == healthy ]] || { echo "PCG_WEB_CONTAINER=unhealthy" >&2; exit 22; }
+[[ -S "$socket" ]] || { echo "PCG_WEB_SOCKET=absent" >&2; exit 22; }
+
+socket_simple() {
+  local op="$1"
+  python3 - "$socket" "$op" <<'PY'
+import json,socket,sys
+sock_path,op=sys.argv[1:]
+s=socket.socket(socket.AF_UNIX,socket.SOCK_STREAM)
+s.settimeout(35)
+s.connect(sock_path)
+s.sendall((json.dumps({'op':op},separators=(',',':'))+'\n').encode())
+buf=b''
+while b'\n' not in buf:
+    chunk=s.recv(65536)
+    if not chunk: break
+    buf+=chunk
+s.close()
+if not buf: raise SystemExit('empty browser response')
+d=json.loads(buf.split(b'\n',1)[0])
+safe={k:d.get(k) for k in ('ok','phase','origin','pathname','logged_in','error') if k in d}
+print(json.dumps(safe,separators=(',',':')))
+if not d.get('ok'): raise SystemExit(40)
+PY
+}
+
+if [[ "$mode" == prepare ]]; then
+  install -d -m 0700 -o root -g root "$key_root"
+  rm -f "$private_key" "$public_key"
+  openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:3072 -out "$private_key" >/dev/null 2>&1
+  chmod 0600 "$private_key"
+  openssl pkey -in "$private_key" -pubout -out "$public_key" >/dev/null 2>&1
+  chmod 0644 "$public_key"
+  socket_simple open
+  printf 'PCG_WEB_PUBLIC_KEY_PEM_B64=%s\n' "$(base64 -w0 < "$public_key")"
+  printf 'PCG_WEB_CONTROL_PREPARE=pass\n'
+  exit 0
+fi
+
+if [[ "$mode" == status ]]; then
+  socket_simple health
+  exit 0
+fi
+
+if [[ "$mode" == cleanup ]]; then
+  rm -f "$private_key" "$public_key"
+  printf 'PCG_WEB_EPHEMERAL_KEY=removed\n'
+  exit 0
+fi
+
+[[ -s "$private_key" ]] || { echo "PCG_WEB_EPHEMERAL_KEY=missing" >&2; exit 23; }
+cipher="${CF_PCG_WEB_CONTROL_CIPHERTEXT:-}"
+[[ "$cipher" =~ ^[A-Za-z0-9+/=]{32,8192}$ ]] || { echo "invalid ciphertext" >&2; exit 24; }
+
+tmp_cipher="$(mktemp "$key_root/.cipher.XXXXXX")"
+tmp_plain="$(mktemp "$key_root/.plain.XXXXXX")"
+cleanup_files() { rm -f "$tmp_cipher" "$tmp_plain"; }
+trap cleanup_files EXIT
+printf '%s' "$cipher" | base64 -d > "$tmp_cipher"
+openssl pkeyutl -decrypt -inkey "$private_key" -in "$tmp_cipher" -out "$tmp_plain" \
+  -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256 -pkeyopt rsa_mgf1_md:sha256 >/dev/null 2>&1
+[[ -s "$tmp_plain" ]] || { echo "decrypt failed" >&2; exit 25; }
+
+case "$mode" in
+  phone) op='login.phone' ;;
+  code) op='login.code' ;;
+  password) op='login.password' ;;
+esac
+
+python3 - "$socket" "$op" "$tmp_plain" <<'PY'
+import json,socket,sys
+sock_path,op,plain_path=sys.argv[1:]
+with open(plain_path,'r',encoding='utf-8') as f:
+    value=f.read()
+s=socket.socket(socket.AF_UNIX,socket.SOCK_STREAM)
+s.settimeout(40)
+s.connect(sock_path)
+s.sendall((json.dumps({'op':op,'value':value},separators=(',',':'))+'\n').encode())
+value=''
+buf=b''
+while b'\n' not in buf:
+    chunk=s.recv(65536)
+    if not chunk: break
+    buf+=chunk
+s.close()
+if not buf: raise SystemExit('empty browser response')
+d=json.loads(buf.split(b'\n',1)[0])
+safe={k:d.get(k) for k in ('ok','phase','origin','pathname','logged_in','error') if k in d}
+print(json.dumps(safe,separators=(',',':')))
+if not d.get('ok'): raise SystemExit(40)
+PY
+: > "$tmp_plain"
+printf 'PCG_WEB_CONTROL_%s=pass\n' "${mode^^}"
