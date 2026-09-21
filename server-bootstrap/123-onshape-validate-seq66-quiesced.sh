@@ -77,10 +77,17 @@ const client=new Client({name:"cf-post-activation",version:"1.0.0"});
 const transport=new StreamableHTTPClientTransport(new URL("http://127.0.0.1:8788/mcp/"+token));
 await client.connect(transport);
 const tools=(await client.listTools()).tools.map(x=>x.name).sort();
-for(const required of ["onshape_pool_status","onshape_capabilities","onshape_openapi_lookup","onshape_documented_operation"]){
+for(const required of ["onshape_pool_status","onshape_fabric_capabilities","onshape_fabric_invoke"]){
   if(!tools.includes(required)) throw new Error("missing "+required);
 }
 if(tools.includes("onshape_ui_input_sequence")||tools.includes("onshape_ui_native")) throw new Error("effectful UI exposed");
+const capsRes=await client.callTool({name:"onshape_fabric_capabilities",arguments:{}});
+const capsRaw=(capsRes.content||[]).filter(x=>x.type==="text").map(x=>x.text||"").join("\n");
+const caps=JSON.parse(capsRaw);
+const ids=(caps.capabilities||[]).map(x=>x.id);
+if(ids.includes("onshape.ui.input.sequence")||ids.includes("onshape.ui.native")) throw new Error("effectful UI capability exposed");
+const lookup=await client.callTool({name:"onshape_fabric_invoke",arguments:{capability_id:"onshape.openapi.lookup",arguments:{keyword:"getDocument"}}});
+if(lookup.isError===true) throw new Error("semantic lookup failed");
 const ps=await client.callTool({name:"onshape_pool_status",arguments:{}});
 const raw=(ps.content||[]).filter(x=>x.type==="text").map(x=>x.text||"").join("\n");
 const pool=JSON.parse(raw);
@@ -89,6 +96,7 @@ if(pool.material_mutator_session_id!=="session-1") throw new Error(raw);
 for(const s of pool.sessions){if(s?.auth?.state!=="PROVEN") throw new Error(raw);}
 console.log("CF_AV_TOOL_CATALOG=pass");
 console.log("CF_AV_UI_EFFECTFUL_CLOSED=pass");
+console.log("CF_AV_SEMANTIC_READ=pass");
 console.log("CF_AV_POOL_AUTH=3-of-3-PROVEN");
 console.log("CF_AV_POOL_IDLE=pass");
 await client.close();
