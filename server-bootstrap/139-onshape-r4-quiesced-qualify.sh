@@ -64,7 +64,22 @@ echo CF_R4_Q_GATEWAY=stopped
 sig="$SIGS/$expected_manifest.sig"
 [[ -s "$sig" ]]
 work="$(mktemp -d /var/lib/capability-fabric/.qual67.XXXXXX)"
-trap 'rm -rf "$work"' EXIT
+gate_window_open=no
+cleanup(){
+  rc=$?
+  set +e
+  if [[ "$gate_window_open" == yes ]]; then
+    tmp="$GATE.tmp.$"
+    printf '%s\n' RELEASE_IN_PROGRESS >"$tmp"
+    chmod 0600 "$tmp"
+    chown root:root "$tmp"
+    mv -f "$tmp" "$GATE"
+    gate_window_open=no
+  fi
+  rm -rf "$work"
+  exit "$rc"
+}
+trap cleanup EXIT
 printf 'capability-fabric-deploy %s
 ' "$(tr -d '\r\n' < "$TRUST")" >"$work/allowed"
 ssh-keygen -Y verify -f "$work/allowed" -I capability-fabric-deploy -n capability-fabric-deploy -s "$sig" <"$active/manifest.json" >/dev/null 2>&1
