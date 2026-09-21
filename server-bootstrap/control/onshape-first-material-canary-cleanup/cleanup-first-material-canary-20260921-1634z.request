@@ -1,0 +1,7 @@
+request_id=cleanup-first-material-canary-20260921-1634z
+action=cleanup-achieved-first-material-canary
+expected_script_blob=bc702d644e6e236f83fa6223750e114c41c69973
+expected_control_blob=81f73bb89c5517080a80ada3047c58c287874c50
+canary_operation_id=operation:3a454a8a-9d5e-491a-b13e-739c01d32d49
+canary_attempt_id=attempt:d425487d-17e0-4b4b-a811-439f76e5b796
+canary_document_id=84d077d8370c21c4b3045263
