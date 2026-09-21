@@ -1,0 +1,70 @@
+name: PCG SSH Diagnostic
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'server-bootstrap/control/pcg-ssh-diagnostic-requests/*.request'
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+
+      - name: Validate immutable request
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || exit 10
+          IFS=$'\t' read -r status request_path <<<"${changes[0]}"
+          [[ "$status" == A ]] || exit 11
+          [[ "$request_path" == server-bootstrap/control/pcg-ssh-diagnostic-requests/*.request ]] || exit 12
+
+      - name: Mask endpoint and login
+        run: |
+          set -euo pipefail
+          printf '::add-mask::%s\n' "$VPS_HOST"
+          printf '::add-mask::%s\n' "$VPS_SSH_USER"
+
+      - name: Read sanitized recent pcg-forward SSH diagnostics
+        run: |
+          set -euo pipefail
+          tmp_script="$(mktemp)"
+          cat > "$tmp_script" <<'SCRIPT'
+          #!/usr/bin/env bash
+          set -euo pipefail
+          echo "PCG_FORWARD_PASSWD_STATE_BEGIN"
+          getent passwd pcg-forward | awk -F: '{print "user="$1,"shell="$7,"home="$6}'
+          passwd -S pcg-forward | awk '{print "password_status="$2}'
+          echo "PCG_FORWARD_PASSWD_STATE_END"
+
+          echo "PCG_FORWARD_GATE_STATE_BEGIN"
+          test -s /etc/capability-fabric/pcg-forward/authorized_keys && echo "authorized_keys=present" || echo "authorized_keys=missing"
+          test -x /usr/local/libexec/capability-fabric-pcg-provision-ssh-gate && echo "gate=present" || echo "gate=missing"
+          test -f /run/capability-fabric/pcg-provision/bootstrap-url && echo "bootstrap=present" || echo "bootstrap=missing"
+          test -e /var/lib/capability-fabric/pcg/run/provision-complete && echo "complete=yes" || echo "complete=no"
+          echo "PCG_FORWARD_GATE_STATE_END"
+
+          echo "PCG_FORWARD_SSH_LOG_BEGIN"
+          journalctl -u ssh.service --since '20 minutes ago' --no-pager 2>/dev/null |
+            grep -F 'pcg-forward' |
+            tail -n 30 |
+            sed -E 's/rhost=[^ ]+/rhost=REDACTED/g; s/from [0-9a-fA-F:.]+ port [0-9]+/from REDACTED/g; s/port [0-9]+ ssh2/port REDACTED ssh2/g'
+          echo "PCG_FORWARD_SSH_LOG_END"
+          SCRIPT
+          chmod +x "$tmp_script"
+          VPS_SSH_KEY="$VPS_SSH_KEY" VPS_HOST="$VPS_HOST" VPS_PORT="$VPS_PORT" VPS_SSH_USER="$VPS_SSH_USER" VPS_HOST_KEY="$VPS_HOST_KEY"             bash server-bootstrap/runner/remote-bundle-exec.sh "$tmp_script"
