@@ -1,0 +1,116 @@
+name: PCG Independent Signed Pull
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'server-bootstrap/control/pcg-requests/*.request'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: personal-server-pcg-signed-pull
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  resolve:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    outputs:
+      source_commit: ${{ steps.request.outputs.source_commit }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - id: request
+        name: Validate immutable PCG request
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || { echo "PCG trigger commit must add exactly one request file" >&2; exit 10; }
+          IFS=$'\t' read -r status request_path <<<"${changes[0]}"
+          [[ "$status" == A ]] || { echo "PCG request must be newly added" >&2; exit 11; }
+          [[ "$request_path" == server-bootstrap/control/pcg-requests/*.request ]] || exit 12
+          request_id="$(awk -F= '$1=="request_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          phase="$(awk -F= '$1=="phase"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          source_commit="$(awk -F= '$1=="candidate_commit"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 13
+          [[ "$phase" == pcg-signed-pull ]] || exit 14
+          [[ "$source_commit" =~ ^[0-9a-f]{40}$ ]] || exit 15
+          echo "source_commit=$source_commit" >> "$GITHUB_OUTPUT"
+
+  prepare:
+    needs: resolve
+    runs-on: ubuntu-latest
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+      CF_REPO_READ_TOKEN: ${{ secrets.CF_REPO_READ_TOKEN }}
+      CF_DEPLOY_SIGNING_PUBLIC_KEY: ${{ secrets.CF_DEPLOY_SIGNING_PUBLIC_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Mask endpoint and login
+        run: |
+          set -euo pipefail
+          printf '::add-mask::%s\n' "$VPS_HOST"
+          printf '::add-mask::%s\n' "$VPS_SSH_USER"
+          while IFS= read -r addr; do [[ -n "$addr" ]] && printf '::add-mask::%s\n' "$addr"; done < <(getent ahosts "$VPS_HOST" 2>/dev/null | awk '{print $1}' | sort -u)
+      - name: Install/verify existing repo-read credential
+        run: bash server-bootstrap/runner/install-server-material.sh token
+      - name: Verify private repo read access
+        run: bash server-bootstrap/runner/remote-exec.sh server-bootstrap/41-phase4-token-check.sh
+      - name: Install/verify deployment trust root
+        run: bash server-bootstrap/runner/install-server-material.sh signing-key
+
+  sign:
+    needs: [resolve, prepare]
+    runs-on: ubuntu-latest
+    env:
+      CF_PCG_SOURCE_COMMIT: ${{ needs.resolve.outputs.source_commit }}
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+      CF_REPO_READ_TOKEN: ${{ secrets.CF_REPO_READ_TOKEN }}
+      CF_DEPLOY_SIGNING_PUBLIC_KEY: ${{ secrets.CF_DEPLOY_SIGNING_PUBLIC_KEY }}
+      CF_DEPLOY_SIGNING_PRIVATE_KEY: ${{ secrets.CF_DEPLOY_SIGNING_PRIVATE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Validate, sign, and install exact PCG detached signature
+        run: bash server-bootstrap/runner/sign-and-install-pcg-release.sh
+
+  activate:
+    needs: sign
+    runs-on: ubuntu-latest
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Install PCG pull agent and units with timer disabled
+        env:
+          CF_PHASE4_MODE: install
+        run: bash server-bootstrap/runner/remote-bundle-exec.sh server-bootstrap/42-pcg-pull-agent.sh
+      - name: Activate signed PCG skeleton and prove rollback
+        env:
+          CF_PHASE4_MODE: activate
+        run: bash server-bootstrap/runner/remote-bundle-exec.sh server-bootstrap/42-pcg-pull-agent.sh
