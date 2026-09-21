@@ -97,10 +97,10 @@ jobs:
             src/capability_fabric/pcg_provision.py
           bash -n server-bootstrap/43-pcg-provisioning-ssh.sh
 
-      - name: Install core package without private-repo credential
+      - name: Install PCG live package without private-repo credential
         run: |
           set -euo pipefail
-          python -m pip install -e "$PCG_PRIVATE_WORKTREE"
+          python -m pip install -e "$PCG_PRIVATE_WORKTREE[pcg-live]"
 
       - name: Run PCG correlation and material-effect regression probes
         run: |
