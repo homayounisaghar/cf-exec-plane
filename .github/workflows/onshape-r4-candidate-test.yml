@@ -34,7 +34,7 @@ jobs:
           IFS=$'\t' read -r status request_path <<<"${changes[0]}"
           [[ "$status" == A && "$request_path" == server-bootstrap/control/onshape-r4-candidate-test/*.request ]] || exit 11
           [[ "$(awk -F= '$1=="action"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')" == "test-r4-candidate" ]] || exit 12
-          [[ "$(awk -F= '$1=="candidate_commit"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')" == "6aba3e55c3b4604e851649bede55e57453eab687" ]] || exit 13
+          [[ "$(awk -F= '$1=="candidate_commit"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')" == "2b440e016e934c15ae61f1934201a1dc4ebee846" ]] || exit 13
       - name: Test exact private candidate without deployment
         shell: bash
         run: bash server-bootstrap/runner/remote-bundle-exec.sh server-bootstrap/134-onshape-r4-candidate-test.sh
