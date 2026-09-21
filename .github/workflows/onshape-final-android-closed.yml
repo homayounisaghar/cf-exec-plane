@@ -1,0 +1,63 @@
+name: Onshape Final Android Closed Snapshot Gate
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'server-bootstrap/control/onshape-final-android-closed/*.request'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      CF_REPO_READ_TOKEN: ${{ secrets.CF_REPO_READ_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 2, persist-credentials: false}
+      - name: Validate immutable request
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || exit 10
+          IFS=$'\t' read -r status request_path <<<"${changes[0]}"
+          [[ "$status" == A && "$request_path" == server-bootstrap/control/onshape-final-android-closed/*.request ]] || exit 11
+          request_id="$(awk -F= '$1=="request_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          action="$(awk -F= '$1=="action"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          snapshot_commit="$(awk -F= '$1=="snapshot_commit"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          snapshot_path="$(awk -F= '$1=="snapshot_path"{print $2}' "$request_path" | tail -n1)"
+          [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 12
+          [[ "$action" == "verify-final-android-closed-under-vps" ]] || exit 13
+          [[ "$snapshot_commit" =~ ^[0-9a-f]{40}$ ]] || exit 14
+          [[ "$snapshot_path" == evidence/onshape/android-attestation/*.json ]] || exit 15
+          echo "SNAPSHOT_COMMIT=$snapshot_commit" >> "$GITHUB_ENV"
+          echo "SNAPSHOT_PATH=$snapshot_path" >> "$GITHUB_ENV"
+      - name: Fetch immutable private snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          tmp="$RUNNER_TEMP/final-android-closed"
+          mkdir -p "$tmp"
+          cat >"$tmp/askpass" <<'ASK'
+          #!/usr/bin/env bash
+          case "${1:-}" in
+            *Username*) printf '%s\n' x-access-token ;;
+            *Password*) printf '%s\n' "$CF_REPO_READ_TOKEN" ;;
+            *) exit 1 ;;
+          esac
+          ASK
+          chmod 0700 "$tmp/askpass"
+          git init --bare "$tmp/repo.git" >/dev/null
+          GIT_ASKPASS="$tmp/askpass" GIT_TERMINAL_PROMPT=0 git --git-dir="$tmp/repo.git" fetch --quiet --depth=1 https://github.com/homayounisaghar/capability-fabric.git "$SNAPSHOT_COMMIT"
+          got="$(git --git-dir="$tmp/repo.git" rev-parse FETCH_HEAD)"
+          [[ "$got" == "$SNAPSHOT_COMMIT" ]] || exit 20
+          git --git-dir="$tmp/repo.git" show "$got:runtime/onshape/ONSHAPE_RUNTIME_CONTROL.json" > "$tmp/control.json"
+          git --git-dir="$tmp/repo.git" show "$got:$SNAPSHOT_PATH" > "$tmp/snapshot.json"
+      - name: Verify final Android closure under VPS authority
+        shell: bash
+        run: python3 server-bootstrap/154-onshape-final-android-closed-verify.py "$RUNNER_TEMP/final-android-closed/control.json" "$RUNNER_TEMP/final-android-closed/snapshot.json"
