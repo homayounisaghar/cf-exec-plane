@@ -112,6 +112,26 @@ jobs:
             echo CF_A2_CLOSE_GATE_LIVE=pass
           fi
 
+      - name: Prove stale snapshot is rejected
+        if: env.CF_A2_EXPECTED == 'current-open-negative'
+        shell: bash
+        run: |
+          set -euo pipefail
+          tmp="$RUNNER_TEMP/a2-snapshot"
+          python3 - "$tmp/control.json" "$tmp/stale-control.json" <<'PY'
+          import json,sys
+          v=json.load(open(sys.argv[1]))
+          v["controlRevision"]+=1
+          v["updatedAt"]="2026-09-21T10:39:00.000Z"
+          open(sys.argv[2],"w").write(json.dumps(v,indent=2)+"\n")
+          PY
+          set +e
+          python3 server-bootstrap/113-onshape-android-close-attestation-verify.py current "$tmp/stale-control.json" "$tmp/body.txt" >/dev/null 2>&1
+          rc=$?
+          set -e
+          [[ "$rc" -ne 0 ]]
+          echo CF_A2_STALE_SNAPSHOT_REJECT=pass
+
       - name: Synthetic closed positive control
         if: env.CF_A2_EXPECTED == 'current-open-negative'
         shell: bash
