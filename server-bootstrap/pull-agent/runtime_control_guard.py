@@ -77,6 +77,49 @@ def parse(root: dict) -> dict:
     if bus != abus:
         fail("legacy/authority Android busGeneration mismatch")
 
+    raw_guard = authority.get("productionGuard")
+    guard = None
+    if raw_guard is not None:
+        if not isinstance(raw_guard, dict):
+            fail("productionGuard must be object")
+        if raw_guard.get("schema") != "capability-fabric.onshape-production-guard.v1":
+            fail("productionGuard schema invalid")
+        generation = raw_guard.get("generation")
+        kill_switch = raw_guard.get("killSwitch")
+        allowed = raw_guard.get("allowedDocumentIds")
+        budget = raw_guard.get("mutationBudget")
+        if not isinstance(generation, int) or isinstance(generation, bool) or generation <= 0:
+            fail("productionGuard generation invalid")
+        if kill_switch not in {"OPEN", "ENGAGED"}:
+            fail("productionGuard killSwitch invalid")
+        if not isinstance(allowed, list):
+            fail("productionGuard allowedDocumentIds invalid")
+        normalized_allowed = []
+        for value in allowed:
+            if not isinstance(value, str) or len(value) != 24 or any(c not in "0123456789abcdefABCDEF" for c in value):
+                fail("productionGuard allowed document id invalid")
+            normalized_allowed.append(value.lower())
+        if len(set(normalized_allowed)) != len(normalized_allowed):
+            fail("productionGuard allowedDocumentIds duplicate")
+        if not isinstance(budget, dict):
+            fail("productionGuard mutationBudget invalid")
+        budget_id = budget.get("budgetId")
+        max_mutations = budget.get("maxMutations")
+        if not isinstance(budget_id, str) or not budget_id or len(budget_id) > 128:
+            fail("productionGuard budgetId invalid")
+        if any(c not in "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789._:-" for c in budget_id):
+            fail("productionGuard budgetId invalid")
+        if not isinstance(max_mutations, int) or isinstance(max_mutations, bool) or not (0 <= max_mutations <= 100000):
+            fail("productionGuard maxMutations invalid")
+        guard = {
+            "schema": raw_guard["schema"],
+            "generation": generation,
+            "killSwitch": kill_switch,
+            "allowedDocumentIds": tuple(sorted(normalized_allowed)),
+            "budgetId": budget_id,
+            "maxMutations": max_mutations,
+        }
+
     if mode == "ANDROID_PRODUCTION":
         if material != "android-v1" or not aa or va or ai != "ADMITTED":
             fail("ANDROID_PRODUCTION authority invariant failed")
@@ -114,6 +157,7 @@ def parse(root: dict) -> dict:
         "bus": bus,
         "mailbox": mailbox,
         "lease_state": str(lease.get("state") or ""),
+        "guard": guard,
     }
 
 
@@ -139,6 +183,7 @@ def transition(previous_raw: bytes, previous: dict, candidate_raw: bytes, candid
         or n["vps_allowed"] != p["vps_allowed"]
         or n["android_ingress"] != p["android_ingress"]
         or n["vps_ingress"] != p["vps_ingress"]
+        or n["guard"] != p["guard"]
     )
 
     if fence_changed and n["epoch"] <= p["epoch"]:
@@ -173,6 +218,7 @@ def transition(previous_raw: bytes, previous: dict, candidate_raw: bytes, candid
     print("CF_AUTH_GUARD_PREVIOUS_BUS="+str(p["bus"]))
     print("CF_AUTH_GUARD_CANDIDATE_BUS="+str(n["bus"]))
     print("CF_AUTH_GUARD_FENCE_CHANGED="+str(fence_changed).lower())
+    print("CF_AUTH_GUARD_POLICY_CHANGED="+str(n["guard"] != p["guard"]).lower())
     print("CF_AUTH_GUARD_TRANSITION=pass")
 
 
