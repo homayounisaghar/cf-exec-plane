@@ -20,10 +20,14 @@ done
 docker compose version >/dev/null 2>&1 || { echo "Docker Compose plugin missing" >&2; exit 22; }
 
 src=server-bootstrap/pull-agent/cf-pull-agent-pcg.sh
+provision_src=server-bootstrap/44-pcg-provisioning-window.sh
 [[ -s "$src" ]] || { echo "PCG pull-agent source missing from bootstrap bundle" >&2; exit 22; }
+[[ -s "$provision_src" ]] || { echo "PCG provisioning supervisor missing from bootstrap bundle" >&2; exit 22; }
 
 install -d -m 0755 /usr/local/libexec /opt/capability-fabric/channels/pcg /run/lock
 install -m 0750 -o root -g root "$src" /usr/local/libexec/capability-fabric-pcg-pull-agent
+install -m 0750 -o root -g root "$provision_src" /usr/local/libexec/capability-fabric-pcg-provision-window
+CF_PCG_PROVISION_WINDOW_MODE=install /usr/local/libexec/capability-fabric-pcg-provision-window
 install -d -m 0750 -o root -g root /var/lib/capability-fabric/deploy/pcg/state /var/lib/capability-fabric/deploy/pcg/releases /var/lib/capability-fabric/deploy/pcg/signatures /var/log/capability-fabric
 install -d -m 0750 -o root -g root /var/lib/capability-fabric/pcg
 install -d -m 0770 -o 65534 -g 65534 /var/lib/capability-fabric/pcg/run
