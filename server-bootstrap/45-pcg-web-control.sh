@@ -4,7 +4,7 @@ umask 077
 
 [[ "$(id -u)" -eq 0 ]] || { echo "must run as uid 0" >&2; exit 1; }
 mode="${CF_PCG_WEB_CONTROL_MODE:-}"
-case "$mode" in prepare|status|phone|code|password|cleanup|screenshot) ;; *) echo "invalid mode" >&2; exit 2 ;; esac
+case "$mode" in prepare|status|phone|code|password|cleanup|screenshot|mytelegram-start|mytelegram-capture-code|mytelegram-signin|mytelegram-create-app) ;; *) echo "invalid mode" >&2; exit 2 ;; esac
 
 run_root=/var/lib/capability-fabric/pcg/run
 socket="$run_root/web.sock"
@@ -89,6 +89,30 @@ PY
   exit 0
 fi
 
+if [[ "$mode" == mytelegram-capture-code ]]; then
+  socket_simple mytelegram.capture_code
+  exit 0
+fi
+
+if [[ "$mode" == mytelegram-signin ]]; then
+  socket_simple mytelegram.signin
+  exit 0
+fi
+
+if [[ "$mode" == mytelegram-create-app ]]; then
+  socket_simple mytelegram.create_app
+  src="$run_root/mytelegram-api.json"
+  dst_dir=/var/lib/capability-fabric/pcg/api-credentials
+  dst="$dst_dir/telegram-api.json"
+  if [[ -s "$src" ]]; then
+    install -d -m 0700 -o 65534 -g 65534 "$dst_dir"
+    install -m 0600 -o 65534 -g 65534 "$src" "$dst"
+    rm -f "$src"
+    printf 'PCG_TELEGRAM_API_CREDENTIALS=installed\n'
+  fi
+  exit 0
+fi
+
 if [[ "$mode" == cleanup ]]; then
   rm -f "$private_key" "$public_key"
   printf 'PCG_WEB_EPHEMERAL_KEY=removed\n'
@@ -112,6 +136,7 @@ case "$mode" in
   phone) op='login.phone' ;;
   code) op='login.code' ;;
   password) op='login.password' ;;
+  mytelegram-start) op='mytelegram.start' ;;
 esac
 
 python3 - "$socket" "$op" "$tmp_plain" <<'PY'
