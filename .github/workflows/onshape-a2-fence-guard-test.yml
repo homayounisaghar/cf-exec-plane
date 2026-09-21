@@ -40,7 +40,13 @@ jobs:
           [[ "$action" == "test-a2-monotonic-fence" ]] || exit 14
       - name: Test monotonic authority guard
         shell: bash
-        run: python3 server-bootstrap/pull-agent/test_runtime_control_guard.py server-bootstrap/pull-agent/runtime_control_guard.py
+        run: |
+          set -euo pipefail
+          python3 server-bootstrap/pull-agent/test_runtime_control_guard.py server-bootstrap/pull-agent/runtime_control_guard.py
+          bash -n server-bootstrap/pull-agent/cf-pull-agent.sh
+          grep -Fq 'capability-fabric-runtime-control-guard' server-bootstrap/pull-agent/cf-pull-agent.sh
+          grep -Fq 'CF_RUNTIME_CONTROL_TRANSITION_REJECTED' server-bootstrap/pull-agent/cf-pull-agent.sh
+          echo CF_A2_PULL_AGENT_GUARD_INTEGRATION=pass
       - name: Prove installed Android fence projection source
         shell: bash
         run: |
