@@ -134,7 +134,6 @@ Match User $user_name
     PermitOpen 127.0.0.1:$port
     GatewayPorts no
     PermitUserRC no
-    PermitUserEnvironment no
     ForceCommand $gate
 EOF
   chown root:root "$sshd_dropin"
