@@ -18,7 +18,7 @@ gate=/usr/local/libexec/capability-fabric-pcg-provision-ssh-gate
 bootstrap=/run/capability-fabric/pcg-provision/bootstrap-url
 port=8766
 
-for cmd in sshd getent install stat ssh-keygen; do
+for cmd in sshd getent install stat ssh-keygen python3 openssl passwd; do
   command -v "$cmd" >/dev/null 2>&1 || { echo "missing required command: $cmd" >&2; exit 3; }
 done
 
@@ -57,11 +57,16 @@ if [[ "$mode" == verify ]]; then
   [[ -f "$authorized_keys" && ! -L "$authorized_keys" ]] || { echo "PCG authorized_keys missing/unsafe" >&2; exit 22; }
   sshd -t
   verify_effective
+  if [[ "$(passwd -S "$user_name" | awk '{print $2}')" == L ]]; then
+    echo "PCG forwarding account is unexpectedly shadow-locked" >&2
+    exit 27
+  fi
   if [[ -s "$authorized_keys" ]]; then
     echo "PCG_FORWARD_KEY_INSTALLED=yes"
   else
     echo "PCG_FORWARD_KEY_INSTALLED=no"
   fi
+  echo "PCG_FORWARD_ACCOUNT_LOCKED=no"
   echo "PCG_FORWARD_SSH_CONTRACT=pass"
   exit 0
 fi
@@ -95,7 +100,18 @@ if [[ "$mode" == install ]]; then
 
   if ! getent passwd "$user_name" >/dev/null; then
     useradd --system --no-create-home --home-dir /nonexistent --shell /bin/sh "$user_name"
-    usermod --password "*" "$user_name"
+  fi
+
+  # OpenSSH rejects a shadow-locked account before public-key auth. Keep password
+  # authentication disabled in sshd, but ensure the account itself is not shadow-locked
+  # by assigning a one-time random password hash whose plaintext is immediately discarded.
+  passwd_state="$(passwd -S "$user_name" | awk '{print $2}')"
+  if [[ "$passwd_state" == L ]]; then
+    random_password="$(python3 -c 'import secrets; print(secrets.token_urlsafe(64))')"
+    password_hash="$(printf '%s\n' "$random_password" | openssl passwd -6 -stdin)"
+    unset random_password
+    usermod --password "$password_hash" "$user_name"
+    unset password_hash
   fi
 
   install -d -m 0755 -o root -g root "$key_dir" /usr/local/libexec /run/capability-fabric/pcg-provision
