@@ -67,6 +67,29 @@ vps["authority"]["planes"]["vps-fabric"]["ingress"]="ADMITTED"; vps["authority"]
 vps["authority"]["planes"]["vps-fabric"]["releaseSequence"]=65; vps["authority"]["planes"]["vps-fabric"]["releaseId"]="onshape-vps-hardened-production-r2"; vps["authority"]["planes"]["vps-fabric"]["manifestSha256"]="c"*64
 run(quiesced,vps,True)
 
+guarded=copy.deepcopy(vps); guarded["controlRevision"]=532; guarded["authority"]["productionEpoch"]=4
+guarded["authority"]["productionGuard"]={
+  "schema":"capability-fabric.onshape-production-guard.v1",
+  "generation":1,
+  "killSwitch":"ENGAGED",
+  "allowedDocumentIds":[],
+  "mutationBudget":{"budgetId":"guard-closed","maxMutations":0},
+}
+run(vps,guarded,True)
+
+guard_same_epoch=copy.deepcopy(guarded); guard_same_epoch["controlRevision"]=533
+guard_same_epoch["authority"]["productionGuard"]={
+  "schema":"capability-fabric.onshape-production-guard.v1",
+  "generation":2,
+  "killSwitch":"OPEN",
+  "allowedDocumentIds":["881affea8ea63c33ae4e6c78"],
+  "mutationBudget":{"budgetId":"guard-open-two","maxMutations":2},
+}
+run(guarded,guard_same_epoch,False)
+
+guard_new_epoch=copy.deepcopy(guard_same_epoch); guard_new_epoch["authority"]["productionEpoch"]=5
+run(guarded,guard_new_epoch,True)
+
 direct=copy.deepcopy(vps); direct["controlRevision"]=530; direct["authority"]["productionEpoch"]=2
 run(cur,direct,False)
 
@@ -96,6 +119,9 @@ print("CF_AUTH_GUARD_TEST_EPOCH_DECREASE_REJECT=pass")
 print("CF_AUTH_GUARD_TEST_QUIESCE_NEW_EPOCH=pass")
 print("CF_AUTH_GUARD_TEST_DIRECT_TRANSFER_REJECT=pass")
 print("CF_AUTH_GUARD_TEST_VPS_TRANSITION=pass")
+print("CF_AUTH_GUARD_TEST_POLICY_ADD_NEW_EPOCH=pass")
+print("CF_AUTH_GUARD_TEST_POLICY_CHANGE_SAME_EPOCH_REJECT=pass")
+print("CF_AUTH_GUARD_TEST_POLICY_CHANGE_NEW_EPOCH=pass")
 print("CF_AUTH_GUARD_TEST_ROLLBACK_NEW_EPOCH_BUS_MAILBOX=pass")
 print("CF_AUTH_GUARD_TEST_ROLLBACK_STALE_BUS_REJECT=pass")
 print("CF_AUTH_GUARD_TEST=pass")
