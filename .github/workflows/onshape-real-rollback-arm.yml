@@ -1,0 +1,45 @@
+name: Onshape Real Rollback Drill Arm
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'server-bootstrap/control/onshape-real-rollback-arm/*.request'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: onshape-real-rollback-drill
+  cancel-in-progress: false
+
+jobs:
+  arm:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 2, persist-credentials: false}
+      - name: Validate immutable arm request
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || exit 10
+          IFS=$'\t' read -r status request_path <<<"${changes[0]}"
+          [[ "$status" == A && "$request_path" == server-bootstrap/control/onshape-real-rollback-arm/*.request ]] || exit 11
+          action="$(awk -F= '$1=="action"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          expected_script_blob="$(awk -F= '$1=="expected_script_blob"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          [[ "$action" == "arm-real-rollback-drill" ]] || exit 12
+          [[ "$(git rev-parse "$GITHUB_SHA:server-bootstrap/152-onshape-real-rollback-arm.sh")" == "$expected_script_blob" ]] || exit 13
+          bash -n server-bootstrap/152-onshape-real-rollback-arm.sh
+      - name: Arm fail-closed rollback drill window
+        shell: bash
+        run: bash server-bootstrap/runner/remote-bundle-exec.sh server-bootstrap/152-onshape-real-rollback-arm.sh
