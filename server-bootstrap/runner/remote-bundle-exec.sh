@@ -33,6 +33,8 @@ remote_env=("VPS_SSH_PORT=$port")
 [[ -n "${CF_DEPLOY_SIGNING_PUBLIC_KEY:-}" ]] && remote_env+=("CF_DEPLOY_SIGNING_PUBLIC_KEY=$CF_DEPLOY_SIGNING_PUBLIC_KEY")
 [[ -n "${CF_BACKUP_MODE:-}" ]] && remote_env+=("CF_BACKUP_MODE=$CF_BACKUP_MODE")
 [[ -n "${CF_REAUTH_SESSION_ID:-}" ]] && remote_env+=("CF_REAUTH_SESSION_ID=$CF_REAUTH_SESSION_ID")
+[[ -n "${CF_PCG_PROVISION_SSH_MODE:-}" ]] && remote_env+=("CF_PCG_PROVISION_SSH_MODE=$CF_PCG_PROVISION_SSH_MODE")
+[[ -n "${CF_PCG_FORWARD_PUBLIC_KEY:-}" ]] && remote_env+=("CF_PCG_FORWARD_PUBLIC_KEY=$CF_PCG_FORWARD_PUBLIC_KEY")
 remote_cmd='set -euo pipefail; d=$(mktemp -d /root/.cf-bootstrap.XXXXXX); trap '\''rm -rf "$d"'\'' EXIT; tar -xzf - -C "$d"; cd "$d"; env'
 for kv in "${remote_env[@]}"; do
   printf -v q '%q' "$kv"
