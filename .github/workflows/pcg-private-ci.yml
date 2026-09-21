@@ -94,8 +94,11 @@ jobs:
             src/capability_fabric/telegram_host.py \
             src/capability_fabric/pcg_live.py \
             src/capability_fabric/pcg_live_unified.py \
-            src/capability_fabric/pcg_provision.py
+            src/capability_fabric/pcg_provision.py \
+            server-deploy/channels/pcg/current/pcg_core_stub.py \
+            server-deploy/channels/pcg/current/pcg_telegram_tdlib_unprovisioned.py
           bash -n server-bootstrap/43-pcg-provisioning-ssh.sh
+          bash -n server-deploy/channels/pcg/current/health.sh
 
       - name: Install PCG live package without private-repo credential
         run: |
