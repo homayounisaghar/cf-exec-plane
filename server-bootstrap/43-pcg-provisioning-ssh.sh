@@ -15,7 +15,7 @@ key_dir=/etc/capability-fabric/pcg-forward
 authorized_keys="$key_dir/authorized_keys"
 sshd_dropin=/etc/ssh/sshd_config.d/80-capability-fabric-pcg-forward.conf
 gate=/usr/local/libexec/capability-fabric-pcg-provision-ssh-gate
-bootstrap=/run/capability-fabric/pcg-provision/bootstrap-url
+bootstrap=/run/capability-fabric-pcg-forward/bootstrap-url
 port=8766
 
 for cmd in sshd getent install stat ssh-keygen python3 openssl passwd; do
@@ -135,15 +135,13 @@ if [[ "$mode" == install ]]; then
   cat > "$gate" <<'GATE'
 #!/usr/bin/env bash
 set -euo pipefail
-bootstrap=/run/capability-fabric/pcg-provision/bootstrap-url
-complete=/var/lib/capability-fabric/pcg/run/provision-complete
-
+bootstrap=/run/capability-fabric-pcg-forward/bootstrap-url
 if [[ -n "${SSH_ORIGINAL_COMMAND:-}" ]]; then
   echo "PCG provisioning account does not accept remote commands." >&2
   exit 64
 fi
 
-if [[ -e "$complete" || ! -f "$bootstrap" || -L "$bootstrap" ]]; then
+if [[ ! -f "$bootstrap" || -L "$bootstrap" ]]; then
   echo "PCG provisioning is not active." >&2
   exit 65
 fi
@@ -162,7 +160,6 @@ cat "$bootstrap"
 # the permitted local forward remains usable. No shell or arbitrary command is exposed.
 deadline=$((SECONDS + 960))
 while [[ $SECONDS -lt $deadline ]]; do
-  [[ -e "$complete" ]] && exit 0
   [[ -f "$bootstrap" && ! -L "$bootstrap" ]] || exit 0
   sleep 1
 done
