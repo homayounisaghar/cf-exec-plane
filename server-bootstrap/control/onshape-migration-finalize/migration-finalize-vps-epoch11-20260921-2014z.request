@@ -1,0 +1,4 @@
+request_id=migration-finalize-vps-epoch11-20260921-2014z
+action=finalize-vps-migration-after-rollback-drill
+expected_script_blob=344050a5863488b3ac792abfd8d3dd13c39093f2
+expected_control_blob=6ac33244f7968c142e30b2f815d090f74dac49f3
