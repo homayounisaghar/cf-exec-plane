@@ -312,7 +312,7 @@ install -m 0640 "$work/manifest.json" "$stage/manifest.json"
 install -m 0640 "$work/manifest.json.sig" "$stage/manifest.json.sig"
 while IFS=$'\t' read -r rel expected_hash; do
   [[ -n "$rel" ]] || continue
-  install -d -m 0750 "$(dirname "$stage/$rel")"
+  install -d -m 0755 "$(dirname "$stage/$rel")"
   if ! git --git-dir="$CACHE" show "$commit:$DEPLOY_DIR/$rel" > "$stage/$rel" 2>>"$DETAIL_LOG"; then
     rm -rf "$stage"; atomic_write "$STATE/last-failed-commit" "$commit"; echo "CF_PCG_PULL_RELEASE_FILE_MISSING" >&2; exit 37
   fi
@@ -320,12 +320,12 @@ while IFS=$'\t' read -r rel expected_hash; do
   if [[ "$actual_hash" != "$expected_hash" ]]; then
     rm -rf "$stage"; atomic_write "$STATE/last-failed-commit" "$commit"; echo "CF_PCG_PULL_RELEASE_HASH_MISMATCH" >&2; exit 38
   fi
-  chmod 0640 "$stage/$rel"
+  chmod 0644 "$stage/$rel"
 done < "$work/files"
 chmod 0750 "$stage/health.sh"
 printf '%s\n' "$commit" > "$stage/source-commit"
 printf '%s\n' "$manifest_sha" > "$stage/manifest.sha256"
-chmod 0640 "$stage/source-commit" "$stage/manifest.sha256"
+chmod 0644 "$stage/source-commit" "$stage/manifest.sha256"
 
 if ! docker compose -f "$stage/compose.yaml" config --format json > "$work/compose.json" 2>>"$DETAIL_LOG"; then
   rm -rf "$stage"; atomic_write "$STATE/last-failed-commit" "$commit"; echo "CF_PCG_PULL_COMPOSE_INVALID" >&2; exit 39
