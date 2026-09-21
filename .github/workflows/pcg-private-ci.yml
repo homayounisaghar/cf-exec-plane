@@ -147,12 +147,7 @@ jobs:
           # Prove host-side window/token rotation invalidates the stale in-memory session
           # without restarting the TDLib-owning process.
           token1='T0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJK'
-          docker exec "$cid" python - "$token1" <<'PY'
-import sys,urllib.request
-req=urllib.request.Request('http://127.0.0.1:8766/session',data=sys.argv[1].encode(),method='POST',headers={'Content-Type':'text/plain'})
-with urllib.request.urlopen(req,timeout=2) as r:
-    assert r.status == 204
-PY
+          docker exec "$cid" python -c "import sys,urllib.request; req=urllib.request.Request('http://127.0.0.1:8766/session',data=sys.argv[1].encode(),method='POST',headers={'Content-Type':'text/plain'}); r=urllib.request.urlopen(req,timeout=2); assert r.status==204" "$token1"
           token2='U9876543210zyxwvutsrqponmlkjihgfedcbaZYXWVUTSRQ'
           printf '%s\n' "$token2" > "$work/provision/token.next"
           chmod 0640 "$work/provision/token.next"
@@ -161,37 +156,19 @@ PY
 
           rotated=no
           for i in $(seq 1 10); do
-            if docker exec "$cid" python - "$token2" <<'PY'
-import sys,urllib.request
-req=urllib.request.Request('http://127.0.0.1:8766/session',data=sys.argv[1].encode(),method='POST',headers={'Content-Type':'text/plain'})
-try:
-    with urllib.request.urlopen(req,timeout=2) as r:
-        raise SystemExit(0 if r.status == 204 else 1)
-except Exception:
-    raise SystemExit(1)
-PY
-            then
+            if docker exec "$cid" python -c "import sys,urllib.request; req=urllib.request.Request('http://127.0.0.1:8766/session',data=sys.argv[1].encode(),method='POST',headers={'Content-Type':'text/plain'}); r=urllib.request.urlopen(req,timeout=2); raise SystemExit(0 if r.status==204 else 1)" "$token2" >/dev/null 2>&1; then
               rotated=yes
               break
             fi
             sleep 1
           done
           [[ "$rotated" == yes ]]
-          if docker exec "$cid" python - "$token1" <<'PY'
-import sys,urllib.request
-req=urllib.request.Request('http://127.0.0.1:8766/session',data=sys.argv[1].encode(),method='POST',headers={'Content-Type':'text/plain'})
+          docker exec "$cid" python -c "import sys,urllib.request,urllib.error; req=urllib.request.Request('http://127.0.0.1:8766/session',data=sys.argv[1].encode(),method='POST',headers={'Content-Type':'text/plain'}); ok=False
 try:
-    urllib.request.urlopen(req,timeout=2)
+ urllib.request.urlopen(req,timeout=2)
 except urllib.error.HTTPError as exc:
-    raise SystemExit(0 if exc.code == 403 else 1)
-raise SystemExit(1)
-PY
-          then
-            :
-          else
-            echo "stale provisioning token was not rejected after rotation" >&2
-            exit 1
-          fi
+ ok=(exc.code==403)
+raise SystemExit(0 if ok else 1)" "$token1"
 
           test ! -e "$work/api/telegram-api.json"
           echo "PCG_FINAL_TOKEN_ROTATION_SMOKE=pass"
