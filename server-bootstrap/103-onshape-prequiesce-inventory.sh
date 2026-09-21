@@ -69,6 +69,14 @@ try:
         op_payload=json.loads(row["operation_payload"]) if row["operation_payload"] else {}
         dispatch=json.loads(row["dispatch_payload"]) if row["dispatch_payload"] else {}
         effect=str(op_payload.get("effect") or dispatch.get("effect") or "UNKNOWN")
+        execution=dispatch.get("execution_payload") or dispatch.get("executionPayload") or {}
+        args=execution.get("args") if isinstance(execution,dict) else {}
+        args=args if isinstance(args,dict) else {}
+        steps=args.get("steps")
+        ui_input_actions=(
+            [str(step.get("action","")) for step in steps if isinstance(step,dict)]
+            if isinstance(steps,list) else []
+        )
         attempt_id=row["attempt_id"]
         agent_state="MISSING"
         agent_observation="none"
@@ -105,6 +113,8 @@ try:
             "agentRecordState":agent_state,
             "agentObservationState":agent_observation,
             "agentEffectSent":agent_effect_sent,
+            "uiInputStepCount":len(ui_input_actions),
+            "uiInputActions":ui_input_actions,
         }
         print("CF_PREQUIESCE_INVENTORY_ITEM="+json.dumps(item,sort_keys=True,separators=(",",":")))
 finally:
