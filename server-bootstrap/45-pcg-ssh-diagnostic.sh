@@ -197,16 +197,18 @@ install -d -m 0700 -o 65534 -g 65534 "$tmp_debug/run" "$tmp_debug/profile"
   exec 8>/run/lock/capability-fabric-pull.lock
   flock 8
   docker rm -f "$debug_name" >/dev/null 2>&1 || true
-  docker run -d --name "$debug_name"     --user 65534:65534     --network bridge     --read-only     --tmpfs /tmp:rw,nosuid,nodev,size=512m     --shm-size 128m     -v "$release:/release:ro"     -v "$tmp_debug/run:/run/pcg:rw"     -v "$tmp_debug/profile:/profile:rw"     -e PCG_WEB_PROFILE_DIR=/profile     -e PCG_WEB_SOCKET=/run/pcg/web.sock     -e PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1     -e NPM_CONFIG_CACHE=/tmp/npm-cache     -e HOME=/tmp     -e NODE_ENV=production     "$image" sh -lc 'umask 077 && chmod 0700 /profile && mkdir -p /tmp/app && cp /release/pcg_web_browser.mjs /tmp/app/pcg_web_browser.mjs && cp /release/pcg_web_package.json /tmp/app/package.json && cd /tmp/app && PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm install --omit=dev --ignore-scripts --no-audit --no-fund --package-lock=false && exec node pcg_web_browser.mjs' >/dev/null
+  docker run -d --name "$debug_name"     --user 65534:65534     --network bridge     --read-only     --tmpfs /tmp:rw,nosuid,nodev,size=512m     --shm-size 128m     --memory 768m     --cpus 1.00     --pids-limit 160     --cap-drop ALL     --security-opt no-new-privileges:true     --health-cmd 'node -e '\''const net=require("net");const s=net.createConnection("/run/pcg/web.sock");s.setTimeout(2000);s.on("connect",()=>s.write("{\\\"op\\\":\\\"health\\\"}\\n"));let b="";s.on("data",d=>{b+=d;if(b.includes("\\n")){const x=JSON.parse(b.split("\\n")[0]);process.exit(x.ok===true&&x.phase!=="BROWSER_CLOSED"?0:1)}});s.on("timeout",()=>process.exit(1));s.on("error",()=>process.exit(1));'\'''     --health-interval 2s     --health-timeout 4s     --health-retries 3     --health-start-period 2s     -v "$release:/release:ro"     -v "$tmp_debug/run:/run/pcg:rw"     -v "$tmp_debug/profile:/profile:rw"     -e PCG_WEB_PROFILE_DIR=/profile     -e PCG_WEB_SOCKET=/run/pcg/web.sock     -e PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1     -e NPM_CONFIG_CACHE=/tmp/npm-cache     -e HOME=/tmp     -e NODE_ENV=production     "$image" sh -lc 'umask 077 && chmod 0700 /profile && mkdir -p /tmp/app && cp /release/pcg_web_browser.mjs /tmp/app/pcg_web_browser.mjs && cp /release/pcg_web_package.json /tmp/app/package.json && cd /tmp/app && PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm install --omit=dev --ignore-scripts --no-audit --no-fund --package-lock=false && exec node pcg_web_browser.mjs' >/dev/null
 )
 for _ in $(seq 1 45); do
   state="$(docker inspect -f '{{.State.Status}}' "$debug_name" 2>/dev/null || true)"
+  health="$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' "$debug_name" 2>/dev/null || true)"
   [[ "$state" == running ]] || break
-  if [[ -S "$tmp_debug/run/web.sock" ]]; then break; fi
+  [[ "$health" == healthy ]] && break
   sleep 1
 done
 if docker inspect "$debug_name" >/dev/null 2>&1; then
-  docker inspect -f 'debug_running={{.State.Running}} debug_status={{.State.Status}} debug_exit={{.State.ExitCode}} started={{.State.StartedAt}}' "$debug_name"
+  docker inspect -f 'debug_running={{.State.Running}} debug_status={{.State.Status}} debug_exit={{.State.ExitCode}} debug_oom={{.State.OOMKilled}} debug_health={{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}} started={{.State.StartedAt}}' "$debug_name"
+  docker inspect -f '{{if .State.Health}}{{range .State.Health.Log}}health_probe_exit={{.ExitCode}} health_probe_output={{json .Output}}{{println}}{{end}}{{end}}' "$debug_name" | tail -n 12
   if [[ -S "$tmp_debug/run/web.sock" ]]; then
     python3 - "$tmp_debug/run/web.sock" <<'PY'
 import json,socket,sys
