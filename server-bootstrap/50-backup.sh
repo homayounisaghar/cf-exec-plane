@@ -12,6 +12,12 @@ browser_sentinel="$browser_profile/.backup-exclusion-sentinel"
 interactive_browser_root=/var/lib/capability-fabric/onshape/interactive-browser
 interactive_browser_sentinel="$interactive_browser_root/.backup-exclusion-sentinel"
 pcg_web_profile=/var/lib/capability-fabric/pcg/telegram-web-profile
+pcg_run_root=/var/lib/capability-fabric/pcg/run
+pcg_core_state=/var/lib/capability-fabric/pcg/core-state
+pcg_telegram_state=/var/lib/capability-fabric/pcg/telegram-state
+pcg_api_credentials=/var/lib/capability-fabric/pcg/api-credentials
+pcg_db_key=/var/lib/capability-fabric/pcg/db-key
+pcg_backup_excludes=("$pcg_web_profile" "$pcg_run_root" "$pcg_core_state" "$pcg_telegram_state" "$pcg_api_credentials" "$pcg_db_key")
 fabric_state_db=/var/lib/capability-fabric/onshape/fabric-state/execution.sqlite3
 fabric_state_backup_dir=/var/lib/capability-fabric/onshape/fabric-state/backup
 fabric_state_backup="$fabric_state_backup_dir/execution-consistent.sqlite3"
@@ -144,16 +150,18 @@ if ! grep -Fxq "$interactive_browser_root" "$exclude_file"; then
   mv -f "$tmp_exclude" "$exclude_file"
 fi
 
-if ! grep -Fxq "$pcg_web_profile" "$exclude_file"; then
-  [[ "$mode" == prove ]] || { echo "PCG web profile exclusion missing outside prove mode" >&2; exit 31; }
-  tmp_exclude="$(mktemp /etc/capability-fabric/.backup.exclude.XXXXXX)"
-  { cat "$exclude_file"; printf '%s\n' "$pcg_web_profile"; } | awk 'NF && !seen[$0]++' > "$tmp_exclude"
-  chown root:root "$tmp_exclude"
-  chmod 0600 "$tmp_exclude"
-  mv -f "$tmp_exclude" "$exclude_file"
-fi
+for pcg_exclude in "${pcg_backup_excludes[@]}"; do
+  if ! grep -Fxq "$pcg_exclude" "$exclude_file"; then
+    [[ "$mode" == prove ]] || { echo "PCG runtime/session exclusion missing outside prove mode: $pcg_exclude" >&2; exit 31; }
+    tmp_exclude="$(mktemp /etc/capability-fabric/.backup.exclude.XXXXXX)"
+    { cat "$exclude_file"; printf '%s\n' "$pcg_exclude"; } | awk 'NF && !seen[$0]++' > "$tmp_exclude"
+    chown root:root "$tmp_exclude"
+    chmod 0600 "$tmp_exclude"
+    mv -f "$tmp_exclude" "$exclude_file"
+  fi
+done
 
-python3 - "$exclude_file" "$browser_profile" "$interactive_browser_root" "$pcg_web_profile" <<'PY'
+python3 - "$exclude_file" "$browser_profile" "$interactive_browser_root" "${pcg_backup_excludes[@]}" <<'PY'
 import os,sys
 exclude_file,*required_paths=sys.argv[1:]
 lines=[]
@@ -174,11 +182,18 @@ for required in required_paths:
 PY
 
 pull_timer_was_enabled=no
+pcg_pull_timer_was_enabled=no
 if [[ "$(systemctl is-enabled capability-fabric-pull.timer 2>/dev/null || true)" == enabled ]]; then pull_timer_was_enabled=yes; systemctl stop capability-fabric-pull.timer; fi
-resume_pull_timer() { if [[ "$pull_timer_was_enabled" == yes ]]; then systemctl start capability-fabric-pull.timer >/dev/null 2>&1 || true; fi; }
-trap resume_pull_timer EXIT
-for _ in $(seq 1 60); do systemctl is-active --quiet capability-fabric-pull.service || break; sleep 1; done
-if systemctl is-active --quiet capability-fabric-pull.service; then echo "pull service did not quiesce for backup" >&2; exit 31; fi
+if [[ "$(systemctl is-enabled capability-fabric-pcg-pull.timer 2>/dev/null || true)" == enabled ]]; then pcg_pull_timer_was_enabled=yes; systemctl stop capability-fabric-pcg-pull.timer; fi
+resume_pull_timers() {
+  if [[ "$pull_timer_was_enabled" == yes ]]; then systemctl start capability-fabric-pull.timer >/dev/null 2>&1 || true; fi
+  if [[ "$pcg_pull_timer_was_enabled" == yes ]]; then systemctl start capability-fabric-pcg-pull.timer >/dev/null 2>&1 || true; fi
+}
+trap resume_pull_timers EXIT
+for service in capability-fabric-pull.service capability-fabric-pcg-pull.service; do
+  for _ in $(seq 1 60); do systemctl is-active --quiet "$service" || break; sleep 1; done
+  if systemctl is-active --quiet "$service"; then echo "$service did not quiesce for backup" >&2; exit 31; fi
+done
 
 roots=(/etc/capability-fabric /var/lib/capability-fabric /opt/capability-fabric /usr/local/libexec/capability-fabric-pull-agent /etc/systemd/system/capability-fabric-pull.service /etc/systemd/system/capability-fabric-pull.timer)
 for p in "${roots[@]}"; do [[ -e "$p" || -L "$p" ]] || { echo "required backup root missing: $p" >&2; exit 31; }; done
@@ -264,10 +279,12 @@ if [[ "$mode" == prove ]]; then
     echo "CF_BACKUP_INTERACTIVE_BROWSER_EXCLUDE=failed" >&2
     exit 33
   fi
-  if [[ -e "$restore_dir$pcg_web_profile" || -L "$restore_dir$pcg_web_profile" ]]; then
-    echo "CF_BACKUP_PCG_WEB_PROFILE_EXCLUDE=failed" >&2
-    exit 33
-  fi
+  for pcg_exclude in "${pcg_backup_excludes[@]}"; do
+    if [[ -e "$restore_dir$pcg_exclude" || -L "$restore_dir$pcg_exclude" ]]; then
+      echo "CF_BACKUP_PCG_RUNTIME_EXCLUDE=failed" >&2
+      exit 33
+    fi
+  done
   restored_manifest="/var/backups/capability-fabric/restored-${timestamp}.manifest"
   python3 - "$restored_manifest" "$restore_dir" "$exclude_file" "${roots[@]}" <<'PY'
 import hashlib,os,stat,sys
@@ -330,7 +347,7 @@ PY
   chmod 0600 /var/lib/capability-fabric/state/backup-restore-proof; chown root:root /var/lib/capability-fabric/state/backup-restore-proof
   rm -rf "$restore_dir" "$source_manifest" "$restored_manifest"
   systemctl enable --now capability-fabric-backup.timer >/dev/null
-  printf 'CF_BACKUP_PROOF_BEGIN\nSNAPSHOT_ID=%s\nRESTIC_CHECK=pass\nISOLATED_RESTORE=pass\nRESTORE_TREE_COMPARE=pass\nBROWSER_PROFILE_EXCLUDED=pass\nINTERACTIVE_BROWSER_PROFILE_EXCLUDED=pass\nPCG_WEB_PROFILE_EXCLUDED=pass\nBACKUP_EXCLUDE_PERMS=pass\nSQLITE_CONSISTENT_SNAPSHOT=%s\nSQLITE_RESTORE_INTEGRITY=%s\nSQLITE_RECOVERABLE_COUNT=%s\nBACKUP_TIMER_ENABLED=yes\nCF_BACKUP_PROOF_END\n' "$snapshot_id" "$sqlite_snapshot" "$sqlite_restore_integrity" "$sqlite_recoverable_count"
+  printf 'CF_BACKUP_PROOF_BEGIN\nSNAPSHOT_ID=%s\nRESTIC_CHECK=pass\nISOLATED_RESTORE=pass\nRESTORE_TREE_COMPARE=pass\nBROWSER_PROFILE_EXCLUDED=pass\nINTERACTIVE_BROWSER_PROFILE_EXCLUDED=pass\nPCG_WEB_PROFILE_EXCLUDED=pass\nPCG_RUNTIME_SECRET_STATE_EXCLUDED=pass\nBACKUP_EXCLUDE_PERMS=pass\nSQLITE_CONSISTENT_SNAPSHOT=%s\nSQLITE_RESTORE_INTEGRITY=%s\nSQLITE_RECOVERABLE_COUNT=%s\nBACKUP_TIMER_ENABLED=yes\nCF_BACKUP_PROOF_END\n' "$snapshot_id" "$sqlite_snapshot" "$sqlite_restore_integrity" "$sqlite_recoverable_count"
 else
   rm -f "$source_manifest"
   restic forget --tag capability-fabric-personal-server --keep-last 3 --keep-daily 7 --keep-weekly 4 --keep-monthly 6 --prune >>"$log" 2>&1
