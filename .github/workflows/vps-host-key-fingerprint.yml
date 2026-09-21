@@ -1,0 +1,43 @@
+name: VPS Host Key Fingerprint Check
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'server-bootstrap/control/vps-host-key-fingerprint-requests/*.request'
+
+permissions:
+  contents: read
+
+jobs:
+  fingerprint:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+
+      - name: Validate immutable request
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || exit 10
+          IFS=$'\t' read -r status request_path <<<"${changes[0]}"
+          [[ "$status" == A ]] || exit 11
+          [[ "$request_path" == server-bootstrap/control/vps-host-key-fingerprint-requests/*.request ]] || exit 12
+
+      - name: Print only the public fingerprint
+        env:
+          VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+        run: |
+          set -euo pipefail
+          : "${VPS_HOST_KEY:?missing VPS_HOST_KEY}"
+          tmp="$(mktemp)"
+          trap 'rm -f "$tmp"' EXIT
+          printf '%s\n' "$VPS_HOST_KEY" | tr -d '\r' > "$tmp"
+          chmod 600 "$tmp"
+          read -r key_type key_data extra < "$tmp" || true
+          [[ "$key_type" == ssh-ed25519 && -n "${key_data:-}" && -z "${extra:-}" ]] || exit 20
+          ssh-keygen -lf "$tmp" -E sha256 | awk '{print "VPS_HOST_KEY_FINGERPRINT="$2}'
