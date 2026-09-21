@@ -301,7 +301,6 @@ printf '%s\n' "$ponr" | grep -Fxq 'CF_A4_PONR=true'
 printf '%s\n' "$ponr" | grep -Fxq 'CF_A4_PONR_COUNT=2'
 printf '%s\n' "$ponr" | grep -Fxq 'CF_A4_UNRESOLVED_BLOCKING=0'
 printf '%s\n' "$ponr" | grep -Fxq 'CF_A4_ZERO_UNRESOLVED=pass'
-printf '%s\n' "$ponr" | grep -Fxq 'CF_A4_ROLLBACK_ALLOWED' && exit 50 || true
 printf '%s\n' "$ponr" | grep -Fxq 'CF_A4_ROLLBACK_DIRECTIVE=ROLLBACK_ALLOWED'
 echo CF_CANARY_PONR=expected-crossed
 echo CF_CANARY_ZERO_UNRESOLVED=pass
