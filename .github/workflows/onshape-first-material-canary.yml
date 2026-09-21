@@ -54,6 +54,9 @@ jobs:
           [[ "${#keys[@]}" -eq 5 ]] || exit 19
           [[ "${keys[0]}" == action && "${keys[1]}" == canary_document_id && "${keys[2]}" == expected_control_blob && "${keys[3]}" == expected_script_blob && "${keys[4]}" == request_id ]] || exit 19
           bash -n server-bootstrap/129-onshape-first-material-canary.sh
+          awk '/<<'"'"'NODE'"'"'/{capture=1;next} /^NODE$/{if(capture){exit}} capture' server-bootstrap/129-onshape-first-material-canary.sh > /tmp/first-material-canary.mjs
+          [[ -s /tmp/first-material-canary.mjs ]] || exit 20
+          node --check /tmp/first-material-canary.mjs
       - name: Run bounded first material canary
         shell: bash
         run: bash server-bootstrap/runner/remote-bundle-exec.sh server-bootstrap/129-onshape-first-material-canary.sh
