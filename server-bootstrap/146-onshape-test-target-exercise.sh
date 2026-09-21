@@ -50,7 +50,11 @@ print("CF_TARGET_EXERCISE_AUTHORITY=rev535-epoch6")
 print("CF_TARGET_EXERCISE_GUARD=open-one-target-budget2")
 PY
 
-before_reservations="$(find "$budget_dir" -maxdepth 1 -type f -name '*.json' 2>/dev/null | wc -l | tr -d ' ')"
+if [[ -d "$budget_dir" ]]; then
+  before_reservations="$(find "$budget_dir" -maxdepth 1 -type f -name '*.json' -print | wc -l | tr -d ' ')"
+else
+  before_reservations=0
+fi
 [[ "$before_reservations" == 0 ]] || { echo "CF_TARGET_EXERCISE_BUDGET_NOT_EMPTY=$before_reservations" >&2; exit 21; }
 echo CF_TARGET_EXERCISE_BUDGET_BEFORE=0
 
