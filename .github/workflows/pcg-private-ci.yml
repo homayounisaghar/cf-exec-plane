@@ -143,6 +143,7 @@ jobs:
             sleep 1
           done
           docker exec "$cid" python -c "import urllib.request; r=urllib.request.urlopen('http://127.0.0.1:8766/healthz',timeout=2); assert r.status==200; assert b'one-time-loopback-same-writer' in r.read()"
+          docker exec "$cid" python -c "import http.client; c=http.client.HTTPConnection('127.0.0.1',8766,timeout=2); c.request('GET','/'); r=c.getresponse(); csp=r.getheader('Content-Security-Policy') or ''; assert r.status==200; assert \"connect-src 'self'\" in csp; body=r.read(); assert b'Authenticate this one-time local provisioning session.' in body"
 
           # Prove host-side window/token rotation invalidates the stale in-memory session
           # without restarting the TDLib-owning process.
