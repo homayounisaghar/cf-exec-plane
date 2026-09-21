@@ -32,15 +32,15 @@ echo "PCG_FORWARD_GATE_STATE_END"
 
 echo "PCG_FORWARD_SSH_LOG_BEGIN"
 {
-  journalctl -u ssh.service --since '2026-09-21 14:24:30' --until '2026-09-21 14:28:30' --no-pager 2>/dev/null || true
-  journalctl -u sshd.service --since '2026-09-21 14:24:30' --until '2026-09-21 14:28:30' --no-pager 2>/dev/null || true
+  journalctl -u ssh.service --since '10 minutes ago' --until 'now' --no-pager 2>/dev/null || true
+  journalctl -u sshd.service --since '10 minutes ago' --until 'now' --no-pager 2>/dev/null || true
 } |
   tail -n 120 |
   sed -E 's/from [0-9a-fA-F:.]+ port [0-9]+/from REDACTED/g; s/rhost=[^ ]+/rhost=REDACTED/g; s/port [0-9]+ ssh2/port REDACTED ssh2/g'
 echo "PCG_FORWARD_SSH_LOG_END"
 
 echo "PCG_SYSTEM_EVENTS_BEGIN"
-journalctl --since '2026-09-21 14:24:30' --until '2026-09-21 14:28:30' --no-pager 2>/dev/null |
+journalctl --since '10 minutes ago' --until 'now' --no-pager 2>/dev/null |
   grep -E 'ssh(d)?\.service|sshd-session|Started OpenBSD|Stopped OpenBSD|Reloading OpenBSD|Reloaded OpenBSD|reboot|shutdown|Docker|docker\.service|NetworkManager|systemd-networkd' |
   tail -n 160 |
   sed -E 's/from [0-9a-fA-F:.]+ port [0-9]+/from REDACTED/g; s/rhost=[^ ]+/rhost=REDACTED/g; s/port [0-9]+ ssh2/port REDACTED ssh2/g' || true
