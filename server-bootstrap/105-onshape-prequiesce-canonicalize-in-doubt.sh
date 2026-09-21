@@ -49,7 +49,7 @@ with SqliteExecutionStateStore(db) as state:
     payload=dict(case.dispatch.execution_payload)
     args=dict(payload.get("args") or {})
     steps=args.get("steps")
-    assert isinstance(steps,list) and [s.get("action") for s in steps]==["locator.fill","locator.press","locator.fill","locator.press"]
+    assert isinstance(steps,(list,tuple)) and [s.get("action") for s in steps]==["locator.fill","locator.press","locator.fill","locator.press"]
     state.mark_dispatch_uncertain(
         case.operation,
         case.attempt,
