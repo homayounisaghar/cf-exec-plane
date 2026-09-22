@@ -229,13 +229,13 @@ socket.setTimeout(5000);
 let buffer = "";
 socket.once("connect", () => {
   console.log("INGRESS_CONNECT=pass");
-  socket.write('{"op":"health"}\\n');
+  socket.write('{"op":"health"}\n');
 });
 socket.on("data", chunk => {
   buffer += chunk;
-  if (buffer.includes("\\n")) {
+  if (buffer.includes("\n")) {
     try {
-      const result = JSON.parse(buffer.split("\\n", 1)[0]);
+      const result = JSON.parse(buffer.split("\n", 1)[0]);
       console.log("INGRESS_HEALTH_OK=" + (result.ok === true));
       socket.destroy();
     } catch {
