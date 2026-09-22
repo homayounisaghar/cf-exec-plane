@@ -4,7 +4,7 @@ umask 077
 
 [[ "$(id -u)" -eq 0 ]] || { echo "must run as uid 0" >&2; exit 1; }
 mode="${CF_PCG_WEB_CONTROL_MODE:-}"
-case "$mode" in prepare|status|semantic-status|semantic-conversations|semantic-conversations-protected|semantic-conversations-canary|phone|code|password|cleanup|screenshot|mytelegram-start|mytelegram-capture-code|mytelegram-signin|mytelegram-create-app|mytelegram-screenshot) ;; *) echo "invalid mode" >&2; exit 2 ;; esac
+case "$mode" in prepare|status|ingress-diagnostic|semantic-status|semantic-conversations|semantic-conversations-protected|semantic-conversations-canary|phone|code|password|cleanup|screenshot|mytelegram-start|mytelegram-capture-code|mytelegram-signin|mytelegram-create-app|mytelegram-screenshot) ;; *) echo "invalid mode" >&2; exit 2 ;; esac
 
 run_root=/var/lib/capability-fabric/pcg/run
 socket="$run_root/web.sock"
@@ -205,6 +205,56 @@ print(f"PCG_WEB_ACTIVE_SEQUENCE={int(m.get('sequence',0))}")
 print(f"PCG_WEB_ACTIVE_RELEASE={m.get('release_id','UNKNOWN')}")
 PY
   socket_simple health
+  exit 0
+fi
+
+if [[ "$mode" == ingress-diagnostic ]]; then
+  stat -c 'PCG_HOST_RUN_MODE=%a OWNER=%u:%g' "$run_root"
+  stat -c 'PCG_HOST_SOCKET_MODE=%a OWNER=%u:%g' "$socket"
+  docker exec -i capability-fabric-onshape-server node <<'JS'
+const fs = require("node:fs");
+const net = require("node:net");
+const path = "/run/pcg/web.sock";
+console.log("INGRESS_UID=" + process.getuid() + " GID=" + process.getgid());
+try {
+  const st = fs.statSync(path);
+  console.log("INGRESS_SOCKET_PRESENT=" + st.isSocket() + " MODE=" + (st.mode & 0o777).toString(8) + " OWNER=" + st.uid + ":" + st.gid);
+} catch (e) {
+  console.log("INGRESS_STAT_ERROR=" + (e.code || "UNKNOWN"));
+  process.exit(30);
+}
+const socket = net.createConnection({ path });
+socket.setEncoding("utf8");
+socket.setTimeout(5000);
+let buffer = "";
+socket.once("connect", () => {
+  console.log("INGRESS_CONNECT=pass");
+  socket.write('{"op":"health"}\\n');
+});
+socket.on("data", chunk => {
+  buffer += chunk;
+  if (buffer.includes("\\n")) {
+    try {
+      const result = JSON.parse(buffer.split("\\n", 1)[0]);
+      console.log("INGRESS_HEALTH_OK=" + (result.ok === true));
+      socket.destroy();
+    } catch {
+      console.log("INGRESS_HEALTH_INVALID=1");
+      process.exitCode = 32;
+      socket.destroy();
+    }
+  }
+});
+socket.once("timeout", () => {
+  console.log("INGRESS_CONNECT_ERROR=TIMEOUT");
+  process.exitCode = 33;
+  socket.destroy();
+});
+socket.once("error", e => {
+  console.log("INGRESS_CONNECT_ERROR=" + (e.code || "UNKNOWN"));
+  process.exitCode = 34;
+});
+JS
   exit 0
 fi
 
