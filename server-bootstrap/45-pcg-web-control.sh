@@ -4,7 +4,7 @@ umask 077
 
 [[ "$(id -u)" -eq 0 ]] || { echo "must run as uid 0" >&2; exit 1; }
 mode="${CF_PCG_WEB_CONTROL_MODE:-}"
-case "$mode" in prepare|status|semantic-status|semantic-conversations|semantic-conversations-canary|phone|code|password|cleanup|screenshot|mytelegram-start|mytelegram-capture-code|mytelegram-signin|mytelegram-create-app|mytelegram-screenshot) ;; *) echo "invalid mode" >&2; exit 2 ;; esac
+case "$mode" in prepare|status|semantic-status|semantic-conversations|semantic-conversations-protected|semantic-conversations-canary|phone|code|password|cleanup|screenshot|mytelegram-start|mytelegram-capture-code|mytelegram-signin|mytelegram-create-app|mytelegram-screenshot) ;; *) echo "invalid mode" >&2; exit 2 ;; esac
 
 run_root=/var/lib/capability-fabric/pcg/run
 socket="$run_root/web.sock"
@@ -93,6 +93,63 @@ PY
 }
 
 
+socket_semantic_conversation_contract() {
+  python3 - "$socket" <<'PY'
+import collections,json,socket,sys
+sock_path=sys.argv[1]
+payload={
+    'op':'semantic.invoke',
+    'operation':'communication.conversation.list',
+    'purpose':'PROTECTED_DISPLAY',
+    'args':{'limit':10},
+}
+s=socket.socket(socket.AF_UNIX,socket.SOCK_STREAM)
+s.settimeout(35)
+s.connect(sock_path)
+s.sendall((json.dumps(payload,separators=(',',':'))+'\n').encode())
+buf=b''
+while b'\n' not in buf:
+    chunk=s.recv(65536)
+    if not chunk:
+        break
+    buf+=chunk
+s.close()
+if not buf:
+    raise SystemExit('empty browser response')
+d=json.loads(buf.split(b'\n',1)[0])
+assert d.get('state') == 'ACHIEVED'
+obs=d.get('observation')
+assert isinstance(obs,dict)
+assert obs.get('count') == 10
+assert obs.get('provider_content_model_visible') is False
+protected=d.get('protected_provider_data')
+assert isinstance(protected,dict)
+assert protected.get('purpose') == 'PROTECTED_DISPLAY'
+assert protected.get('model_visible') is False
+conversations=protected.get('conversations')
+assert isinstance(conversations,list) and len(conversations) == 10
+counts=collections.Counter()
+for item in conversations:
+    assert isinstance(item,dict)
+    assert isinstance(item.get('handle'),str) and item['handle'].startswith('tgchat:')
+    assert isinstance(item.get('name'),str) and 1 <= len(item['name']) <= 256
+    assert item.get('type') in ('user','chat','channel')
+    assert set(item) == {'handle','name','type'}
+    counts[item['type']]+=1
+safe={
+    'ok':True,
+    'state':'ACHIEVED',
+    'operation':'communication.conversation.list',
+    'count':10,
+    'type_counts':{k:counts.get(k,0) for k in ('user','chat','channel')},
+    'protected_provider_data_valid':True,
+    'provider_content_model_visible':False,
+}
+print(json.dumps(safe,separators=(',',':')))
+PY
+}
+
+
 socket_qualification() {
   python3 - "$socket" <<'PY'
 import json,socket,sys
@@ -164,6 +221,18 @@ PY
     socket_semantic communication.conversation.list PROTECTED_DISPLAY
   fi
   printf 'PCG_WEB_SEMANTIC_%s=pass\n' "${mode#semantic-}"
+  exit 0
+fi
+
+if [[ "$mode" == semantic-conversations-protected ]]; then
+  sequence="$(python3 - "$release/manifest.json" <<'PY'
+import json,sys
+print(int(json.load(open(sys.argv[1],encoding='utf-8')).get('sequence',0)))
+PY
+)"
+  [[ "$sequence" -ge 20 ]] || { echo "PCG_WEB_CONVERSATION_TYPES_RUNTIME=too-old" >&2; exit 31; }
+  socket_semantic_conversation_contract
+  printf 'PCG_WEB_CONVERSATION_TYPES=pass\n'
   exit 0
 fi
 
