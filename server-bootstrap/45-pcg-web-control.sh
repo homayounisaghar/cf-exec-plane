@@ -229,14 +229,22 @@ socket.setTimeout(5000);
 let buffer = "";
 socket.once("connect", () => {
   console.log("INGRESS_CONNECT=pass");
-  socket.write('{"op":"health"}\n');
+  socket.write('{"op":"semantic.invoke","operation":"communication.conversation.list","purpose":"PROTECTED_DISPLAY","args":{"limit":10}}\n');
 });
 socket.on("data", chunk => {
   buffer += chunk;
   if (buffer.includes("\n")) {
     try {
       const result = JSON.parse(buffer.split("\n", 1)[0]);
-      console.log("INGRESS_HEALTH_OK=" + (result.ok === true));
+      const items = result.protected_provider_data?.conversations;
+      const valid = result.state === "ACHIEVED" && result.operation === "communication.conversation.list"
+        && result.observation?.count === 10 && result.observation?.provider_content_model_visible === false
+        && result.protected_provider_data?.purpose === "PROTECTED_DISPLAY"
+        && result.protected_provider_data?.model_visible === false
+        && Array.isArray(items) && items.length === 10
+        && items.every(x => typeof x.name === "string" && ["user", "chat", "channel"].includes(x.type));
+      console.log("INGRESS_CONTRACT_VALID=" + valid + " COUNT=" + (result.observation?.count ?? "unknown"));
+      if (!valid) process.exitCode = 32;
       socket.destroy();
     } catch {
       console.log("INGRESS_HEALTH_INVALID=1");
