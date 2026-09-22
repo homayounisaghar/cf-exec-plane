@@ -4,7 +4,7 @@ umask 077
 
 [[ "$(id -u)" -eq 0 ]] || { echo "must run as uid 0" >&2; exit 1; }
 mode="${CF_PCG_WEB_CONTROL_MODE:-}"
-case "$mode" in prepare|status|phone|code|password|cleanup|screenshot|mytelegram-start|mytelegram-capture-code|mytelegram-signin|mytelegram-create-app) ;; *) echo "invalid mode" >&2; exit 2 ;; esac
+case "$mode" in prepare|status|phone|code|password|cleanup|screenshot|mytelegram-start|mytelegram-capture-code|mytelegram-signin|mytelegram-create-app|mytelegram-screenshot) ;; *) echo "invalid mode" >&2; exit 2 ;; esac
 
 run_root=/var/lib/capability-fabric/pcg/run
 socket="$run_root/web.sock"
@@ -110,6 +110,16 @@ if [[ "$mode" == mytelegram-create-app ]]; then
     rm -f "$src"
     printf 'PCG_TELEGRAM_API_CREDENTIALS=installed\n'
   fi
+  exit 0
+fi
+
+if [[ "$mode" == mytelegram-screenshot ]]; then
+  shot="$run_root/mytelegram-ui.png"
+  rm -f "$shot"
+  socket_simple mytelegram.screenshot
+  [[ -s "$shot" ]] || { echo "PCG_MYTELEGRAM_SCREENSHOT=missing" >&2; exit 28; }
+  chmod 0600 "$shot"
+  printf 'PCG_MYTELEGRAM_SCREENSHOT_READY=yes\n'
   exit 0
 fi
 
