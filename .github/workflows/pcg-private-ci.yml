@@ -190,3 +190,4 @@ jobs:
           python tests/test_pcg_live_host_v01.py
           python tests/test_pcg_provision_v02.py
           python tests/test_telegram_payload_bound.py
+          python tests/test_pcg_web_semantic_contract_v01.py
