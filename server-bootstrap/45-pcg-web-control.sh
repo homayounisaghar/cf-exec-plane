@@ -4,7 +4,7 @@ umask 077
 
 [[ "$(id -u)" -eq 0 ]] || { echo "must run as uid 0" >&2; exit 1; }
 mode="${CF_PCG_WEB_CONTROL_MODE:-}"
-case "$mode" in prepare|status|semantic-status|semantic-conversations|phone|code|password|cleanup|screenshot|mytelegram-start|mytelegram-capture-code|mytelegram-signin|mytelegram-create-app|mytelegram-screenshot) ;; *) echo "invalid mode" >&2; exit 2 ;; esac
+case "$mode" in prepare|status|semantic-status|semantic-conversations|semantic-conversations-canary|phone|code|password|cleanup|screenshot|mytelegram-start|mytelegram-capture-code|mytelegram-signin|mytelegram-create-app|mytelegram-screenshot) ;; *) echo "invalid mode" >&2; exit 2 ;; esac
 
 run_root=/var/lib/capability-fabric/pcg/run
 socket="$run_root/web.sock"
@@ -92,6 +92,41 @@ if d.get('state') != 'ACHIEVED':
 PY
 }
 
+
+socket_qualification() {
+  python3 - "$socket" <<'PY'
+import json,socket,sys
+sock_path=sys.argv[1]
+payload={'op':'qualify.conversation_list_no_read'}
+s=socket.socket(socket.AF_UNIX,socket.SOCK_STREAM)
+s.settimeout(40)
+s.connect(sock_path)
+s.sendall((json.dumps(payload,separators=(',',':'))+'\n').encode())
+buf=b''
+while b'\n' not in buf:
+    chunk=s.recv(65536)
+    if not chunk:
+        break
+    buf+=chunk
+s.close()
+if not buf:
+    raise SystemExit('empty browser response')
+d=json.loads(buf.split(b'\n',1)[0])
+safe={k:d.get(k) for k in ('ok','state','operation','provider','realization','error') if k in d}
+obs=d.get('observation')
+if isinstance(obs,dict):
+    allowed=('canary_present','canary_handle','unread_before','unread_after','list_state','provider_content_model_visible')
+    safe['observation']={k:obs.get(k) for k in allowed if k in obs}
+print(json.dumps(safe,separators=(',',':')))
+state=d.get('state')
+if state == 'ACHIEVED':
+    raise SystemExit(0)
+if state == 'QUALIFICATION_REQUIRED':
+    raise SystemExit(42)
+raise SystemExit(40)
+PY
+}
+
 if [[ "$mode" == prepare ]]; then
   install -d -m 0700 -o root -g root "$key_root"
   rm -f "$private_key" "$public_key"
@@ -130,6 +165,28 @@ PY
   fi
   printf 'PCG_WEB_SEMANTIC_%s=pass\n' "${mode#semantic-}"
   exit 0
+fi
+
+if [[ "$mode" == semantic-conversations-canary ]]; then
+  sequence="$(python3 - "$release/manifest.json" <<'PY'
+import json,sys
+print(int(json.load(open(sys.argv[1],encoding='utf-8')).get('sequence',0)))
+PY
+)"
+  [[ "$sequence" -ge 19 ]] || { echo "PCG_WEB_SEMANTIC_CANARY_RUNTIME=too-old" >&2; exit 30; }
+  set +e
+  socket_qualification
+  rc=$?
+  set -e
+  if [[ "$rc" -eq 0 ]]; then
+    printf 'PCG_WEB_UNREAD_CANARY=pass\n'
+    exit 0
+  fi
+  if [[ "$rc" -eq 42 ]]; then
+    printf 'PCG_WEB_UNREAD_CANARY=qualification-required\n'
+    exit 0
+  fi
+  exit "$rc"
 fi
 
 if [[ "$mode" == screenshot ]]; then
