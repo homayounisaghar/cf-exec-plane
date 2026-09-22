@@ -4,7 +4,7 @@ umask 077
 
 [[ "$(id -u)" -eq 0 ]] || { echo "must run as uid 0" >&2; exit 1; }
 mode="${CF_PCG_WEB_CONTROL_MODE:-}"
-case "$mode" in prepare|status|phone|code|password|cleanup|screenshot|mytelegram-start|mytelegram-capture-code|mytelegram-signin|mytelegram-create-app|mytelegram-screenshot) ;; *) echo "invalid mode" >&2; exit 2 ;; esac
+case "$mode" in prepare|status|semantic-status|semantic-conversations|phone|code|password|cleanup|screenshot|mytelegram-start|mytelegram-capture-code|mytelegram-signin|mytelegram-create-app|mytelegram-screenshot) ;; *) echo "invalid mode" >&2; exit 2 ;; esac
 
 run_root=/var/lib/capability-fabric/pcg/run
 socket="$run_root/web.sock"
@@ -55,6 +55,43 @@ if not d.get('ok'): raise SystemExit(40)
 PY
 }
 
+
+socket_semantic() {
+  local operation="$1"
+  local purpose="${2:-}"
+  python3 - "$socket" "$operation" "$purpose" <<'PY'
+import json,socket,sys
+sock_path,operation,purpose=sys.argv[1:]
+payload={'op':'semantic.invoke','operation':operation,'args':{}}
+if operation == 'communication.conversation.list':
+    payload['args']={'limit':20}
+if purpose:
+    payload['purpose']=purpose
+s=socket.socket(socket.AF_UNIX,socket.SOCK_STREAM)
+s.settimeout(35)
+s.connect(sock_path)
+s.sendall((json.dumps(payload,separators=(',',':'))+'\n').encode())
+buf=b''
+while b'\n' not in buf:
+    chunk=s.recv(65536)
+    if not chunk:
+        break
+    buf+=chunk
+s.close()
+if not buf:
+    raise SystemExit('empty browser response')
+d=json.loads(buf.split(b'\n',1)[0])
+safe={k:d.get(k) for k in ('ok','state','operation','provider','realization','error') if k in d}
+obs=d.get('observation')
+if isinstance(obs,dict):
+    allowed=('connection_state','logged_in','count','handles','bounded','provider_content_model_visible')
+    safe['observation']={k:obs.get(k) for k in allowed if k in obs}
+print(json.dumps(safe,separators=(',',':')))
+if d.get('state') != 'ACHIEVED':
+    raise SystemExit(40)
+PY
+}
+
 if [[ "$mode" == prepare ]]; then
   install -d -m 0700 -o root -g root "$key_root"
   rm -f "$private_key" "$public_key"
@@ -70,6 +107,22 @@ fi
 
 if [[ "$mode" == status ]]; then
   socket_simple health
+  exit 0
+fi
+
+if [[ "$mode" == semantic-status || "$mode" == semantic-conversations ]]; then
+  sequence="$(python3 - "$release/manifest.json" <<'PY'
+import json,sys
+print(int(json.load(open(sys.argv[1],encoding='utf-8')).get('sequence',0)))
+PY
+)"
+  [[ "$sequence" -ge 18 ]] || { echo "PCG_WEB_SEMANTIC_RUNTIME=too-old" >&2; exit 29; }
+  if [[ "$mode" == semantic-status ]]; then
+    socket_semantic communication.session.status
+  else
+    socket_semantic communication.conversation.list PROTECTED_DISPLAY
+  fi
+  printf 'PCG_WEB_SEMANTIC_%s=pass\n' "${mode#semantic-}"
   exit 0
 fi
 
