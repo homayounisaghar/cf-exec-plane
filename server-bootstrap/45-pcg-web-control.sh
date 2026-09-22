@@ -106,6 +106,12 @@ if [[ "$mode" == prepare ]]; then
 fi
 
 if [[ "$mode" == status ]]; then
+  python3 - "$release/manifest.json" <<'PY'
+import json,sys
+m=json.load(open(sys.argv[1],encoding='utf-8'))
+print(f"PCG_WEB_ACTIVE_SEQUENCE={int(m.get('sequence',0))}")
+print(f"PCG_WEB_ACTIVE_RELEASE={m.get('release_id','UNKNOWN')}")
+PY
   socket_simple health
   exit 0
 fi
