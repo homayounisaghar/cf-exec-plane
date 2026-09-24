@@ -1,0 +1,202 @@
+name: Personal Android Agent Stage B v1
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'android-agent/control/stage-b-requests/*.request'
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: personal-android-agent-stage-b
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  sign:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PAA_KEYSTORE_B64: ${{ secrets.PAA_KEYSTORE_B64 }}
+      PAA_KEYSTORE_PASSWORD: ${{ secrets.PAA_KEYSTORE_PASSWORD }}
+      PAA_KEY_PASSWORD: ${{ secrets.PAA_KEY_PASSWORD }}
+      PAA_EXPECTED_CERT_SHA256: ${{ secrets.PAA_EXPECTED_CERT_SHA256 }}
+    steps:
+      - name: Checkout public control surface
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+
+      - id: request
+        name: Validate immutable Stage-B request
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || { echo "Stage-B trigger must add exactly one request file" >&2; exit 10; }
+          IFS=$'\t' read -r status request_path <<<"${changes[0]}"
+          [[ "$status" == A ]] || { echo "request must be newly added" >&2; exit 11; }
+          [[ "$request_path" == android-agent/control/stage-b-requests/*.request ]] || exit 12
+
+          request_id="$(awk -F= '$1=="request_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          stage_a_run_id="$(awk -F= '$1=="stage_a_run_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          stage_a_artifact_id="$(awk -F= '$1=="stage_a_artifact_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          unsigned_sha256="$(awk -F= '$1=="unsigned_sha256"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+
+          [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 13
+          [[ "$stage_a_run_id" =~ ^[0-9]+$ ]] || exit 14
+          [[ "$stage_a_artifact_id" =~ ^[0-9]+$ ]] || exit 15
+          [[ "$unsigned_sha256" =~ ^[0-9a-f]{64}$ ]] || exit 16
+          [[ "$stage_a_run_id" == "36031300474" ]] || { echo "unexpected Stage-A run" >&2; exit 17; }
+          [[ "$stage_a_artifact_id" == "10821173098" ]] || { echo "unexpected Stage-A artifact" >&2; exit 18; }
+          [[ "$unsigned_sha256" == "83539231fc8c1913f1e30436a51f90a8cb7cf5d6664ac0cb344463fe93d83923" ]] || { echo "unexpected unsigned APK digest" >&2; exit 19; }
+
+          echo "request_id=$request_id" >> "$GITHUB_OUTPUT"
+          echo "artifact_id=$stage_a_artifact_id" >> "$GITHUB_OUTPUT"
+          echo "unsigned_sha256=$unsigned_sha256" >> "$GITHUB_OUTPUT"
+
+      - name: Require protected signer inputs
+        run: |
+          set -euo pipefail
+          : "${PAA_KEYSTORE_B64:?missing PAA_KEYSTORE_B64}"
+          : "${PAA_KEYSTORE_PASSWORD:?missing PAA_KEYSTORE_PASSWORD}"
+          : "${PAA_KEY_PASSWORD:?missing PAA_KEY_PASSWORD}"
+          : "${PAA_EXPECTED_CERT_SHA256:?missing PAA_EXPECTED_CERT_SHA256}"
+          [[ "${PAA_EXPECTED_CERT_SHA256,,}" =~ ^[0-9a-f]{64}$ ]] || { echo "invalid expected certificate pin" >&2; exit 20; }
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Use runner Android SDK and install build tools
+        run: |
+          set -euo pipefail
+          : "${ANDROID_HOME:?runner Android SDK missing}"
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          test -x "$SDKMANAGER"
+          set +o pipefail
+          yes | "$SDKMANAGER" --licenses >/dev/null 2>&1 || true
+          set -o pipefail
+          "$SDKMANAGER" "build-tools;35.0.0" "platform-tools"
+
+      - name: Download exact Stage-A artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ARTIFACT_ID: ${{ steps.request.outputs.artifact_id }}
+          EXPECTED_UNSIGNED_SHA256: ${{ steps.request.outputs.unsigned_sha256 }}
+        run: |
+          set -euo pipefail
+          work="$RUNNER_TEMP/paa-stage-b"
+          rm -rf "$work"
+          mkdir -p "$work/input" "$work/output"
+          gh api -H "Accept: application/vnd.github+json" \
+            "/repos/homayounisaghar/cf-exec-plane/actions/artifacts/${ARTIFACT_ID}/zip" > "$work/stage-a.zip"
+          unzip -q "$work/stage-a.zip" -d "$work/input"
+          apk="$work/input/personal-android-agent-release-unsigned.apk"
+          test -f "$apk"
+          actual="$(sha256sum "$apk" | awk '{print $1}')"
+          [[ "$actual" == "$EXPECTED_UNSIGNED_SHA256" ]] || { echo "Stage-A APK digest mismatch" >&2; exit 30; }
+          echo "PAA_STAGE_B_WORK=$work" >> "$GITHUB_ENV"
+          echo "PAA_UNSIGNED_APK=$apk" >> "$GITHUB_ENV"
+
+      - name: Materialize and verify signer identity
+        run: |
+          set -euo pipefail
+          ks="$PAA_STAGE_B_WORK/paa-release.p12"
+          printf '%s' "$PAA_KEYSTORE_B64" | base64 -d > "$ks"
+          chmod 600 "$ks"
+          export PAA_KEYSTORE_PASSWORD
+          keytool -list -v -keystore "$ks" -storetype PKCS12 -alias personal_android_agent \
+            -storepass:env PAA_KEYSTORE_PASSWORD > "$PAA_STAGE_B_WORK/keytool.txt"
+          cert="$(awk '/SHA256:/{gsub(/[: ]/,"",$2); print tolower($2); exit}' "$PAA_STAGE_B_WORK/keytool.txt")"
+          [[ "$cert" == "${PAA_EXPECTED_CERT_SHA256,,}" ]] || { echo "signer certificate pin mismatch" >&2; exit 31; }
+          echo "PAA_KEYSTORE=$ks" >> "$GITHUB_ENV"
+          echo "PAA_CERT_SHA256=$cert" >> "$GITHUB_ENV"
+
+      - name: Sign exact Stage-A APK without recompilation
+        run: |
+          set -euo pipefail
+          bt="$ANDROID_HOME/build-tools/35.0.0"
+          aligned="$PAA_STAGE_B_WORK/output/personal-android-agent-aligned.apk"
+          signed="$PAA_STAGE_B_WORK/output/personal-android-agent-v0.1.0-alpha1.apk"
+          "$bt/zipalign" -f -p 4 "$PAA_UNSIGNED_APK" "$aligned"
+          export PAA_KEYSTORE_PASSWORD PAA_KEY_PASSWORD
+          "$bt/apksigner" sign \
+            --ks "$PAA_KEYSTORE" \
+            --ks-type PKCS12 \
+            --ks-key-alias personal_android_agent \
+            --ks-pass env:PAA_KEYSTORE_PASSWORD \
+            --key-pass env:PAA_KEY_PASSWORD \
+            --out "$signed" "$aligned"
+          echo "PAA_SIGNED_APK=$signed" >> "$GITHUB_ENV"
+
+      - name: Stage-C verify package version signer and provenance
+        env:
+          REQUEST_ID: ${{ steps.request.outputs.request_id }}
+          EXPECTED_UNSIGNED_SHA256: ${{ steps.request.outputs.unsigned_sha256 }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib, json, os, re, subprocess
+          from pathlib import Path
+
+          apk = Path(os.environ["PAA_SIGNED_APK"])
+          bt = Path(os.environ["ANDROID_HOME"]) / "build-tools/35.0.0"
+          badging = subprocess.check_output([str(bt/"aapt"),"dump","badging",str(apk)], text=True)
+          first = badging.splitlines()[0] if badging.splitlines() else ""
+          m = re.search(r"package: name='([^']+)' versionCode='([^']+)' versionName='([^']+)'", first)
+          if not m:
+              raise SystemExit("unable to parse signed APK identity")
+          package_id, version_code, version_name = m.groups()
+          if (package_id,version_code,version_name) != ("com.homayounisaghar.androidagent","1","0.1.0-alpha1"):
+              raise SystemExit("signed APK identity mismatch")
+
+          certs = subprocess.check_output([str(bt/"apksigner"),"verify","--verbose","--print-certs",str(apk)], text=True)
+          cm = re.search(r"certificate SHA-256 digest:\s*([0-9A-Fa-f: -]+)", certs)
+          if not cm:
+              raise SystemExit("unable to parse signed APK certificate")
+          cert = "".join(ch for ch in cm.group(1).lower() if ch in "0123456789abcdef")
+          if cert != os.environ["PAA_CERT_SHA256"]:
+              raise SystemExit("signed APK certificate mismatch")
+
+          sha = hashlib.sha256(apk.read_bytes()).hexdigest()
+          out = apk.parent
+          (out/"badging.txt").write_text(badging)
+          (out/"apksigner.txt").write_text(certs)
+          (out/"SIGNED_MANIFEST.json").write_text(json.dumps({
+              "schema":"personal-android-agent.signed-build.v1",
+              "requestId":os.environ["REQUEST_ID"],
+              "sourceStageA":{"runId":36031300474,"artifactId":10821173098,"unsignedSha256":os.environ["EXPECTED_UNSIGNED_SHA256"]},
+              "application":{"packageId":package_id,"versionCode":int(version_code),"versionName":version_name},
+              "signer":{"certificateSha256":cert},
+              "artifact":{"file":apk.name,"sha256":sha,"installable":True}
+          },indent=2)+"\n")
+          print("SIGNED_APK_SHA256="+sha)
+          print("SIGNER_CERT_SHA256="+cert)
+          PY
+
+      - name: Remove private signer material before upload
+        if: always()
+        run: |
+          rm -f "${PAA_KEYSTORE:-}" "$PAA_STAGE_B_WORK/keytool.txt" 2>/dev/null || true
+
+      - name: Upload signed verified output
+        uses: actions/upload-artifact@v4
+        with:
+          name: personal-android-agent-stage-b
+          path: |
+            ${{ env.PAA_STAGE_B_WORK }}/output/personal-android-agent-v0.1.0-alpha1.apk
+            ${{ env.PAA_STAGE_B_WORK }}/output/SIGNED_MANIFEST.json
+            ${{ env.PAA_STAGE_B_WORK }}/output/badging.txt
+            ${{ env.PAA_STAGE_B_WORK }}/output/apksigner.txt
+          if-no-files-found: error
+          retention-days: 7
