@@ -1,0 +1,209 @@
+name: Personal Android Agent Stage A v1
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'android-agent/control/stage-a-requests/*.request'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: personal-android-agent-stage-a
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout public control surface
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+
+      - id: request
+        name: Validate immutable Stage-A request
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || { echo "Stage-A trigger must add exactly one request file" >&2; exit 10; }
+          IFS=$'\t' read -r status request_path <<<"${changes[0]}"
+          [[ "$status" == A ]] || { echo "request must be newly added" >&2; exit 11; }
+          [[ "$request_path" == android-agent/control/stage-a-requests/*.request ]] || exit 12
+          request_id="$(awk -F= '$1=="request_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          candidate_commit="$(awk -F= '$1=="candidate_commit"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 13
+          [[ "$candidate_commit" =~ ^[0-9a-f]{40}$ ]] || exit 14
+          echo "request_id=$request_id" >> "$GITHUB_OUTPUT"
+          echo "candidate_commit=$candidate_commit" >> "$GITHUB_OUTPUT"
+
+      - name: Fetch exact private candidate then scrub credential
+        env:
+          CF_REPO_READ_TOKEN: ${{ secrets.CF_REPO_READ_TOKEN }}
+          CANDIDATE_COMMIT: ${{ steps.request.outputs.candidate_commit }}
+        run: |
+          set -euo pipefail
+          : "${CF_REPO_READ_TOKEN:?missing private repository read token}"
+          work="${RUNNER_TEMP}/android-agent-private"
+          rm -rf "$work"
+          mkdir -m 700 "$work"
+          git init "$work" >/dev/null
+          askpass="${RUNNER_TEMP}/android-agent-askpass"
+          cat > "$askpass" <<'ASKPASS'
+          #!/usr/bin/env bash
+          case "${1:-}" in
+            *Username*) printf '%s\n' 'x-access-token' ;;
+            *Password*) printf '%s\n' "$CF_REPO_READ_TOKEN" ;;
+            *) exit 1 ;;
+          esac
+          ASKPASS
+          chmod 700 "$askpass"
+          GIT_ASKPASS="$askpass" GIT_TERMINAL_PROMPT=0 git -C "$work" fetch --quiet --depth=1 \
+            https://github.com/homayounisaghar/capability-fabric.git "$CANDIDATE_COMMIT"
+          actual="$(git -C "$work" rev-parse FETCH_HEAD)"
+          [[ "$actual" == "$CANDIDATE_COMMIT" ]] || { echo "private candidate commit mismatch" >&2; exit 20; }
+          git -C "$work" checkout --quiet --detach FETCH_HEAD
+          rm -f "$askpass"
+          unset CF_REPO_READ_TOKEN
+          git -C "$work" remote remove origin 2>/dev/null || true
+          echo "PRIVATE_WORKTREE=$work" >> "$GITHUB_ENV"
+
+      - id: contract
+        name: Validate fixed project contract
+        env:
+          CANDIDATE_COMMIT: ${{ steps.request.outputs.candidate_commit }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json, os, re, subprocess
+          from pathlib import Path
+
+          source = Path(os.environ["PRIVATE_WORKTREE"]).resolve()
+          project = source / "android/standard-apps/personal-android-agent"
+          contract = json.loads((project / "ci/portable-ci-contract.json").read_text())
+          if contract.get("schema") != "capability-fabric.android-standard-app-contract.v1":
+              raise SystemExit("unsupported contract schema")
+          app = contract.get("application") or {}
+          if app.get("packageId") != "com.homayounisaghar.androidagent":
+              raise SystemExit("unexpected packageId")
+          if app.get("versionCode") != 1 or app.get("versionName") != "0.1.0-alpha1":
+              raise SystemExit("unexpected Phase-0 version")
+          pipeline = contract.get("pipeline") or {}
+          if pipeline.get("buildStageRequiresSigningSecrets") is not False:
+              raise SystemExit("Stage A must be secret-free")
+          if pipeline.get("signingSeparatedFromBuild") is not True:
+              raise SystemExit("signing separation missing")
+          actual = subprocess.check_output(["git","-C",str(source),"rev-parse","HEAD"], text=True).strip().lower()
+          if actual != os.environ["CANDIDATE_COMMIT"]:
+              raise SystemExit("checkout provenance mismatch")
+          print("package_id=com.homayounisaghar.androidagent")
+          print("version_code=1")
+          print("version_name=0.1.0-alpha1")
+          PY
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle 8.10.2
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+
+      - name: Use runner Android SDK and install fixed packages
+        run: |
+          set -euo pipefail
+          : "${ANDROID_HOME:?runner Android SDK missing}"
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          test -x "$SDKMANAGER"
+          set +o pipefail
+          yes | "$SDKMANAGER" --licenses >/dev/null 2>&1 || true
+          set -o pipefail
+          "$SDKMANAGER" "platforms;android-35" "build-tools;35.0.0" "platform-tools"
+
+      - name: Build unsigned release signing kit
+        run: |
+          set -euo pipefail
+          project="$PRIVATE_WORKTREE/android/standard-apps/personal-android-agent"
+          cd "$project"
+          printf 'sdk.dir=%s\n' "$ANDROID_HOME" > local.properties
+          gradle --no-daemon :app:testReleaseUnitTest :app:assembleRelease --stacktrace
+          test -f app/build/outputs/apk/release/app-release-unsigned.apk
+
+      - name: Verify identity, unsigned status and provenance
+        env:
+          REQUEST_ID: ${{ steps.request.outputs.request_id }}
+          CANDIDATE_COMMIT: ${{ steps.request.outputs.candidate_commit }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib, json, os, re, shutil, subprocess
+          from pathlib import Path
+
+          project = Path(os.environ["PRIVATE_WORKTREE"]) / "android/standard-apps/personal-android-agent"
+          src = project / "app/build/outputs/apk/release/app-release-unsigned.apk"
+          out = Path(os.environ["RUNNER_TEMP"]) / "android-agent-stage-a-output"
+          if out.exists():
+              shutil.rmtree(out)
+          out.mkdir(parents=True)
+          dst = out / "personal-android-agent-release-unsigned.apk"
+          shutil.copy2(src, dst)
+
+          bt = Path(os.environ["ANDROID_HOME"]) / "build-tools/35.0.0"
+          badging = subprocess.check_output([str(bt/"aapt"), "dump", "badging", str(dst)], text=True)
+          first = badging.splitlines()[0] if badging.splitlines() else ""
+          m = re.search(r"package: name='([^']+)' versionCode='([^']+)' versionName='([^']+)'", first)
+          if not m:
+              raise SystemExit("unable to parse APK identity")
+          package_id, version_code, version_name = m.groups()
+          if (package_id, version_code, version_name) != ("com.homayounisaghar.androidagent","1","0.1.0-alpha1"):
+              raise SystemExit("APK identity mismatch")
+
+          verify = subprocess.run([str(bt/"apksigner"), "verify", "--verbose", "--print-certs", str(dst)],
+                                  text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+          if verify.returncode == 0:
+              raise SystemExit("Stage-A release APK unexpectedly signed")
+
+          sha = hashlib.sha256(dst.read_bytes()).hexdigest()
+          (out/"badging.txt").write_text(badging)
+          (out/"apksigner.txt").write_text(verify.stdout)
+          manifest = {
+              "schema":"capability-fabric.android-standard-app-output.v1",
+              "requestId":os.environ["REQUEST_ID"],
+              "projectId":"personal-android-agent",
+              "checkoutRef":os.environ["CANDIDATE_COMMIT"],
+              "application":{"packageId":package_id,"versionName":version_name,"versionCode":int(version_code)},
+              "artifact":{"file":dst.name,"sha256":sha,"installable":False,"disposableProof":False}
+          }
+          (out/"BUILD_MANIFEST.json").write_text(json.dumps(manifest,indent=2)+"\n")
+          (out/"EXECUTION_RECEIPT.json").write_text(json.dumps({
+              "schema":"capability-fabric.android-standard-app-receipt.v1",
+              "requestId":os.environ["REQUEST_ID"],
+              "projectId":"personal-android-agent",
+              "checkoutRef":os.environ["CANDIDATE_COMMIT"],
+              "operation":"build-signing-kit",
+              "result":"SUCCESS",
+              "artifactSha256":sha,
+              "installable":False,
+              "disposableProof":False
+          },indent=2)+"\n")
+          PY
+          echo "STAGE_A_OUTPUT=$RUNNER_TEMP/android-agent-stage-a-output" >> "$GITHUB_ENV"
+
+      - name: Upload bounded unsigned output only
+        uses: actions/upload-artifact@v4
+        with:
+          name: personal-android-agent-stage-a
+          path: ${{ env.STAGE_A_OUTPUT }}/
+          if-no-files-found: error
+          retention-days: 7
