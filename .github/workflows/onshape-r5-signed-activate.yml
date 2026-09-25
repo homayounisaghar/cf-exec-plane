@@ -1,0 +1,49 @@
+name: Onshape R5 Seq70 Signed Activate and V17 Proof
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'server-bootstrap/control/onshape-r5-signed-activate/*.request'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: onshape-r5-seq70-release
+  cancel-in-progress: false
+
+jobs:
+  activate:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Validate immutable activation request
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || exit 10
+          IFS=$'\t' read -r status request_path <<<"${changes[0]}"
+          [[ "$status" == A && "$request_path" == server-bootstrap/control/onshape-r5-signed-activate/*.request ]] || exit 11
+          request_id="$(awk -F= '$1=="request_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          action="$(awk -F= '$1=="action"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          expected_manifest="$(awk -F= '$1=="manifest_sha256"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 12
+          [[ "$action" == "activate-r5-seq70-and-prove-v17" ]] || exit 13
+          [[ "$expected_manifest" == "01f31143e3574c02d430a6b4f67a9be3ef24590a39f4e27459131da4beece057" ]] || exit 14
+          bash -n server-bootstrap/157-onshape-r5-signed-activate.sh
+      - name: Activate signed r5 and prove live v17 read
+        shell: bash
+        run: bash server-bootstrap/runner/remote-bundle-exec.sh server-bootstrap/157-onshape-r5-signed-activate.sh
