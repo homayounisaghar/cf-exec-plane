@@ -39,7 +39,7 @@ jobs:
           [[ "$file_request_id" == "$request_id" ]] || exit 13
           [[ "$request_id" =~ ^[A-Za-z0-9_.-]{8,96}$ ]] || exit 14
           [[ "$operation" == "probe" || "$operation" == "read" ]] || exit 15
-          [[ "$build_id" == "3" ]] || exit 16
+          [[ "$build_id" == "3" || "$build_id" == "4" ]] || exit 16
           {
             echo "request_id=$request_id"
             echo "operation=$operation"
@@ -51,7 +51,12 @@ jobs:
         run: |
           set -euo pipefail
           : "${CF_REPO_READ_TOKEN:?missing private repo read token}"
-          api="https://api.github.com/repos/homayounisaghar/capability-fabric/contents/projects/personal-android-agent/private/remote-telemetry-alpha3.json?ref=project%2Fpersonal-android-agent"
+          case "${{ steps.req.outputs.build_id }}" in
+            3) binding_file="remote-telemetry-alpha3.json" ;;
+            4) binding_file="remote-telemetry-alpha4.json" ;;
+            *) exit 19 ;;
+          esac
+          api="https://api.github.com/repos/homayounisaghar/capability-fabric/contents/projects/personal-android-agent/private/$binding_file?ref=project%2Fpersonal-android-agent"
           tmp="$(mktemp)"
           trap 'rm -f "$tmp" /tmp/paa-binding.json' EXIT
           curl --fail --silent --show-error --max-time 20 \
@@ -64,7 +69,7 @@ jobs:
           topic="$(jq -r '.topic' /tmp/paa-binding.json)"
           post_url="$(jq -r '.post_url' /tmp/paa-binding.json)"
           read_url="$(jq -r '.read_url' /tmp/paa-binding.json)"
-          [[ "$provider" == "ntfy" && "$build" == "3" ]] || exit 20
+          [[ "$provider" == "ntfy" && "$build" == "${{ steps.req.outputs.build_id }}" ]] || exit 20
           [[ "$topic" =~ ^paa-a3-[0-9a-f]{48}$ ]] || exit 21
           [[ "$post_url" == "https://ntfy.sh/$topic" ]] || exit 22
           [[ "$read_url" == "$post_url/json?poll=1&since=all" ]] || exit 23
@@ -81,14 +86,15 @@ jobs:
         env:
           REQUEST_ID: ${{ steps.req.outputs.request_id }}
           OPERATION: ${{ steps.req.outputs.operation }}
+          BUILD_ID: ${{ steps.req.outputs.build_id }}
         run: |
           set -euo pipefail
           if [[ "$OPERATION" == "probe" ]]; then
             probe="$(jq -nc --arg rid "control-$REQUEST_ID" '{
               schema:"personal-android-agent.telemetry.v1",
               app_id:"personal-android-agent",
-              version:"0.1.0-alpha3",
-              build_id:"3",
+              version:("0.1.0-alpha"+$ENV.BUILD_ID),
+              build_id:$ENV.BUILD_ID,
               run_id:$rid,
               device_instance_id:"github-control-plane",
               seq:0,
