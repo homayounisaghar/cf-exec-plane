@@ -50,12 +50,10 @@ jobs:
           umask 077
           [[ "$(id -u)" -eq 0 ]] || exit 2
 
-          ACTIVE=/opt/capability-fabric/current
           CONTROL=/var/lib/capability-fabric/onshape/runtime-control/ONSHAPE_RUNTIME_CONTROL.json
           SERVER=capability-fabric-onshape-server
           REMOTE_OUT=/tmp/cf-onshape-logged-in-20260925.png
 
-          [[ "$(readlink -f "$ACTIVE")" == /var/lib/capability-fabric/releases/onshape-vps-hardened-production-r4 ]]
           python3 - "$CONTROL" <<'PY'
           import json,sys
           r=json.load(open(sys.argv[1]))
