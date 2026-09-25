@@ -4,7 +4,7 @@ umask 077
 
 [[ "$(id -u)" -eq 0 ]] || { echo "must run as uid 0" >&2; exit 1; }
 mode="${CF_PCG_WEB_CONTROL_MODE:-}"
-case "$mode" in prepare|status|ingress-diagnostic|semantic-status|semantic-conversations|semantic-conversations-protected|semantic-conversations-canary|semantic-search-canary|semantic-messages-protected|semantic-messages-canary|semantic-mark-read-canary|semantic-open-media-canary|semantic-download-canary|semantic-composer-canary|phone|code|password|cleanup|screenshot|refresh-screenshot|mytelegram-start|mytelegram-capture-code|mytelegram-signin|mytelegram-create-app|mytelegram-screenshot) ;; *) echo "invalid mode" >&2; exit 2 ;; esac
+case "$mode" in prepare|status|ingress-diagnostic|semantic-status|semantic-conversations|semantic-conversations-protected|semantic-conversations-canary|semantic-search-canary|semantic-messages-protected|semantic-messages-canary|semantic-mark-read-canary|semantic-open-media-canary|semantic-download-canary|semantic-composer-canary|material-send-canary|phone|code|password|cleanup|screenshot|refresh-screenshot|mytelegram-start|mytelegram-capture-code|mytelegram-signin|mytelegram-create-app|mytelegram-screenshot) ;; *) echo "invalid mode" >&2; exit 2 ;; esac
 
 run_root=/var/lib/capability-fabric/pcg/run
 socket="$run_root/web.sock"
@@ -12,7 +12,7 @@ key_root=/run/capability-fabric/pcg-web-control
 private_key="$key_root/ephemeral-rsa.pem"
 public_key="$key_root/ephemeral-rsa.pub.pem"
 
-for cmd in python3 openssl base64 docker flock; do
+for cmd in python3 openssl base64 docker flock git tar; do
   command -v "$cmd" >/dev/null 2>&1 || { echo "missing required tool: $cmd" >&2; exit 20; }
 done
 
@@ -869,6 +869,117 @@ PY
     exit 0
   fi
   exit "$rc"
+fi
+
+if [[ "$mode" == material-send-canary ]]; then
+  sequence="$(python3 - "$release/manifest.json" <<'PY'
+import json,sys
+print(int(json.load(open(sys.argv[1],encoding='utf-8')).get('sequence',0)))
+PY
+)"
+  [[ "$sequence" -ge 30 ]] || { echo "PCG_WEB_MATERIAL_SEND_RUNTIME=too-old" >&2; exit 40; }
+
+  source_commit="$(tr -d '\r\n' < "$release/source-commit")"
+  [[ "$source_commit" =~ ^[0-9a-f]{40}$ ]] || { echo "PCG_WEB_MATERIAL_SEND_SOURCE=invalid" >&2; exit 40; }
+  repo_cache=/var/lib/capability-fabric/deploy/pcg/repo.git
+  [[ -d "$repo_cache" ]] || { echo "PCG_WEB_MATERIAL_SEND_SOURCE=cache-missing" >&2; exit 40; }
+  git --git-dir="$repo_cache" cat-file -e "$source_commit^{commit}"
+
+  work="$(mktemp -d "$run_root/.material-send-src.XXXXXX")"
+  cleanup_material_send() { rm -rf "$work"; }
+  trap cleanup_material_send EXIT
+  chmod 0755 "$work"
+  git --git-dir="$repo_cache" archive "$source_commit" src/capability_fabric | tar -x -C "$work"
+  chown -R 65534:65534 "$work"
+  find "$work" -type d -exec chmod 0755 {} +
+  find "$work" -type f -exec chmod 0644 {} +
+
+  image='python:3.12-slim-bookworm@sha256:392307d22300de8b5986851a12d9176dfc0fc073e65bf6523ebd7dcbeb23564e'
+  docker pull "$image" >/dev/null
+  docker run --rm --network none --user 65534:65534 \
+    -e PYTHONPATH=/src \
+    -v "$work/src:/src:ro" \
+    -v /var/lib/capability-fabric/pcg/core-state:/state:rw \
+    -v /var/lib/capability-fabric/pcg/run:/run/pcg:rw \
+    "$image" python - <<'PY'
+import json
+from uuid import uuid4
+
+from capability_fabric.communications_runtime import PrivatePayloadBroker
+from capability_fabric.domain import OutcomeState
+from capability_fabric.persistence import SqliteExecutionStateStore
+from capability_fabric.telegram_web_runtime import (
+    TelegramWebSocketClient,
+    TelegramWebUncertainEffectResolver,
+    build_telegram_web_kernel_runtime,
+)
+
+client = TelegramWebSocketClient("/run/pcg/web.sock", timeout=35.0)
+target = client.call({"op": "material.self_target"})
+handle = target.get("conversation_handle")
+if not isinstance(handle, str) or not handle.startswith("tgchat:"):
+    raise SystemExit("self target resolution failed")
+
+state = SqliteExecutionStateStore("/state/web-material-send.sqlite3")
+payloads = PrivatePayloadBroker(
+    "/state/web-material-payloads",
+    ttl_seconds=86400,
+    max_payload_bytes=4096,
+)
+try:
+    runtime = build_telegram_web_kernel_runtime(
+        client=client,
+        payloads=payloads,
+        state_store=state,
+        journal=state,
+    )
+    result = runtime.send_text(
+        conversation_handle=handle,
+        text="pcg-material-send-canary-" + str(uuid4()),
+    )
+    if result.outcome.state is not OutcomeState.ACHIEVED:
+        raise SystemExit("material send did not achieve")
+
+    resolver = TelegramWebUncertainEffectResolver(client, payloads)
+    observed = resolver.resolve(result.operation, result.attempt, result.dispatch)
+    if observed.state is not OutcomeState.ACHIEVED:
+        raise SystemExit("material send authoritative readback failed")
+
+    events = state.event_records()
+    durable_intent = any(
+        item.get("kind") == "state.dispatch_intent.persisted"
+        and item.get("entity_id") == result.attempt.attempt_id
+        for item in events
+    )
+    if not durable_intent:
+        raise SystemExit("durable dispatch intent missing")
+
+    payload_handle = str(result.dispatch.evidence["payload.handle"])
+    payloads.remove(payload_handle)
+    payload_removed = False
+    try:
+        payloads.resolve(payload_handle)
+    except KeyError:
+        payload_removed = True
+    if not payload_removed:
+        raise SystemExit("payload cleanup failed")
+
+    safe = {
+        "state": "ACHIEVED",
+        "self_target_opaque": True,
+        "kernel_dispatch_intent": True,
+        "provider_acknowledged": result.observation.ack_state.value == "ACKNOWLEDGED",
+        "provider_confirmed": result.observation.detail == "provider_confirmed",
+        "reconciliation_readback": "ACHIEVED",
+        "payload_removed": True,
+        "provider_content_model_visible": False,
+    }
+    print(json.dumps(safe, separators=(",", ":")))
+finally:
+    state.close()
+PY
+  printf 'PCG_WEB_MATERIAL_SEND_CANARY=pass\n'
+  exit 0
 fi
 
 if [[ "$mode" == screenshot ]]; then
