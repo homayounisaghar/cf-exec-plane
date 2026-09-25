@@ -1,0 +1,26 @@
+name: Onshape E9 Body Identity Probe
+on:
+  push:
+    branches: [main]
+    paths: ['server-bootstrap/control/onshape-e9-body-identity/*.request']
+permissions: {contents: read}
+jobs:
+  probe:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 2, persist-credentials: false}
+      - run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]]
+          bash -n server-bootstrap/172-onshape-e9-body-identity.sh
+      - run: bash server-bootstrap/runner/remote-bundle-exec.sh server-bootstrap/172-onshape-e9-body-identity.sh
