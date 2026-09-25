@@ -1,0 +1,298 @@
+name: Personal Android Agent Remote Command v1
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'android-agent/control/remote-command/*.request'
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: personal-android-agent-remote-command
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  publish:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      CF_REPO_READ_TOKEN: ${{ secrets.CF_REPO_READ_TOKEN }}
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+      GH_TOKEN: ${{ github.token }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+
+      - id: req
+        name: Validate immutable public control request
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || exit 10
+          IFS=$'\t' read -r status path <<<"${changes[0]}"
+          [[ "$status" == A ]] || exit 11
+          [[ "$path" == android-agent/control/remote-command/*.request ]] || exit 12
+
+          request_id="$(awk -F= '$1=="request_id"{print $2}' "$path" | tail -n1 | tr -d '[:space:]')"
+          candidate_commit="$(awk -F= '$1=="candidate_commit"{print $2}' "$path" | tail -n1 | tr -d '[:space:]')"
+          request_path="$(awk -F= '$1=="request_path"{print $2}' "$path" | tail -n1 | tr -d '[:space:]')"
+          request_sha256="$(awk -F= '$1=="request_sha256"{print $2}' "$path" | tail -n1 | tr -d '[:space:]')"
+          device_binding_path="$(awk -F= '$1=="device_binding_path"{print $2}' "$path" | tail -n1 | tr -d '[:space:]')"
+          issue_number="$(awk -F= '$1=="issue_number"{print $2}' "$path" | tail -n1 | tr -d '[:space:]')"
+
+          [[ "$request_id" == "$(basename "$path" .request)" ]] || exit 13
+          [[ "$request_id" =~ ^[A-Za-z0-9_.-]{8,96}$ ]] || exit 14
+          [[ "$candidate_commit" =~ ^[0-9a-f]{40}$ ]] || exit 15
+          [[ "$request_path" == "projects/personal-android-agent/private/remote-requests/${request_id}.json" ]] || exit 16
+          [[ "$request_sha256" =~ ^[0-9a-f]{64}$ ]] || exit 17
+          [[ "$device_binding_path" == "projects/personal-android-agent/private/device-binding-alpha7.json" ]] || exit 18
+          [[ "$issue_number" == "1" ]] || exit 19
+
+          {
+            echo "request_id=$request_id"
+            echo "candidate_commit=$candidate_commit"
+            echo "request_path=$request_path"
+            echo "request_sha256=$request_sha256"
+            echo "device_binding_path=$device_binding_path"
+            echo "issue_number=$issue_number"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Fetch exact private request and device binding
+        env:
+          CANDIDATE_COMMIT: ${{ steps.req.outputs.candidate_commit }}
+          REQUEST_PATH: ${{ steps.req.outputs.request_path }}
+          DEVICE_BINDING_PATH: ${{ steps.req.outputs.device_binding_path }}
+          EXPECTED_SHA256: ${{ steps.req.outputs.request_sha256 }}
+          REQUEST_ID: ${{ steps.req.outputs.request_id }}
+        run: |
+          set -euo pipefail
+          : "${CF_REPO_READ_TOKEN:?missing private repo read token}"
+          work="${RUNNER_TEMP}/paa-private-command"
+          rm -rf "$work"
+          mkdir -m 700 "$work"
+          git init "$work" >/dev/null
+
+          askpass="${RUNNER_TEMP}/paa-command-askpass"
+          cat > "$askpass" <<'ASKPASS'
+          #!/usr/bin/env bash
+          case "${1:-}" in
+            *Username*) printf '%s\n' 'x-access-token' ;;
+            *Password*) printf '%s\n' "$CF_REPO_READ_TOKEN" ;;
+            *) exit 1 ;;
+          esac
+          ASKPASS
+          chmod 700 "$askpass"
+
+          GIT_ASKPASS="$askpass" GIT_TERMINAL_PROMPT=0 git -C "$work" fetch --quiet --depth=1 \
+            https://github.com/homayounisaghar/capability-fabric.git "$CANDIDATE_COMMIT"
+          actual="$(git -C "$work" rev-parse FETCH_HEAD)"
+          [[ "$actual" == "$CANDIDATE_COMMIT" ]] || exit 20
+
+          git -C "$work" show "FETCH_HEAD:$REQUEST_PATH" > /tmp/paa-request.json
+          git -C "$work" show "FETCH_HEAD:$DEVICE_BINDING_PATH" > /tmp/paa-device-binding.json
+          rm -f "$askpass"
+          unset CF_REPO_READ_TOKEN
+
+          observed="$(sha256sum /tmp/paa-request.json | awk '{print $1}')"
+          [[ "$observed" == "$EXPECTED_SHA256" ]] || { echo "private request digest mismatch" >&2; exit 21; }
+
+          python3 - <<'PY'
+          import json, os, re
+          from pathlib import Path
+
+          req=json.loads(Path("/tmp/paa-request.json").read_text())
+          if set(req) != {"schema","request_id","action","parameters","ttl_seconds"}:
+              raise SystemExit("remote request fields")
+          if req["schema"] != "personal-android-agent.remote-request.v1":
+              raise SystemExit("remote request schema")
+          if req["request_id"] != os.environ["REQUEST_ID"]:
+              raise SystemExit("remote request id")
+          allowed={
+              "system.health","capability.inventory","device.state.get",
+              "notification.post","display.present_text",
+              "artifact.fetch_verify_cache","display.present_artifact","tts.speak",
+              "media.control","app.open","url.open","navigation.open","phone.dial",
+              "message.compose","alarm.set","timer.set","volume.get_set"
+          }
+          if req["action"] not in allowed:
+              raise SystemExit("action is not remote-allowed")
+          if not isinstance(req["parameters"],dict):
+              raise SystemExit("parameters")
+          ttl=req["ttl_seconds"]
+          if not isinstance(ttl,int) or ttl < 30 or ttl > 3600:
+              raise SystemExit("ttl_seconds")
+
+          binding=json.loads(Path("/tmp/paa-device-binding.json").read_text())
+          required={
+              "schema","device_id","receipt_signing_key_id","receipt_signing_spki_b64",
+              "command_encryption_key_id","command_encryption_spki_b64"
+          }
+          if set(binding) != required:
+              raise SystemExit("device binding fields")
+          if binding["schema"] != "personal-android-agent.device-identity.v1":
+              raise SystemExit("device binding schema")
+          if not re.fullmatch(r"[0-9a-f]{64}",binding["command_encryption_key_id"]):
+              raise SystemExit("device encryption key id")
+          PY
+
+      - name: Build exact private command payload
+        env:
+          REQUEST_ID: ${{ steps.req.outputs.request_id }}
+        run: |
+          set -euo pipefail
+          mkdir -m 700 -p server-bootstrap/.runtime
+          python3 - <<'PY'
+          import json, os
+          from datetime import datetime, timezone, timedelta
+          from pathlib import Path
+
+          req=json.loads(Path("/tmp/paa-request.json").read_text())
+          binding=json.loads(Path("/tmp/paa-device-binding.json").read_text())
+          now=datetime.now(timezone.utc)
+          exp=now+timedelta(seconds=req["ttl_seconds"])
+          issued=now.isoformat(timespec="milliseconds").replace("+00:00","Z")
+          expires=exp.isoformat(timespec="milliseconds").replace("+00:00","Z")
+          recipe={
+              "protocol_version":"1",
+              "request_id":req["request_id"],
+              "action":req["action"],
+              "parameters":req["parameters"],
+              "issued_at":issued,
+              "expires_at":expires,
+              "idempotency_key":req["request_id"],
+          }
+          payload={
+              "schema":"personal-android-agent.command-payload.v1",
+              "command_id":req["request_id"],
+              "audience":"com.homayounisaghar.androidagent",
+              "device_id":binding["device_id"],
+              "issued_at":issued,
+              "expires_at":expires,
+              "recipe":recipe,
+          }
+          raw=json.dumps(payload,separators=(",",":"),ensure_ascii=False).encode()
+          if len(raw) > 65536:
+              raise SystemExit("payload too large")
+          Path("server-bootstrap/.runtime/paa-command-payload.bin").write_bytes(raw)
+          Path("/tmp/paa-device-key-id").write_text(binding["command_encryption_key_id"])
+          Path("/tmp/paa-device-spki.b64").write_text(binding["command_encryption_spki_b64"])
+          PY
+
+      - name: Sign payload with durable VPS producer key
+        id: sign
+        run: |
+          set -euo pipefail
+          printf '::add-mask::%s\n' "$VPS_HOST"
+          printf '::add-mask::%s\n' "$VPS_SSH_USER"
+          sign_out="$(bash server-bootstrap/runner/remote-bundle-exec.sh server-bootstrap/181-android-agent-sign-command.sh)"
+          key_id="$(printf '%s\n' "$sign_out" | awk -F= '$1=="CF_PAA_PRODUCER_KEY_ID"{print $2}' | tail -n1)"
+          sig="$(printf '%s\n' "$sign_out" | awk -F= '$1=="CF_PAA_PRODUCER_SIGNATURE_B64URL"{print $2}' | tail -n1)"
+          verify="$(printf '%s\n' "$sign_out" | awk -F= '$1=="CF_PAA_PRODUCER_SIGN_VERIFY"{print $2}' | tail -n1)"
+          [[ "$key_id" == "personal-android-agent-producer-v1" ]] || exit 30
+          [[ "$sig" =~ ^[A-Za-z0-9_-]{8,512}$ ]] || exit 31
+          [[ "$verify" == "pass" ]] || exit 32
+          echo "::add-mask::$sig"
+          {
+            echo "key_id=$key_id"
+            echo "signature_b64url=$sig"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Encrypt signed envelope to exact device key
+        env:
+          PRODUCER_KEY_ID: ${{ steps.sign.outputs.key_id }}
+          SIGNATURE_B64URL: ${{ steps.sign.outputs.signature_b64url }}
+        run: |
+          set -euo pipefail
+          base64 -d /tmp/paa-device-spki.b64 > /tmp/paa-device-spki.der
+          openssl pkey -pubin -inform DER -in /tmp/paa-device-spki.der -out /tmp/paa-device-public.pem
+          openssl pkey -pubin -in /tmp/paa-device-public.pem -text_pub -noout | grep -q 'Public-Key: (3072 bit)'
+
+          node <<'NODE'
+          const fs=require('fs');
+          const crypto=require('crypto');
+
+          const payload=fs.readFileSync('server-bootstrap/.runtime/paa-command-payload.bin');
+          const sig=process.env.SIGNATURE_B64URL;
+          const keyId=process.env.PRODUCER_KEY_ID;
+          const signed={
+            schema:'personal-android-agent.signed-command.v1',
+            producer_key_id:keyId,
+            payload_b64:payload.toString('base64url'),
+            signature_b64:sig
+          };
+          const signedBytes=Buffer.from(JSON.stringify(signed));
+          const key=crypto.randomBytes(16);
+          const nonce=crypto.randomBytes(12);
+          const cipher=crypto.createCipheriv('aes-128-gcm',key,nonce);
+          cipher.setAAD(Buffer.from('personal-android-agent.encrypted-command.v1'));
+          const ct=Buffer.concat([cipher.update(signedBytes),cipher.final(),cipher.getAuthTag()]);
+          fs.writeFileSync('/tmp/paa-aes-key.bin',key);
+          fs.writeFileSync('/tmp/paa-nonce.bin',nonce);
+          fs.writeFileSync('/tmp/paa-ciphertext.bin',ct);
+          NODE
+
+          openssl pkeyutl -encrypt -pubin -inkey /tmp/paa-device-public.pem \
+            -pkeyopt rsa_padding_mode:oaep \
+            -pkeyopt rsa_oaep_md:sha256 \
+            -pkeyopt rsa_mgf1_md:sha1 \
+            -in /tmp/paa-aes-key.bin -out /tmp/paa-wrapped-key.bin
+
+          python3 - <<'PY'
+          import base64,json
+          from pathlib import Path
+          def b64u(b): return base64.urlsafe_b64encode(b).rstrip(b"=").decode()
+          env={
+            "schema":"personal-android-agent.encrypted-command.v1",
+            "device_key_id":Path("/tmp/paa-device-key-id").read_text().strip(),
+            "wrapped_key_b64":b64u(Path("/tmp/paa-wrapped-key.bin").read_bytes()),
+            "nonce_b64":b64u(Path("/tmp/paa-nonce.bin").read_bytes()),
+            "ciphertext_b64":b64u(Path("/tmp/paa-ciphertext.bin").read_bytes()),
+          }
+          raw=json.dumps(env,separators=(",",":"))
+          Path("/tmp/paa-encrypted-envelope.json").write_text(raw)
+          Path("/tmp/paa-comment.json").write_text(json.dumps({"body":raw},separators=(",",":")))
+          PY
+
+          envelope_sha="$(sha256sum /tmp/paa-encrypted-envelope.json | awk '{print $1}')"
+          echo "CF_PAA_ENVELOPE_SHA256=$envelope_sha"
+
+      - name: Publish opaque envelope to durable GitHub queue
+        env:
+          ISSUE_NUMBER: ${{ steps.req.outputs.issue_number }}
+        run: |
+          set -euo pipefail
+          response="$(curl --fail --silent --show-error --max-time 20 \
+            -X POST \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            -H "Content-Type: application/json" \
+            --data-binary @/tmp/paa-comment.json \
+            "https://api.github.com/repos/homayounisaghar/cf-exec-plane/issues/$ISSUE_NUMBER/comments")"
+          comment_id="$(printf '%s' "$response" | jq -r '.id // empty')"
+          [[ "$comment_id" =~ ^[0-9]+$ ]] || exit 40
+          echo "CF_PAA_BROKER_COMMENT_ID=$comment_id"
+
+      - name: Scrub private request material
+        if: always()
+        run: |
+          rm -rf server-bootstrap/.runtime /tmp/paa-request.json /tmp/paa-device-binding.json \
+            /tmp/paa-device-key-id /tmp/paa-device-spki.b64 /tmp/paa-device-spki.der \
+            /tmp/paa-device-public.pem /tmp/paa-aes-key.bin /tmp/paa-nonce.bin \
+            /tmp/paa-ciphertext.bin /tmp/paa-wrapped-key.bin /tmp/paa-encrypted-envelope.json \
+            /tmp/paa-comment.json
