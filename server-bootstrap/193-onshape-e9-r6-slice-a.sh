@@ -35,7 +35,7 @@ import json,sys
 x=json.load(open(sys.argv[1])); did=sys.argv[2]; a=x["authority"]; g=a["productionGuard"]; v=a["planes"]["vps-fabric"]
 assert x["controlRevision"]==547 and a["productionEpoch"]==18
 assert a["mode"]=="VPS_PRODUCTION" and a["materialAuthority"]=="vps-fabric"
-assert v["releaseSequence"]==70 and v["releaseId"]=="onshape-vps-hardened-production-r5"
+assert v["releaseSequence"]==71 and v["releaseId"]=="onshape-vps-hardened-production-r6"
 assert a["reconciliationHold"]["active"] is False
 assert x["lease"]["state"]=="FREE"
 assert g["generation"]==6 and g["killSwitch"]=="OPEN"
