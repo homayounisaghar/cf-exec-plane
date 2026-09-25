@@ -1,0 +1,49 @@
+name: Onshape R5 Epoch13 Authority Finalize
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'server-bootstrap/control/onshape-r5-epoch13-finalize/*.request'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: onshape-r5-authority-rebind
+  cancel-in-progress: false
+
+jobs:
+  finalize:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Validate immutable finalizer request
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || exit 10
+          IFS=$'\t' read -r status request_path <<<"${changes[0]}"
+          [[ "$status" == A && "$request_path" == server-bootstrap/control/onshape-r5-epoch13-finalize/*.request ]] || exit 11
+          request_id="$(awk -F= '$1=="request_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          action="$(awk -F= '$1=="action"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          target_blob="$(awk -F= '$1=="target_control_blob"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 12
+          [[ "$action" == "finalize-epoch13-seq70-r5-authority" ]] || exit 13
+          [[ "$target_blob" == "79ea04caa91462d85021ae46392b636b217a6cc8" ]] || exit 14
+          bash -n server-bootstrap/164-onshape-r5-epoch13-finalize.sh
+      - name: Sync epoch13, prove guard, and reopen production
+        shell: bash
+        run: bash server-bootstrap/runner/remote-bundle-exec.sh server-bootstrap/164-onshape-r5-epoch13-finalize.sh
