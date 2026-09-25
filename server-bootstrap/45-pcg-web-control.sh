@@ -1105,6 +1105,137 @@ PY
   exit 0
 fi
 
+if [[ "$mode" == material-attachment-reply-canary ]]; then
+  sequence="$(python3 - "$release/manifest.json" <<'PY'
+import json,sys
+print(int(json.load(open(sys.argv[1],encoding='utf-8')).get('sequence',0)))
+PY
+)"
+  [[ "$sequence" -ge 33 ]] || { echo "PCG_WEB_MATERIAL_ATTACHMENT_REPLY_RUNTIME=too-old" >&2; exit 43; }
+
+  source_commit="$(tr -d '\r\n' < "$release/source-commit")"
+  [[ "$source_commit" =~ ^[0-9a-f]{40}$ ]] || { echo "PCG_WEB_MATERIAL_ATTACHMENT_REPLY_SOURCE=invalid" >&2; exit 43; }
+  repo_cache=/var/lib/capability-fabric/deploy/pcg/repo.git
+  [[ -d "$repo_cache" ]] || { echo "PCG_WEB_MATERIAL_ATTACHMENT_REPLY_SOURCE=cache-missing" >&2; exit 43; }
+  git --git-dir="$repo_cache" cat-file -e "$source_commit^{commit}"
+
+  work="$(mktemp -d "$run_root/.material-attachment-reply-src.XXXXXX")"
+  cleanup_material_attachment_reply() { rm -rf "$work"; }
+  trap cleanup_material_attachment_reply EXIT
+  chmod 0755 "$work"
+  git --git-dir="$repo_cache" archive "$source_commit" src/capability_fabric | tar -x -C "$work"
+  chown -R 65534:65534 "$work"
+  find "$work" -type d -exec chmod 0755 {} +
+  find "$work" -type f -exec chmod 0644 {} +
+
+  image='python:3.12-slim-bookworm@sha256:392307d22300de8b5986851a12d9176dfc0fc073e65bf6523ebd7dcbeb23564e'
+  docker pull "$image" >/dev/null
+  docker run --rm --network none --user 65534:65534 \
+    -e PYTHONPATH=/src \
+    -v "$work/src:/src:ro" \
+    -v /var/lib/capability-fabric/pcg/core-state:/state:rw \
+    -v /var/lib/capability-fabric/pcg/run:/run/pcg:rw \
+    "$image" python - <<'PY'
+import json
+from uuid import uuid4
+
+from capability_fabric.communications_runtime import PrivatePayloadBroker
+from capability_fabric.domain import OutcomeState
+from capability_fabric.persistence import SqliteExecutionStateStore
+from capability_fabric.telegram_web_runtime import (
+    TelegramWebSocketClient,
+    TelegramWebUncertainEffectResolver,
+    build_telegram_web_kernel_runtime,
+)
+
+client = TelegramWebSocketClient("/run/pcg/web.sock", timeout=45.0)
+target = client.call({"op": "material.self_reply_target"})
+conversation_handle = target.get("conversation_handle")
+source_message_handle = target.get("source_message_handle")
+if not isinstance(conversation_handle, str) or not conversation_handle.startswith("tgchat:"):
+    raise SystemExit("self attachment reply conversation resolution failed")
+if not isinstance(source_message_handle, str) or not source_message_handle.startswith("tgmsg:"):
+    raise SystemExit("self attachment reply source resolution failed")
+
+state = SqliteExecutionStateStore("/state/web-material-send.sqlite3")
+payloads = PrivatePayloadBroker(
+    "/state/web-material-payloads",
+    ttl_seconds=86400,
+    max_payload_bytes=8192,
+)
+lease = payloads.put_bytes(("pcg-attachment-reply-canary-" + str(uuid4()) + "\n").encode("utf-8"))
+try:
+    runtime = build_telegram_web_kernel_runtime(
+        client=client,
+        payloads=payloads,
+        state_store=state,
+        journal=state,
+    )
+    result = runtime.reply_attachment(
+        conversation_handle=conversation_handle,
+        source_message_handle=source_message_handle,
+        attachment_handle=lease.handle,
+        filename="pcg-attachment-reply-canary.txt",
+        mime_type="text/plain",
+    )
+    if result.outcome.state is not OutcomeState.ACHIEVED:
+        raise SystemExit("material attachment reply did not achieve")
+
+    if result.dispatch.evidence.get("telegram_web.source_message_handle") != source_message_handle:
+        raise SystemExit("attachment reply source correlation mismatch")
+    if result.dispatch.evidence.get("attachment.handle") != lease.handle:
+        raise SystemExit("attachment reply handle correlation mismatch")
+    if result.dispatch.evidence.get("attachment.sha256") != lease.sha256_hex:
+        raise SystemExit("attachment reply digest correlation mismatch")
+    if result.dispatch.evidence.get("attachment.size_bytes") != lease.size_bytes:
+        raise SystemExit("attachment reply size correlation mismatch")
+
+    resolver = TelegramWebUncertainEffectResolver(client, payloads)
+    observed = resolver.resolve(result.operation, result.attempt, result.dispatch)
+    if observed.state is not OutcomeState.ACHIEVED:
+        raise SystemExit("material attachment reply authoritative readback failed")
+
+    events = state.event_records()
+    durable_intent = any(
+        item.get("kind") == "state.dispatch_intent.persisted"
+        and item.get("entity_id") == result.attempt.attempt_id
+        for item in events
+    )
+    if not durable_intent:
+        raise SystemExit("durable attachment reply dispatch intent missing")
+
+    payloads.remove(lease.handle)
+    payload_removed = False
+    try:
+        payloads.resolve(lease.handle)
+    except KeyError:
+        payload_removed = True
+    if not payload_removed:
+        raise SystemExit("attachment reply payload cleanup failed")
+
+    safe = {
+        "state": "ACHIEVED",
+        "self_target_opaque": True,
+        "source_message_opaque": True,
+        "attachment_handle_opaque": lease.handle.startswith("payload:"),
+        "bounded_size": lease.size_bytes <= 8192,
+        "kernel_dispatch_intent": True,
+        "provider_acknowledged": result.observation.ack_state.value == "ACKNOWLEDGED",
+        "provider_confirmed": result.observation.detail == "provider_confirmed",
+        "attachment_metadata_authoritative": True,
+        "reply_relationship_authoritative": True,
+        "reconciliation_readback": "ACHIEVED",
+        "payload_removed": True,
+        "provider_content_model_visible": False,
+    }
+    print(json.dumps(safe, separators=(",", ":")))
+finally:
+    state.close()
+PY
+  printf 'PCG_WEB_MATERIAL_ATTACHMENT_REPLY_CANARY=pass\n'
+  exit 0
+fi
+
 if [[ "$mode" == material-reply-canary ]]; then
   sequence="$(python3 - "$release/manifest.json" <<'PY'
 import json,sys
