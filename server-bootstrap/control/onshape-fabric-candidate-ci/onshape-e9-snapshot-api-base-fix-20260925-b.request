@@ -1,0 +1,4 @@
+request_id=onshape-e9-snapshot-api-base-fix-20260925-b
+candidate_commit=b4a6565ff0047c42370cf2d8b5c4571fb9166786
+expected_sequence=0
+expected_release=onshape-feature-semantic-source
