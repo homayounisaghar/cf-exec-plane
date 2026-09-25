@@ -70,13 +70,13 @@ jobs:
           docker inspect "$SERVER" >/dev/null 2>&1
           [[ "$(docker inspect -f '{{.State.Running}}' "$SERVER")" == true ]]
 
-          rm -f "$REMOTE_OUT"
-          docker exec -i "$SERVER" sh -lc 'cd /tmp/app && node --input-type=module' <<'NODE'
+          REMOTE_B64=/tmp/cf-onshape-logged-in-20260925.b64
+          rm -f "$REMOTE_OUT" "$REMOTE_B64"
+          docker exec -i "$SERVER" sh -lc 'cd /tmp/app && node --input-type=module' >"$REMOTE_B64" <<'NODE'
           import fs from "node:fs";
           import { BrowserSession } from "./browser.js";
 
           const profile="/tmp/cf-user-screenshot-auth-"+process.pid;
-          const out="/tmp/cf-user-onshape-screenshot.png";
           const session=new BrowserSession({
             profileDir:profile,
             accountFile:"/run/onshape-secrets/account",
@@ -104,19 +104,19 @@ jobs:
             if (auth?.state!=="PROVEN" || auth?.http_status!==200 || /signin/i.test(session.page.url())) {
               throw new Error("authenticated Onshape documents page not proven");
             }
-            await session.page.screenshot({path:out,type:"png",fullPage:false});
-            const st=fs.statSync(out);
-            if (!st.isFile() || st.size<1000) throw new Error("screenshot missing or too small");
-            console.log("CF_ONSHAPE_OPERATOR_SCREENSHOT_AUTH=pass");
-            console.log("CF_ONSHAPE_OPERATOR_SCREENSHOT_BYTES="+st.size);
+            const png=await session.page.screenshot({type:"png",fullPage:false});
+            if (!Buffer.isBuffer(png) || png.length<1000) throw new Error("screenshot missing or too small");
+            console.error("CF_ONSHAPE_OPERATOR_SCREENSHOT_AUTH=pass");
+            console.error("CF_ONSHAPE_OPERATOR_SCREENSHOT_BYTES="+png.length);
+            process.stdout.write(png.toString("base64"));
           } finally {
             await session.close().catch(()=>{});
             fs.rmSync(profile,{recursive:true,force:true});
           }
           NODE
 
-          docker cp "$SERVER:/tmp/cf-user-onshape-screenshot.png" "$REMOTE_OUT"
-          docker exec "$SERVER" rm -f /tmp/cf-user-onshape-screenshot.png
+          base64 -d "$REMOTE_B64" > "$REMOTE_OUT"
+          rm -f "$REMOTE_B64"
           chmod 600 "$REMOTE_OUT"
           [[ -s "$REMOTE_OUT" ]]
           python3 - "$REMOTE_OUT" <<'PY'
