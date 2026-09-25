@@ -1,0 +1,29 @@
+name: Onshape R6 Cohort Reauth
+on:
+  push:
+    branches: [main]
+    paths: ['server-bootstrap/control/onshape-r6-cohort-reauth/*.request']
+permissions: {contents: read}
+concurrency:
+  group: onshape-e9-semantic-lab
+  cancel-in-progress: false
+jobs:
+  reauth:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 2, persist-credentials: false}
+      - run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]]
+          bash -n server-bootstrap/191-onshape-r6-cohort-reauth.sh
+      - run: bash server-bootstrap/runner/remote-bundle-exec.sh server-bootstrap/191-onshape-r6-cohort-reauth.sh
