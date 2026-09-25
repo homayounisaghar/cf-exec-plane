@@ -90,6 +90,7 @@ jobs:
             src/capability_fabric/telegram_correlation.py \
             src/capability_fabric/telegram_execution.py \
             src/capability_fabric/telegram_runtime.py \
+            src/capability_fabric/telegram_web_runtime.py \
             src/capability_fabric/telegram_payload_bound.py \
             src/capability_fabric/telegram_host.py \
             src/capability_fabric/pcg_live.py \
@@ -191,3 +192,7 @@ jobs:
           python tests/test_pcg_provision_v02.py
           python tests/test_telegram_payload_bound.py
           python tests/test_pcg_web_semantic_contract_v01.py
+          python tests/test_pcg_web_stage4_modules_v01.py
+          python tests/test_pcg_web_stage5_composer_v01.py
+          python tests/test_pcg_web_stage5_material_send_v01.py
+          python tests/test_telegram_web_material_effect_v01.py
