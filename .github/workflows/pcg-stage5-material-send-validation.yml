@@ -114,7 +114,9 @@ jobs:
           python tests/test_pcg_web_stage5_mark_read_v01.py
           python tests/test_pcg_web_stage5_open_media_v01.py
           python tests/test_pcg_web_stage5_download_v01.py
-          python tests/test_pcg_web_stage5_material-send_v01.py
+          python tests/test_pcg_web_stage5_composer_v01.py
+          python tests/test_pcg_web_stage5_material_send_v01.py
+          python tests/test_telegram_web_material_effect_v01.py
           python tests/test_telegram_protected_read_v01.py
           python tests/test_communications_runtime_security_v01.py
           python tests/test_communications_runtime_v01.py
