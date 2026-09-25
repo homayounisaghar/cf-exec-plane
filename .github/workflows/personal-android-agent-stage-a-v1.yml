@@ -77,7 +77,7 @@ jobs:
           echo "PRIVATE_WORKTREE=$work" >> "$GITHUB_ENV"
 
       - id: contract
-        name: Validate fixed project contract
+        name: Validate project contract
         env:
           CANDIDATE_COMMIT: ${{ steps.request.outputs.candidate_commit }}
         run: |
@@ -92,21 +92,33 @@ jobs:
           if contract.get("schema") != "capability-fabric.android-standard-app-contract.v1":
               raise SystemExit("unsupported contract schema")
           app = contract.get("application") or {}
-          if app.get("packageId") != "com.homayounisaghar.androidagent":
+          package_id = app.get("packageId")
+          version_code = app.get("versionCode")
+          version_name = app.get("versionName")
+          if package_id != "com.homayounisaghar.androidagent":
               raise SystemExit("unexpected packageId")
-          if app.get("versionCode") != 1 or app.get("versionName") != "0.1.0-alpha1":
-              raise SystemExit("unexpected Phase-0 version")
+          if not isinstance(version_code, int) or version_code < 1:
+              raise SystemExit("invalid versionCode")
+          if not isinstance(version_name, str) or not re.fullmatch(r"0\.1\.0-alpha[0-9]+", version_name):
+              raise SystemExit("unexpected versionName")
           pipeline = contract.get("pipeline") or {}
           if pipeline.get("buildStageRequiresSigningSecrets") is not False:
               raise SystemExit("Stage A must be secret-free")
           if pipeline.get("signingSeparatedFromBuild") is not True:
               raise SystemExit("signing separation missing")
+          signer = contract.get("expectedSigner") or {}
+          if signer.get("status") != "ESTABLISHED":
+              raise SystemExit("durable signer identity must be established after first delivery")
+          if signer.get("alias") != "personal_android_agent":
+              raise SystemExit("unexpected signer alias")
+          if signer.get("certificateSha256") != "0df58433a50cf7bd1009fb66ce64c7c50122bf1a8137a60552932a3bfd493c55":
+              raise SystemExit("signer fingerprint continuity mismatch")
           actual = subprocess.check_output(["git","-C",str(source),"rev-parse","HEAD"], text=True).strip().lower()
           if actual != os.environ["CANDIDATE_COMMIT"]:
               raise SystemExit("checkout provenance mismatch")
-          print("package_id=com.homayounisaghar.androidagent")
-          print("version_code=1")
-          print("version_name=0.1.0-alpha1")
+          print(f"package_id={package_id}")
+          print(f"version_code={version_code}")
+          print(f"version_name={version_name}")
           PY
 
       - name: Set up JDK 17
@@ -144,6 +156,9 @@ jobs:
         env:
           REQUEST_ID: ${{ steps.request.outputs.request_id }}
           CANDIDATE_COMMIT: ${{ steps.request.outputs.candidate_commit }}
+          EXPECTED_PACKAGE: ${{ steps.contract.outputs.package_id }}
+          EXPECTED_VERSION_CODE: ${{ steps.contract.outputs.version_code }}
+          EXPECTED_VERSION_NAME: ${{ steps.contract.outputs.version_name }}
         run: |
           set -euo pipefail
           python3 - <<'PY'
@@ -166,8 +181,9 @@ jobs:
           if not m:
               raise SystemExit("unable to parse APK identity")
           package_id, version_code, version_name = m.groups()
-          if (package_id, version_code, version_name) != ("com.homayounisaghar.androidagent","1","0.1.0-alpha1"):
-              raise SystemExit("APK identity mismatch")
+          expected = (os.environ["EXPECTED_PACKAGE"], os.environ["EXPECTED_VERSION_CODE"], os.environ["EXPECTED_VERSION_NAME"])
+          if (package_id, version_code, version_name) != expected:
+              raise SystemExit(f"APK identity mismatch: {(package_id, version_code, version_name)!r} != {expected!r}")
 
           verify = subprocess.run([str(bt/"apksigner"), "verify", "--verbose", "--print-certs", str(dst)],
                                   text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -183,6 +199,7 @@ jobs:
               "projectId":"personal-android-agent",
               "checkoutRef":os.environ["CANDIDATE_COMMIT"],
               "application":{"packageId":package_id,"versionName":version_name,"versionCode":int(version_code)},
+              "expectedSigner":{"alias":"personal_android_agent","certificateSha256":"0df58433a50cf7bd1009fb66ce64c7c50122bf1a8137a60552932a3bfd493c55"},
               "artifact":{"file":dst.name,"sha256":sha,"installable":False,"disposableProof":False}
           }
           (out/"BUILD_MANIFEST.json").write_text(json.dumps(manifest,indent=2)+"\n")
