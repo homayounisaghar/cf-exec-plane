@@ -1,0 +1,171 @@
+name: Onshape Operator Screenshot 2026-09-25
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/onshape-operator-screenshot-20260925.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: personal-server-onshape-operator-screenshot
+  cancel-in-progress: false
+
+jobs:
+  capture:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+
+      - name: Mask endpoint
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf '::add-mask::%s\n' "$VPS_HOST"
+          printf '::add-mask::%s\n' "$VPS_SSH_USER"
+          while IFS= read -r addr; do
+            [[ -n "$addr" ]] && printf '::add-mask::%s\n' "$addr"
+          done < <(getent ahosts "$VPS_HOST" 2>/dev/null | awk '{print $1}' | sort -u)
+
+      - name: Capture isolated authenticated Onshape screenshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > server-bootstrap/.tmp-onshape-operator-screenshot.sh <<'BASH'
+          #!/usr/bin/env bash
+          set -euo pipefail
+          umask 077
+          [[ "$(id -u)" -eq 0 ]] || exit 2
+
+          ACTIVE=/opt/capability-fabric/current
+          CONTROL=/var/lib/capability-fabric/onshape/runtime-control/ONSHAPE_RUNTIME_CONTROL.json
+          SERVER=capability-fabric-onshape-server
+          REMOTE_OUT=/tmp/cf-onshape-logged-in-20260925.png
+
+          [[ "$(readlink -f "$ACTIVE")" == /var/lib/capability-fabric/releases/onshape-vps-hardened-production-r4 ]]
+          python3 - "$CONTROL" <<'PY'
+          import json,sys
+          r=json.load(open(sys.argv[1]))
+          a=r["authority"]
+          assert a["mode"]=="VPS_PRODUCTION", a["mode"]
+          assert a["materialAuthority"]=="vps-fabric", a["materialAuthority"]
+          assert a["planes"]["vps-fabric"]["ingress"]=="ADMITTED", a["planes"]["vps-fabric"]
+          assert a["planes"]["vps-fabric"]["releaseSequence"]==67, a["planes"]["vps-fabric"]
+          assert a["planes"]["vps-fabric"]["releaseId"]=="onshape-vps-hardened-production-r4", a["planes"]["vps-fabric"]
+          assert a["reconciliationHold"]["active"] is False, a["reconciliationHold"]
+          print("CF_ONSHAPE_OPERATOR_AUTHORITY=pass")
+          PY
+
+          docker inspect "$SERVER" >/dev/null 2>&1
+          [[ "$(docker inspect -f '{{.State.Running}}' "$SERVER")" == true ]]
+
+          rm -f "$REMOTE_OUT"
+          docker exec -i "$SERVER" sh -lc 'cd /tmp/app && node --input-type=module' <<'NODE'
+          import fs from "node:fs";
+          import { chromium } from "playwright";
+
+          const source="/profile";
+          const clone="/tmp/cf-user-screenshot-profile-"+process.pid;
+          const out="/tmp/cf-user-onshape-screenshot.png";
+          let context=null;
+          try {
+            fs.cpSync(source, clone, {recursive:true, dereference:false, errorOnExist:false, force:true});
+            for (const n of ["SingletonLock","SingletonCookie","SingletonSocket","DevToolsActivePort"]) {
+              fs.rmSync(clone+"/"+n,{recursive:true,force:true});
+            }
+            context=await chromium.launchPersistentContext(clone,{
+              headless:true,
+              chromiumSandbox:false,
+              args:["--no-sandbox","--disable-dev-shm-usage"],
+              viewport:{width:1440,height:1000}
+            });
+            const page=context.pages()[0] || await context.newPage();
+            page.setDefaultTimeout(15000);
+            page.setDefaultNavigationTimeout(45000);
+            await page.goto("https://cad.onshape.com/documents",{waitUntil:"domcontentloaded",timeout:45000});
+            await page.waitForLoadState("networkidle",{timeout:15000}).catch(()=>null);
+            const auth=await page.evaluate(async()=>{
+              try {
+                const r=await fetch("/api/users/current",{credentials:"include",cache:"no-store"});
+                return {status:r.status,ok:r.ok,origin:location.origin,path:location.pathname};
+              } catch(e) {
+                return {status:null,ok:false,origin:location.origin,path:location.pathname};
+              }
+            });
+            if (auth.origin!=="https://cad.onshape.com" || auth.status!==200 || !auth.ok || /signin/i.test(auth.path||"")) {
+              throw new Error("authenticated Onshape page not proven");
+            }
+            await page.screenshot({path:out,type:"png",fullPage:false});
+            const st=fs.statSync(out);
+            if (!st.isFile() || st.size<1000) throw new Error("screenshot missing or too small");
+            console.log("CF_ONSHAPE_OPERATOR_SCREENSHOT_AUTH=pass");
+            console.log("CF_ONSHAPE_OPERATOR_SCREENSHOT_BYTES="+st.size);
+          } finally {
+            if (context) await context.close().catch(()=>{});
+            fs.rmSync(clone,{recursive:true,force:true});
+          }
+          NODE
+
+          docker cp "$SERVER:/tmp/cf-user-onshape-screenshot.png" "$REMOTE_OUT"
+          docker exec "$SERVER" rm -f /tmp/cf-user-onshape-screenshot.png
+          chmod 600 "$REMOTE_OUT"
+          [[ -s "$REMOTE_OUT" ]]
+          python3 - "$REMOTE_OUT" <<'PY'
+          import pathlib,sys
+          p=pathlib.Path(sys.argv[1]).read_bytes()
+          assert p[:8] == b"\x89PNG\r\n\x1a\n"
+          print("CF_ONSHAPE_OPERATOR_SCREENSHOT_PNG=pass")
+          PY
+          BASH
+          chmod 700 server-bootstrap/.tmp-onshape-operator-screenshot.sh
+          bash server-bootstrap/runner/remote-bundle-exec.sh server-bootstrap/.tmp-onshape-operator-screenshot.sh
+
+      - name: Fetch screenshot from VPS
+        shell: bash
+        run: |
+          set -euo pipefail
+          key_file="$(mktemp "${RUNNER_TEMP}/cf-vps-key.XXXXXX")"
+          known_hosts="$(mktemp "${RUNNER_TEMP}/cf-known-hosts.XXXXXX")"
+          cleanup() { rm -f "$key_file" "$known_hosts"; }
+          trap cleanup EXIT
+          umask 077
+          printf '%s\n' "$VPS_SSH_KEY" > "$key_file"
+          chmod 600 "$key_file"
+          host_key_line="${VPS_HOST_KEY//$'\r'/}"
+          read -r key_type key_data extra <<< "$host_key_line"
+          [[ "$key_type" == ssh-ed25519 && -n "$key_data" && -z "${extra:-}" ]]
+          port="${VPS_PORT:-22}"
+          printf '%s %s %s\n' "$VPS_HOST" "$key_type" "$key_data" > "$known_hosts"
+          printf '[%s]:%s %s %s\n' "$VPS_HOST" "$port" "$key_type" "$key_data" >> "$known_hosts"
+          ssh_opts=(-i "$key_file" -p "$port" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$known_hosts" -o ConnectTimeout=15)
+          scp -q -i "$key_file" -P "$port" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$known_hosts"             "$VPS_SSH_USER@$VPS_HOST:/tmp/cf-onshape-logged-in-20260925.png"             "${RUNNER_TEMP}/onshape-logged-in.png"
+          [[ -s "${RUNNER_TEMP}/onshape-logged-in.png" ]]
+          ssh "${ssh_opts[@]}" "$VPS_SSH_USER@$VPS_HOST" "rm -f /tmp/cf-onshape-logged-in-20260925.png"
+          chmod 600 "${RUNNER_TEMP}/onshape-logged-in.png"
+
+      - name: Upload screenshot artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: onshape-logged-in-${{ github.run_id }}
+          path: ${{ runner.temp }}/onshape-logged-in.png
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
+
+      - name: Remove local screenshot
+        if: always()
+        shell: bash
+        run: rm -f "${RUNNER_TEMP}/onshape-logged-in.png" server-bootstrap/.tmp-onshape-operator-screenshot.sh
