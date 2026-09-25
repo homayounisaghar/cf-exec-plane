@@ -12,7 +12,7 @@ key_root=/run/capability-fabric/pcg-web-control
 private_key="$key_root/ephemeral-rsa.pem"
 public_key="$key_root/ephemeral-rsa.pub.pem"
 
-for cmd in python3 openssl base64 docker; do
+for cmd in python3 openssl base64 docker flock; do
   command -v "$cmd" >/dev/null 2>&1 || { echo "missing required tool: $cmd" >&2; exit 20; }
 done
 
@@ -896,95 +896,20 @@ PY
   [[ "$sequence" -ge 11 ]] || { echo "PCG_WEB_SCREENSHOT_RUNTIME=too-old" >&2; exit 26; }
   shot="$run_root/telegram-web-ui.png"
   rm -f "$shot"
+
+  install -d -m 0755 /run/lock
+  exec 9>/run/lock/capability-fabric-pull-pcg.lock
+  flock 9
+  exec 8>/run/lock/capability-fabric-pull.lock
+  flock 8
+
+  before_started="$(docker inspect -f '{{.State.StartedAt}}' capability-fabric-pcg-web 2>/dev/null || true)"
+  [[ -n "$before_started" ]] || { echo "PCG_WEB_REFRESH=container-missing" >&2; exit 38; }
   docker restart --time 15 capability-fabric-pcg-web >/dev/null
+
   ready=0
-  for _ in $(seq 1 60); do
-    cid="$(docker ps --filter name='^/capability-fabric-pcg-web
-if [[ "$mode" == mytelegram-capture-code ]]; then
-  socket_simple mytelegram.capture_code
-  exit 0
-fi
-
-if [[ "$mode" == mytelegram-signin ]]; then
-  socket_simple mytelegram.signin
-  exit 0
-fi
-
-if [[ "$mode" == mytelegram-create-app ]]; then
-  socket_simple mytelegram.create_app
-  src="$run_root/mytelegram-api.json"
-  dst_dir=/var/lib/capability-fabric/pcg/api-credentials
-  dst="$dst_dir/telegram-api.json"
-  if [[ -s "$src" ]]; then
-    install -d -m 0700 -o 65534 -g 65534 "$dst_dir"
-    install -m 0600 -o 65534 -g 65534 "$src" "$dst"
-    rm -f "$src"
-    printf 'PCG_TELEGRAM_API_CREDENTIALS=installed\n'
-  fi
-  exit 0
-fi
-
-if [[ "$mode" == mytelegram-screenshot ]]; then
-  shot="$run_root/mytelegram-ui.png"
-  rm -f "$shot"
-  socket_simple mytelegram.screenshot
-  [[ -s "$shot" ]] || { echo "PCG_MYTELEGRAM_SCREENSHOT=missing" >&2; exit 28; }
-  chmod 0600 "$shot"
-  printf 'PCG_MYTELEGRAM_SCREENSHOT_READY=yes\n'
-  exit 0
-fi
-
-if [[ "$mode" == cleanup ]]; then
-  rm -f "$private_key" "$public_key"
-  printf 'PCG_WEB_EPHEMERAL_KEY=removed\n'
-  exit 0
-fi
-
-[[ -s "$private_key" ]] || { echo "PCG_WEB_EPHEMERAL_KEY=missing" >&2; exit 23; }
-cipher="${CF_PCG_WEB_CONTROL_CIPHERTEXT:-}"
-[[ "$cipher" =~ ^[A-Za-z0-9+/=]{32,8192}$ ]] || { echo "invalid ciphertext" >&2; exit 24; }
-
-tmp_cipher="$(mktemp "$key_root/.cipher.XXXXXX")"
-tmp_plain="$(mktemp "$key_root/.plain.XXXXXX")"
-cleanup_files() { rm -f "$tmp_cipher" "$tmp_plain"; }
-trap cleanup_files EXIT
-printf '%s' "$cipher" | base64 -d > "$tmp_cipher"
-openssl pkeyutl -decrypt -inkey "$private_key" -in "$tmp_cipher" -out "$tmp_plain" \
-  -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256 -pkeyopt rsa_mgf1_md:sha256 >/dev/null 2>&1
-[[ -s "$tmp_plain" ]] || { echo "decrypt failed" >&2; exit 25; }
-
-case "$mode" in
-  phone) op='login.phone' ;;
-  code) op='login.code' ;;
-  password) op='login.password' ;;
-  mytelegram-start) op='mytelegram.start' ;;
-esac
-
-python3 - "$socket" "$op" "$tmp_plain" <<'PY'
-import json,socket,sys
-sock_path,op,plain_path=sys.argv[1:]
-with open(plain_path,'r',encoding='utf-8') as f:
-    value=f.read()
-s=socket.socket(socket.AF_UNIX,socket.SOCK_STREAM)
-s.settimeout(40)
-s.connect(sock_path)
-s.sendall((json.dumps({'op':op,'value':value},separators=(',',':'))+'\n').encode())
-value=''
-buf=b''
-while b'\n' not in buf:
-    chunk=s.recv(65536)
-    if not chunk: break
-    buf+=chunk
-s.close()
-if not buf: raise SystemExit('empty browser response')
-d=json.loads(buf.split(b'\n',1)[0])
-safe={k:d.get(k) for k in ('ok','phase','origin','pathname','logged_in','error') if k in d}
-print(json.dumps(safe,separators=(',',':')))
-if not d.get('ok'): raise SystemExit(40)
-PY
-: > "$tmp_plain"
-printf 'PCG_WEB_CONTROL_%s=pass\n' "${mode^^}"
- --format '{{.ID}}' | head -n1)"
+  while (( SECONDS < 90 )); do
+    cid="$(docker ps --filter name='^/capability-fabric-pcg-web$' --format '{{.ID}}' | head -n1)"
     if [[ -n "$cid" ]] && [[ "$(docker inspect -f '{{.State.Health.Status}}' "$cid" 2>/dev/null || true)" == healthy ]] && [[ -S "$socket" ]]; then
       ready=1
       break
@@ -992,6 +917,10 @@ printf 'PCG_WEB_CONTROL_%s=pass\n' "${mode^^}"
     sleep 1
   done
   [[ "$ready" -eq 1 ]] || { echo "PCG_WEB_REFRESH=unhealthy-after-restart" >&2; exit 38; }
+
+  after_started="$(docker inspect -f '{{.State.StartedAt}}' capability-fabric-pcg-web 2>/dev/null || true)"
+  [[ -n "$after_started" && "$after_started" != "$before_started" ]] || { echo "PCG_WEB_REFRESH=restart-not-observed" >&2; exit 38; }
+
   socket_simple screenshot
   [[ -s "$shot" ]] || { echo "PCG_WEB_REFRESH_SCREENSHOT=missing" >&2; exit 39; }
   chmod 0600 "$shot"
