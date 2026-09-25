@@ -17,7 +17,7 @@ LEFT JOIN attempts a ON a.operation_id=o.operation_id
 WHERE i.phase IN ('DISPATCH_FINALIZED','DISPATCH_INTENT','OBSERVED')
    OR o.state IN ('IN_FLIGHT','IN_DOUBT')
    OR a.state IN ('DISPATCH_INTENT','IN_DOUBT')
-ORDER BY rowid DESC
+ORDER BY i.rowid DESC
 """).fetchall()
 print("CF_E9_BLOCKER_COUNT="+str(len(rows)))
 for r in rows:
