@@ -195,4 +195,5 @@ jobs:
           python tests/test_pcg_web_stage4_modules_v01.py
           python tests/test_pcg_web_stage5_composer_v01.py
           python tests/test_pcg_web_stage5_material_send_v01.py
+          python tests/test_pcg_web_stage5_material_reply_v01.py
           python tests/test_telegram_web_material_effect_v01.py
