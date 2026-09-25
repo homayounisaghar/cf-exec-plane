@@ -4,7 +4,7 @@ umask 077
 
 [[ "$(id -u)" -eq 0 ]] || { echo "must run as uid 0" >&2; exit 1; }
 mode="${CF_PCG_WEB_CONTROL_MODE:-}"
-case "$mode" in prepare|status|ingress-diagnostic|semantic-status|semantic-conversations|semantic-conversations-protected|semantic-conversations-canary|semantic-search-canary|semantic-messages-protected|semantic-messages-canary|semantic-mark-read-canary|phone|code|password|cleanup|screenshot|mytelegram-start|mytelegram-capture-code|mytelegram-signin|mytelegram-create-app|mytelegram-screenshot) ;; *) echo "invalid mode" >&2; exit 2 ;; esac
+case "$mode" in prepare|status|ingress-diagnostic|semantic-status|semantic-conversations|semantic-conversations-protected|semantic-conversations-canary|semantic-search-canary|semantic-messages-protected|semantic-messages-canary|semantic-mark-read-canary|semantic-open-media-canary|phone|code|password|cleanup|screenshot|mytelegram-start|mytelegram-capture-code|mytelegram-signin|mytelegram-create-app|mytelegram-screenshot) ;; *) echo "invalid mode" >&2; exit 2 ;; esac
 
 run_root=/var/lib/capability-fabric/pcg/run
 socket="$run_root/web.sock"
@@ -290,7 +290,7 @@ for conversation in items:
     for message in messages:
         if not isinstance(message,dict):
             valid=False; break
-        expected={'handle','kind','text','date','outgoing','media_type','service_action'}
+        expected={'handle','kind','text','date','outgoing','media_type','media_open_kind','media_unread','service_action'}
         if set(message) != expected:
             valid=False; break
         if not isinstance(message.get('handle'),str) or not message['handle'].startswith('tgmsg:'):
@@ -300,6 +300,10 @@ for conversation in items:
         if message.get('date') is not None and not isinstance(message.get('date'),int):
             valid=False; break
         if not isinstance(message.get('outgoing'),bool):
+            valid=False; break
+        if message.get('media_open_kind') not in (None,'voice','round_video'):
+            valid=False; break
+        if not isinstance(message.get('media_unread'),bool):
             valid=False; break
     if not valid:
         first_error=first_error or 'MESSAGE_LIST_ENTRY_INVALID'
@@ -411,6 +415,48 @@ if isinstance(obs,dict):
     allowed=(
         'canary_present','target_was_unread','target_read_after',
         'provider_observation_before','provider_observation_after',
+        'effect_attempted','effect_invocation_acknowledged','provider_confirmed',
+        'unrelated_unread_preserved','navigation_unchanged',
+        'provider_content_model_visible'
+    )
+    safe['observation']={k:obs.get(k) for k in allowed if k in obs}
+print(json.dumps(safe,separators=(',',':')))
+state=d.get('state')
+if state == 'ACHIEVED':
+    raise SystemExit(0)
+if state == 'QUALIFICATION_REQUIRED':
+    raise SystemExit(42)
+if state == 'IN_DOUBT':
+    raise SystemExit(43)
+raise SystemExit(40)
+PY
+}
+
+socket_open_media_qualification() {
+  python3 - "$socket" <<'PY'
+import json,socket,sys
+sock_path=sys.argv[1]
+payload={'op':'qualify.message_open_media'}
+s=socket.socket(socket.AF_UNIX,socket.SOCK_STREAM)
+s.settimeout(90)
+s.connect(sock_path)
+s.sendall((json.dumps(payload,separators=(',',':'))+'\n').encode())
+buf=b''
+while b'\n' not in buf:
+    chunk=s.recv(65536)
+    if not chunk:
+        break
+    buf+=chunk
+s.close()
+if not buf:
+    raise SystemExit('empty browser response')
+d=json.loads(buf.split(b'\n',1)[0])
+safe={k:d.get(k) for k in ('ok','state','operation','provider','realization','error') if k in d}
+obs=d.get('observation')
+if isinstance(obs,dict):
+    allowed=(
+        'canary_present','media_kind','admitted_media_kinds',
+        'target_media_unread_before','target_media_unread_after',
         'effect_attempted','effect_invocation_acknowledged','provider_confirmed',
         'unrelated_unread_preserved','navigation_unchanged',
         'provider_content_model_visible'
@@ -637,6 +683,32 @@ PY
   fi
   if [[ "$rc" -eq 43 ]]; then
     printf 'PCG_WEB_MARK_READ_CANARY=in-doubt\n' >&2
+    exit 43
+  fi
+  exit "$rc"
+fi
+
+if [[ "$mode" == semantic-open-media-canary ]]; then
+  sequence="$(python3 - "$release/manifest.json" <<'PY'
+import json,sys
+print(int(json.load(open(sys.argv[1],encoding='utf-8')).get('sequence',0)))
+PY
+)"
+  [[ "$sequence" -ge 27 ]] || { echo "PCG_WEB_OPEN_MEDIA_RUNTIME=too-old" >&2; exit 35; }
+  set +e
+  socket_open_media_qualification
+  rc=$?
+  set -e
+  if [[ "$rc" -eq 0 ]]; then
+    printf 'PCG_WEB_OPEN_MEDIA_CANARY=pass\n'
+    exit 0
+  fi
+  if [[ "$rc" -eq 42 ]]; then
+    printf 'PCG_WEB_OPEN_MEDIA_CANARY=qualification-required\n'
+    exit 0
+  fi
+  if [[ "$rc" -eq 43 ]]; then
+    printf 'PCG_WEB_OPEN_MEDIA_CANARY=in-doubt\n' >&2
     exit 43
   fi
   exit "$rc"
