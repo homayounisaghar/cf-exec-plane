@@ -46,7 +46,7 @@ jobs:
           phase="$(awk -F= '$1=="phase"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
           ciphertext="$(awk -F= '$1=="ciphertext"{print substr($0,index($0,"=")+1)}' "$request_path" | tail -n1 | tr -d '[:space:]')"
           [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 13
-          case "$phase" in prepare|status|ingress-diagnostic|semantic-status|semantic-conversations|semantic-conversations-protected|semantic-conversations-canary|semantic-search-canary|semantic-messages-protected|semantic-messages-canary|semantic-mark-read-canary|semantic-open-media-canary|semantic-download-canary|semantic-composer-canary|phone|code|password|cleanup|screenshot|mytelegram-start|mytelegram-capture-code|mytelegram-signin|mytelegram-create-app|mytelegram-screenshot) ;; *) exit 14 ;; esac
+          case "$phase" in prepare|status|ingress-diagnostic|semantic-status|semantic-conversations|semantic-conversations-protected|semantic-conversations-canary|semantic-search-canary|semantic-messages-protected|semantic-messages-canary|semantic-mark-read-canary|semantic-open-media-canary|semantic-download-canary|semantic-composer-canary|phone|code|password|cleanup|screenshot|refresh-screenshot|mytelegram-start|mytelegram-capture-code|mytelegram-signin|mytelegram-create-app|mytelegram-screenshot) ;; *) exit 14 ;; esac
           case "$phase" in
             phone|code|password|mytelegram-start)
               [[ "$ciphertext" =~ ^[A-Za-z0-9+/=]{32,8192}$ ]] || { echo "ciphertext required" >&2; exit 15; }
@@ -75,7 +75,7 @@ jobs:
         run: bash server-bootstrap/runner/remote-bundle-exec.sh server-bootstrap/45-pcg-web-control.sh
 
       - name: Fetch Telegram Web screenshot from VPS
-        if: steps.request.outputs.phase == 'screenshot' || steps.request.outputs.phase == 'mytelegram-screenshot'
+        if: steps.request.outputs.phase == 'screenshot' || steps.request.outputs.phase == 'refresh-screenshot' || steps.request.outputs.phase == 'mytelegram-screenshot'
         run: |
           set -euo pipefail
           key_file="$(mktemp "${RUNNER_TEMP}/cf-vps-key.XXXXXX")"
@@ -100,7 +100,7 @@ jobs:
           chmod 600 "${RUNNER_TEMP}/telegram-web-ui.png"
 
       - name: Upload Telegram Web screenshot artifact
-        if: steps.request.outputs.phase == 'screenshot' || steps.request.outputs.phase == 'mytelegram-screenshot'
+        if: steps.request.outputs.phase == 'screenshot' || steps.request.outputs.phase == 'refresh-screenshot' || steps.request.outputs.phase == 'mytelegram-screenshot'
         uses: actions/upload-artifact@v4
         with:
           name: pcg-web-screenshot-${{ github.run_id }}
@@ -110,5 +110,5 @@ jobs:
           compression-level: 0
 
       - name: Remove local screenshot copy
-        if: always() && (steps.request.outputs.phase == 'screenshot' || steps.request.outputs.phase == 'mytelegram-screenshot')
+        if: always() && (steps.request.outputs.phase == 'screenshot' || steps.request.outputs.phase == 'refresh-screenshot' || steps.request.outputs.phase == 'mytelegram-screenshot')
         run: rm -f "${RUNNER_TEMP}/telegram-web-ui.png"
