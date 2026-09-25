@@ -922,6 +922,17 @@ PY
   after_started="$(docker inspect -f '{{.State.StartedAt}}' capability-fabric-pcg-web 2>/dev/null || true)"
   [[ -n "$after_started" && "$after_started" != "$before_started" ]] || { echo "PCG_WEB_REFRESH=restart-not-observed" >&2; exit 38; }
 
+  list_ready=0
+  settle_deadline=$((SECONDS + 30))
+  while (( SECONDS < settle_deadline )); do
+    if socket_semantic_conversation_contract >/dev/null 2>&1; then
+      list_ready=1
+      break
+    fi
+    sleep 1
+  done
+  [[ "$list_ready" -eq 1 ]] || { echo "PCG_WEB_REFRESH=conversation-list-not-ready" >&2; exit 38; }
+
   socket_simple screenshot
   [[ -s "$shot" ]] || { echo "PCG_WEB_REFRESH_SCREENSHOT=missing" >&2; exit 39; }
   chmod 0600 "$shot"
