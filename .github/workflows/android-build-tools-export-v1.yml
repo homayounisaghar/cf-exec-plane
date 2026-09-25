@@ -49,7 +49,7 @@ jobs:
           cp "$BT/lib/apksigner.jar" "$RUNNER_TEMP/android-build-tools-35/lib/"
           cp "$BT/zipalign" "$RUNNER_TEMP/android-build-tools-35/"
           cp "$BT/aapt" "$RUNNER_TEMP/android-build-tools-35/"
-          sha256sum "$RUNNER_TEMP/android-build-tools-35/"* "$RUNNER_TEMP/android-build-tools-35/lib/"* > "$RUNNER_TEMP/android-build-tools-35/SHA256SUMS.txt"
+          sha256sum "$RUNNER_TEMP/android-build-tools-35/apksigner" "$RUNNER_TEMP/android-build-tools-35/zipalign" "$RUNNER_TEMP/android-build-tools-35/aapt" "$RUNNER_TEMP/android-build-tools-35/lib/apksigner.jar" > "$RUNNER_TEMP/android-build-tools-35/SHA256SUMS.txt"
 
       - uses: actions/upload-artifact@v4
         with:
