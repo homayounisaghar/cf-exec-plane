@@ -1,0 +1,24 @@
+name: Onshape E9 Forward Reconcile 2
+on:
+  push:
+    branches: [main]
+    paths: ['server-bootstrap/control/onshape-e9-forward-reconcile2/*.request']
+permissions: {contents: read}
+concurrency:
+  group: onshape-e9-semantic-lab
+  cancel-in-progress: false
+jobs:
+  reconcile:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 2, persist-credentials: false}
+      - run: bash server-bootstrap/runner/remote-bundle-exec.sh server-bootstrap/185-onshape-e9-forward-reconcile2.sh
