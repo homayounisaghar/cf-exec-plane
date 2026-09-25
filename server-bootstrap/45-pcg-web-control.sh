@@ -4,7 +4,7 @@ umask 077
 
 [[ "$(id -u)" -eq 0 ]] || { echo "must run as uid 0" >&2; exit 1; }
 mode="${CF_PCG_WEB_CONTROL_MODE:-}"
-case "$mode" in prepare|status|ingress-diagnostic|semantic-status|semantic-conversations|semantic-conversations-protected|semantic-conversations-canary|semantic-search-canary|semantic-messages-protected|semantic-messages-canary|semantic-mark-read-canary|semantic-open-media-canary|phone|code|password|cleanup|screenshot|mytelegram-start|mytelegram-capture-code|mytelegram-signin|mytelegram-create-app|mytelegram-screenshot) ;; *) echo "invalid mode" >&2; exit 2 ;; esac
+case "$mode" in prepare|status|ingress-diagnostic|semantic-status|semantic-conversations|semantic-conversations-protected|semantic-conversations-canary|semantic-search-canary|semantic-messages-protected|semantic-messages-canary|semantic-mark-read-canary|semantic-open-media-canary|semantic-download-canary|phone|code|password|cleanup|screenshot|mytelegram-start|mytelegram-capture-code|mytelegram-signin|mytelegram-create-app|mytelegram-screenshot) ;; *) echo "invalid mode" >&2; exit 2 ;; esac
 
 run_root=/var/lib/capability-fabric/pcg/run
 socket="$run_root/web.sock"
@@ -290,7 +290,7 @@ for conversation in items:
     for message in messages:
         if not isinstance(message,dict):
             valid=False; break
-        expected={'handle','kind','text','date','outgoing','media_type','media_open_kind','media_unread','service_action'}
+        expected={'handle','kind','text','date','outgoing','media_type','media_open_kind','media_unread','attachments','service_action'}
         if set(message) != expected:
             valid=False; break
         if not isinstance(message.get('handle'),str) or not message['handle'].startswith('tgmsg:'):
@@ -305,6 +305,30 @@ for conversation in items:
             valid=False; break
         if not isinstance(message.get('media_unread'),bool):
             valid=False; break
+        attachments=message.get('attachments')
+        if not isinstance(attachments,list):
+            valid=False; break
+        for attachment in attachments:
+            if not isinstance(attachment,dict):
+                valid=False; break
+            if set(attachment) != {'handle','media_type','size_bytes','filename'}:
+                valid=False; break
+            if not isinstance(attachment.get('handle'),str) or not attachment['handle'].startswith('tgatt:'):
+                valid=False; break
+            if not isinstance(attachment.get('media_type'),str) or not attachment['media_type']:
+                valid=False; break
+            if attachment.get('size_bytes') is not None and (
+                not isinstance(attachment.get('size_bytes'),int) or attachment['size_bytes'] < 1
+            ):
+                valid=False; break
+            if attachment.get('filename') is not None and (
+                not isinstance(attachment.get('filename'),str)
+                or not attachment['filename']
+                or len(attachment['filename']) > 512
+            ):
+                valid=False; break
+        if not valid:
+            break
     if not valid:
         first_error=first_error or 'MESSAGE_LIST_ENTRY_INVALID'
         continue
@@ -460,6 +484,49 @@ if isinstance(obs,dict):
         'effect_attempted','effect_invocation_acknowledged','provider_confirmed',
         'unrelated_unread_preserved','navigation_unchanged',
         'provider_content_model_visible'
+    )
+    safe['observation']={k:obs.get(k) for k in allowed if k in obs}
+print(json.dumps(safe,separators=(',',':')))
+state=d.get('state')
+if state == 'ACHIEVED':
+    raise SystemExit(0)
+if state == 'QUALIFICATION_REQUIRED':
+    raise SystemExit(42)
+if state == 'IN_DOUBT':
+    raise SystemExit(43)
+raise SystemExit(40)
+PY
+}
+
+socket_download_qualification() {
+  python3 - "$socket" <<'PY'
+import json,socket,sys
+sock_path=sys.argv[1]
+payload={'op':'qualify.attachment_download'}
+s=socket.socket(socket.AF_UNIX,socket.SOCK_STREAM)
+s.settimeout(120)
+s.connect(sock_path)
+s.sendall((json.dumps(payload,separators=(',',':'))+'\n').encode())
+buf=b''
+while b'\n' not in buf:
+    chunk=s.recv(65536)
+    if not chunk:
+        break
+    buf+=chunk
+s.close()
+if not buf:
+    raise SystemExit('empty browser response')
+d=json.loads(buf.split(b'\n',1)[0])
+safe={k:d.get(k) for k in ('ok','state','operation','provider','realization','error') if k in d}
+obs=d.get('observation')
+if isinstance(obs,dict):
+    allowed=(
+        'canary_present','admitted_attachment_slots','attachment_slot',
+        'local_file_acquired','file_handle_opaque','broker_verified','cleanup_confirmed',
+        'provider_restriction_checked','provider_state_checked','provider_state_unchanged',
+        'target_read_state_unchanged','target_media_unread_unchanged',
+        'target_unread_preserved','unrelated_unread_preserved',
+        'navigation_unchanged','provider_content_model_visible'
     )
     safe['observation']={k:obs.get(k) for k in allowed if k in obs}
 print(json.dumps(safe,separators=(',',':')))
@@ -709,6 +776,32 @@ PY
   fi
   if [[ "$rc" -eq 43 ]]; then
     printf 'PCG_WEB_OPEN_MEDIA_CANARY=in-doubt\n' >&2
+    exit 43
+  fi
+  exit "$rc"
+fi
+
+if [[ "$mode" == semantic-download-canary ]]; then
+  sequence="$(python3 - "$release/manifest.json" <<'PY'
+import json,sys
+print(int(json.load(open(sys.argv[1],encoding='utf-8')).get('sequence',0)))
+PY
+)"
+  [[ "$sequence" -ge 28 ]] || { echo "PCG_WEB_DOWNLOAD_RUNTIME=too-old" >&2; exit 36; }
+  set +e
+  socket_download_qualification
+  rc=$?
+  set -e
+  if [[ "$rc" -eq 0 ]]; then
+    printf 'PCG_WEB_DOWNLOAD_CANARY=pass\n'
+    exit 0
+  fi
+  if [[ "$rc" -eq 42 ]]; then
+    printf 'PCG_WEB_DOWNLOAD_CANARY=qualification-required\n'
+    exit 0
+  fi
+  if [[ "$rc" -eq 43 ]]; then
+    printf 'PCG_WEB_DOWNLOAD_CANARY=in-doubt\n' >&2
     exit 43
   fi
   exit "$rc"
