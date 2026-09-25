@@ -22,7 +22,7 @@ WID=8bbf262de8f6c2015d72fd7d
 EID=dc6eb5c8b694395c14024558
 FID=FwHDp7GXelUCXDl_0
 
-[[ "$(basename "$(readlink -f "$ACTIVE")")" == "onshape-vps-hardened-production-r5" ]] || exit 20
+[[ "$(basename "$(readlink -f "$ACTIVE")")" == "onshape-vps-hardened-production-r6" ]] || exit 20
 [[ "$(git hash-object "$CONTROL")" == "$EXPECTED_CONTROL" ]] || exit 20
 [[ "$(tr -d '\r\n' < "$MIRROR_BLOB")" == "$EXPECTED_CONTROL" ]] || exit 20
 [[ -f "$GATE" ]] && grep -Fxq RELEASE_IN_PROGRESS "$GATE"
