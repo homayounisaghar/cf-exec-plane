@@ -118,6 +118,11 @@ jobs:
           fi
 
           curl --fail --silent --show-error --max-time 20 "$poll_url" > /tmp/feed.jsonl
+          if [[ "$OPERATION" == "probe" ]]; then
+            echo "CF_PAA_NTFY_PUBLISH_RESPONSE=$(cat /tmp/publish.json)"
+            echo "CF_PAA_NTFY_FEED_BYTES=$(wc -c < /tmp/feed.jsonl | tr -d ' ')"
+            sed -n '1,20p' /tmp/feed.jsonl | sed 's/^/CF_PAA_NTFY_RAW=/'
+          fi
           jq -Rrc 'try (fromjson | select(.event=="message") | .message | fromjson | select(.schema=="personal-android-agent.telemetry.v1")) catch empty' /tmp/feed.jsonl > /tmp/paa-events.jsonl
 
           echo "CF_PAA_TELEMETRY_READ_BEGIN"
