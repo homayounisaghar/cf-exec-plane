@@ -1,0 +1,4 @@
+request_id=onshape-r6-e9-fix-20260925-a
+candidate_commit=0146b8a69188e032b05c46f60910aee96fa0a7e8
+expected_sequence=0
+expected_release=onshape-feature-semantic-source
