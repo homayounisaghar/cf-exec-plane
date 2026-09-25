@@ -1,0 +1,124 @@
+name: PCG Stage 5 Unit 1 Validation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'server-bootstrap/control/pcg-stage5-unit1-validation-requests/*.request'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pcg-stage5-unit1-validation
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  validate:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+
+      - id: request
+        name: Validate immutable Stage 5 unit 1 request
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || { echo "trigger must add exactly one request file" >&2; exit 10; }
+          IFS=$'\t' read -r status request_path <<<"${changes[0]}"
+          [[ "$status" == A ]] || exit 11
+          [[ "$request_path" == server-bootstrap/control/pcg-stage5-unit1-validation-requests/*.request ]] || exit 12
+          request_id="$(awk -F= '$1=="request_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          candidate_commit="$(awk -F= '$1=="candidate_commit"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 13
+          [[ "$candidate_commit" =~ ^[0-9a-f]{40}$ ]] || exit 14
+          echo "candidate_commit=$candidate_commit" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Fetch exact private candidate then scrub credential
+        env:
+          CF_REPO_READ_TOKEN: ${{ secrets.CF_REPO_READ_TOKEN }}
+          CANDIDATE_COMMIT: ${{ steps.request.outputs.candidate_commit }}
+        run: |
+          set -euo pipefail
+          : "${CF_REPO_READ_TOKEN:?missing private repository read token}"
+          work="${RUNNER_TEMP}/pcg-stage5-unit1"
+          rm -rf "$work"
+          mkdir -m 700 "$work"
+          git init "$work" >/dev/null
+          askpass="${RUNNER_TEMP}/pcg-stage5-unit1-askpass"
+          cat > "$askpass" <<'ASKPASS'
+          #!/usr/bin/env bash
+          case "${1:-}" in
+            *Username*) printf '%s\n' 'x-access-token' ;;
+            *Password*) printf '%s\n' "$CF_REPO_READ_TOKEN" ;;
+            *) exit 1 ;;
+          esac
+          ASKPASS
+          chmod 700 "$askpass"
+          GIT_ASKPASS="$askpass" GIT_TERMINAL_PROMPT=0 git -C "$work" fetch --quiet --depth=1 \
+            https://github.com/homayounisaghar/capability-fabric.git "$CANDIDATE_COMMIT"
+          actual="$(git -C "$work" rev-parse FETCH_HEAD)"
+          [[ "$actual" == "$CANDIDATE_COMMIT" ]] || exit 20
+          git -C "$work" checkout --quiet --detach FETCH_HEAD
+          rm -f "$askpass"
+          unset CF_REPO_READ_TOKEN
+          if git -C "$work" remote -v | grep -E 'x-access-token|github_pat_|ghp_' >/dev/null; then exit 21; fi
+          echo "PCG_PRIVATE_WORKTREE=$work" >> "$GITHUB_ENV"
+          echo "PCG_STAGE5_UNIT1_CANDIDATE=$actual"
+
+      - name: Install exact PCG candidate
+        run: python -m pip install -e "$PCG_PRIVATE_WORKTREE[pcg-live]"
+
+      - name: Compile and validate deployment syntax
+        run: |
+          set -euo pipefail
+          cd "$PCG_PRIVATE_WORKTREE"
+          python -m compileall -q src/capability_fabric
+          for source in server-deploy/channels/pcg/current/pcg_web_*.mjs; do node --check "$source"; done
+          docker compose -f server-deploy/channels/pcg/current/compose.yaml config --format json >/dev/null
+          echo "PCG_STAGE5_UNIT1_SYNTAX=pass"
+
+      - name: Run Stage 3 compatibility suite
+        run: |
+          set -euo pipefail
+          cd "$PCG_PRIVATE_WORKTREE"
+          python tests/test_personal_communications_gateway_v01.py
+          python tests/test_communications_mcp_exposure_v01.py
+          python tests/test_communications_mcp_server_v01.py
+          python tests/test_communications_read_atomic_v01.py
+          python tests/test_communications_read_mcp_v01.py
+          python tests/test_telegram_tdlib_boundary_v01.py
+          python tests/test_pcg_web_semantic_contract_v01.py
+          echo "PCG_STAGE5_UNIT1_STAGE3_COMPAT=pass"
+
+      - name: Run Stage 4 compatibility and Stage 5 search probes
+        run: |
+          set -euo pipefail
+          cd "$PCG_PRIVATE_WORKTREE"
+          python tests/test_pcg_web_stage4_modules_v01.py
+          python tests/test_pcg_web_stage5_search_v01.py
+          python tests/test_telegram_protected_read_v01.py
+          python tests/test_communications_runtime_security_v01.py
+          python tests/test_communications_runtime_v01.py
+          echo "PCG_STAGE5_UNIT1_SEARCH_PROBES=pass"
+
+      - name: Re-prove canonical registry release gate
+        run: |
+          set -euo pipefail
+          cd "$PCG_PRIVATE_WORKTREE"
+          python tools/validate_pcg_telegram_registries.py --release
+          python tools/render_pcg_semantic_registry.py --check
+          echo "PCG_STAGE5_UNIT1_REGISTRY_RELEASE=pass"
