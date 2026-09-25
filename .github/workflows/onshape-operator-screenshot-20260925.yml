@@ -75,47 +75,45 @@ jobs:
           rm -f "$REMOTE_OUT"
           docker exec -i "$SERVER" sh -lc 'cd /tmp/app && node --input-type=module' <<'NODE'
           import fs from "node:fs";
-          import { chromium } from "playwright";
+          import { BrowserSession } from "./browser.js";
 
-          const source="/profile";
-          const clone="/tmp/cf-user-screenshot-profile-"+process.pid;
+          const profile="/tmp/cf-user-screenshot-auth-"+process.pid;
           const out="/tmp/cf-user-onshape-screenshot.png";
-          let context=null;
+          const session=new BrowserSession({
+            profileDir:profile,
+            accountFile:"/run/onshape-secrets/account",
+            passwordFile:"/run/onshape-secrets/password",
+            buildId:"operator-screenshot",
+            companyOwnerId:"",
+            antiForgeryHeaderName:"x-xsrf-token",
+            uiApiVersion:"v14",
+            openApiFile:"/openapi/onshape-openapi.json",
+          });
           try {
-            fs.cpSync(source, clone, {recursive:true, dereference:false, errorOnExist:false, force:true});
-            for (const n of ["SingletonLock","SingletonCookie","SingletonSocket","DevToolsActivePort"]) {
-              fs.rmSync(clone+"/"+n,{recursive:true,force:true});
-            }
-            context=await chromium.launchPersistentContext(clone,{
-              headless:true,
-              chromiumSandbox:false,
-              args:["--no-sandbox","--disable-dev-shm-usage"],
-              viewport:{width:1440,height:1000}
-            });
-            const page=context.pages()[0] || await context.newPage();
-            page.setDefaultTimeout(15000);
-            page.setDefaultNavigationTimeout(45000);
-            await page.goto("https://cad.onshape.com/documents",{waitUntil:"domcontentloaded",timeout:45000});
-            await page.waitForLoadState("networkidle",{timeout:15000}).catch(()=>null);
-            const auth=await page.evaluate(async()=>{
-              try {
-                const r=await fetch("/api/users/current",{credentials:"include",cache:"no-store"});
-                return {status:r.status,ok:r.ok,origin:location.origin,path:location.pathname};
-              } catch(e) {
-                return {status:null,ok:false,origin:location.origin,path:location.pathname};
+            const progress={
+              awaitInput(kind) {
+                const e=new Error("isolated Onshape screenshot login requires interactive verification");
+                e.code=String(kind||"VERIFICATION_REQUIRED");
+                throw e;
               }
-            });
-            if (auth.origin!=="https://cad.onshape.com" || auth.status!==200 || !auth.ok || /signin/i.test(auth.path||"")) {
-              throw new Error("authenticated Onshape page not proven");
+            };
+            await session.login(progress);
+            let auth=await session.proveAuthentication();
+            if (auth?.state!=="PROVEN" || auth?.http_status!==200) throw new Error("isolated Onshape auth not PROVEN");
+            await session.page.goto("https://cad.onshape.com/documents",{waitUntil:"domcontentloaded",timeout:45000});
+            await session.page.waitForLoadState("networkidle",{timeout:15000}).catch(()=>null);
+            auth=await session.proveAuthentication();
+            if (auth?.state!=="PROVEN" || auth?.http_status!==200 || /signin/i.test(session.page.url())) {
+              throw new Error("authenticated Onshape documents page not proven");
             }
-            await page.screenshot({path:out,type:"png",fullPage:false});
+            await session.page.screenshot({path:out,type:"png",fullPage:false});
             const st=fs.statSync(out);
             if (!st.isFile() || st.size<1000) throw new Error("screenshot missing or too small");
             console.log("CF_ONSHAPE_OPERATOR_SCREENSHOT_AUTH=pass");
             console.log("CF_ONSHAPE_OPERATOR_SCREENSHOT_BYTES="+st.size);
           } finally {
-            if (context) await context.close().catch(()=>{});
-            fs.rmSync(clone,{recursive:true,force:true});
+            await session.close().catch(()=>{});
+            fs.rmSync(profile,{recursive:true,force:true});
           }
           NODE
 
