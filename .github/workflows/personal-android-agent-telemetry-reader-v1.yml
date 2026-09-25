@@ -113,17 +113,23 @@ jobs:
             pub_id="$(jq -r '.id // empty' /tmp/publish.json)"
             [[ "$pub_id" =~ ^[A-Za-z0-9_-]{6,32}$ ]] || { echo "publish response missing id" >&2; exit 30; }
             poll_url="$POST_URL/json?poll=1&since=10m"
+            : > /tmp/paa-events.jsonl
+            found=0
+            for attempt in 1 2 3 4 5; do
+              curl --fail --silent --show-error --max-time 20 "$poll_url" > /tmp/feed.jsonl
+              jq -Rrc 'try (fromjson | select(.event=="message") | .message | fromjson | select(.schema=="personal-android-agent.telemetry.v1")) catch empty' /tmp/feed.jsonl > /tmp/paa-events.jsonl
+              if jq -e --arg rid "control-$REQUEST_ID" 'select(.run_id==$rid and .phase=="CONTROL_PREFLIGHT" and .status=="pass")' /tmp/paa-events.jsonl >/dev/null; then
+                found=1
+                break
+              fi
+              sleep 2
+            done
+            [[ "$found" == 1 ]] || { echo "published probe not visible after bounded poll retries" >&2; exit 31; }
           else
             poll_url="$READ_URL"
+            curl --fail --silent --show-error --max-time 20 "$poll_url" > /tmp/feed.jsonl
+            jq -Rrc 'try (fromjson | select(.event=="message") | .message | fromjson | select(.schema=="personal-android-agent.telemetry.v1")) catch empty' /tmp/feed.jsonl > /tmp/paa-events.jsonl
           fi
-
-          curl --fail --silent --show-error --max-time 20 "$poll_url" > /tmp/feed.jsonl
-          if [[ "$OPERATION" == "probe" ]]; then
-            echo "CF_PAA_NTFY_PUBLISH_RESPONSE=$(cat /tmp/publish.json)"
-            echo "CF_PAA_NTFY_FEED_BYTES=$(wc -c < /tmp/feed.jsonl | tr -d ' ')"
-            sed -n '1,20p' /tmp/feed.jsonl | sed 's/^/CF_PAA_NTFY_RAW=/'
-          fi
-          jq -Rrc 'try (fromjson | select(.event=="message") | .message | fromjson | select(.schema=="personal-android-agent.telemetry.v1")) catch empty' /tmp/feed.jsonl > /tmp/paa-events.jsonl
 
           echo "CF_PAA_TELEMETRY_READ_BEGIN"
           sed 's/^/CF_PAA_TELEMETRY_EVENT=/' /tmp/paa-events.jsonl
@@ -133,6 +139,5 @@ jobs:
           echo "CF_PAA_TELEMETRY_FOUND=$count"
 
           if [[ "$OPERATION" == "probe" ]]; then
-            jq -e --arg rid "control-$REQUEST_ID" 'select(.run_id==$rid and .phase=="CONTROL_PREFLIGHT" and .status=="pass")' /tmp/paa-events.jsonl >/dev/null
             echo "CF_PAA_TELEMETRY_PROBE=PASS"
           fi
