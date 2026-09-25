@@ -908,7 +908,8 @@ PY
   docker restart --time 15 capability-fabric-pcg-web >/dev/null
 
   ready=0
-  while (( SECONDS < 90 )); do
+  deadline=$((SECONDS + 90))
+  while (( SECONDS < deadline )); do
     cid="$(docker ps --filter name='^/capability-fabric-pcg-web$' --format '{{.ID}}' | head -n1)"
     if [[ -n "$cid" ]] && [[ "$(docker inspect -f '{{.State.Health.Status}}' "$cid" 2>/dev/null || true)" == healthy ]] && [[ -S "$socket" ]]; then
       ready=1
