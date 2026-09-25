@@ -39,7 +39,7 @@ jobs:
           [[ "$file_request_id" == "$request_id" ]] || exit 13
           [[ "$request_id" =~ ^[A-Za-z0-9_.-]{8,96}$ ]] || exit 14
           [[ "$operation" == "probe" || "$operation" == "read" ]] || exit 15
-          [[ "$build_id" == "3" || "$build_id" == "4" ]] || exit 16
+          [[ "$build_id" == "3" || "$build_id" == "4" || "$build_id" == "5" ]] || exit 16
           {
             echo "request_id=$request_id"
             echo "operation=$operation"
@@ -54,6 +54,7 @@ jobs:
           case "${{ steps.req.outputs.build_id }}" in
             3) binding_file="remote-telemetry-alpha3.json" ;;
             4) binding_file="remote-telemetry-alpha4.json" ;;
+            5) binding_file="remote-telemetry-alpha5.json" ;;
             *) exit 19 ;;
           esac
           api="https://api.github.com/repos/homayounisaghar/capability-fabric/contents/projects/personal-android-agent/private/$binding_file?ref=project%2Fpersonal-android-agent"
