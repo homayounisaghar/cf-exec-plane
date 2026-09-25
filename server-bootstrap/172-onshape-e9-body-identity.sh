@@ -19,8 +19,9 @@ const b=wrap?.result?.observation?.evidence?.body||{};
 for(const body of b.bodies||[]){
  console.log("CF_E9_BODY_IDENTITY="+JSON.stringify({
    id:body.id,name:body.name,type:body.type,
-   centroid:body.centroid,boundingBox:body.boundingBox,
-   mass:body.mass,volume:body.volume
+   keys:Object.keys(body),
+   faces:(body.faces||[]).map(f=>({id:f.id,orientation:f.orientation,surface:f.surface})),
+   edges:(body.edges||[]).map(e=>({id:e.id,curve:e.curve}))
  }));
 }
 await client.close();
