@@ -73,6 +73,13 @@ docker run --rm --network none \
   '
 echo CF_PHASE0_CANONICAL_PYTHON=pass
 
+docker run --rm \
+  -v "$tmp/repo:/repo:rw" -w /repo/server-deploy/current \
+  "$node_image" sh -ec '
+    npm install --omit=dev --ignore-scripts --no-audit --no-fund --package-lock=false
+  '
+echo CF_PHASE0_NODE_DEPS=pass
+
 docker run --rm --network none \
   -v "$tmp/repo:/repo:rw" -w /repo \
   "$node_image" sh -ec '
