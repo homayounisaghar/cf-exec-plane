@@ -66,6 +66,7 @@ const input=async(steps)=>{
 };
 const triples=flat=>{const o=[];for(let i=0;i+2<flat.length;i+=3)o.push([+flat[i],+flat[i+1],+flat[i+2]]);return o;};
 const lerp=(a,b,t)=>a.map((v,i)=>v+(b[i]-v)*t);
+const mean=pts=>[0,1,2].map(j=>pts.reduce((sum,p)=>sum+p[j],0)/pts.length);
 const invert4=a=>{
   const m=Array.from({length:4},(_,r)=>Array.from({length:4},(_,col)=>Number(a[col*4+r])));
   const aug=m.map((row,r)=>[...row,...Array.from({length:4},(_,cc)=>r===cc?1:0)]);
@@ -109,13 +110,22 @@ try{
   }
   if(!anchor)throw new Error("JHK bootstrap absent");
   const pts=triples(anchor.h.entity_metadata.meshIncrement.points);
+  const edgeWorld=lerp(pts[1],pts[2],.25);
+  const edgeP=project(edgeWorld,anchor.v.view_data);
+  const faceP=project(mean(pts),anchor.v.view_data);
+  const width=Number(anchor.v?.camera?.width),height=Number(anchor.v?.camera?.height);
+  if(!(width>1&&height>1))throw new Error("viewport dimensions unavailable");
+  let dx=(edgeP.x-faceP.x)*width,dy=(edgeP.y-faceP.y)*height;
+  const mag=Math.hypot(dx,dy); if(!(mag>1e-9))throw new Error("outward screen direction undefined");
+  dx/=mag;dy/=mag;
   const out=[];
-  for(const [name,t] of [["q25",.25],["q35",.35],["mid",.50]]){
-    const p=project(lerp(pts[1],pts[2],t),anchor.v.view_data);
+  for(const px of [1,2,3]){
+    const p={x:edgeP.x+dx*px/width,y:edgeP.y+dy*px/height};
     const v=await viewer({op:"probe",x_fraction:p.x,y_fraction:p.y});
     if(selSig(v)!==sig)throw new Error("selection changed during diagnostic");
-    out.push({name,t,projection:p,status:v?.probe?.status||null,picks:(v?.probe?.picks||[]).map(compact)});
+    out.push({name:"q25_out_"+px+"px",offset_px:px,projection:p,status:v?.probe?.status||null,picks:(v?.probe?.picks||[]).map(compact)});
   }
+  console.log("CF_PHASE0_EDGEVIEW_GEOMETRY="+JSON.stringify({edge_projection:edgeP,face_centroid_projection:faceP,outward_unit_px:[dx,dy],viewport:[width,height]}));
   console.log("CF_PHASE0_EDGEVIEW_STACKS="+JSON.stringify(out));
   const any=out.some(x=>x.picks.some(p=>p.deterministic_id==="JHt"));
   const first=out.some(x=>x.picks[0]?.deterministic_id==="JHt");
