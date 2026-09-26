@@ -19,6 +19,8 @@ r=json.load(open(sys.argv[1]))
 a=r["authority"]
 assert r["controlRevision"]==555
 assert r["lease"]["state"]=="FREE"
+assert r["routing"]["state"]=="CLOSED"
+assert r["routing"]["materialCommandsAllowed"] is False
 assert a["productionEpoch"]==26
 assert a["mode"]=="VPS_PRODUCTION"
 assert a["materialAuthority"]=="vps-fabric"
@@ -51,10 +53,14 @@ print("CF_PHASE0_PREFLIGHT_RELEASE=pass")
 print("CF_PHASE0_PREFLIGHT_RELEASE_MANIFEST_SHA256="+digest)
 PY
 
-for c in capability-fabric-onshape-server capability-fabric-onshape-fabric capability-fabric-onshape-gateway; do
+for c in capability-fabric-onshape-server capability-fabric-onshape-fabric; do
   [[ "$(docker inspect -f '{{.State.Running}}' "$c" 2>/dev/null || echo false)" == true ]] || { echo "CF_PHASE0_PREFLIGHT_CONTAINER_$c=not-running"; exit 24; }
   echo "CF_PHASE0_PREFLIGHT_CONTAINER_$c=running"
 done
+gateway=capability-fabric-onshape-gateway
+gateway_running="$(docker inspect -f '{{.State.Running}}' "$gateway" 2>/dev/null || echo false)"
+[[ "$gateway_running" == false ]] || { echo CF_PHASE0_PREFLIGHT_GATEWAY=unexpectedly-running; exit 24; }
+echo CF_PHASE0_PREFLIGHT_GATEWAY=closed-as-authorized
 
 server=capability-fabric-onshape-server
 env_dump="$(docker inspect -f '{{range .Config.Env}}{{println .}}{{end}}' "$server")"
@@ -63,10 +69,14 @@ grep -Fxq 'CF_FABRIC_REQUIRE_PRODUCTION_AUTHORITY=1' <<<"$env_dump"
 grep -Fxq 'CF_PRIVILEGED_NATIVE_ENABLED=0' <<<"$env_dump"
 echo CF_PHASE0_PREFLIGHT_PRODUCTION_ENV=pass
 
-for p in 8787 8788 8789 8791; do
+for p in 8788 8789 8791; do
   ss -lnt | awk -v x="127.0.0.1:$p" '$4==x{f=1} END{exit f?0:1}' || { echo "CF_PHASE0_PREFLIGHT_PROD_PORT_$p=missing"; exit 25; }
 done
-echo CF_PHASE0_PREFLIGHT_PRODUCTION_PORTS=pass
+if ss -lnt | awk '$4=="127.0.0.1:8787"{f=1} END{exit f?0:1}'; then
+  echo CF_PHASE0_PREFLIGHT_GATEWAY_PORT=unexpectedly-present
+  exit 25
+fi
+echo CF_PHASE0_PREFLIGHT_PRODUCTION_PORTS=pass-routing-closed
 
 for p in 8898 8899 8901; do
   if ss -lnt | awk -v x="127.0.0.1:$p" '$4==x{f=1} END{exit f?0:1}'; then
