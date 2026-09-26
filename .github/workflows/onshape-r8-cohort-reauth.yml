@@ -33,7 +33,7 @@ jobs:
           [[ "${#changes[@]}" -eq 1 ]]
           IFS=$'\t' read -r status request_path <<<"${changes[0]}"
           [[ "$status" == A && "$request_path" == server-bootstrap/control/onshape-r8-cohort-reauth/*.request ]]
-          bash -n server-bootstrap/204-onshape-r8-cohort-reauth.sh
+          bash -n server-bootstrap/208-onshape-r8-cohort-reauth.sh
       - name: Reauthenticate r8 cohort
         shell: bash
-        run: bash server-bootstrap/runner/remote-bundle-exec.sh server-bootstrap/204-onshape-r8-cohort-reauth.sh
+        run: bash server-bootstrap/runner/remote-bundle-exec.sh server-bootstrap/208-onshape-r8-cohort-reauth.sh
