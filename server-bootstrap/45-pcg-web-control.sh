@@ -1236,6 +1236,165 @@ PY
   exit 0
 fi
 
+if [[ "$mode" == material-attachment-hardening-canary ]]; then
+  sequence="$(python3 - "$release/manifest.json" <<'PY'
+import json,sys
+print(int(json.load(open(sys.argv[1],encoding='utf-8')).get('sequence',0)))
+PY
+)"
+  [[ "$sequence" -ge 40 ]] || { echo "PCG_WEB_ATTACHMENT_HARDENING_RUNTIME=too-old" >&2; exit 50; }
+
+  source_commit="$(tr -d '\r\n' < "$release/source-commit")"
+  [[ "$source_commit" =~ ^[0-9a-f]{40}$ ]] || { echo "PCG_WEB_ATTACHMENT_HARDENING_SOURCE=invalid" >&2; exit 50; }
+  repo_cache=/var/lib/capability-fabric/deploy/pcg/repo.git
+  [[ -d "$repo_cache" ]] || { echo "PCG_WEB_ATTACHMENT_HARDENING_SOURCE=cache-missing" >&2; exit 50; }
+  git --git-dir="$repo_cache" cat-file -e "$source_commit^{commit}"
+
+  work="$(mktemp -d "$run_root/.attachment-hardening-src.XXXXXX")"
+  cleanup_attachment_hardening() { rm -rf "$work"; }
+  trap cleanup_attachment_hardening EXIT
+  chmod 0755 "$work"
+  git --git-dir="$repo_cache" archive "$source_commit" src/capability_fabric | tar -x -C "$work"
+  chown -R 65534:65534 "$work"
+  find "$work" -type d -exec chmod 0755 {} +
+  find "$work" -type f -exec chmod 0644 {} +
+
+  image='python:3.12-slim-bookworm@sha256:392307d22300de8b5986851a12d9176dfc0fc073e65bf6523ebd7dcbeb23564e'
+  docker pull "$image" >/dev/null
+  docker run --rm --network none --user 65534:65534 \
+    -e PYTHONPATH=/src \
+    -v "$work/src:/src:ro" \
+    -v /var/lib/capability-fabric/pcg/core-state:/state:rw \
+    -v /var/lib/capability-fabric/pcg/run:/run/pcg:rw \
+    "$image" python - <<'PY'
+import json
+from hashlib import sha256
+from uuid import uuid4
+
+from capability_fabric.communications_runtime import PrivatePayloadBroker
+from capability_fabric.domain import OutcomeState
+from capability_fabric.persistence import SqliteExecutionStateStore
+from capability_fabric.telegram_web_runtime import (
+    TelegramWebSocketClient,
+    TelegramWebUncertainEffectResolver,
+    build_telegram_web_kernel_runtime,
+)
+
+client = TelegramWebSocketClient("/run/pcg/web.sock", timeout=90.0)
+self_target = client.call({"op": "material.self_target"})
+conversation_handle = self_target.get("conversation_handle")
+if not isinstance(conversation_handle, str) or not conversation_handle.startswith("tgchat:"):
+    raise SystemExit("attachment hardening self target resolution failed")
+
+state = SqliteExecutionStateStore("/state/web-material-send.sqlite3")
+payloads = PrivatePayloadBroker(
+    "/state/web-material-payloads",
+    ttl_seconds=86400,
+    max_payload_bytes=1024 * 1024,
+)
+cleanup_handles = []
+try:
+    runtime = build_telegram_web_kernel_runtime(
+        client=client,
+        payloads=payloads,
+        state_store=state,
+        journal=state,
+    )
+
+    suffix = str(uuid4())
+    source_text = "pcg-attachment-hardening-source-" + suffix
+    source = runtime.send_text(conversation_handle=conversation_handle, text=source_text)
+    if source.outcome.state is not OutcomeState.ACHIEVED:
+        raise SystemExit("attachment hardening source send did not achieve")
+    cleanup_handles.append(str(source.dispatch.evidence["payload.handle"]))
+
+    target = client.call({"op": "material.self_relay_target", "expected_text": source_text})
+    source_message_handle = target.get("source_message_handle")
+    if target.get("source_conversation_handle") != conversation_handle:
+        raise SystemExit("attachment hardening source conversation mismatch")
+    if not isinstance(source_message_handle, str) or not source_message_handle.startswith("tgmsg:"):
+        raise SystemExit("attachment hardening source message resolution failed")
+
+    send_bytes = (b"pcg-attachment-send-" + suffix.encode("ascii") + b"\n")
+    send_bytes = (send_bytes + b"S" * (64 * 1024))[:64 * 1024]
+    send_lease = payloads.put_bytes(send_bytes)
+    cleanup_handles.append(send_lease.handle)
+    send_caption = "pcg-caption-send-" + suffix
+    sent = runtime.send_attachment(
+        conversation_handle=conversation_handle,
+        attachment_handle=send_lease.handle,
+        filename="pcg-hardening-send.bin",
+        mime_type="application/octet-stream",
+        caption=send_caption,
+    )
+    if sent.outcome.state is not OutcomeState.ACHIEVED:
+        raise SystemExit("large captioned attachment send did not achieve")
+    send_caption_handle = sent.dispatch.evidence.get("attachment.caption_handle")
+    if not isinstance(send_caption_handle, str) or not send_caption_handle.startswith("payload:"):
+        raise SystemExit("attachment send caption handle missing")
+    cleanup_handles.append(send_caption_handle)
+    if sent.dispatch.evidence.get("attachment.caption_sha256") != sha256(send_caption.encode()).hexdigest():
+        raise SystemExit("attachment send caption digest mismatch")
+    if sent.dispatch.evidence.get("attachment.size_bytes") != 64 * 1024:
+        raise SystemExit("attachment send size mismatch")
+
+    resolver = TelegramWebUncertainEffectResolver(client, payloads)
+    send_observed = resolver.resolve(sent.operation, sent.attempt, sent.dispatch)
+    if send_observed.state is not OutcomeState.ACHIEVED:
+        raise SystemExit("attachment send authoritative caption readback failed")
+
+    reply_bytes = (b"pcg-attachment-reply-" + suffix.encode("ascii") + b"\n")
+    reply_bytes = (reply_bytes + b"R" * (64 * 1024))[:64 * 1024]
+    reply_lease = payloads.put_bytes(reply_bytes)
+    cleanup_handles.append(reply_lease.handle)
+    reply_caption = "pcg-caption-reply-" + suffix
+    replied = runtime.reply_attachment(
+        conversation_handle=conversation_handle,
+        source_message_handle=source_message_handle,
+        attachment_handle=reply_lease.handle,
+        filename="pcg-hardening-reply.bin",
+        mime_type="application/octet-stream",
+        caption=reply_caption,
+    )
+    if replied.outcome.state is not OutcomeState.ACHIEVED:
+        raise SystemExit("large captioned attachment reply did not achieve")
+    reply_caption_handle = replied.dispatch.evidence.get("attachment.caption_handle")
+    if not isinstance(reply_caption_handle, str) or not reply_caption_handle.startswith("payload:"):
+        raise SystemExit("attachment reply caption handle missing")
+    cleanup_handles.append(reply_caption_handle)
+    if replied.dispatch.evidence.get("attachment.caption_sha256") != sha256(reply_caption.encode()).hexdigest():
+        raise SystemExit("attachment reply caption digest mismatch")
+    if replied.dispatch.evidence.get("attachment.size_bytes") != 64 * 1024:
+        raise SystemExit("attachment reply size mismatch")
+
+    reply_observed = resolver.resolve(replied.operation, replied.attempt, replied.dispatch)
+    if reply_observed.state is not OutcomeState.ACHIEVED:
+        raise SystemExit("attachment reply authoritative caption readback failed")
+
+    safe = {
+        "state": "ACHIEVED",
+        "attachment_size_bytes": 64 * 1024,
+        "exercised_over_8kib": True,
+        "send_caption_provider_confirmed": True,
+        "reply_caption_provider_confirmed": True,
+        "reply_relationship_authoritative": True,
+        "private_caption_brokered": True,
+        "socket_large_request_path": True,
+        "provider_content_model_visible": False,
+    }
+    print(json.dumps(safe, separators=(",", ":")))
+finally:
+    for handle in cleanup_handles:
+        try:
+            payloads.remove(handle)
+        except Exception:
+            pass
+    state.close()
+PY
+  printf 'PCG_WEB_ATTACHMENT_HARDENING_CANARY=pass\n'
+  exit 0
+fi
+
 if [[ "$mode" == material-text-limit-canary ]]; then
   sequence="$(python3 - "$release/manifest.json" <<'PY'
 import json,sys
