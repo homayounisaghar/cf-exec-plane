@@ -1,0 +1,4 @@
+action=phase0-live-preflight-v1
+request_id=phase0-live-preflight-20260926-04
+fixture=a19e0fa5152af9f7ce106b6e:e5e7d0173fd1f1d0307a2cb6:e0929361aadb6135b5cecffa
+candidate_commit=010de3149a83aa9e70be8dca469466df1785a76b
