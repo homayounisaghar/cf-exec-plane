@@ -1569,21 +1569,6 @@ conversation=target.get("conversation_handle")
 if not isinstance(conversation,str) or not conversation.startswith("tgchat:"):
     raise SystemExit("photo album self target resolution failed")
 
-precheck=client.call({
-    "op":"material.forward_target.check",
-    "source_conversation_handle":source_conversation_handle,
-    "source_message_handle":source_message_handle,
-    "conversation_handle":target_handle,
-})
-if precheck.get("ok") is False:
-    raise SystemExit("native-forward precheck error: "+str(precheck.get("error")))
-if (
-    precheck.get("source_resolved") is not True
-    or precheck.get("target_resolved") is not True
-    or precheck.get("source_forwardable") is not True
-):
-    raise SystemExit("native-forward precheck returned incomplete positive contract")
-
 state=SqliteExecutionStateStore("/state/web-material-send.sqlite3")
 payloads=PrivatePayloadBroker("/state/web-material-payloads",ttl_seconds=86400,max_payload_bytes=8*1024*1024)
 cleanup=[]
@@ -3259,6 +3244,27 @@ try:
         except Exception:
             pass
         reconciled_internal_canaries += 1
+
+    precheck=client.call({
+        "op":"material.forward_target.check",
+        "source_conversation_handle":source_conversation_handle,
+        "source_message_handle":source_message_handle,
+        "conversation_handle":target_handle,
+    })
+    print(json.dumps({
+        "preflight_source_resolved":precheck.get("source_resolved") is True,
+        "preflight_target_resolved":precheck.get("target_resolved") is True,
+        "preflight_source_forwardable":precheck.get("source_forwardable") is True,
+        "preflight_self_source_fallback":precheck.get("self_source_fallback") is True,
+    },separators=(",",":")))
+    if precheck.get("ok") is False:
+        raise SystemExit("native-forward precheck error: "+str(precheck.get("error")))
+    if (
+        precheck.get("source_resolved") is not True
+        or precheck.get("target_resolved") is not True
+        or precheck.get("source_forwardable") is not True
+    ):
+        raise SystemExit("native-forward precheck returned incomplete positive contract")
 
     runtime=build_telegram_web_kernel_runtime(
         client=client,
