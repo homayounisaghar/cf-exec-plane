@@ -3,7 +3,7 @@ set -euo pipefail
 umask 077
 [[ "$(id -u)" -eq 0 ]] || { echo "must run as uid 0" >&2; exit 2; }
 
-candidate_commit="f109f93befbaa1a8de90396d532abc401d3f92bd"
+candidate_commit="e7f48744c64fd3668b172d9b4c5d481ec39e9887"
 cache=/var/lib/capability-fabric/repo.git
 token=/etc/capability-fabric/secrets/repo-read-token
 home=/var/lib/capability-fabric/agent-home
@@ -59,6 +59,8 @@ grep -Fq 'PHASE0_RESEARCH_PORTS' server-deploy/current/runtime-mode.js
 grep -Fq 'apiBasePath' server-deploy/current/server.js
 grep -Fq '"network.snapshot", "websocket.snapshot", "runtime.query_objects"' server-deploy/current/server.js
 grep -Fq '"runtime.query_objects"' server-deploy/current/browser-native.js
+grep -Fq '"runtime.query_objects"' src/capability_fabric/onshape_vps.py
+grep -Fq '"runtime.query_objects"' server-deploy/current/fabric-src/capability_fabric/onshape_vps.py
 grep -Fq 'async function queryRuntimeObjects' server-deploy/current/browser-native.js
 grep -Fq 'CF_FABRIC_AGENT_PORT: "8899"' server-deploy/research-phase0/compose.yaml
 grep -Fq 'port not in {8789, 8899}' src/capability_fabric/onshape_vps_transport.py
