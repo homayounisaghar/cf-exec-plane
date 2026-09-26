@@ -53,6 +53,7 @@ passwd -l "$remote_user" >/dev/null 2>&1 || true
 install -d -m 0700 -o "$remote_user" -g "$remote_group" "$remote_home" "$remote_home/.npm"
 install -d -m 0700 -o root -g root "$publisher_state" "$publisher_state/requests"
 install -d -m 0755 -o root -g root /var/lib/capability-fabric/state /etc/capability-fabric/secrets/android-agent /usr/local/libexec
+install -d -m 0750 -o root -g "$remote_group" /run/capability-fabric
 
 cfg="$(mktemp)"
 api_json="$(mktemp)"
@@ -385,7 +386,8 @@ WantedBy=multi-user.target
 UNIT
 
 systemctl daemon-reload
-systemctl enable --now capability-fabric-paa-publisher.service
+systemctl restart capability-fabric-paa-publisher.service
+systemctl enable capability-fabric-paa-publisher.service >/dev/null 2>&1 || true
 systemctl enable capability-fabric-paa-remote.service >/dev/null 2>&1 || true
 systemctl restart capability-fabric-paa-remote.service
 
