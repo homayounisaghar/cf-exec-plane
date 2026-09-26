@@ -2,7 +2,7 @@
 set -euo pipefail
 umask 077
 
-candidate_commit="35a5bceeaa01cd13deab2d3d7e8fc0bde7b94b3c"
+candidate_commit="062f3586bfa4048d97b0a295f934996d666b11fe"
 fixture="a19e0fa5152af9f7ce106b6e:e5e7d0173fd1f1d0307a2cb6:e0929361aadb6135b5cecffa"
 expected_control_blob="1b9c248d8b57385a86c5c157bf99ef4f1f6928ce"
 control=/var/lib/capability-fabric/onshape/runtime-control/ONSHAPE_RUNTIME_CONTROL.json
