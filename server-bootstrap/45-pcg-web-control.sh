@@ -1178,7 +1178,7 @@ import json
 from uuid import uuid4
 
 from capability_fabric.communications_runtime import PrivatePayloadBroker
-from capability_fabric.domain import OutcomeState
+from capability_fabric.domain import Outcome, OutcomeState
 from capability_fabric.persistence import SqliteExecutionStateStore
 from capability_fabric.telegram_web_runtime import (
     TelegramWebSocketClient,
@@ -3172,6 +3172,57 @@ payloads=PrivatePayloadBroker(
     max_payload_bytes=32*1024*1024,
 )
 try:
+    reconciled_internal_canaries=0
+    recent_self=semantic("communication.message.list",{
+        "conversation_handle":source_conversation_handle,
+        "limit":100,
+    })
+    recent_self_messages=recent_self["protected_provider_data"].get("messages")
+    if not isinstance(recent_self_messages,list):
+        raise SystemExit("Saved Messages reconciliation history invalid")
+
+    for case in tuple(state.recoverable()):
+        operation=case.operation
+        attempt=case.attempt
+        dispatch=case.dispatch
+        if operation is None or attempt is None:
+            continue
+        evidence=dispatch.evidence
+        if (
+            dispatch.realization_id!="telegram.web.personal"
+            or operation.effect!="communication.message.send"
+            or evidence.get("telegram_web.operation")!="send_text"
+            or evidence.get("telegram_web.conversation_handle")!=source_conversation_handle
+        ):
+            continue
+        payload_handle=evidence.get("payload.handle")
+        if not isinstance(payload_handle,str) or not payload_handle.startswith("payload:"):
+            continue
+        try:
+            canary_text=payloads.resolve(payload_handle).decode("utf-8")
+        except Exception:
+            continue
+        if not canary_text.startswith("pcg-forward-source-"):
+            continue
+        matches=[
+            item for item in recent_self_messages
+            if isinstance(item,dict)
+            and item.get("kind")=="message"
+            and item.get("outgoing") is True
+            and item.get("text")==canary_text
+        ]
+        if len(matches)!=1:
+            raise SystemExit("internal forward canary remains ambiguous; refusing new effect")
+        state.record_outcome(
+            operation,
+            Outcome(operation.operation_id, OutcomeState.ACHIEVED, "exact internal canary observed in Saved Messages"),
+        )
+        try:
+            payloads.remove(payload_handle)
+        except Exception:
+            pass
+        reconciled_internal_canaries += 1
+
     runtime=build_telegram_web_kernel_runtime(
         client=client,
         payloads=payloads,
@@ -3207,6 +3258,7 @@ try:
         "last_outgoing_thumbsup":True,
         "original_pre_dispatch_source_recovered":True,
         "recovered_source_single_text_file":True,
+        "internal_canary_reconciled_by_exact_readback":reconciled_internal_canaries,
         "native_forward":True,
         "download_performed":False,
         "reattach_performed":False,
