@@ -1,0 +1,51 @@
+name: Personal Android Agent App URL Attended Publisher Policy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'android-agent/control/publisher-open-attended-policy/*.request'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: personal-android-agent-publisher-open-attended-policy
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  update:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+
+      - name: Validate immutable app/url attended-policy request
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || exit 10
+          IFS=$'\t' read -r status path <<<"${changes[0]}"
+          [[ "$status" == A ]] || exit 11
+          [[ "$path" == android-agent/control/publisher-open-attended-policy/*.request ]] || exit 12
+          request_id="$(awk -F= '$1=="request_id"{print $2}' "$path" | tail -n1 | tr -d '[:space:]')"
+          action="$(awk -F= '$1=="action"{print $2}' "$path" | tail -n1 | tr -d '[:space:]')"
+          [[ "$request_id" == "$(basename "$path" .request)" ]] || exit 13
+          [[ "$action" == "extend-open-attended-v1" ]] || exit 14
+
+      - name: Apply bounded app/url attended policy
+        run: bash server-bootstrap/runner/remote-bundle-exec.sh server-bootstrap/188-android-agent-publisher-open-attended-v1.sh
