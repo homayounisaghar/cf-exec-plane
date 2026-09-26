@@ -1289,7 +1289,7 @@ import json
 from uuid import uuid4
 
 from capability_fabric.communications_runtime import PrivatePayloadBroker
-from capability_fabric.domain import OutcomeState
+from capability_fabric.domain import Outcome, OutcomeState
 from capability_fabric.persistence import SqliteExecutionStateStore
 from capability_fabric.telegram_web_runtime import (
     TelegramWebSocketClient,
@@ -1413,7 +1413,7 @@ import json
 from uuid import uuid4
 
 from capability_fabric.communications_runtime import PrivatePayloadBroker
-from capability_fabric.domain import OutcomeState
+from capability_fabric.domain import Outcome, OutcomeState
 from capability_fabric.persistence import SqliteExecutionStateStore
 from capability_fabric.telegram_web_runtime import (
     TelegramWebSocketClient,
@@ -1547,7 +1547,7 @@ import zlib
 from uuid import uuid4
 
 from capability_fabric.communications_runtime import PrivatePayloadBroker
-from capability_fabric.domain import OutcomeState
+from capability_fabric.domain import Outcome, OutcomeState
 from capability_fabric.persistence import SqliteExecutionStateStore
 from capability_fabric.telegram_web_runtime import (
     TelegramWebSocketClient,
@@ -1662,7 +1662,7 @@ from pathlib import Path
 from uuid import uuid4
 
 from capability_fabric.communications_runtime import PrivatePayloadBroker
-from capability_fabric.domain import OutcomeState
+from capability_fabric.domain import Outcome, OutcomeState
 from capability_fabric.persistence import SqliteExecutionStateStore
 from capability_fabric.telegram_web_runtime import (
     TelegramWebSocketClient,
@@ -1809,7 +1809,7 @@ from hashlib import sha256
 from uuid import uuid4
 
 from capability_fabric.communications_runtime import PrivatePayloadBroker
-from capability_fabric.domain import OutcomeState
+from capability_fabric.domain import Outcome, OutcomeState
 from capability_fabric.persistence import SqliteExecutionStateStore
 from capability_fabric.telegram_web_runtime import (
     TelegramWebSocketClient,
@@ -1968,7 +1968,7 @@ import json
 from uuid import uuid4
 
 from capability_fabric.communications_runtime import PrivatePayloadBroker
-from capability_fabric.domain import OutcomeState
+from capability_fabric.domain import Outcome, OutcomeState
 from capability_fabric.persistence import SqliteExecutionStateStore
 from capability_fabric.telegram_web_runtime import TelegramWebSocketClient, build_telegram_web_kernel_runtime
 
@@ -2097,7 +2097,7 @@ import json
 from uuid import uuid4
 
 from capability_fabric.communications_runtime import PrivatePayloadBroker
-from capability_fabric.domain import OutcomeState
+from capability_fabric.domain import Outcome, OutcomeState
 from capability_fabric.persistence import SqliteExecutionStateStore
 from capability_fabric.telegram_web_runtime import TelegramWebSocketClient, build_telegram_web_kernel_runtime
 
@@ -2216,7 +2216,7 @@ import json
 from uuid import uuid4
 
 from capability_fabric.communications_runtime import PrivatePayloadBroker
-from capability_fabric.domain import OutcomeState
+from capability_fabric.domain import Outcome, OutcomeState
 from capability_fabric.persistence import SqliteExecutionStateStore
 from capability_fabric.telegram_web_runtime import (
     TelegramWebSocketClient,
@@ -2359,7 +2359,7 @@ import json
 from uuid import uuid4
 
 from capability_fabric.communications_runtime import PrivatePayloadBroker
-from capability_fabric.domain import OutcomeState
+from capability_fabric.domain import Outcome, OutcomeState
 from capability_fabric.persistence import SqliteExecutionStateStore
 from capability_fabric.telegram_web_runtime import (
     TelegramWebSocketClient,
@@ -2492,7 +2492,7 @@ import json
 from uuid import uuid4
 
 from capability_fabric.communications_runtime import PrivatePayloadBroker
-from capability_fabric.domain import OutcomeState
+from capability_fabric.domain import Outcome, OutcomeState
 from capability_fabric.persistence import SqliteExecutionStateStore
 from capability_fabric.telegram_web_runtime import (
     TelegramWebSocketClient,
@@ -2624,7 +2624,7 @@ import json
 from uuid import uuid4
 
 from capability_fabric.communications_runtime import PrivatePayloadBroker
-from capability_fabric.domain import OutcomeState
+from capability_fabric.domain import Outcome, OutcomeState
 from capability_fabric.persistence import SqliteExecutionStateStore
 from capability_fabric.telegram_web_runtime import (
     TelegramWebSocketClient,
@@ -2757,7 +2757,7 @@ import json
 from uuid import uuid4
 
 from capability_fabric.communications_runtime import PrivatePayloadBroker
-from capability_fabric.domain import OutcomeState
+from capability_fabric.domain import Outcome, OutcomeState
 from capability_fabric.persistence import SqliteExecutionStateStore
 from capability_fabric.telegram_web_runtime import (
     TelegramWebSocketClient,
@@ -3003,7 +3003,7 @@ import sqlite3
 import unicodedata
 
 from capability_fabric.communications_runtime import PrivatePayloadBroker
-from capability_fabric.domain import OutcomeState
+from capability_fabric.domain import Outcome, OutcomeState
 from capability_fabric.persistence import SqliteExecutionStateStore
 from capability_fabric.telegram_web_runtime import (
     TelegramWebSocketClient,
@@ -3506,7 +3506,7 @@ import unicodedata
 from uuid import uuid4
 
 from capability_fabric.communications_runtime import PrivatePayloadBroker
-from capability_fabric.domain import OutcomeState
+from capability_fabric.domain import Outcome, OutcomeState
 from capability_fabric.persistence import SqliteExecutionStateStore
 from capability_fabric.telegram_web_runtime import (
     TelegramWebSocketClient,
