@@ -1,0 +1,7 @@
+request_id=paa-alpha18-notification-n2-fix-sign-20260926-001
+candidate_commit=bdde6c942b96ee4d99f36352b87a1cc8f18ae9e5
+stage_a_run_id=36238758487
+stage_a_artifact_id=10905023263
+unsigned_sha256=ca415c4a97938e1731124f2610fffd8d0688354b2ef9d28494c64bcfda67eaeb
+version_code=18
+version_name=0.1.0-alpha18
