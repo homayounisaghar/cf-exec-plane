@@ -90,8 +90,9 @@ const selSig=m=>JSON.stringify((m?.model_selection?.selections||[]).map(s=>({
 })));
 const pickType=p=>{
   const t=p?.getters?.entity_type;
-  if(t===2)return "Face";
-  if(t===1||p?.entity_metadata?.meshIncrement?.primitiveType===1)return "Edge";
+  const primitiveType=p?.entity_metadata?.meshIncrement?.primitiveType;
+  if(t===2||primitiveType===4)return "Face";
+  if(t===1||primitiveType===1)return "Edge";
   if(t===0)return "Vertex";
   if(p?.getters?.surface_type!=null)return "Face";
   return null;
@@ -170,18 +171,39 @@ try{
   const found=new Map();
   addObs(found,face,{x:.52,y:.50},"anchor",0);
 
-  const segments=[];
-  for(let i=0;i<pts.length-1;i++)segments.push([i,i+1]);
-  if(pts.length>2)segments.push([pts.length-1,0]);
+  const hullIndices=points=>{
+    const q=points.map((p,i)=>({i,x:p[0],y:p[1]})).sort((a,b)=>a.x-b.x||a.y-b.y||a.i-b.i);
+    const cross=(o,a,b)=>(a.x-o.x)*(b.y-o.y)-(a.y-o.y)*(b.x-o.x);
+    const lower=[];
+    for(const p of q){while(lower.length>=2&&cross(lower[lower.length-2],lower[lower.length-1],p)<=0)lower.pop();lower.push(p);}
+    const upper=[];
+    for(const p of [...q].reverse()){while(upper.length>=2&&cross(upper[upper.length-2],upper[upper.length-1],p)<=0)upper.pop();upper.push(p);}
+    return [...lower.slice(0,-1),...upper.slice(0,-1)].map(x=>x.i);
+  };
+  const hull=hullIndices(pts);
+  if(hull.length<3)throw new Error("JHK convex hull insufficient");
+  const centroid=mean(hull.map(i=>pts[i]));
+  const segments=hull.map((a,i)=>[a,hull[(i+1)%hull.length]]);
   let probeCount=0;
+  const probeSeed=async(seed,label,t)=>{
+    if(!inside(seed))return;
+    const v=await viewer({op:"probe",x_fraction:seed.x,y_fraction:seed.y});
+    probeCount++;
+    if(selSig(v)!==baselineSig)throw new Error("read-only adjacency probe changed authoritative selection");
+    for(const pick of (v?.probe?.picks||[]).slice(0,6))addObs(found,pick,seed,label,t);
+  };
   for(const [a,b] of segments.slice(0,12)){
     for(const t of [.25,.5,.75]){
-      const seed=project(lerp(pts[a],pts[b],t),vd);
-      if(!inside(seed))continue;
-      const v=await viewer({op:"probe",x_fraction:seed.x,y_fraction:seed.y});
-      probeCount++;
-      if(selSig(v)!==baselineSig)throw new Error("read-only adjacency probe changed authoritative selection");
-      for(const pick of (v?.probe?.picks||[]).slice(0,6))addObs(found,pick,seed,a+"-"+b,t);
+      await probeSeed(project(lerp(pts[a],pts[b],t),vd),a+"-"+b,t);
+    }
+    const m=lerp(pts[a],pts[b],.5);
+    const dx=m[0]-centroid[0],dy=m[1]-centroid[1];
+    const d=Math.hypot(dx,dy);
+    const edgeLen=Math.hypot(pts[b][0]-pts[a][0],pts[b][1]-pts[a][1]);
+    if(d>1e-12&&edgeLen>1e-12){
+      const eps=edgeLen*.08;
+      const outward=[m[0]+dx/d*eps,m[1]+dy/d*eps,m[2]];
+      await probeSeed(project(outward,vd),a+"-"+b+":out",1.08);
     }
   }
   const faces=finalizeCandidates(found,"Face").slice(0,5);
