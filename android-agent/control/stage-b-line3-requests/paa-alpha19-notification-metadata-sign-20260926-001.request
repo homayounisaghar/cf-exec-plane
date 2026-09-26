@@ -1,0 +1,7 @@
+request_id=paa-alpha19-notification-metadata-sign-20260926-001
+candidate_commit=f4e7be85675acfcdb3f28f3c3f3c2ba7b8ccb9ba
+stage_a_run_id=36246222633
+stage_a_artifact_id=10907004731
+unsigned_sha256=3f934c8e5709cf9fe77293d2385b17943920df97ba10feed7292b0f50592209e
+version_code=19
+version_name=0.1.0-alpha19
