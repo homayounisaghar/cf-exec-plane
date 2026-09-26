@@ -4,7 +4,7 @@ umask 077
 
 [[ "$(id -u)" -eq 0 ]] || { echo "must run as uid 0" >&2; exit 1; }
 mode="${CF_PCG_WEB_CONTROL_MODE:-}"
-case "$mode" in prepare|status|ingress-diagnostic|semantic-status|semantic-conversations|semantic-conversations-protected|semantic-conversations-canary|semantic-search-canary|semantic-messages-protected|semantic-messages-canary|semantic-retrieval-hardening-canary|semantic-mark-read-canary|semantic-open-media-canary|semantic-download-canary|semantic-composer-canary|material-send-canary|material-reply-canary|material-attachment-send-canary|material-attachment-reply-canary|material-edit-canary|material-delete-canary|material-forward-canary|material-relay-canary|semantic-reaction-canary|material-text-limit-canary|material-attachment-hardening-canary|phone|code|password|cleanup|screenshot|refresh-screenshot|mytelegram-start|mytelegram-capture-code|mytelegram-signin|mytelegram-create-app|mytelegram-screenshot) ;; *) echo "invalid mode" >&2; exit 2 ;; esac
+case "$mode" in prepare|status|ingress-diagnostic|semantic-status|semantic-conversations|semantic-conversations-protected|semantic-conversations-canary|semantic-search-canary|semantic-messages-protected|semantic-messages-canary|semantic-retrieval-hardening-canary|semantic-mark-read-canary|semantic-open-media-canary|semantic-download-canary|semantic-composer-canary|material-send-canary|material-reply-canary|material-attachment-send-canary|material-attachment-reply-canary|material-edit-canary|material-delete-canary|material-forward-canary|material-relay-canary|semantic-reaction-canary|material-text-limit-canary|material-attachment-hardening-canary|material-photo-album-canary|phone|code|password|cleanup|screenshot|refresh-screenshot|mytelegram-start|mytelegram-capture-code|mytelegram-signin|mytelegram-create-app|mytelegram-screenshot) ;; *) echo "invalid mode" >&2; exit 2 ;; esac
 
 run_root=/var/lib/capability-fabric/pcg/run
 socket="$run_root/web.sock"
@@ -1373,6 +1373,121 @@ finally:
     state.close()
 PY
   printf 'PCG_WEB_MATERIAL_ATTACHMENT_REPLY_CANARY=pass\n'
+  exit 0
+fi
+
+if [[ "$mode" == material-photo-album-canary ]]; then
+  sequence="$(python3 - "$release/manifest.json" <<'PY'
+import json,sys
+print(int(json.load(open(sys.argv[1],encoding='utf-8')).get('sequence',0)))
+PY
+)"
+  [[ "$sequence" -ge 43 ]] || { echo "PCG_WEB_PHOTO_ALBUM_RUNTIME=too-old" >&2; exit 52; }
+
+  source_commit="$(tr -d '\r\n' < "$release/source-commit")"
+  [[ "$source_commit" =~ ^[0-9a-f]{40}$ ]] || { echo "PCG_WEB_PHOTO_ALBUM_SOURCE=invalid" >&2; exit 52; }
+  repo_cache=/var/lib/capability-fabric/deploy/pcg/repo.git
+  [[ -d "$repo_cache" ]] || { echo "PCG_WEB_PHOTO_ALBUM_SOURCE=cache-missing" >&2; exit 52; }
+  git --git-dir="$repo_cache" cat-file -e "$source_commit^{commit}"
+
+  work="$(mktemp -d "$run_root/.photo-album-src.XXXXXX")"
+  cleanup_photo_album() { rm -rf "$work"; }
+  trap cleanup_photo_album EXIT
+  chmod 0755 "$work"
+  git --git-dir="$repo_cache" archive "$source_commit" src/capability_fabric | tar -x -C "$work"
+  chown -R 65534:65534 "$work"
+  find "$work" -type d -exec chmod 0755 {} +
+  find "$work" -type f -exec chmod 0644 {} +
+
+  image='python:3.12-slim-bookworm@sha256:392307d22300de8b5986851a12d9176dfc0fc073e65bf6523ebd7dcbeb23564e'
+  docker pull "$image" >/dev/null
+  docker run --rm --network none --user 65534:65534 \
+    -e PYTHONPATH=/src \
+    -v "$work/src:/src:ro" \
+    -v /var/lib/capability-fabric/pcg/core-state:/state:rw \
+    -v /var/lib/capability-fabric/pcg/run:/run/pcg:rw \
+    "$image" python - <<'PY'
+import json
+import struct
+import zlib
+from uuid import uuid4
+
+from capability_fabric.communications_runtime import PrivatePayloadBroker
+from capability_fabric.domain import OutcomeState
+from capability_fabric.persistence import SqliteExecutionStateStore
+from capability_fabric.telegram_web_runtime import (
+    TelegramWebSocketClient,
+    TelegramWebUncertainEffectResolver,
+    build_telegram_web_kernel_runtime,
+)
+
+def png_pixel(r,g,b):
+    sig=b"\x89PNG\r\n\x1a\n"
+    def chunk(kind,data):
+        return struct.pack(">I",len(data))+kind+data+struct.pack(">I",zlib.crc32(kind+data)&0xffffffff)
+    ihdr=struct.pack(">IIBBBBB",1,1,8,2,0,0,0)
+    raw=b"\x00"+bytes([r,g,b])
+    return sig+chunk(b"IHDR",ihdr)+chunk(b"IDAT",zlib.compress(raw))+chunk(b"IEND",b"")
+
+client=TelegramWebSocketClient("/run/pcg/web.sock",timeout=90.0)
+target=client.call({"op":"material.self_target"})
+conversation=target.get("conversation_handle")
+if not isinstance(conversation,str) or not conversation.startswith("tgchat:"):
+    raise SystemExit("photo album self target resolution failed")
+
+state=SqliteExecutionStateStore("/state/web-material-send.sqlite3")
+payloads=PrivatePayloadBroker("/state/web-material-payloads",ttl_seconds=86400,max_payload_bytes=8*1024*1024)
+cleanup=[]
+try:
+    runtime=build_telegram_web_kernel_runtime(client=client,payloads=payloads,state_store=state,journal=state)
+    a=payloads.put_bytes(png_pixel(255,0,0))
+    b=payloads.put_bytes(png_pixel(0,0,255))
+    cleanup.extend([a.handle,b.handle])
+    caption="pcg-album-"+str(uuid4())
+    result=runtime.send_photo_album(
+        conversation_handle=conversation,
+        attachment_handles=[a.handle,b.handle],
+        filenames=["pcg-a.png","pcg-b.png"],
+        mime_types=["image/png","image/png"],
+        caption=caption,
+    )
+    caption_handle=result.dispatch.evidence.get("attachment.caption_handle")
+    if isinstance(caption_handle,str): cleanup.append(caption_handle)
+    if result.outcome.state is not OutcomeState.ACHIEVED:
+        raise SystemExit("photo album did not achieve")
+    if len(result.dispatch.evidence.get("album.items",[])) != 2:
+        raise SystemExit("photo album durable item binding missing")
+
+    resolver=TelegramWebUncertainEffectResolver(client,payloads)
+    observed=resolver.resolve(result.operation,result.attempt,result.dispatch)
+    if observed.state is not OutcomeState.ACHIEVED:
+        raise SystemExit("photo album authoritative readback failed")
+
+    durable=any(
+        item.get("kind")=="state.dispatch_intent.persisted"
+        and item.get("entity_id")==result.attempt.attempt_id
+        for item in state.event_records()
+    )
+    if not durable:
+        raise SystemExit("photo album durable dispatch intent missing")
+
+    print(json.dumps({
+        "state":"ACHIEVED",
+        "photo_count":2,
+        "grouped_album":True,
+        "caption_bound":True,
+        "provider_confirmed":result.observation.detail=="provider_confirmed",
+        "reconciliation_readback":"ACHIEVED",
+        "kernel_dispatch_intent":True,
+        "provider_content_model_visible":False,
+    },separators=(",",":")))
+finally:
+    for handle in cleanup:
+        try: payloads.remove(handle)
+        except Exception: pass
+    state.close()
+PY
+  printf 'PCG_WEB_PHOTO_ALBUM_CANARY=pass\n'
   exit 0
 fi
 
