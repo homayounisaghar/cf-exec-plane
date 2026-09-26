@@ -2,8 +2,8 @@
 set -euo pipefail
 umask 077
 [[ "$(id -u)" -eq 0 ]] || exit 2
-candidate="17ae77556fb2581bdeb72985c5e2645e7b697bc0"
-old_candidate="f109f93befbaa1a8de90396d532abc401d3f92bd"
+candidate="35a5bceeaa01cd13deab2d3d7e8fc0bde7b94b3c"
+old_candidate="17ae77556fb2581bdeb72985c5e2645e7b697bc0"
 fixture="a19e0fa5152af9f7ce106b6e:e5e7d0173fd1f1d0307a2cb6:e0929361aadb6135b5cecffa"
 control=/var/lib/capability-fabric/onshape/runtime-control/ONSHAPE_RUNTIME_CONTROL.json
 root=/var/lib/capability-fabric/onshape-research-phase0
@@ -59,6 +59,8 @@ if [[ ! -d "$release" ]]; then
 fi
 grep -Fq '"runtime.query_objects"' "$release/server-deploy/current/server.js"
 grep -Fq 'async function queryRuntimeObjects' "$release/server-deploy/current/browser-native.js"
+grep -Fq 'async function queryViewerRuntime' "$release/server-deploy/current/browser-native.js"
+grep -Fq '"runtime.viewer"' "$release/server-deploy/current/server.js"
 export CF_PHASE0_FIXTURE_TARGET="$fixture"
 export CF_PHASE0_PROJECT_STATE_REVISION="$candidate"
 export CF_PHASE0_SOURCE_COMMIT="$candidate"
