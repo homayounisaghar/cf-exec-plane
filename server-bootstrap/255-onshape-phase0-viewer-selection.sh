@@ -76,7 +76,8 @@ const compactSel=v=>({
   probe:v?.probe||null,
   selection_manager:v?.selection_manager||null,
   camera:v?.camera||null,
-  view_data:v?.view_data||null
+  view_data:v?.view_data||null,
+  selection_scan:v?.selection_scan||null
 });
 
 try {
@@ -103,8 +104,12 @@ try {
     primitive_id:target.primitive_id,
     entity_metadata:target.entity_metadata,
     body_metadata:target.body_metadata,
-    feature_ids:target.feature_ids
+    feature_ids:target.feature_ids,
+    getters:target.getters||null
   }));
+
+  const baselineSelection=await viewer({op:"selection_scan"});
+  console.log("CF_PHASE0_VIEWSEL_SELECTION_BASE="+JSON.stringify(compactSel(baselineSelection.value)));
 
   const canvas=await nativeEval(`(() => {
     const el=document.querySelector("#canvas"); const r=el?.getBoundingClientRect();
@@ -123,7 +128,7 @@ try {
   }));
 
   await input([{action:"mouse.move",x:away.x,y:away.y,steps:1,after_ms:140}]);
-  const post=await viewer({op:"inspect"});
+  const post=await viewer({op:"selection_scan"});
   console.log("CF_PHASE0_VIEWSEL_POST="+JSON.stringify(compactSel(post.value)));
 
   const postProbe=await viewer({op:"probe",x_fraction:.52,y_fraction:.50});
