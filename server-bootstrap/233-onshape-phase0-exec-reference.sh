@@ -2,7 +2,7 @@
 set -euo pipefail
 umask 077
 [[ "$(id -u)" -eq 0 ]] || exit 2
-candidate="d882fa763b3a55be5a18d6e196d028ff4f77ea07"
+candidate="dbb08f8257b4e72e31e203497fa135acdeda5e5b"
 fixture="a19e0fa5152af9f7ce106b6e:e5e7d0173fd1f1d0307a2cb6:e0929361aadb6135b5cecffa"
 research=capability-fabric-onshape-phase0-research
 sidecar=capability-fabric-onshape-phase0-fabric
@@ -18,6 +18,10 @@ assert g["killSwitch"]=="ENGAGED" and g["allowedDocumentIds"]==[] and g["mutatio
 print("CF_PHASE0_EXECREF_PRODUCTION_BOUNDARY=pass")
 PY
 for c in "$research" "$sidecar"; do [[ "$(docker inspect -f '{{.State.Health.Status}}' "$c")" == healthy ]]; done
+env_dump="$(docker inspect -f '{{range .Config.Env}}{{println .}}{{end}}' "$research")"
+grep -Fxq "CF_RESEARCH_SOURCE_COMMIT=$candidate" <<<"$env_dump"
+grep -Fxq "CF_RESEARCH_FIXTURE_TARGET=$fixture" <<<"$env_dump"
+echo CF_PHASE0_EXECREF_BINDING=pass
 PYTHONPATH="$release/server-deploy/current/fabric-src" python3 - <<'PY'
 from capability_fabric.persistence import SqliteExecutionStateStore
 p="/var/lib/capability-fabric/onshape-research-phase0/fabric-state/execution.sqlite3"
