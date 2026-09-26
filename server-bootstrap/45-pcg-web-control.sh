@@ -2953,19 +2953,6 @@ if [[ "$mode" == cleanup ]]; then
   exit 0
 fi
 
-[[ -s "$private_key" ]] || { echo "PCG_WEB_EPHEMERAL_KEY=missing" >&2; exit 23; }
-cipher="${CF_PCG_WEB_CONTROL_CIPHERTEXT:-}"
-[[ "$cipher" =~ ^[A-Za-z0-9+/=]{32,8192}$ ]] || { echo "invalid ciphertext" >&2; exit 24; }
-
-tmp_cipher="$(mktemp "$key_root/.cipher.XXXXXX")"
-tmp_plain="$(mktemp "$key_root/.plain.XXXXXX")"
-cleanup_files() { rm -f "$tmp_cipher" "$tmp_plain"; }
-trap cleanup_files EXIT
-printf '%s' "$cipher" | base64 -d > "$tmp_cipher"
-openssl pkeyutl -decrypt -inkey "$private_key" -in "$tmp_cipher" -out "$tmp_plain" \
-  -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256 -pkeyopt rsa_mgf1_md:sha256 >/dev/null 2>&1
-[[ -s "$tmp_plain" ]] || { echo "decrypt failed" >&2; exit 25; }
-
 if [[ "$mode" == semantic-forward-state-diagnostic ]]; then
   python3 - <<'PY'
 import json
@@ -3005,6 +2992,20 @@ print(json.dumps(found or {"forward_operation_found":False},separators=(",",":")
 PY
   exit 0
 fi
+
+[[ -s "$private_key" ]] || { echo "PCG_WEB_EPHEMERAL_KEY=missing" >&2; exit 23; }
+cipher="${CF_PCG_WEB_CONTROL_CIPHERTEXT:-}"
+[[ "$cipher" =~ ^[A-Za-z0-9+/=]{32,8192}$ ]] || { echo "invalid ciphertext" >&2; exit 24; }
+
+tmp_cipher="$(mktemp "$key_root/.cipher.XXXXXX")"
+tmp_plain="$(mktemp "$key_root/.plain.XXXXXX")"
+cleanup_files() { rm -f "$tmp_cipher" "$tmp_plain"; }
+trap cleanup_files EXIT
+printf '%s' "$cipher" | base64 -d > "$tmp_cipher"
+openssl pkeyutl -decrypt -inkey "$private_key" -in "$tmp_cipher" -out "$tmp_plain" \
+  -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256 -pkeyopt rsa_mgf1_md:sha256 >/dev/null 2>&1
+[[ -s "$tmp_plain" ]] || { echo "decrypt failed" >&2; exit 25; }
+
 
 if [[ "$mode" == semantic-contact-photo-forward-to-contact ]]; then
   sequence="$(python3 - "$release/manifest.json" <<'PY'
