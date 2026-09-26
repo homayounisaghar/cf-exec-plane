@@ -134,6 +134,7 @@ jobs:
           python tests/test_pcg_web_stage5_text_limit_hardening_v01.py
           python tests/test_pcg_web_stage5_attachment_hardening_v01.py
           python tests/test_pcg_web_stage5_large_file_transport_v01.py
+          python tests/test_pcg_web_stage5_conversation_structure_topics_v01.py
           python tests/test_pcg_web_stage5_photo_album_hardening_v01.py
           python tests/test_telegram_web_photo_album_effect_v01.py
           python tests/test_telegram_web_material_effect_v01.py
