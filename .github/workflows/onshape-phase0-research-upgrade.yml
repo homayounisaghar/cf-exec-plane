@@ -1,0 +1,39 @@
+name: Onshape Phase 0 Research Upgrade
+on:
+  push:
+    branches: [main]
+    paths: ['server-bootstrap/control/onshape-phase0-research-upgrade/*.request']
+permissions: {contents: read}
+concurrency:
+  group: onshape-phase0-research-activate
+  cancel-in-progress: false
+jobs:
+  upgrade:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 2, persist-credentials: false}
+      - name: Validate request
+        run: |
+          set -euo pipefail
+          mapfile -t c < <(git diff --name-status "${GITHUB_SHA}^" "${GITHUB_SHA}")
+          [[ "${#c[@]}" -eq 1 ]]
+          IFS=$'\t' read -r s p <<<"${c[0]}"
+          [[ "$s" == A && "$p" == server-bootstrap/control/onshape-phase0-research-upgrade/*.request ]]
+          [[ "$(awk -F= '$1=="action"{print $2}' "$p"|tail -1|tr -d '[:space:]')" == phase0-research-upgrade-v1 ]]
+          [[ "$(awk -F= '$1=="candidate_commit"{print $2}' "$p"|tail -1|tr -d '[:space:]')" == d882fa763b3a55be5a18d6e196d028ff4f77ea07 ]]
+          bash -n server-bootstrap/223-onshape-phase0-research-upgrade.sh
+      - name: Mask endpoint
+        run: |
+          printf '::add-mask::%s\n' "$VPS_HOST"
+          printf '::add-mask::%s\n' "$VPS_SSH_USER"
+      - name: Upgrade isolated research stack
+        run: bash server-bootstrap/runner/remote-bundle-exec.sh server-bootstrap/223-onshape-phase0-research-upgrade.sh
