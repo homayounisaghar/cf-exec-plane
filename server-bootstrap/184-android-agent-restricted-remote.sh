@@ -409,8 +409,10 @@ fi
 rm -f "$pairing_file"
 journal_tmp="$(mktemp)"
 trap 'rm -f "$cfg" "$api_json" "$binding_tmp" "$journal_tmp" "$pairing_file.tmp"' EXIT
+invocation_id="$(systemctl show capability-fabric-paa-remote.service -p InvocationID --value)"
+[[ "$invocation_id" =~ ^[0-9a-f]{32}$ ]] || { echo "missing systemd invocation id" >&2; exit 39; }
 for _ in $(seq 1 90); do
-  journalctl -u capability-fabric-paa-remote.service --since '-15 minutes' --no-pager -o cat > "$journal_tmp" 2>/dev/null || true
+  journalctl "_SYSTEMD_INVOCATION_ID=$invocation_id" --no-pager -o cat > "$journal_tmp" 2>/dev/null || true
   python3 - "$journal_tmp" "$pairing_file.tmp" <<'PY'
 import re,sys
 src,dst=sys.argv[1:]
@@ -420,22 +422,18 @@ code=None
 expiry=None
 for i,line in enumerate(lines):
     s=line.strip()
-    if s in {"1. Open this URL in your browser:","1. Verify this device in your browser:"} and i+1 < len(lines):
-        url=lines[i+1].strip()
-    elif s in {"2. Enter this code when prompted:","2. Make sure the code matches:"} and i+1 < len(lines):
-        code=lines[i+1].strip()
+    m=re.fullmatch(r"https://mcp\.desktopcommander\.app/device/verify\?user_code=([A-Z0-9]{4}-[A-Z0-9]{4})",s)
+    if m:
+        url=s
+        code=m.group(1)
     elif s.startswith("Code expires in "):
         expiry=s
-m=re.fullmatch(r"https://mcp\.desktopcommander\.app/device/verify\?user_code=([A-Z0-9]{4}-[A-Z0-9]{4})", url or "")
-if m:
-    if code is None:
-        code=m.group(1)
-    if code==m.group(1):
-        with open(dst,"w",encoding="utf-8") as out:
-            out.write(url+"\n")
-            out.write(code+"\n")
-            if expiry:
-                out.write(expiry+"\n")
+if url and code:
+    with open(dst,"w",encoding="utf-8") as out:
+        out.write(url+"\n")
+        out.write(code+"\n")
+        if expiry:
+            out.write(expiry+"\n")
 PY
   if [[ -s "$pairing_file.tmp" ]]; then
     install -m 0600 -o root -g root "$pairing_file.tmp" "$pairing_file"
