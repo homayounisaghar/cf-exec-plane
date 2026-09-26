@@ -4,7 +4,7 @@ umask 077
 
 [[ "$(id -u)" -eq 0 ]] || { echo "must run as uid 0" >&2; exit 1; }
 mode="${CF_PCG_WEB_CONTROL_MODE:-}"
-case "$mode" in prepare|status|ingress-diagnostic|semantic-status|semantic-conversations|semantic-conversations-protected|semantic-conversations-canary|semantic-conversation-structure-canary|semantic-conversation-pin-pair|semantic-saved-native-forward-to-contact|semantic-topic-canary|semantic-search-canary|semantic-messages-protected|semantic-messages-canary|semantic-retrieval-hardening-canary|semantic-mark-read-canary|semantic-open-media-canary|semantic-download-canary|semantic-composer-canary|material-send-canary|material-reply-canary|material-attachment-send-canary|material-attachment-reply-canary|material-edit-canary|material-delete-canary|material-delete-for-everyone-canary|material-forward-canary|material-relay-canary|semantic-reaction-canary|material-text-limit-canary|material-attachment-hardening-canary|material-large-file-transport-canary|material-photo-album-canary|phone|code|password|cleanup|screenshot|refresh-screenshot|mytelegram-start|mytelegram-capture-code|mytelegram-signin|mytelegram-create-app|mytelegram-screenshot) ;; *) echo "invalid mode" >&2; exit 2 ;; esac
+case "$mode" in prepare|status|ingress-diagnostic|semantic-status|semantic-conversations|semantic-conversations-protected|semantic-conversations-canary|semantic-conversation-structure-canary|semantic-conversation-pin-pair|semantic-saved-native-forward-to-contact|semantic-contact-photo-forward-to-contact|semantic-topic-canary|semantic-search-canary|semantic-messages-protected|semantic-messages-canary|semantic-retrieval-hardening-canary|semantic-mark-read-canary|semantic-open-media-canary|semantic-download-canary|semantic-composer-canary|material-send-canary|material-reply-canary|material-attachment-send-canary|material-attachment-reply-canary|material-edit-canary|material-delete-canary|material-delete-for-everyone-canary|material-forward-canary|material-relay-canary|semantic-reaction-canary|material-text-limit-canary|material-attachment-hardening-canary|material-large-file-transport-canary|material-photo-album-canary|phone|code|password|cleanup|screenshot|refresh-screenshot|mytelegram-start|mytelegram-capture-code|mytelegram-signin|mytelegram-create-app|mytelegram-screenshot) ;; *) echo "invalid mode" >&2; exit 2 ;; esac
 
 run_root=/var/lib/capability-fabric/pcg/run
 socket="$run_root/web.sock"
@@ -2960,6 +2960,246 @@ printf '%s' "$cipher" | base64 -d > "$tmp_cipher"
 openssl pkeyutl -decrypt -inkey "$private_key" -in "$tmp_cipher" -out "$tmp_plain" \
   -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256 -pkeyopt rsa_mgf1_md:sha256 >/dev/null 2>&1
 [[ -s "$tmp_plain" ]] || { echo "decrypt failed" >&2; exit 25; }
+
+if [[ "$mode" == semantic-contact-photo-forward-to-contact ]]; then
+  sequence="$(python3 - "$release/manifest.json" <<'PY'
+import json,sys
+print(int(json.load(open(sys.argv[1],encoding='utf-8')).get('sequence',0)))
+PY
+)"
+  [[ "$sequence" -ge 48 ]] || { echo "PCG_WEB_CONTACT_FORWARD_RUNTIME=too-old" >&2; exit 58; }
+
+  source_commit="$(tr -d '\r\n' < "$release/source-commit")"
+  [[ "$source_commit" =~ ^[0-9a-f]{40}$ ]] || { echo "PCG_WEB_CONTACT_FORWARD_SOURCE=invalid" >&2; exit 58; }
+  repo_cache=/var/lib/capability-fabric/deploy/pcg/repo.git
+  [[ -d "$repo_cache" ]] || { echo "PCG_WEB_CONTACT_FORWARD_SOURCE=cache-missing" >&2; exit 58; }
+  git --git-dir="$repo_cache" cat-file -e "$source_commit^{commit}"
+
+  target_plain="$tmp_plain"
+  chown 65534:65534 "$target_plain"
+  chmod 0400 "$target_plain"
+
+  work="$(mktemp -d "$run_root/.contact-forward-src.XXXXXX")"
+  cleanup_contact_forward() { rm -rf "$work"; }
+  trap 'cleanup_contact_forward; cleanup_files' EXIT
+  chmod 0755 "$work"
+  git --git-dir="$repo_cache" archive "$source_commit" src/capability_fabric | tar -x -C "$work"
+  chown -R 65534:65534 "$work"
+  find "$work" -type d -exec chmod 0755 {} +
+  find "$work" -type f -exec chmod 0644 {} +
+
+  image='python:3.12-slim-bookworm@sha256:392307d22300de8b5986851a12d9176dfc0fc073e65bf6523ebd7dcbeb23564e'
+  docker pull "$image" >/dev/null
+  docker run -i --rm --network none --user 65534:65534 \
+    -e PYTHONPATH=/src \
+    -v "$work/src:/src:ro" \
+    -v "$target_plain:/run/contact-forward-request.json:ro" \
+    -v /var/lib/capability-fabric/pcg/core-state:/state:rw \
+    -v /var/lib/capability-fabric/pcg/run:/run/pcg:rw \
+    "$image" python - <<'PY'
+import json
+import socket
+import unicodedata
+
+from capability_fabric.communications_runtime import PrivatePayloadBroker
+from capability_fabric.domain import OutcomeState
+from capability_fabric.persistence import SqliteExecutionStateStore
+from capability_fabric.telegram_web_runtime import (
+    TelegramWebSocketClient,
+    TelegramWebUncertainEffectResolver,
+    build_telegram_web_kernel_runtime,
+)
+
+SOCK="/run/pcg/web.sock"
+
+def norm(value):
+    if not isinstance(value,str):
+        return ""
+    return " ".join(unicodedata.normalize("NFKC",value).strip().split())
+
+def norm_emoji(value):
+    return norm(value).replace("\ufe0f","")
+
+def call(payload, timeout=75):
+    raw=(json.dumps(payload,separators=(",",":"),ensure_ascii=False)+"\n").encode("utf-8")
+    sock=socket.socket(socket.AF_UNIX,socket.SOCK_STREAM)
+    sock.settimeout(timeout)
+    sock.connect(SOCK)
+    sock.sendall(raw)
+    buf=b""
+    while b"\n" not in buf:
+        chunk=sock.recv(65536)
+        if not chunk:
+            break
+        buf+=chunk
+    sock.close()
+    if not buf:
+        raise SystemExit("empty Telegram Web response")
+    return json.loads(buf.split(b"\n",1)[0])
+
+def semantic(operation,args):
+    response=call({
+        "op":"semantic.invoke",
+        "operation":operation,
+        "purpose":"PROTECTED_DISPLAY",
+        "args":args,
+    })
+    if response.get("state")!="ACHIEVED":
+        raise SystemExit(operation+" did not achieve")
+    protected=response.get("protected_provider_data")
+    if not isinstance(protected,dict) or protected.get("model_visible") is not False:
+        raise SystemExit(operation+" protected payload contract invalid")
+    return response
+
+with open("/run/contact-forward-request.json","r",encoding="utf-8") as stream:
+    request=json.load(stream)
+name=norm(request.get("target_name"))
+expected_previous=norm_emoji(request.get("previous_outgoing_text"))
+if not name or expected_previous!="👍":
+    raise SystemExit("contact forward request invalid")
+
+searched=semantic("communication.conversation.search",{"query":name,"limit":50})
+items=searched["protected_provider_data"].get("conversations")
+if not isinstance(items,list):
+    raise SystemExit("conversation search payload invalid")
+candidates={}
+for item in items:
+    if (
+        isinstance(item,dict)
+        and item.get("type")=="user"
+        and norm(item.get("name"))==name
+        and isinstance(item.get("handle"),str)
+        and item["handle"].startswith("tgchat:")
+    ):
+        candidates[item["handle"]]=item
+if len(candidates)!=2:
+    raise SystemExit("exact-name conversation count was not exactly two")
+
+listed=semantic("communication.conversation.list",{"limit":50})
+list_items=listed["protected_provider_data"].get("conversations")
+if not isinstance(list_items,list):
+    raise SystemExit("conversation list payload invalid")
+pinned_handles={
+    item.get("handle") for item in list_items
+    if isinstance(item,dict) and item.get("pinned") is True
+}
+source_handles=[h for h in candidates if h in pinned_handles]
+destination_handles=[h for h in candidates if h not in pinned_handles]
+if len(source_handles)!=1 or len(destination_handles)!=1:
+    raise SystemExit("pinned source / other destination was not unique")
+source_conversation_handle=source_handles[0]
+target_handle=destination_handles[0]
+
+history=semantic("communication.message.list",{
+    "conversation_handle":source_conversation_handle,
+    "limit":50,
+})
+messages=history["protected_provider_data"].get("messages")
+if not isinstance(messages,list):
+    raise SystemExit("source conversation history invalid")
+outgoing=[
+    item for item in messages
+    if isinstance(item,dict)
+    and item.get("kind")=="message"
+    and item.get("outgoing") is True
+]
+if len(outgoing)<2:
+    raise SystemExit("source conversation has insufficient outgoing history")
+
+source=outgoing[0]
+previous=outgoing[1]
+attachments=source.get("attachments")
+if not isinstance(attachments,list) or len(attachments)<1:
+    raise SystemExit("latest outgoing source is not media")
+def attachment_is_image(att):
+    if not isinstance(att,dict):
+        return False
+    media=str(att.get("media_type") or "").lower()
+    filename=str(att.get("filename") or "").lower()
+    return media.startswith("image/") or filename.endswith((".jpg",".jpeg",".png",".webp"))
+message_media=str(source.get("media_type") or "").lower()
+is_image=message_media in ("photo","image") or message_media.startswith("image/") or any(attachment_is_image(x) for x in attachments)
+if not is_image:
+    raise SystemExit("latest outgoing media is not an image")
+if norm_emoji(previous.get("text"))!=expected_previous:
+    raise SystemExit("previous outgoing message is not the expected thumbs-up")
+
+source_message_handle=source.get("handle")
+if not isinstance(source_message_handle,str) or not source_message_handle.startswith("tgmsg:"):
+    raise SystemExit("source image handle invalid")
+
+client=TelegramWebSocketClient(SOCK,timeout=75.0)
+precheck=client.call({
+    "op":"material.forward_target.check",
+    "source_conversation_handle":source_conversation_handle,
+    "source_message_handle":source_message_handle,
+    "conversation_handle":target_handle,
+})
+if precheck.get("ok") is False:
+    raise SystemExit("native-forward precheck error: "+str(precheck.get("error")))
+if (
+    precheck.get("source_resolved") is not True
+    or precheck.get("target_resolved") is not True
+    or precheck.get("source_forwardable") is not True
+):
+    raise SystemExit("native-forward precheck did not positively qualify")
+
+state=SqliteExecutionStateStore("/state/web-material-send.sqlite3")
+payloads=PrivatePayloadBroker(
+    "/state/web-material-payloads",
+    ttl_seconds=86400,
+    max_payload_bytes=32*1024*1024,
+)
+try:
+    runtime=build_telegram_web_kernel_runtime(
+        client=client,
+        payloads=payloads,
+        state_store=state,
+        journal=state,
+    )
+    result=runtime.forward_native(
+        source_conversation_handle=source_conversation_handle,
+        source_message_handle=source_message_handle,
+        conversation_handle=target_handle,
+    )
+    if result.outcome.state is not OutcomeState.ACHIEVED:
+        raise SystemExit("native forward did not achieve")
+
+    resolver=TelegramWebUncertainEffectResolver(client,payloads)
+    observed=resolver.resolve(result.operation,result.attempt,result.dispatch)
+    if observed.state is not OutcomeState.ACHIEVED:
+        raise SystemExit("native forward authoritative readback failed")
+
+    durable=any(
+        item.get("kind")=="state.dispatch_intent.persisted"
+        and item.get("entity_id")==result.attempt.attempt_id
+        for item in state.event_records()
+    )
+    if not durable:
+        raise SystemExit("native forward durable dispatch intent missing")
+
+    print(json.dumps({
+        "state":"ACHIEVED",
+        "exact_name_candidates":2,
+        "source_unique_pinned":True,
+        "destination_unique_other":True,
+        "latest_outgoing_image":True,
+        "previous_outgoing_thumbsup":True,
+        "native_forward":True,
+        "download_performed":False,
+        "reattach_performed":False,
+        "provider_acknowledged":result.observation.ack_state.value=="ACKNOWLEDGED",
+        "provider_confirmed":result.observation.detail=="provider_confirmed",
+        "authoritative_forward_readback":True,
+        "provider_content_model_visible":False,
+    },separators=(",",":")))
+finally:
+    state.close()
+PY
+  : > "$tmp_plain"
+  printf 'PCG_WEB_CONTACT_PHOTO_NATIVE_FORWARD=pass\n'
+  exit 0
+fi
 
 if [[ "$mode" == semantic-saved-native-forward-to-contact ]]; then
   sequence="$(python3 - "$release/manifest.json" <<'PY'
