@@ -98,10 +98,18 @@ python3 -m py_compile "$tmp"
 install -m 0750 -o root -g root "$tmp" "$publisher"
 systemctl restart capability-fabric-paa-publisher.service
 for _ in $(seq 1 20); do
-  systemctl is-active --quiet capability-fabric-paa-publisher.service && break
+  if systemctl is-active --quiet capability-fabric-paa-publisher.service \
+      && [[ -S /run/capability-fabric/paa-publisher.sock ]]; then
+    probe="$(printf '%s' '{"schema":"personal-android-agent.remote-request.v1","request_id":"paa-policy-system-health-selftest-20260926-001","action":"system.health","parameters":{},"ttl_seconds":300}' | runuser -u "$remote_user" -- /usr/local/bin/paa-publish-envelope 2>/dev/null || true)"
+    if [[ -n "$probe" ]]; then
+      break
+    fi
+  fi
   sleep 1
 done
 systemctl is-active --quiet capability-fabric-paa-publisher.service
+[[ -S /run/capability-fabric/paa-publisher.sock ]]
+[[ -n "${probe:-}" ]]
 
 if runuser -u "$remote_user" -- cat "$producer_key" >/dev/null 2>&1; then
   echo "restricted user can read producer key" >&2
@@ -112,7 +120,7 @@ if runuser -u "$remote_user" -- cat "$binding" >/dev/null 2>&1; then
   exit 21
 fi
 
-positive="$(printf '%s' '{"schema":"personal-android-agent.remote-request.v1","request_id":"paa-policy-system-health-selftest-20260926-001","action":"system.health","parameters":{},"ttl_seconds":300}' | runuser -u "$remote_user" -- /usr/local/bin/paa-publish-envelope)"
+positive="$probe"
 negative="$(printf '%s' '{"schema":"personal-android-agent.remote-request.v1","request_id":"paa-policy-volume-set-negative-20260926-001","action":"volume.get_set","parameters":{"stream":"music","operation":"set","percent":50},"ttl_seconds":300}' | runuser -u "$remote_user" -- /usr/local/bin/paa-publish-envelope)"
 
 POSITIVE="$positive" NEGATIVE="$negative" python3 - <<'PY'
