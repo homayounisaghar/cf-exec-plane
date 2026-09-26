@@ -81,6 +81,8 @@ try{
   if(st?.auth?.state!=="PROVEN"||st?.auth?.http_status!==200) throw new Error("auth");
   console.log("CF_PHASE0_COVER_AUTH=PROVEN");
   const scan=await viewer({op:"selection_scan"});
+  console.log("CF_PHASE0_COVER_EDGE_HEAP="+JSON.stringify(scan?.selection_scan?.edges||null));
+  console.log("CF_PHASE0_COVER_FACE_HEAP="+JSON.stringify(scan?.selection_scan?.faces||null));
   const anchor=await viewer({op:"probe",x_fraction:.52,y_fraction:.50});
   const anchorPicks=anchor?.probe?.picks||[];
   const face=anchorPicks.find(x=>x?.deterministic_id==="JHK");
