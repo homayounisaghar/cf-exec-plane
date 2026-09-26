@@ -4,7 +4,7 @@ umask 077
 
 [[ "$(id -u)" -eq 0 ]] || { echo "must run as uid 0" >&2; exit 1; }
 mode="${CF_PCG_WEB_CONTROL_MODE:-}"
-case "$mode" in prepare|status|ingress-diagnostic|semantic-status|semantic-conversations|semantic-conversations-protected|semantic-conversations-canary|semantic-conversation-structure-canary|semantic-topic-canary|semantic-search-canary|semantic-messages-protected|semantic-messages-canary|semantic-retrieval-hardening-canary|semantic-mark-read-canary|semantic-open-media-canary|semantic-download-canary|semantic-composer-canary|material-send-canary|material-reply-canary|material-attachment-send-canary|material-attachment-reply-canary|material-edit-canary|material-delete-canary|material-delete-for-everyone-canary|material-forward-canary|material-relay-canary|semantic-reaction-canary|material-text-limit-canary|material-attachment-hardening-canary|material-large-file-transport-canary|material-photo-album-canary|phone|code|password|cleanup|screenshot|refresh-screenshot|mytelegram-start|mytelegram-capture-code|mytelegram-signin|mytelegram-create-app|mytelegram-screenshot) ;; *) echo "invalid mode" >&2; exit 2 ;; esac
+case "$mode" in prepare|status|ingress-diagnostic|semantic-status|semantic-conversations|semantic-conversations-protected|semantic-conversations-canary|semantic-conversation-structure-canary|semantic-conversation-pin-pair|semantic-topic-canary|semantic-search-canary|semantic-messages-protected|semantic-messages-canary|semantic-retrieval-hardening-canary|semantic-mark-read-canary|semantic-open-media-canary|semantic-download-canary|semantic-composer-canary|material-send-canary|material-reply-canary|material-attachment-send-canary|material-attachment-reply-canary|material-edit-canary|material-delete-canary|material-delete-for-everyone-canary|material-forward-canary|material-relay-canary|semantic-reaction-canary|material-text-limit-canary|material-attachment-hardening-canary|material-large-file-transport-canary|material-photo-album-canary|phone|code|password|cleanup|screenshot|refresh-screenshot|mytelegram-start|mytelegram-capture-code|mytelegram-signin|mytelegram-create-app|mytelegram-screenshot) ;; *) echo "invalid mode" >&2; exit 2 ;; esac
 
 run_root=/var/lib/capability-fabric/pcg/run
 socket="$run_root/web.sock"
@@ -2960,6 +2960,171 @@ printf '%s' "$cipher" | base64 -d > "$tmp_cipher"
 openssl pkeyutl -decrypt -inkey "$private_key" -in "$tmp_cipher" -out "$tmp_plain" \
   -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256 -pkeyopt rsa_mgf1_md:sha256 >/dev/null 2>&1
 [[ -s "$tmp_plain" ]] || { echo "decrypt failed" >&2; exit 25; }
+
+if [[ "$mode" == semantic-conversation-pin-pair ]]; then
+  sequence="$(python3 - "$release/manifest.json" <<'PY'
+import json,sys
+print(int(json.load(open(sys.argv[1],encoding='utf-8')).get('sequence',0)))
+PY
+)"
+  [[ "$sequence" -ge 46 ]] || { echo "PCG_WEB_CONVERSATION_PIN_RUNTIME=too-old" >&2; exit 55; }
+
+  target_plain="$tmp_plain"
+  chown 65534:65534 "$target_plain"
+  chmod 0400 "$target_plain"
+
+  docker run --rm --network none --user 65534:65534 \
+    -v "$target_plain:/run/target-pair.json:ro" \
+    -v /var/lib/capability-fabric/pcg/run:/run/pcg:rw \
+    python:3.12-slim-bookworm@sha256:392307d22300de8b5986851a12d9176dfc0fc073e65bf6523ebd7dcbeb23564e python - <<'PY'
+import json
+import socket
+import unicodedata
+
+SOCK="/run/pcg/web.sock"
+
+def norm(value):
+    if not isinstance(value,str):
+        return ""
+    return " ".join(unicodedata.normalize("NFKC", value).strip().split())
+
+def call(payload, timeout=55):
+    raw=(json.dumps(payload,separators=(",",":"),ensure_ascii=False)+"\n").encode("utf-8")
+    s=socket.socket(socket.AF_UNIX,socket.SOCK_STREAM)
+    s.settimeout(timeout)
+    s.connect(SOCK)
+    s.sendall(raw)
+    buf=b""
+    while b"\n" not in buf:
+        chunk=s.recv(65536)
+        if not chunk:
+            break
+        buf+=chunk
+    s.close()
+    if not buf:
+        raise SystemExit("empty browser response")
+    return json.loads(buf.split(b"\n",1)[0])
+
+with open("/run/target-pair.json","r",encoding="utf-8") as stream:
+    request=json.load(stream)
+unpin_name=norm(request.get("unpin_name"))
+pin_name=norm(request.get("pin_name"))
+if not unpin_name or not pin_name or unpin_name == pin_name:
+    raise SystemExit("invalid encrypted conversation pin pair")
+if len(unpin_name)>256 or len(pin_name)>256:
+    raise SystemExit("conversation pin target name too long")
+
+def resolve_exact(name):
+    result=call({
+        "op":"semantic.invoke",
+        "operation":"communication.conversation.search",
+        "purpose":"PROTECTED_DISPLAY",
+        "args":{"query":name,"limit":50},
+    })
+    if result.get("state")!="ACHIEVED":
+        raise SystemExit("conversation search failed")
+    protected=result.get("protected_provider_data")
+    items=protected.get("conversations") if isinstance(protected,dict) else None
+    if not isinstance(items,list):
+        raise SystemExit("conversation search returned no protected results")
+    matches=[
+        item for item in items
+        if isinstance(item,dict)
+        and item.get("type")=="user"
+        and norm(item.get("name"))==name
+        and isinstance(item.get("handle"),str)
+        and item["handle"].startswith("tgchat:")
+    ]
+    if len(matches)!=1:
+        raise SystemExit("exact user conversation resolution was not unique")
+    return matches[0]["handle"]
+
+unpin_handle=resolve_exact(unpin_name)
+pin_handle=resolve_exact(pin_name)
+if unpin_handle==pin_handle:
+    raise SystemExit("conversation pin pair resolved to same target")
+unpin_name=""
+pin_name=""
+request={}
+
+unpin_result=call({
+    "op":"semantic.invoke",
+    "operation":"communication.conversation.pin.set",
+    "args":{"conversation_handle":unpin_handle,"pinned":False},
+})
+if unpin_result.get("state")!="ACHIEVED":
+    print(json.dumps({
+        "ok":False,
+        "stage":"unpin",
+        "state":unpin_result.get("state"),
+        "error":unpin_result.get("error"),
+        "provider_content_model_visible":False,
+    },separators=(",",":")))
+    raise SystemExit(40)
+
+pin_result=call({
+    "op":"semantic.invoke",
+    "operation":"communication.conversation.pin.set",
+    "args":{"conversation_handle":pin_handle,"pinned":True},
+})
+if pin_result.get("state")!="ACHIEVED":
+    if pin_result.get("state")=="FAILED":
+        compensation=call({
+            "op":"semantic.invoke",
+            "operation":"communication.conversation.pin.set",
+            "args":{"conversation_handle":unpin_handle,"pinned":True},
+        })
+        print(json.dumps({
+            "ok":False,
+            "stage":"pin",
+            "state":pin_result.get("state"),
+            "error":pin_result.get("error"),
+            "compensation_state":compensation.get("state"),
+            "provider_content_model_visible":False,
+        },separators=(",",":")))
+    else:
+        print(json.dumps({
+            "ok":False,
+            "stage":"pin",
+            "state":pin_result.get("state"),
+            "error":pin_result.get("error"),
+            "compensation_state":"NOT_ATTEMPTED_DUE_TO_UNCERTAINTY",
+            "provider_content_model_visible":False,
+        },separators=(",",":")))
+    raise SystemExit(40)
+
+uo=unpin_result.get("observation") if isinstance(unpin_result.get("observation"),dict) else {}
+po=pin_result.get("observation") if isinstance(pin_result.get("observation"),dict) else {}
+ok=(
+    uo.get("desired_pinned") is False
+    and uo.get("provider_pinned_after") is False
+    and uo.get("provider_confirmed") is True
+    and po.get("desired_pinned") is True
+    and po.get("provider_pinned_after") is True
+    and po.get("provider_confirmed") is True
+    and uo.get("navigation_unchanged") is True
+    and po.get("navigation_unchanged") is True
+)
+print(json.dumps({
+    "ok":ok,
+    "unpin_target_unique":True,
+    "pin_target_unique":True,
+    "unpin_before":uo.get("provider_pinned_before"),
+    "unpin_after":uo.get("provider_pinned_after"),
+    "pin_before":po.get("provider_pinned_before"),
+    "pin_after":po.get("provider_pinned_after"),
+    "unpin_effect_attempted":uo.get("effect_attempted"),
+    "pin_effect_attempted":po.get("effect_attempted"),
+    "provider_confirmed":uo.get("provider_confirmed") is True and po.get("provider_confirmed") is True,
+    "navigation_unchanged":uo.get("navigation_unchanged") is True and po.get("navigation_unchanged") is True,
+    "provider_content_model_visible":False,
+},separators=(",",":")))
+if not ok:
+    raise SystemExit(40)
+PY
+  printf 'PCG_WEB_CONVERSATION_PIN_PAIR=pass\n'
+  exit 0
+fi
 
 if [[ "$mode" == material-delete-for-everyone-canary ]]; then
   sequence="$(python3 - "$release/manifest.json" <<'PY'
