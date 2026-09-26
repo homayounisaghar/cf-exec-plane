@@ -3102,7 +3102,9 @@ for handle in candidates:
         if isinstance(item,dict)
         and item.get("kind")=="message"
         and item.get("outgoing") is True
+        and isinstance(item.get("date"),int)
     ]
+    outgoing.sort(key=lambda item:item["date"],reverse=True)
     if len(outgoing)<2:
         continue
     candidate_source=outgoing[0]
