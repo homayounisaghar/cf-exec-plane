@@ -3251,20 +3251,6 @@ try:
         "source_message_handle":source_message_handle,
         "conversation_handle":target_handle,
     })
-    debug=client.call({
-        "op":"material.forward_target.debug",
-        "source_conversation_handle":source_conversation_handle,
-        "source_message_handle":source_message_handle,
-        "conversation_handle":target_handle,
-    })
-    print(json.dumps({
-        "debug_source_resolved":debug.get("source_resolved") is True,
-        "debug_target_resolved":debug.get("target_resolved") is True,
-        "debug_source_peer_is_self":debug.get("source_peer_is_self") is True,
-        "debug_message_noforwards":debug.get("message_noforwards") is True,
-        "debug_peer_noforwards":debug.get("peer_noforwards") is True,
-        "debug_ephemeral":debug.get("ephemeral") is True,
-    },separators=(",",":")))
     print(json.dumps({
         "preflight_source_resolved":precheck.get("source_resolved") is True,
         "preflight_target_resolved":precheck.get("target_resolved") is True,
