@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - 'android-agent/control/stage-b-requests/*.request'
+      - 'android-agent/control/stage-b-line3-requests/*.request'
 
 permissions:
   contents: read
@@ -48,7 +48,7 @@ jobs:
           [[ "$(printf '%s\n' "$changes" | sed '/^$/d' | wc -l | tr -d ' ')" == 1 ]] || exit 10
           IFS=$'\t' read -r status path <<<"$changes"
           [[ "$status" == A ]] || exit 11
-          [[ "$path" == android-agent/control/stage-b-requests/*.request ]] || exit 12
+          [[ "$path" == android-agent/control/stage-b-line3-requests/*.request ]] || exit 12
 
           request_id="$(awk -F= '$1=="request_id"{print $2}' "$path" | tail -n1 | tr -d '[:space:]')"
           candidate_commit="$(awk -F= '$1=="candidate_commit"{print $2}' "$path" | tail -n1 | tr -d '[:space:]')"
@@ -171,7 +171,12 @@ jobs:
 
           "$BT/zipalign" -c -p 4 "$unsigned"
           cp "$unsigned" "$signed"
-          "$BT/apksigner" sign             --ks /tmp/paa-line3-signer/signer.p12             --ks-type PKCS12             --ks-key-alias "$EXPECTED_ALIAS"             --ks-pass file:/tmp/paa-line3-signer/signer.pass             --key-pass file:/tmp/paa-line3-signer/signer.pass             --v1-signing-enabled true             --v2-signing-enabled true             --v3-signing-enabled true             "$signed"
+          PAA_LINE3_PASS="$(cat /tmp/paa-line3-signer/signer.pass)"
+          [[ -n "$PAA_LINE3_PASS" ]] || exit 32
+          printf '::add-mask::%s\n' "$PAA_LINE3_PASS"
+          export PAA_LINE3_PASS
+          "$BT/apksigner" sign --ks /tmp/paa-line3-signer/signer.p12 --ks-type PKCS12 --ks-key-alias "$EXPECTED_ALIAS" --ks-pass env:PAA_LINE3_PASS --key-pass env:PAA_LINE3_PASS --v1-signing-enabled true --v2-signing-enabled true --v3-signing-enabled true "$signed"
+          unset PAA_LINE3_PASS
 
           "$BT/apksigner" verify --verbose --print-certs "$signed" | tee "$outdir/apksigner.txt"
           "$BT/zipalign" -c -p 4 "$signed"
