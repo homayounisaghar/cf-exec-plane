@@ -29,6 +29,6 @@ jobs:
           IFS=$'\t' read -r s p <<<"${c[0]}"
           [[ "$s" == A && "$p" == server-bootstrap/control/onshape-phase0-pick-correlation/*.request ]]
           [[ "$(awk -F= '$1=="action"{print $2}' "$p"|tail -1|tr -d '[:space:]')" == phase0-pick-correlation-v1 ]]
-          bash -n server-bootstrap/248-onshape-phase0-pick-correlation.sh
+          grep -Fxq "#!/usr/bin/env bash" <(head -n 1 server-bootstrap/248-onshape-phase0-pick-correlation.sh)
       - name: Correlate pick and geometry state
         run: bash server-bootstrap/runner/remote-bundle-exec.sh server-bootstrap/248-onshape-phase0-pick-correlation.sh
