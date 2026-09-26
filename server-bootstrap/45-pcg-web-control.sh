@@ -1168,7 +1168,7 @@ PY
 
   image='python:3.12-slim-bookworm@sha256:392307d22300de8b5986851a12d9176dfc0fc073e65bf6523ebd7dcbeb23564e'
   docker pull "$image" >/dev/null
-  docker run --rm --network none --user 65534:65534 \
+  docker run -i --rm --network none --user 65534:65534 \
     -e PYTHONPATH=/src \
     -v "$work/src:/src:ro" \
     -v /var/lib/capability-fabric/pcg/core-state:/state:rw \
@@ -1279,7 +1279,7 @@ PY
 
   image='python:3.12-slim-bookworm@sha256:392307d22300de8b5986851a12d9176dfc0fc073e65bf6523ebd7dcbeb23564e'
   docker pull "$image" >/dev/null
-  docker run --rm --network none --user 65534:65534 \
+  docker run -i --rm --network none --user 65534:65534 \
     -e PYTHONPATH=/src \
     -v "$work/src:/src:ro" \
     -v /var/lib/capability-fabric/pcg/core-state:/state:rw \
@@ -1403,7 +1403,7 @@ PY
 
   image='python:3.12-slim-bookworm@sha256:392307d22300de8b5986851a12d9176dfc0fc073e65bf6523ebd7dcbeb23564e'
   docker pull "$image" >/dev/null
-  docker run --rm --network none --user 65534:65534 \
+  docker run -i --rm --network none --user 65534:65534 \
     -e PYTHONPATH=/src \
     -v "$work/src:/src:ro" \
     -v /var/lib/capability-fabric/pcg/core-state:/state:rw \
@@ -1535,7 +1535,7 @@ PY
 
   image='python:3.12-slim-bookworm@sha256:392307d22300de8b5986851a12d9176dfc0fc073e65bf6523ebd7dcbeb23564e'
   docker pull "$image" >/dev/null
-  docker run --rm --network none --user 65534:65534 \
+  docker run -i --rm --network none --user 65534:65534 \
     -e PYTHONPATH=/src \
     -v "$work/src:/src:ro" \
     -v /var/lib/capability-fabric/pcg/core-state:/state:rw \
@@ -1650,7 +1650,7 @@ PY
 
   image='python:3.12-slim-bookworm@sha256:392307d22300de8b5986851a12d9176dfc0fc073e65bf6523ebd7dcbeb23564e'
   docker pull "$image" >/dev/null
-  docker run --rm --network none --user 65534:65534 \
+  docker run -i --rm --network none --user 65534:65534 \
     -e PYTHONPATH=/src \
     -v "$work/src:/src:ro" \
     -v /var/lib/capability-fabric/pcg/core-state:/state:rw \
@@ -1798,7 +1798,7 @@ PY
 
   image='python:3.12-slim-bookworm@sha256:392307d22300de8b5986851a12d9176dfc0fc073e65bf6523ebd7dcbeb23564e'
   docker pull "$image" >/dev/null
-  docker run --rm --network none --user 65534:65534 \
+  docker run -i --rm --network none --user 65534:65534 \
     -e PYTHONPATH=/src \
     -v "$work/src:/src:ro" \
     -v /var/lib/capability-fabric/pcg/core-state:/state:rw \
@@ -1958,7 +1958,7 @@ PY
 
   image='python:3.12-slim-bookworm@sha256:392307d22300de8b5986851a12d9176dfc0fc073e65bf6523ebd7dcbeb23564e'
   docker pull "$image" >/dev/null
-  docker run --rm --network none --user 65534:65534 \
+  docker run -i --rm --network none --user 65534:65534 \
     -e PYTHONPATH=/src \
     -v "$work/src:/src:ro" \
     -v /var/lib/capability-fabric/pcg/core-state:/state:rw \
@@ -2087,7 +2087,7 @@ PY
 
   image='python:3.12-slim-bookworm@sha256:392307d22300de8b5986851a12d9176dfc0fc073e65bf6523ebd7dcbeb23564e'
   docker pull "$image" >/dev/null
-  docker run --rm --network none --user 65534:65534 \
+  docker run -i --rm --network none --user 65534:65534 \
     -e PYTHONPATH=/src \
     -v "$work/src:/src:ro" \
     -v /var/lib/capability-fabric/pcg/core-state:/state:rw \
@@ -2206,7 +2206,7 @@ PY
 
   image='python:3.12-slim-bookworm@sha256:392307d22300de8b5986851a12d9176dfc0fc073e65bf6523ebd7dcbeb23564e'
   docker pull "$image" >/dev/null
-  docker run --rm --network none --user 65534:65534 \
+  docker run -i --rm --network none --user 65534:65534 \
     -e PYTHONPATH=/src \
     -v "$work/src:/src:ro" \
     -v /var/lib/capability-fabric/pcg/core-state:/state:rw \
@@ -2349,7 +2349,7 @@ PY
 
   image='python:3.12-slim-bookworm@sha256:392307d22300de8b5986851a12d9176dfc0fc073e65bf6523ebd7dcbeb23564e'
   docker pull "$image" >/dev/null
-  docker run --rm --network none --user 65534:65534 \
+  docker run -i --rm --network none --user 65534:65534 \
     -e PYTHONPATH=/src \
     -v "$work/src:/src:ro" \
     -v /var/lib/capability-fabric/pcg/core-state:/state:rw \
@@ -2482,7 +2482,7 @@ PY
 
   image='python:3.12-slim-bookworm@sha256:392307d22300de8b5986851a12d9176dfc0fc073e65bf6523ebd7dcbeb23564e'
   docker pull "$image" >/dev/null
-  docker run --rm --network none --user 65534:65534 \
+  docker run -i --rm --network none --user 65534:65534 \
     -e PYTHONPATH=/src \
     -v "$work/src:/src:ro" \
     -v /var/lib/capability-fabric/pcg/core-state:/state:rw \
@@ -2614,7 +2614,7 @@ PY
 
   image='python:3.12-slim-bookworm@sha256:392307d22300de8b5986851a12d9176dfc0fc073e65bf6523ebd7dcbeb23564e'
   docker pull "$image" >/dev/null
-  docker run --rm --network none --user 65534:65534 \
+  docker run -i --rm --network none --user 65534:65534 \
     -e PYTHONPATH=/src \
     -v "$work/src:/src:ro" \
     -v /var/lib/capability-fabric/pcg/core-state:/state:rw \
@@ -2747,7 +2747,7 @@ PY
 
   image='python:3.12-slim-bookworm@sha256:392307d22300de8b5986851a12d9176dfc0fc073e65bf6523ebd7dcbeb23564e'
   docker pull "$image" >/dev/null
-  docker run --rm --network none --user 65534:65534 \
+  docker run -i --rm --network none --user 65534:65534 \
     -e PYTHONPATH=/src \
     -v "$work/src:/src:ro" \
     -v /var/lib/capability-fabric/pcg/core-state:/state:rw \
@@ -2973,7 +2973,7 @@ PY
   chown 65534:65534 "$target_plain"
   chmod 0400 "$target_plain"
 
-  docker run --rm --network none --user 65534:65534 \
+  docker run -i --rm --network none --user 65534:65534 \
     -v "$target_plain:/run/target-pair.json:ro" \
     -v /var/lib/capability-fabric/pcg/run:/run/pcg:rw \
     python:3.12-slim-bookworm@sha256:392307d22300de8b5986851a12d9176dfc0fc073e65bf6523ebd7dcbeb23564e python - <<'PY'
@@ -3155,7 +3155,7 @@ PY
 
   image='python:3.12-slim-bookworm@sha256:392307d22300de8b5986851a12d9176dfc0fc073e65bf6523ebd7dcbeb23564e'
   docker pull "$image" >/dev/null
-  docker run --rm --network none --user 65534:65534 \
+  docker run -i --rm --network none --user 65534:65534 \
     -e PYTHONPATH=/src \
     -v "$work/src:/src:ro" \
     -v "$target_plain:/run/target-name:ro" \
