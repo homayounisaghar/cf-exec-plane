@@ -3,7 +3,7 @@ set -euo pipefail
 umask 077
 [[ "$(id -u)" -eq 0 ]] || { echo "must run as uid 0" >&2; exit 2; }
 
-candidate_commit="ae9bc114d84cfd7991cbdd38489b18d33a2d34bf"
+candidate_commit="d882fa763b3a55be5a18d6e196d028ff4f77ea07"
 cache=/var/lib/capability-fabric/repo.git
 token=/etc/capability-fabric/secrets/repo-read-token
 home=/var/lib/capability-fabric/agent-home
@@ -56,6 +56,8 @@ grep -Fq 'CF_RESEARCH_SURFACE_ID' server-deploy/current/server.js
 grep -Fq 'RESEARCH_FIXTURE_MISMATCH' server-deploy/current/server.js
 grep -Fq 'PHASE0_RESEARCH_PORTS' server-deploy/current/runtime-mode.js
 grep -Fq 'apiBasePath' server-deploy/current/server.js
+grep -Fq 'CF_FABRIC_AGENT_PORT: "8899"' server-deploy/research-phase0/compose.yaml
+grep -Fq 'port not in {8789, 8899}' src/capability_fabric/onshape_vps_transport.py
 
 echo CF_PHASE0_CANDIDATE_FETCH=pass
 echo CF_PHASE0_CANDIDATE_COMMIT="$candidate_commit"
