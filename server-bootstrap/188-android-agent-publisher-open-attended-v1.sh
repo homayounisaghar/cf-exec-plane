@@ -26,9 +26,9 @@ if '"app.open"' in block and '"url.open"' in block and 'Personal Android Agent p
     open(dst,"w",encoding="utf-8").write(text)
     raise SystemExit(0)
 
-if 'Personal Android Agent package only' in block:
+if 'Samsung Internet package only' in block:
     block=block.replace(
-        'if package != "com.homayounisaghar.androidagent":\n            fail("app package not admitted")  # Samsung Internet package only',
+        'if package != "com.sec.android.app.sbrowser":\n            fail("app package not admitted")  # Samsung Internet package only',
         'if package != "com.homayounisaghar.androidagent":\n            fail("app package not admitted")  # Personal Android Agent package only',
         1,
     )
