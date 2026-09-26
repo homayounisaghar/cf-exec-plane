@@ -63,6 +63,7 @@ const evalp=async(expression)=>{
   return r.observation.evidence.result.value;
 };
 const triples=flat=>{const a=[];for(let i=0;i+2<flat.length;i+=3)a.push([+flat[i],+flat[i+1],+flat[i+2]]);return a.filter(p=>p.every(Number.isFinite));};
+const mean=pts=>[0,1,2].map(j=>pts.reduce((s,p)=>s+p[j],0)/pts.length);
 const lerp=(a,b,t)=>a.map((v,i)=>v+(b[i]-v)*t);
 const invert4ColumnMajor=a=>{
   const m=Array.from({length:4},(_,r)=>Array.from({length:4},(_,col)=>Number(a[col*4+r])));
