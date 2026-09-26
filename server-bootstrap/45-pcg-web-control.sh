@@ -4,7 +4,7 @@ umask 077
 
 [[ "$(id -u)" -eq 0 ]] || { echo "must run as uid 0" >&2; exit 1; }
 mode="${CF_PCG_WEB_CONTROL_MODE:-}"
-case "$mode" in prepare|status|ingress-diagnostic|semantic-status|semantic-conversations|semantic-conversations-protected|semantic-conversations-canary|semantic-search-canary|semantic-messages-protected|semantic-messages-canary|semantic-retrieval-hardening-canary|semantic-mark-read-canary|semantic-open-media-canary|semantic-download-canary|semantic-composer-canary|material-send-canary|material-reply-canary|material-attachment-send-canary|material-attachment-reply-canary|material-edit-canary|material-delete-canary|material-delete-for-everyone-canary|material-forward-canary|material-relay-canary|semantic-reaction-canary|material-text-limit-canary|material-attachment-hardening-canary|material-large-file-transport-canary|material-photo-album-canary|phone|code|password|cleanup|screenshot|refresh-screenshot|mytelegram-start|mytelegram-capture-code|mytelegram-signin|mytelegram-create-app|mytelegram-screenshot) ;; *) echo "invalid mode" >&2; exit 2 ;; esac
+case "$mode" in prepare|status|ingress-diagnostic|semantic-status|semantic-conversations|semantic-conversations-protected|semantic-conversations-canary|semantic-conversation-structure-canary|semantic-topic-canary|semantic-search-canary|semantic-messages-protected|semantic-messages-canary|semantic-retrieval-hardening-canary|semantic-mark-read-canary|semantic-open-media-canary|semantic-download-canary|semantic-composer-canary|material-send-canary|material-reply-canary|material-attachment-send-canary|material-attachment-reply-canary|material-edit-canary|material-delete-canary|material-delete-for-everyone-canary|material-forward-canary|material-relay-canary|semantic-reaction-canary|material-text-limit-canary|material-attachment-hardening-canary|material-large-file-transport-canary|material-photo-album-canary|phone|code|password|cleanup|screenshot|refresh-screenshot|mytelegram-start|mytelegram-capture-code|mytelegram-signin|mytelegram-create-app|mytelegram-screenshot) ;; *) echo "invalid mode" >&2; exit 2 ;; esac
 
 run_root=/var/lib/capability-fabric/pcg/run
 socket="$run_root/web.sock"
@@ -134,7 +134,19 @@ for item in conversations:
     assert isinstance(item.get('handle'),str) and item['handle'].startswith('tgchat:')
     assert isinstance(item.get('name'),str) and 1 <= len(item['name']) <= 256
     assert item.get('type') in ('user','chat','channel')
-    assert set(item) == {'handle','name','type'}
+    expected={'handle','name','type','pinned','sponsored','proxy_sponsor','sponsor_kind','is_forum','forum_kind','list_section'}
+    assert set(item) == expected
+    assert isinstance(item['pinned'],bool)
+    assert isinstance(item['sponsored'],bool)
+    assert isinstance(item['proxy_sponsor'],bool)
+    assert isinstance(item['is_forum'],bool)
+    assert item['list_section'] in ('proxy_sponsor','sponsored','pinned','normal')
+    assert item['sponsor_kind'] in (None,'proxy','telegram_promo')
+    assert item['forum_kind'] in (None,'forum','botforum')
+    if item['proxy_sponsor']:
+        assert item['sponsored'] and item['list_section'] == 'proxy_sponsor'
+    if item['pinned']:
+        assert item['list_section'] == 'pinned'
     counts[item['type']]+=1
 safe={
     'ok':True,
@@ -173,6 +185,82 @@ safe={k:d.get(k) for k in ('ok','state','operation','provider','realization','er
 obs=d.get('observation')
 if isinstance(obs,dict):
     allowed=('canary_present','canary_handle','unread_before','unread_after','list_state','provider_content_model_visible')
+    safe['observation']={k:obs.get(k) for k in allowed if k in obs}
+print(json.dumps(safe,separators=(',',':')))
+state=d.get('state')
+if state == 'ACHIEVED':
+    raise SystemExit(0)
+if state == 'QUALIFICATION_REQUIRED':
+    raise SystemExit(42)
+raise SystemExit(40)
+PY
+}
+
+socket_conversation_structure_qualification() {
+  python3 - "$socket" <<'PY'
+import json,socket,sys
+sock_path=sys.argv[1]
+payload={'op':'qualify.conversation_structure'}
+s=socket.socket(socket.AF_UNIX,socket.SOCK_STREAM)
+s.settimeout(55)
+s.connect(sock_path)
+s.sendall((json.dumps(payload,separators=(',',':'))+'\n').encode())
+buf=b''
+while b'\n' not in buf:
+    chunk=s.recv(65536)
+    if not chunk:
+        break
+    buf+=chunk
+s.close()
+if not buf:
+    raise SystemExit('empty browser response')
+d=json.loads(buf.split(b'\n',1)[0])
+safe={k:d.get(k) for k in ('ok','state','operation','provider','realization','error') if k in d}
+obs=d.get('observation')
+if isinstance(obs,dict):
+    allowed=(
+        'count','classification_complete','section_order_valid',
+        'sponsored_count','proxy_sponsor_count','pinned_count','normal_count',
+        'forum_count','promo_fetch_state','provider_content_model_visible'
+    )
+    safe['observation']={k:obs.get(k) for k in allowed if k in obs}
+print(json.dumps(safe,separators=(',',':')))
+state=d.get('state')
+if state == 'ACHIEVED':
+    raise SystemExit(0)
+if state == 'QUALIFICATION_REQUIRED':
+    raise SystemExit(42)
+raise SystemExit(40)
+PY
+}
+
+socket_topic_qualification() {
+  python3 - "$socket" <<'PY'
+import json,socket,sys
+sock_path=sys.argv[1]
+payload={'op':'qualify.topic_retrieval_no_read'}
+s=socket.socket(socket.AF_UNIX,socket.SOCK_STREAM)
+s.settimeout(90)
+s.connect(sock_path)
+s.sendall((json.dumps(payload,separators=(',',':'))+'\n').encode())
+buf=b''
+while b'\n' not in buf:
+    chunk=s.recv(65536)
+    if not chunk:
+        break
+    buf+=chunk
+s.close()
+if not buf:
+    raise SystemExit('empty browser response')
+d=json.loads(buf.split(b'\n',1)[0])
+safe={k:d.get(k) for k in ('ok','state','operation','provider','realization','error') if k in d}
+obs=d.get('observation')
+if isinstance(obs,dict):
+    allowed=(
+        'canary_present','forum_candidate_count','topic_count','topic_handle',
+        'topic_scoped_message_count','read_cursor_unchanged','navigation_unchanged',
+        'provider_content_model_visible'
+    )
     safe['observation']={k:obs.get(k) for k in allowed if k in obs}
 print(json.dumps(safe,separators=(',',':')))
 state=d.get('state')
@@ -828,6 +916,50 @@ PY
   fi
   if [[ "$rc" -eq 42 ]]; then
     printf 'PCG_WEB_UNREAD_CANARY=qualification-required\n'
+    exit 0
+  fi
+  exit "$rc"
+fi
+
+if [[ "$mode" == semantic-conversation-structure-canary ]]; then
+  sequence="$(python3 - "$release/manifest.json" <<'PY'
+import json,sys
+print(int(json.load(open(sys.argv[1],encoding='utf-8')).get('sequence',0)))
+PY
+)"
+  [[ "$sequence" -ge 45 ]] || { echo "PCG_WEB_CONVERSATION_STRUCTURE_RUNTIME=too-old" >&2; exit 54; }
+  set +e
+  socket_conversation_structure_qualification
+  rc=$?
+  set -e
+  if [[ "$rc" -eq 0 ]]; then
+    printf 'PCG_WEB_CONVERSATION_STRUCTURE_CANARY=pass\n'
+    exit 0
+  fi
+  if [[ "$rc" -eq 42 ]]; then
+    printf 'PCG_WEB_CONVERSATION_STRUCTURE_CANARY=qualification-required\n'
+    exit 0
+  fi
+  exit "$rc"
+fi
+
+if [[ "$mode" == semantic-topic-canary ]]; then
+  sequence="$(python3 - "$release/manifest.json" <<'PY'
+import json,sys
+print(int(json.load(open(sys.argv[1],encoding='utf-8')).get('sequence',0)))
+PY
+)"
+  [[ "$sequence" -ge 45 ]] || { echo "PCG_WEB_TOPIC_RUNTIME=too-old" >&2; exit 55; }
+  set +e
+  socket_topic_qualification
+  rc=$?
+  set -e
+  if [[ "$rc" -eq 0 ]]; then
+    printf 'PCG_WEB_TOPIC_CANARY=pass\n'
+    exit 0
+  fi
+  if [[ "$rc" -eq 42 ]]; then
+    printf 'PCG_WEB_TOPIC_CANARY=qualification-required\n'
     exit 0
   fi
   exit "$rc"
