@@ -134,7 +134,7 @@ try{
       edge_heap:hoverScan?.selection_scan?.edges||null,
       picks:(v?.probe?.picks||[]).map(x=>({
         deterministic_id:x.deterministic_id,id:x.id,occurrence_id:x.occurrence_id,primitive_id:x.primitive_id,
-        getters:x.getters,ui_selection:x.ui_selection||null,
+        getters:x.getters,ui_selection:x.ui_selection||null,ui_selection_bridge:x.ui_selection_bridge||null,
         occurrence:x.occurrence||null,body_metadata:x.body_metadata||null,entity_metadata:x.entity_metadata||null
       }))
     });
