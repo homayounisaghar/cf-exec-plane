@@ -22,8 +22,17 @@ start=text.index("def validate(req):")
 end=text.index("\ndef load_keys():", start)
 block=text[start:end]
 
-if '"app.open"' in block and '"url.open"' in block and 'Samsung Internet package' in block:
+if '"app.open"' in block and '"url.open"' in block and 'Personal Android Agent package' in block:
     open(dst,"w",encoding="utf-8").write(text)
+    raise SystemExit(0)
+
+if 'Personal Android Agent package only' in block:
+    block=block.replace(
+        'if package != "com.homayounisaghar.androidagent":\n            fail("app package not admitted")  # Samsung Internet package only',
+        'if package != "com.homayounisaghar.androidagent":\n            fail("app package not admitted")  # Personal Android Agent package only',
+        1,
+    )
+    open(dst,"w",encoding="utf-8").write(text[:start]+block+text[end:])
     raise SystemExit(0)
 
 admit_old='''        "tts.speak",
@@ -56,7 +65,7 @@ replacement='''    elif action == "display.present_text":
         if set(p) != {"package"}:
             fail("app open parameters")
         package=p["package"]
-        if package != "com.sec.android.app.sbrowser":
+        if package != "com.homayounisaghar.androidagent":
             fail("app package not admitted")  # Samsung Internet package only
     elif action == "url.open":
         if set(p) != {"url"}:
@@ -87,7 +96,7 @@ ns["fail"]=fail
 exec(text[start:end],ns)
 validate=ns["validate"]
 base={"schema":"personal-android-agent.remote-request.v1","ttl_seconds":300}
-validate({**base,"request_id":"paa-policy-app-open-static-20260926-001","action":"app.open","parameters":{"package":"com.sec.android.app.sbrowser"}})
+validate({**base,"request_id":"paa-policy-app-open-static-20260926-001","action":"app.open","parameters":{"package":"com.homayounisaghar.androidagent"}})
 validate({**base,"request_id":"paa-policy-url-open-static-20260926-001","action":"url.open","parameters":{"url":"https://example.com/"}})
 for req,needle in [
     ({**base,"request_id":"paa-policy-app-open-negative-20260926-001","action":"app.open","parameters":{"package":"com.android.settings"}},"app package not admitted"),
@@ -142,5 +151,5 @@ printf 'STATIC_URL_OPEN_POSITIVE=PASS\n'
 printf 'RUNTIME_APP_OPEN_NEGATIVE=PASS\n'
 printf 'RUNTIME_URL_OPEN_NEGATIVE=PASS\n'
 printf 'VOLUME_SET_NEGATIVE=PASS\n'
-printf 'ADMITTED_NEW=app.open(com.sec.android.app.sbrowser),url.open(https://example.com/)\n'
+printf 'ADMITTED_NEW=app.open(com.homayounisaghar.androidagent),url.open(https://example.com/)\n'
 printf 'CF_PAA_OPEN_ATTENDED_POLICY_END\n'
