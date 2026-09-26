@@ -111,6 +111,7 @@ jobs:
           cd "$PCG_PRIVATE_WORKTREE"
           python tests/test_pcg_web_stage5_search_v01.py
           python tests/test_pcg_web_stage5_message_retrieval_v01.py
+          python tests/test_pcg_web_stage5_retrieval_hardening_v01.py
           python tests/test_pcg_web_stage5_mark_read_v01.py
           python tests/test_pcg_web_stage5_open_media_v01.py
           python tests/test_pcg_web_stage5_download_v01.py
