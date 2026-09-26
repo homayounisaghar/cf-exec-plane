@@ -4,7 +4,7 @@ umask 077
 
 [[ "$(id -u)" -eq 0 ]] || { echo "must run as uid 0" >&2; exit 1; }
 mode="${CF_PCG_WEB_CONTROL_MODE:-}"
-case "$mode" in prepare|status|ingress-diagnostic|semantic-status|semantic-conversations|semantic-conversations-protected|semantic-conversations-canary|semantic-search-canary|semantic-messages-protected|semantic-messages-canary|semantic-mark-read-canary|semantic-open-media-canary|semantic-download-canary|semantic-composer-canary|material-send-canary|material-reply-canary|material-attachment-send-canary|material-attachment-reply-canary|material-edit-canary|material-delete-canary|material-forward-canary|material-relay-canary|semantic-reaction-canary|material-text-limit-canary|material-attachment-hardening-canary|phone|code|password|cleanup|screenshot|refresh-screenshot|mytelegram-start|mytelegram-capture-code|mytelegram-signin|mytelegram-create-app|mytelegram-screenshot) ;; *) echo "invalid mode" >&2; exit 2 ;; esac
+case "$mode" in prepare|status|ingress-diagnostic|semantic-status|semantic-conversations|semantic-conversations-protected|semantic-conversations-canary|semantic-search-canary|semantic-messages-protected|semantic-messages-canary|semantic-retrieval-hardening-canary|semantic-mark-read-canary|semantic-open-media-canary|semantic-download-canary|semantic-composer-canary|material-send-canary|material-reply-canary|material-attachment-send-canary|material-attachment-reply-canary|material-edit-canary|material-delete-canary|material-forward-canary|material-relay-canary|semantic-reaction-canary|material-text-limit-canary|material-attachment-hardening-canary|phone|code|password|cleanup|screenshot|refresh-screenshot|mytelegram-start|mytelegram-capture-code|mytelegram-signin|mytelegram-create-app|mytelegram-screenshot) ;; *) echo "invalid mode" >&2; exit 2 ;; esac
 
 run_root=/var/lib/capability-fabric/pcg/run
 socket="$run_root/web.sock"
@@ -414,6 +414,124 @@ raise SystemExit(40)
 PY
 }
 
+socket_retrieval_hardening_qualification() {
+  python3 - "$socket" <<'PY'
+import json,socket,sys
+sock_path=sys.argv[1]
+
+def call(payload, timeout=50):
+    s=socket.socket(socket.AF_UNIX,socket.SOCK_STREAM)
+    s.settimeout(timeout)
+    s.connect(sock_path)
+    s.sendall((json.dumps(payload,separators=(',',':'))+'\n').encode())
+    buf=b''
+    while b'\n' not in buf:
+        chunk=s.recv(65536)
+        if not chunk:
+            break
+        buf+=chunk
+    s.close()
+    if not buf:
+        raise SystemExit('empty browser response')
+    return json.loads(buf.split(b'\n',1)[0])
+
+conversations=call({
+    'op':'semantic.invoke',
+    'operation':'communication.conversation.list',
+    'purpose':'PROTECTED_DISPLAY',
+    'args':{'limit':20},
+})
+if conversations.get('state') != 'ACHIEVED':
+    raise SystemExit('conversation list failed')
+protected=conversations.get('protected_provider_data')
+items=protected.get('conversations') if isinstance(protected,dict) else None
+if not isinstance(items,list) or not items:
+    print(json.dumps({'state':'QUALIFICATION_REQUIRED','reason':'NO_CONVERSATION_CANDIDATE','provider_content_model_visible':False},separators=(',',':')))
+    raise SystemExit(42)
+
+pagination_ok=False
+for conversation in items:
+    if not isinstance(conversation,dict):
+        continue
+    handle=conversation.get('handle')
+    if not isinstance(handle,str) or not handle.startswith('tgchat:'):
+        continue
+    first=call({
+        'op':'semantic.invoke',
+        'operation':'communication.message.list',
+        'purpose':'PROTECTED_DISPLAY',
+        'args':{'conversation_handle':handle,'limit':5},
+    })
+    if first.get('state') != 'ACHIEVED':
+        continue
+    obs1=first.get('observation')
+    handles1=obs1.get('handles') if isinstance(obs1,dict) else None
+    cursor=obs1.get('next_before_message_handle') if isinstance(obs1,dict) else None
+    if not isinstance(handles1,list) or len(handles1) != 5 or not isinstance(cursor,str):
+        continue
+    second=call({
+        'op':'semantic.invoke',
+        'operation':'communication.message.list',
+        'purpose':'PROTECTED_DISPLAY',
+        'args':{
+            'conversation_handle':handle,
+            'limit':5,
+            'before_message_handle':cursor,
+        },
+    })
+    if second.get('state') != 'ACHIEVED':
+        continue
+    obs2=second.get('observation')
+    handles2=obs2.get('handles') if isinstance(obs2,dict) else None
+    if not isinstance(handles2,list) or not handles2:
+        continue
+    if set(handles1).isdisjoint(handles2) and obs2.get('before_message_handle') == cursor:
+        pagination_ok=True
+        break
+
+if not pagination_ok:
+    print(json.dumps({'state':'QUALIFICATION_REQUIRED','reason':'NO_PAGINATABLE_CONVERSATION','provider_content_model_visible':False},separators=(',',':')))
+    raise SystemExit(42)
+
+search_ok=False
+for conversation in items:
+    if not isinstance(conversation,dict):
+        continue
+    name=conversation.get('name')
+    if not isinstance(name,str):
+        continue
+    query=name.strip()
+    if not query:
+        continue
+    query=query[:min(12,len(query))]
+    searched=call({
+        'op':'semantic.invoke',
+        'operation':'communication.conversation.search',
+        'purpose':'PROTECTED_DISPLAY',
+        'args':{'query':query,'limit':50},
+    })
+    if searched.get('state') != 'ACHIEVED':
+        continue
+    obs=searched.get('observation')
+    if isinstance(obs,dict) and obs.get('navigation_unchanged') is True and obs.get('provider_content_model_visible') is False:
+        search_ok=True
+        break
+
+if not search_ok:
+    raise SystemExit('hardened search limit qualification failed')
+
+print(json.dumps({
+    'state':'ACHIEVED',
+    'message_pagination':True,
+    'opaque_cursor':True,
+    'page_overlap':False,
+    'search_limit_50_accepted':True,
+    'navigation_unchanged':True,
+    'provider_content_model_visible':False,
+},separators=(',',':')))
+PY
+}
+
 socket_mark_read_qualification() {
   python3 - "$socket" <<'PY'
 import json,socket,sys
@@ -766,6 +884,28 @@ PY
   fi
   if [[ "$rc" -eq 42 ]]; then
     printf 'PCG_WEB_MESSAGE_CANARY=qualification-required\n'
+    exit 0
+  fi
+  exit "$rc"
+fi
+
+if [[ "$mode" == semantic-retrieval-hardening-canary ]]; then
+  sequence="$(python3 - "$release/manifest.json" <<'PY'
+import json,sys
+print(int(json.load(open(sys.argv[1],encoding='utf-8')).get('sequence',0)))
+PY
+)"
+  [[ "$sequence" -ge 41 ]] || { echo "PCG_WEB_RETRIEVAL_HARDENING_RUNTIME=too-old" >&2; exit 51; }
+  set +e
+  socket_retrieval_hardening_qualification
+  rc=$?
+  set -e
+  if [[ "$rc" -eq 0 ]]; then
+    printf 'PCG_WEB_RETRIEVAL_HARDENING_CANARY=pass\n'
+    exit 0
+  fi
+  if [[ "$rc" -eq 42 ]]; then
+    printf 'PCG_WEB_RETRIEVAL_HARDENING_CANARY=qualification-required\n'
     exit 0
   fi
   exit "$rc"
