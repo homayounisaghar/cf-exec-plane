@@ -3,7 +3,7 @@ set -euo pipefail
 umask 077
 [[ "$(id -u)" -eq 0 ]] || { echo "must run as uid 0" >&2; exit 2; }
 
-candidate_commit="e7f48744c64fd3668b172d9b4c5d481ec39e9887"
+candidate_commit="17ae77556fb2581bdeb72985c5e2645e7b697bc0"
 cache=/var/lib/capability-fabric/repo.git
 token=/etc/capability-fabric/secrets/repo-read-token
 home=/var/lib/capability-fabric/agent-home
