@@ -4,7 +4,7 @@ umask 077
 
 [[ "$(id -u)" -eq 0 ]] || { echo "must run as uid 0" >&2; exit 1; }
 mode="${CF_PCG_WEB_CONTROL_MODE:-}"
-case "$mode" in prepare|status|ingress-diagnostic|semantic-status|semantic-conversations|semantic-conversations-protected|semantic-conversations-canary|semantic-conversation-structure-canary|semantic-conversation-pin-pair|semantic-saved-native-forward-to-contact|semantic-contact-photo-forward-to-contact|semantic-topic-canary|semantic-search-canary|semantic-messages-protected|semantic-messages-canary|semantic-retrieval-hardening-canary|semantic-mark-read-canary|semantic-open-media-canary|semantic-download-canary|semantic-composer-canary|material-send-canary|material-reply-canary|material-attachment-send-canary|material-attachment-reply-canary|material-edit-canary|material-delete-canary|material-delete-for-everyone-canary|material-forward-canary|material-relay-canary|semantic-reaction-canary|material-text-limit-canary|material-attachment-hardening-canary|material-large-file-transport-canary|material-photo-album-canary|phone|code|password|cleanup|screenshot|refresh-screenshot|mytelegram-start|mytelegram-capture-code|mytelegram-signin|mytelegram-create-app|mytelegram-screenshot) ;; *) echo "invalid mode" >&2; exit 2 ;; esac
+case "$mode" in prepare|status|ingress-diagnostic|semantic-status|semantic-conversations|semantic-conversations-protected|semantic-conversations-canary|semantic-conversation-structure-canary|semantic-conversation-pin-pair|semantic-saved-native-forward-to-contact|semantic-contact-photo-forward-to-contact|semantic-forward-state-diagnostic|semantic-topic-canary|semantic-search-canary|semantic-messages-protected|semantic-messages-canary|semantic-retrieval-hardening-canary|semantic-mark-read-canary|semantic-open-media-canary|semantic-download-canary|semantic-composer-canary|material-send-canary|material-reply-canary|material-attachment-send-canary|material-attachment-reply-canary|material-edit-canary|material-delete-canary|material-delete-for-everyone-canary|material-forward-canary|material-relay-canary|semantic-reaction-canary|material-text-limit-canary|material-attachment-hardening-canary|material-large-file-transport-canary|material-photo-album-canary|phone|code|password|cleanup|screenshot|refresh-screenshot|mytelegram-start|mytelegram-capture-code|mytelegram-signin|mytelegram-create-app|mytelegram-screenshot) ;; *) echo "invalid mode" >&2; exit 2 ;; esac
 
 run_root=/var/lib/capability-fabric/pcg/run
 socket="$run_root/web.sock"
@@ -2965,6 +2965,46 @@ printf '%s' "$cipher" | base64 -d > "$tmp_cipher"
 openssl pkeyutl -decrypt -inkey "$private_key" -in "$tmp_cipher" -out "$tmp_plain" \
   -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256 -pkeyopt rsa_mgf1_md:sha256 >/dev/null 2>&1
 [[ -s "$tmp_plain" ]] || { echo "decrypt failed" >&2; exit 25; }
+
+if [[ "$mode" == semantic-forward-state-diagnostic ]]; then
+  python3 - <<'PY'
+import json
+import sqlite3
+
+path="/var/lib/capability-fabric/pcg/core-state/web-material-send.sqlite3"
+conn=sqlite3.connect(path)
+conn.row_factory=sqlite3.Row
+rows=conn.execute(
+    "SELECT o.payload AS operation_payload,o.outcome_payload,a.observation_payload,i.dispatch_payload "
+    "FROM operations o JOIN invocations i ON i.invocation_id=o.invocation_id "
+    "LEFT JOIN attempts a ON a.operation_id=o.operation_id "
+    "ORDER BY o.rowid DESC LIMIT 50"
+).fetchall()
+found=None
+for row in rows:
+    try:
+        operation=json.loads(row["operation_payload"])
+    except Exception:
+        continue
+    if operation.get("effect")!="communication.message.forward-native":
+        continue
+    outcome=json.loads(row["outcome_payload"]) if row["outcome_payload"] else None
+    observation=json.loads(row["observation_payload"]) if row["observation_payload"] else None
+    dispatch=json.loads(row["dispatch_payload"]) if row["dispatch_payload"] else None
+    found={
+        "terminal_outcome": None if outcome is None else outcome.get("state"),
+        "outcome_basis": None if outcome is None else outcome.get("basis"),
+        "observation_ack_state": None if observation is None else observation.get("ack_state"),
+        "observation_detail": None if observation is None else observation.get("detail"),
+        "dispatch_operation": None if dispatch is None else (dispatch.get("evidence") or {}).get("telegram_web.operation"),
+        "recoverable": outcome is None,
+    }
+    break
+conn.close()
+print(json.dumps(found or {"forward_operation_found":False},separators=(",",":")))
+PY
+  exit 0
+fi
 
 if [[ "$mode" == semantic-contact-photo-forward-to-contact ]]; then
   sequence="$(python3 - "$release/manifest.json" <<'PY'
