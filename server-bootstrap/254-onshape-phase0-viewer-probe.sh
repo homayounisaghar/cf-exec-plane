@@ -2,7 +2,7 @@
 set -euo pipefail
 umask 077
 [[ "$(id -u)" -eq 0 ]] || exit 2
-candidate="35a5bceeaa01cd13deab2d3d7e8fc0bde7b94b3c"
+candidate="062f3586bfa4048d97b0a295f934996d666b11fe"
 fixture="a19e0fa5152af9f7ce106b6e:e5e7d0173fd1f1d0307a2cb6:e0929361aadb6135b5cecffa"
 research=capability-fabric-onshape-phase0-research
 sidecar=capability-fabric-onshape-phase0-fabric
@@ -39,6 +39,11 @@ const parse=r=>JSON.parse((r.content||[]).filter(x=>x.type==="text").map(x=>x.te
 const call=async(name,args={})=>parse(await c.callTool({name,arguments:args},undefined,{timeout:180000}));
 const viewer=async(params)=>{const t0=performance.now();const w=await call("onshape_ui_native",{document_id:did,workspace_id:wid,element_id:eid,action:"runtime.viewer",params});const r=w.result;if(r?.outcome?.state!=="ACHIEVED"||r?.observation?.ackState!=="ACKNOWLEDGED")throw new Error(JSON.stringify(r));return{value:r.observation.evidence.result,ms:performance.now()-t0};};
 try{
+ const tools=(await c.listTools()).tools;
+ const native=tools.find((x)=>x.name==="onshape_ui_native");
+ const actionEnum=native?.inputSchema?.properties?.action?.enum||[];
+ if(!actionEnum.includes("runtime.viewer"))throw new Error("runtime.viewer missing from live MCP schema");
+ console.log("CF_PHASE0_VIEWPROBE_SCHEMA=runtime.viewer");
  const st=await call("onshape_session_status");if(st?.auth?.state!=="PROVEN")throw new Error("auth");
  const inspect=await viewer({op:"inspect"});
  console.log("CF_PHASE0_VIEWPROBE_INSPECT_MS="+inspect.ms.toFixed(2));
