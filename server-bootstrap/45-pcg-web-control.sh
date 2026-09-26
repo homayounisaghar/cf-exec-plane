@@ -3075,54 +3075,51 @@ for item in items:
 if len(candidates)!=2:
     raise SystemExit("exact-name conversation count was not exactly two")
 
-listed=semantic("communication.conversation.list",{"limit":50})
-list_items=listed["protected_provider_data"].get("conversations")
-if not isinstance(list_items,list):
-    raise SystemExit("conversation list payload invalid")
-pinned_handles={
-    item.get("handle") for item in list_items
-    if isinstance(item,dict) and item.get("pinned") is True
-}
-source_handles=[h for h in candidates if h in pinned_handles]
-destination_handles=[h for h in candidates if h not in pinned_handles]
-if len(source_handles)!=1 or len(destination_handles)!=1:
-    raise SystemExit("pinned source / other destination was not unique")
-source_conversation_handle=source_handles[0]
-target_handle=destination_handles[0]
-
-history=semantic("communication.message.list",{
-    "conversation_handle":source_conversation_handle,
-    "limit":50,
-})
-messages=history["protected_provider_data"].get("messages")
-if not isinstance(messages,list):
-    raise SystemExit("source conversation history invalid")
-outgoing=[
-    item for item in messages
-    if isinstance(item,dict)
-    and item.get("kind")=="message"
-    and item.get("outgoing") is True
-]
-if len(outgoing)<2:
-    raise SystemExit("source conversation has insufficient outgoing history")
-
-source=outgoing[0]
-previous=outgoing[1]
-attachments=source.get("attachments")
-if not isinstance(attachments,list) or len(attachments)<1:
-    raise SystemExit("latest outgoing source is not media")
 def attachment_is_image(att):
     if not isinstance(att,dict):
         return False
     media=str(att.get("media_type") or "").lower()
     filename=str(att.get("filename") or "").lower()
     return media.startswith("image/") or filename.endswith((".jpg",".jpeg",".png",".webp"))
-message_media=str(source.get("media_type") or "").lower()
-is_image=message_media in ("photo","image") or message_media.startswith("image/") or any(attachment_is_image(x) for x in attachments)
-if not is_image:
-    raise SystemExit("latest outgoing media is not an image")
-if norm_emoji(previous.get("text"))!=expected_previous:
-    raise SystemExit("previous outgoing message is not the expected thumbs-up")
+
+qualified_sources=[]
+source_by_handle={}
+for handle in candidates:
+    history=semantic("communication.message.list",{
+        "conversation_handle":handle,
+        "limit":50,
+    })
+    messages=history["protected_provider_data"].get("messages")
+    if not isinstance(messages,list):
+        continue
+    outgoing=[
+        item for item in messages
+        if isinstance(item,dict)
+        and item.get("kind")=="message"
+        and item.get("outgoing") is True
+    ]
+    if len(outgoing)<2:
+        continue
+    candidate_source=outgoing[0]
+    previous=outgoing[1]
+    attachments=candidate_source.get("attachments")
+    if not isinstance(attachments,list) or len(attachments)<1:
+        continue
+    message_media=str(candidate_source.get("media_type") or "").lower()
+    is_image=message_media in ("photo","image") or message_media.startswith("image/") or any(attachment_is_image(x) for x in attachments)
+    if is_image and norm_emoji(previous.get("text"))==expected_previous:
+        qualified_sources.append(handle)
+        source_by_handle[handle]=candidate_source
+
+qualified_sources=list(dict.fromkeys(qualified_sources))
+if len(qualified_sources)!=1:
+    raise SystemExit("photo-after-thumbs-up source conversation was not unique")
+source_conversation_handle=qualified_sources[0]
+destination_handles=[h for h in candidates if h!=source_conversation_handle]
+if len(destination_handles)!=1:
+    raise SystemExit("other exact-name destination was not unique")
+target_handle=destination_handles[0]
+source=source_by_handle[source_conversation_handle]
 
 source_message_handle=source.get("handle")
 if not isinstance(source_message_handle,str) or not source_message_handle.startswith("tgmsg:"):
@@ -3181,7 +3178,7 @@ try:
     print(json.dumps({
         "state":"ACHIEVED",
         "exact_name_candidates":2,
-        "source_unique_pinned":True,
+        "source_unique_by_photo_after_thumbsup":True,
         "destination_unique_other":True,
         "latest_outgoing_image":True,
         "previous_outgoing_thumbsup":True,
