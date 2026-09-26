@@ -105,6 +105,10 @@ try {
   const world=mid(pts[0],pts[1]);
   const p=project(world,anchor.view_data);
   if(!(p.x_fraction>.02&&p.x_fraction<.98&&p.y_fraction>.02&&p.y_fraction<.98)) throw new Error("edge seed outside viewport");
+  const canvas=await nativeEval('(() => {const e=document.querySelector("#canvas"),r=e?.getBoundingClientRect();return r?{x:r.x,y:r.y,w:r.width,h:r.height}:null})()');
+  if(!canvas||canvas.w<=1||canvas.h<=1) throw new Error("canvas");
+  const xy={x:Math.round(canvas.x+canvas.w*p.x_fraction),y:Math.round(canvas.y+canvas.h*p.y_fraction)};
+  await input("HOVER_PRE",[{action:"mouse.move",x:xy.x,y:xy.y,steps:1,after_ms:120}]);
   const pre=await viewer({op:"probe",x_fraction:p.x_fraction,y_fraction:p.y_fraction});
   const pick=(pre?.probe?.picks||[])[0];
   const bridge=pick?.ui_selection_bridge;
@@ -119,9 +123,6 @@ try {
     model_selection_count:pre?.model_selection?.count??null
   }));
 
-  const canvas=await nativeEval('(() => {const e=document.querySelector("#canvas"),r=e?.getBoundingClientRect();return r?{x:r.x,y:r.y,w:r.width,h:r.height}:null})()');
-  if(!canvas||canvas.w<=1||canvas.h<=1) throw new Error("canvas");
-
   if((pre?.model_selection?.count??0)!==0){
     const clear=await viewer({op:"probe",x_fraction:.58,y_fraction:.52});
     if(clear?.probe?.status!=="MISS") throw new Error("clear point not empty");
@@ -132,7 +133,7 @@ try {
     console.log("CF_PHASE0_EDGE_CLEAR=pass");
   }
 
-  const xy={x:Math.round(canvas.x+canvas.w*p.x_fraction),y:Math.round(canvas.y+canvas.h*p.y_fraction)};
+  await input("HOVER_CONFIRM",[{action:"mouse.move",x:xy.x,y:xy.y,steps:1,after_ms:120}]);
   const confirm=await viewer({op:"probe",x_fraction:p.x_fraction,y_fraction:p.y_fraction});
   const confirmPick=(confirm?.probe?.picks||[])[0];
   const confirmId=confirmPick?.ui_selection_bridge?.ui_element?.selection_id || confirmPick?.ui_selection_bridge?.selection_id || confirmPick?.ui_selection?.uiElement?.selectionId || confirmPick?.ui_selection?.selectionId || null;
