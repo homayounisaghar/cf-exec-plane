@@ -2,7 +2,7 @@
 set -euo pipefail
 umask 077
 [[ "$(id -u)" -eq 0 ]] || exit 2
-candidate="d882fa763b3a55be5a18d6e196d028ff4f77ea07"
+candidate="dbb08f8257b4e72e31e203497fa135acdeda5e5b"
 fixture="a19e0fa5152af9f7ce106b6e:e5e7d0173fd1f1d0307a2cb6:e0929361aadb6135b5cecffa"
 research=capability-fabric-onshape-phase0-research
 sidecar=capability-fabric-onshape-phase0-fabric
