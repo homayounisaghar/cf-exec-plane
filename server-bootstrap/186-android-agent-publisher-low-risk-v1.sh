@@ -23,7 +23,15 @@ text=open(src,encoding="utf-8").read()
 start=text.index("def validate(req):")
 end=text.index("\ndef load_keys():", start)
 old=text[start:end]
-if 'req["action"] != "notification.post"' not in old:
+already_extended = (
+    '"system.health"' in old
+    and '"capability.inventory"' in old
+    and '"device.state.get"' in old
+    and '"artifact.fetch_verify_cache"' in old
+    and '"volume.get_set"' in old
+    and 'volume mutation not admitted' in old
+)
+if 'req["action"] != "notification.post"' not in old and not already_extended:
     raise SystemExit("unexpected publisher validate baseline")
 new=r'''def validate(req):
     if not isinstance(req, dict):
@@ -91,7 +99,10 @@ new=r'''def validate(req):
         fail("ttl_seconds")
     return rid
 '''
-open(dst,"w",encoding="utf-8").write(text[:start]+new+text[end:])
+if already_extended:
+    open(dst,"w",encoding="utf-8").write(text)
+else:
+    open(dst,"w",encoding="utf-8").write(text[:start]+new+text[end:])
 PY
 
 python3 -m py_compile "$tmp"
