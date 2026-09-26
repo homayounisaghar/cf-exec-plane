@@ -1,0 +1,59 @@
+name: Onshape Phase 0 Research Activate
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'server-bootstrap/control/onshape-phase0-research-activate/*.request'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: onshape-phase0-research-activate
+  cancel-in-progress: false
+
+jobs:
+  activate:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Validate immutable activation request
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "${GITHUB_SHA}")
+          [[ "${#changes[@]}" -eq 1 ]] || exit 10
+          IFS=$'\t' read -r status request_path <<<"${changes[0]}"
+          [[ "$status" == A && "$request_path" == server-bootstrap/control/onshape-phase0-research-activate/*.request ]] || exit 11
+          request_id="$(basename "$request_path" .request)"
+          file_id="$(awk -F= '$1=="request_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          action="$(awk -F= '$1=="action"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          candidate="$(awk -F= '$1=="candidate_commit"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          fixture="$(awk -F= '$1=="fixture"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          [[ "$request_id" == "$file_id" && "$request_id" =~ ^[A-Za-z0-9_.-]{8,96}$ ]] || exit 12
+          [[ "$action" == "phase0-research-activate-v1" ]] || exit 13
+          [[ "$candidate" == "ae9bc114d84cfd7991cbdd38489b18d33a2d34bf" ]] || exit 14
+          [[ "$fixture" == "a19e0fa5152af9f7ce106b6e:e5e7d0173fd1f1d0307a2cb6:e0929361aadb6135b5cecffa" ]] || exit 15
+          bash -n server-bootstrap/216-onshape-phase0-research-activate.sh
+      - name: Mask endpoint
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf '::add-mask::%s\n' "$VPS_HOST"
+          printf '::add-mask::%s\n' "$VPS_SSH_USER"
+          while IFS= read -r addr; do [[ -n "$addr" ]] && printf '::add-mask::%s\n' "$addr"; done < <(getent ahosts "$VPS_HOST" 2>/dev/null | awk '{print $1}' | sort -u)
+      - name: Activate isolated Phase 0 research stack
+        shell: bash
+        run: bash server-bootstrap/runner/remote-bundle-exec.sh server-bootstrap/216-onshape-phase0-research-activate.sh
