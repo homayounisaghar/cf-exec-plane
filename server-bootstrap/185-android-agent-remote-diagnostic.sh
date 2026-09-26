@@ -11,6 +11,9 @@ service=capability-fabric-paa-remote.service
 printf 'CF_PAA_RDC_DIAG_BEGIN\n'
 printf 'SERVICE_ACTIVE=%s\n' "$(systemctl is-active "$service" || true)"
 printf 'SERVICE_ENABLED=%s\n' "$(systemctl is-enabled "$service" 2>/dev/null || true)"
+printf 'SERVICE_MAIN_PID=%s\n' "$(systemctl show "$service" -p MainPID --value)"
+printf 'SERVICE_NRESTARTS=%s\n' "$(systemctl show "$service" -p NRestarts --value)"
+printf 'SERVICE_STARTED_AT=%s\n' "$(systemctl show "$service" -p ExecMainStartTimestamp --value | tr ' ' '_')"
 
 if [[ -s "$config" ]]; then
   printf 'CONFIG_PRESENT=yes\n'
@@ -85,6 +88,23 @@ PY
 fi
 
 journal="$(journalctl -u "$service" --since '-30 minutes' --no-pager -o cat 2>/dev/null || true)"
+python3 - <<'PY' <<<"$journal"
+import re,sys
+lines=sys.stdin.read().splitlines()
+url=None
+code=None
+for i,line in enumerate(lines):
+    s=line.strip()
+    m=re.fullmatch(r"https://mcp\.desktopcommander\.app/device/verify\?user_code=([A-Z0-9]{4}-[A-Z0-9]{4})",s)
+    if m:
+        url=s
+        code=m.group(1)
+    elif s in {"2. Make sure the code matches:","2. Enter this code when prompted:"} and i+1<len(lines):
+        m2=re.fullmatch(r"[A-Z0-9]{4}-[A-Z0-9]{4}",lines[i+1].strip())
+        if m2:
+            code=m2.group(0)
+print("CURRENT_PAIRING_CODE="+(code or ""))
+PY
 for marker in   'Device verified'   'Device ID assigned'   'Session restored'   'Device ready'   'Device registered, but NOT reachable'   'Channel subscribed'   'Realtime channel is not open'   'Device not found'   'Persisted device'   'Remote session expired' \
   'Failed to save config' \
   'Authorization failed' \
