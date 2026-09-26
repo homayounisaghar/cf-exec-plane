@@ -2,10 +2,10 @@
 set -euo pipefail
 umask 077
 
-candidate="ae9bc114d84cfd7991cbdd38489b18d33a2d34bf"
+candidate="d882fa763b3a55be5a18d6e196d028ff4f77ea07"
 fixture="a19e0fa5152af9f7ce106b6e:e5e7d0173fd1f1d0307a2cb6:e0929361aadb6135b5cecffa"
 control=/var/lib/capability-fabric/onshape/runtime-control/ONSHAPE_RUNTIME_CONTROL.json
-expected_control="7c03d59b613a7c91249f4c56efd045e1ed13a8dc"
+expected_control="1b9c248d8b57385a86c5c157bf99ef4f1f6928ce"
 prod_gate=/var/lib/capability-fabric/state/release-in-progress
 research=capability-fabric-onshape-phase0-research
 sidecar=capability-fabric-onshape-phase0-fabric
@@ -17,6 +17,20 @@ for c in "$research" "$sidecar"; do
   [[ "$(docker inspect -f '{{.State.Running}}' "$c" 2>/dev/null || echo false)" == true ]] || exit 22
   [[ "$(docker inspect -f '{{.State.Health.Status}}' "$c")" == healthy ]] || exit 22
 done
+side_env="$(docker inspect -f '{{range .Config.Env}}{{println .}}{{end}}' "$sidecar")"
+grep -Fxq 'CF_FABRIC_AGENT_PORT=8899' <<<"$side_env"
+grep -Fxq 'CF_FABRIC_REQUIRE_PRODUCTION_AUTHORITY=0' <<<"$side_env"
+echo CF_PHASE0_P0_AGENT_ROUTING=pass
+
+release="/var/lib/capability-fabric/onshape-research-phase0/releases/$candidate"
+PYTHONPATH="$release/server-deploy/current/fabric-src" python3 - <<'PY'
+from capability_fabric.persistence import SqliteExecutionStateStore
+p="/var/lib/capability-fabric/onshape-research-phase0/fabric-state/execution.sqlite3"
+with SqliteExecutionStateStore(p) as state:
+    pending=state.recoverable()
+    assert len(pending)==0, [(x.operation.operation_id if x.operation else None, x.attempt.attempt_id if x.attempt else None) for x in pending]
+print("CF_PHASE0_P0_RECOVERABLE=zero")
+PY
 
 docker exec -e CF_FIXTURE="$fixture" -e CF_CANDIDATE="$candidate" -i "$research" sh -lc 'cd /tmp/app && node --input-type=module' <<'NODE'
 import fs from "node:fs";
