@@ -3210,16 +3210,21 @@ try:
         if not canary_text.startswith("pcg-forward-source-"):
             continue
         def matching(items):
-            return [
-                item for item in items
-                if isinstance(item,dict)
-                and item.get("kind")=="message"
-                and item.get("outgoing") is True
-                and item.get("text")==canary_text
-            ]
+            matches={}
+            for item in items:
+                if (
+                    isinstance(item,dict)
+                    and item.get("kind")=="message"
+                    and item.get("outgoing") is True
+                    and item.get("text")==canary_text
+                    and isinstance(item.get("handle"),str)
+                    and item["handle"].startswith("tgmsg:")
+                ):
+                    matches[item["handle"]]=item
+            return matches
         matches_a=matching(recent_self_messages_a)
         matches_b=matching(recent_self_messages_b)
-        if len(matches_a)==1 and len(matches_b)==1 and matches_a[0].get("handle")==matches_b[0].get("handle"):
+        if len(matches_a)==1 and len(matches_b)==1 and next(iter(matches_a))==next(iter(matches_b)):
             canary_outcome=Outcome(
                 operation.operation_id,
                 OutcomeState.ACHIEVED,
