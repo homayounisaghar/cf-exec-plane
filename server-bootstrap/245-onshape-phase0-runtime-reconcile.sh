@@ -4,8 +4,8 @@ umask 077
 [[ "$(id -u)" -eq 0 ]] || exit 2
 
 candidate="17ae77556fb2581bdeb72985c5e2645e7b697bc0"
-attempt="attempt:ff938907-e0d6-4a75-b045-6f38e36c7847"
-operation="operation:90de9bde-f644-4a1a-90ba-496db050f73b"
+attempt="attempt:e8b6f98f-ed95-4bed-92ea-62f06f07a07f"
+operation="operation:dcb1c4b5-0f28-4ca5-ba5b-dfdeb30bef18"
 fixture="a19e0fa5152af9f7ce106b6e:e5e7d0173fd1f1d0307a2cb6:e0929361aadb6135b5cecffa"
 db="/var/lib/capability-fabric/onshape-research-phase0/fabric-state/execution.sqlite3"
 agent_dir="/var/lib/capability-fabric/onshape-research-phase0/fabric-agent"
