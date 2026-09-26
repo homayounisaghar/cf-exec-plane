@@ -97,6 +97,7 @@ echo CF_PHASE0_NODE=pass
 
 CF_PHASE0_FIXTURE_TARGET="111111111111111111111111:222222222222222222222222:333333333333333333333333" \
 CF_PHASE0_PROJECT_STATE_REVISION="cf-exec-plane-phase0-gate" \
+CF_PHASE0_SOURCE_COMMIT="$candidate_commit" \
   docker compose -f server-deploy/research-phase0/compose.yaml config >/dev/null
 echo CF_PHASE0_COMPOSE_CONFIG=pass
 
