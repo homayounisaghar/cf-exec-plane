@@ -3027,17 +3027,19 @@ def resolve_exact(name):
     items=protected.get("conversations") if isinstance(protected,dict) else None
     if not isinstance(items,list):
         raise SystemExit("conversation search returned no protected results")
-    matches=[
-        item for item in items
-        if isinstance(item,dict)
-        and item.get("type")=="user"
-        and norm(item.get("name"))==name
-        and isinstance(item.get("handle"),str)
-        and item["handle"].startswith("tgchat:")
-    ]
+    matches={}
+    for item in items:
+        if (
+            isinstance(item,dict)
+            and item.get("type")=="user"
+            and norm(item.get("name"))==name
+            and isinstance(item.get("handle"),str)
+            and item["handle"].startswith("tgchat:")
+        ):
+            matches[item["handle"]]=item
     if len(matches)!=1:
-        raise SystemExit("exact user conversation resolution was not unique")
-    return matches[0]["handle"]
+        raise SystemExit("exact user conversation resolution was not unique after handle dedupe")
+    return next(iter(matches))
 
 unpin_handle=resolve_exact(unpin_name)
 pin_handle=resolve_exact(pin_name)
