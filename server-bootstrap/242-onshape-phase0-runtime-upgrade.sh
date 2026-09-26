@@ -2,8 +2,8 @@
 set -euo pipefail
 umask 077
 [[ "$(id -u)" -eq 0 ]] || exit 2
-candidate="c0cadee962c2059ba939c40c6bb9adf1bc99edfe"
-old_candidate="a8662707e1dc32a68d6665d6ec98bbe113e3b750"
+candidate="d9354b6bb26b10dd198aab2a7417c746ae90de66"
+old_candidate="c0cadee962c2059ba939c40c6bb9adf1bc99edfe"
 fixture="a19e0fa5152af9f7ce106b6e:e5e7d0173fd1f1d0307a2cb6:e0929361aadb6135b5cecffa"
 control=/var/lib/capability-fabric/onshape/runtime-control/ONSHAPE_RUNTIME_CONTROL.json
 root=/var/lib/capability-fabric/onshape-research-phase0
@@ -61,6 +61,7 @@ grep -Fq '"runtime.query_objects"' "$release/server-deploy/current/server.js"
 grep -Fq 'async function queryRuntimeObjects' "$release/server-deploy/current/browser-native.js"
 grep -Fq 'async function queryViewerRuntime' "$release/server-deploy/current/browser-native.js"
 grep -Fq '"runtime.viewer"' "$release/server-deploy/current/server.js"
+grep -Fq '"keyboard.press"' "$release/server-deploy/current/server.js"
 export CF_PHASE0_FIXTURE_TARGET="$fixture"
 export CF_PHASE0_PROJECT_STATE_REVISION="$candidate"
 export CF_PHASE0_SOURCE_COMMIT="$candidate"
