@@ -56,7 +56,7 @@ print("CF_PHASE0_SESSION_RECON_SOURCE_ORDER=pass")
 print("CF_PHASE0_SESSION_RECON_BASIS=auth-check-before-target-navigation-and-native-action")
 PY
 
-python3 - "$db" "$agent_dir" "$attempt" "$operation" <<'PY'
+PYTHONPATH="$release/server-deploy/current/fabric-src" python3 - "$db" "$agent_dir" "$attempt" "$operation" <<'PY'
 import datetime,hashlib,json,os,pathlib,sqlite3,sys
 from capability_fabric.domain import AckState, Outcome, OutcomeState
 from capability_fabric.persistence import SqliteExecutionStateStore
