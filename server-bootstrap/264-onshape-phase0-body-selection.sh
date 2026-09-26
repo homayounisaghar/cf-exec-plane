@@ -82,6 +82,18 @@ try{
   if(bodyId!=="JHD"||bodyName!=="Part 1") throw new Error("semantic body anchor absent");
   console.log("CF_PHASE0_BODYSEL_BODY_ANCHOR="+JSON.stringify({body_id:bodyId,body_name:bodyName,feature_ids:featureIds,source_face:face?.deterministic_id??null}));
 
+  if((anchor?.model_selection?.count??0)!==0){
+    const clearProbe=await viewer({op:"probe",x_fraction:.58,y_fraction:.52});
+    if(clearProbe?.probe?.status!=="MISS") throw new Error("clear point not empty");
+    const canvas=await evalp('(() => {const e=document.querySelector("#canvas"),r=e?.getBoundingClientRect();return r?{x:r.x,y:r.y,w:r.width,h:r.height}:null})()');
+    if(!canvas||canvas.w<=1||canvas.h<=1) throw new Error("canvas");
+    const clearX=Math.round(canvas.x+canvas.w*.58), clearY=Math.round(canvas.y+canvas.h*.52);
+    await input("CLEAR",[{action:"mouse.click",x:clearX,y:clearY,button:"left",click_count:1,after_ms:180}]);
+    const cleared=await viewer({op:"inspect"});
+    if((cleared?.model_selection?.count??-1)!==0) throw new Error("selection clear not authoritative");
+    console.log("CF_PHASE0_BODYSEL_CLEAR=pass");
+  }
+
   const target=await evalp(`(() => {
     const rows=Array.from(document.querySelectorAll('#part-list .os-list-item[data-id="JHD"]')).filter(el=>{
       const r=el.getBoundingClientRect(),s=getComputedStyle(el);
