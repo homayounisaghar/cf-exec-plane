@@ -38,6 +38,7 @@ const c=new Client({name:"cf-phase0-viewprobe",version:"1.0"});await c.connect(n
 const parse=r=>JSON.parse((r.content||[]).filter(x=>x.type==="text").map(x=>x.text).join("\n"));
 const call=async(name,args={})=>parse(await c.callTool({name,arguments:args},undefined,{timeout:180000}));
 const viewer=async(params)=>{const t0=performance.now();const w=await call("onshape_ui_native",{document_id:did,workspace_id:wid,element_id:eid,action:"runtime.viewer",params});const r=w.result;if(r?.outcome?.state!=="ACHIEVED"||r?.observation?.ackState!=="ACKNOWLEDGED")throw new Error(JSON.stringify(r));return{value:r.observation.evidence.result,ms:performance.now()-t0};};
+const nativeEval=async(expression)=>{const w=await call("onshape_ui_native",{document_id:did,workspace_id:wid,element_id:eid,action:"page.evaluate",params:{expression}});const r=w.result;if(r?.outcome?.state!=="ACHIEVED"||r?.observation?.ackState!=="ACKNOWLEDGED")throw new Error(JSON.stringify(r));return r.observation.evidence.result.value;};
 try{
  const tools=(await c.listTools()).tools;
  const native=tools.find((x)=>x.name==="onshape_ui_native");
@@ -45,6 +46,14 @@ try{
  if(!actionEnum.includes("runtime.viewer"))throw new Error("runtime.viewer missing from live MCP schema");
  console.log("CF_PHASE0_VIEWPROBE_SCHEMA=runtime.viewer");
  const st=await call("onshape_session_status");if(st?.auth?.state!=="PROVEN")throw new Error("auth");
+ const source=await nativeEval(`(() => {
+   const arr=window.webpackChunkNewton; let req=null; const before=arr.length;
+   arr.push([[-Date.now()],{},r=>{req=r}]); if(arr.length>before)arr.splice(before);
+   const V=req?.(74266)?.jM; if(typeof V!=="function") return null;
+   const names=["setUISelection","setHoveredSelection","getActiveElementViewerState","getSelectionFitBounds","retrieveSelectionPosition","doPick","doPreHighlightPick","pick"];
+   return Object.fromEntries(names.map(n=>[n,typeof V.prototype[n]==="function"?String(V.prototype[n]).slice(0,12000):null]));
+ })()`);
+ console.log("CF_PHASE0_VIEWPROBE_METHOD_SOURCE="+JSON.stringify(source));
  const inspect=await viewer({op:"inspect"});
  console.log("CF_PHASE0_VIEWPROBE_INSPECT_MS="+inspect.ms.toFixed(2));
  console.log("CF_PHASE0_VIEWPROBE_INSPECT="+JSON.stringify(inspect.value));
