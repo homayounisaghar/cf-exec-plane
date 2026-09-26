@@ -77,7 +77,8 @@ const compactSel=v=>({
   selection_manager:v?.selection_manager||null,
   camera:v?.camera||null,
   view_data:v?.view_data||null,
-  selection_scan:v?.selection_scan||null
+  selection_scan:v?.selection_scan||null,
+  model_selection:v?.model_selection||null
 });
 
 try {
