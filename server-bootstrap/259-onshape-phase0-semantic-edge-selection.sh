@@ -102,23 +102,24 @@ try {
   if((anchor?.model_selection?.count??0)>1) throw new Error("unexpected preexisting selection multiplicity");
 
   const pts=triples(flat);
-  const world=mid(pts[0],pts[1]);
+  const world=pts[1].map((x,i)=>x+(pts[2][i]-x)*.25);
   const p=project(world,anchor.view_data);
   if(!(p.x_fraction>.02&&p.x_fraction<.98&&p.y_fraction>.02&&p.y_fraction<.98)) throw new Error("edge seed outside viewport");
   const canvas=await nativeEval('(() => {const e=document.querySelector("#canvas"),r=e?.getBoundingClientRect();return r?{x:r.x,y:r.y,w:r.width,h:r.height}:null})()');
   if(!canvas||canvas.w<=1||canvas.h<=1) throw new Error("canvas");
   const xy={x:Math.round(canvas.x+canvas.w*p.x_fraction),y:Math.round(canvas.y+canvas.h*p.y_fraction)};
-  await input("HOVER_PRE",[{action:"mouse.move",x:xy.x,y:xy.y,steps:1,after_ms:120}]);
+
   const pre=await viewer({op:"probe",x_fraction:p.x_fraction,y_fraction:p.y_fraction});
-  const pick=(pre?.probe?.picks||[])[0];
-  const bridge=pick?.ui_selection_bridge;
-  const preSelectionId=bridge?.ui_element?.selection_id || bridge?.selection_id || pick?.ui_selection?.uiElement?.selectionId || pick?.ui_selection?.selectionId || null;
-  const preBodyId=bridge?.ui_element?.entity_metadata?.bodyId || pick?.ui_selection?.uiElement?.entityMetaData?.bodyId || null;
-  if(pre?.probe?.status!=="HIT" || !preSelectionId || preBodyId!=="JHD") throw new Error("qualified edge pre-pick bridge absent");
-  if(pick?.deterministic_id) throw new Error("expected UiSelection edge path, got deterministic entity pick");
+  const pick=(pre?.probe?.picks||[]).find(x=>x?.deterministic_id==="JHt");
+  const preSelectionId=pick?.deterministic_id??null;
+  const preBodyId=pick?.getters?.body_id??pick?.entity_metadata?.bodyId??null;
+  const prePrimitiveType=pick?.entity_metadata?.meshIncrement?.primitiveType??null;
+  if(pre?.probe?.status!=="HIT" || preSelectionId!=="JHt" || preBodyId!=="JHD" || prePrimitiveType!==1) {
+    throw new Error("qualified direct Edge pre-pick absent");
+  }
   console.log("CF_PHASE0_EDGE_PRE="+JSON.stringify({
     x_fraction:p.x_fraction,y_fraction:p.y_fraction,
-    selection_id:preSelectionId,body_id:preBodyId,
+    deterministic_id:preSelectionId,body_id:preBodyId,primitive_type:prePrimitiveType,
     raw_id:pick?.id??null,occurrence_id:pick?.occurrence_id??null,primitive_id:pick?.primitive_id??null,
     model_selection_count:pre?.model_selection?.count??null
   }));
@@ -133,28 +134,30 @@ try {
     console.log("CF_PHASE0_EDGE_CLEAR=pass");
   }
 
-  await input("HOVER_CONFIRM",[{action:"mouse.move",x:xy.x,y:xy.y,steps:1,after_ms:120}]);
   const confirm=await viewer({op:"probe",x_fraction:p.x_fraction,y_fraction:p.y_fraction});
-  const confirmPick=(confirm?.probe?.picks||[])[0];
-  const confirmId=confirmPick?.ui_selection_bridge?.ui_element?.selection_id || confirmPick?.ui_selection_bridge?.selection_id || confirmPick?.ui_selection?.uiElement?.selectionId || confirmPick?.ui_selection?.selectionId || null;
-  if(confirm?.probe?.status!=="HIT" || confirmId!==preSelectionId) throw new Error("edge precommit identity changed");
+  const confirmPick=(confirm?.probe?.picks||[]).find(x=>x?.deterministic_id===preSelectionId);
+  if(confirm?.probe?.status!=="HIT" || !confirmPick || confirmPick?.entity_metadata?.meshIncrement?.primitiveType!==1) {
+    throw new Error("direct Edge precommit identity changed");
+  }
   await input("SELECT",[{action:"mouse.click",x:xy.x,y:xy.y,button:"left",click_count:1,after_ms:220}]);
 
   const post=await viewer({op:"inspect"});
   const sels=post?.model_selection?.selections||[];
+  console.log("CF_PHASE0_EDGE_POST_RAW="+JSON.stringify(post?.model_selection||null));
   if(post?.model_selection?.count!==1 || sels.length!==1) throw new Error("authoritative edge selection count mismatch");
-  const s=sels[0];
-  const ids=[s?.selection_id,s?.id_string,s?.deterministic_id,s?.id_for_collection].filter(x=>typeof x==="string");
-  if(s?.is_edge!==true || s?.is_face!==false || s?.is_body!==false) throw new Error("post selection is not Edge");
-  if(!ids.some(x=>x===preSelectionId || x.endsWith("."+preSelectionId))) throw new Error("post Edge identity does not bridge to pre-pick selection id");
+  const selected=sels[0];
+  if(selected?.is_edge!==true || selected?.is_face!==false || selected?.is_body!==false || selected?.is_vertex!==false) {
+    throw new Error("post selection is not Edge");
+  }
+  if(selected?.deterministic_id!==preSelectionId) throw new Error("post Edge identity does not match pre-pick Edge");
   console.log("CF_PHASE0_EDGE_POST="+JSON.stringify({
-    pre_selection_id:preSelectionId,
-    post_selection_id:s?.selection_id??null,
-    post_id_string:s?.id_string??null,
-    post_deterministic_id:s?.deterministic_id??null,
-    post_id_for_collection:s?.id_for_collection??null,
-    is_edge:s?.is_edge??null,is_face:s?.is_face??null,is_body:s?.is_body??null,
-    source_pick:s?.source_pick??null
+    pre_deterministic_id:preSelectionId,
+    post_selection_id:selected?.selection_id??null,
+    post_id_string:selected?.id_string??null,
+    post_deterministic_id:selected?.deterministic_id??null,
+    post_id_for_collection:selected?.id_for_collection??null,
+    is_edge:selected?.is_edge??null,is_face:selected?.is_face??null,is_body:selected?.is_body??null,is_vertex:selected?.is_vertex??null,
+    source_pick:selected?.source_pick??null
   }));
   console.log("CF_PHASE0_EDGE=pass");
 } finally { await c.close().catch(()=>{}); }
