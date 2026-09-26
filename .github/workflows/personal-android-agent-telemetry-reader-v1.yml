@@ -39,7 +39,7 @@ jobs:
           [[ "$file_request_id" == "$request_id" ]] || exit 13
           [[ "$request_id" =~ ^[A-Za-z0-9_.-]{8,96}$ ]] || exit 14
           [[ "$operation" == "probe" || "$operation" == "read" ]] || exit 15
-          [[ "$build_id" == "3" || "$build_id" == "4" || "$build_id" == "5" || "$build_id" == "6" || "$build_id" == "7" || "$build_id" == "8" || "$build_id" == "9" || "$build_id" == "10" || "$build_id" == "11" ]] || exit 16
+          [[ "$build_id" == "3" || "$build_id" == "4" || "$build_id" == "5" || "$build_id" == "6" || "$build_id" == "7" || "$build_id" == "8" || "$build_id" == "9" || "$build_id" == "10" || "$build_id" == "11" || "$build_id" == "12" ]] || exit 16
           {
             echo "request_id=$request_id"
             echo "operation=$operation"
@@ -61,6 +61,7 @@ jobs:
             9) binding_file="remote-telemetry-alpha9.json" ;;
             10) binding_file="remote-telemetry-alpha10.json" ;;
             11) binding_file="remote-telemetry-alpha11.json" ;;
+            12) binding_file="remote-telemetry-alpha12.json" ;;
             *) exit 19 ;;
           esac
           api="https://api.github.com/repos/homayounisaghar/capability-fabric/contents/projects/personal-android-agent/private/$binding_file?ref=project%2Fpersonal-android-agent"
