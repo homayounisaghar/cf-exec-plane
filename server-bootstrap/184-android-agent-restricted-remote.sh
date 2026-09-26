@@ -386,7 +386,8 @@ UNIT
 
 systemctl daemon-reload
 systemctl enable --now capability-fabric-paa-publisher.service
-systemctl enable --now capability-fabric-paa-remote.service
+systemctl enable capability-fabric-paa-remote.service >/dev/null 2>&1 || true
+systemctl restart capability-fabric-paa-remote.service
 
 for _ in $(seq 1 30); do
   if systemctl is-active --quiet capability-fabric-paa-publisher.service; then
@@ -419,18 +420,22 @@ code=None
 expiry=None
 for i,line in enumerate(lines):
     s=line.strip()
-    if s=="1. Open this URL in your browser:" and i+1 < len(lines):
+    if s in {"1. Open this URL in your browser:","1. Verify this device in your browser:"} and i+1 < len(lines):
         url=lines[i+1].strip()
-    elif s=="2. Enter this code when prompted:" and i+1 < len(lines):
+    elif s in {"2. Enter this code when prompted:","2. Make sure the code matches:"} and i+1 < len(lines):
         code=lines[i+1].strip()
     elif s.startswith("Code expires in "):
         expiry=s
-if url=="https://mcp.desktopcommander.app/device/verify" and re.fullmatch(r"[A-Z0-9]{4}-[A-Z0-9]{4}", code or ""):
-    with open(dst,"w",encoding="utf-8") as out:
-        out.write(url+"\n")
-        out.write(code+"\n")
-        if expiry:
-            out.write(expiry+"\n")
+m=re.fullmatch(r"https://mcp\.desktopcommander\.app/device/verify\?user_code=([A-Z0-9]{4}-[A-Z0-9]{4})", url or "")
+if m:
+    if code is None:
+        code=m.group(1)
+    if code==m.group(1):
+        with open(dst,"w",encoding="utf-8") as out:
+            out.write(url+"\n")
+            out.write(code+"\n")
+            if expiry:
+                out.write(expiry+"\n")
 PY
   if [[ -s "$pairing_file.tmp" ]]; then
     install -m 0600 -o root -g root "$pairing_file.tmp" "$pairing_file"
