@@ -2678,6 +2678,198 @@ openssl pkeyutl -decrypt -inkey "$private_key" -in "$tmp_cipher" -out "$tmp_plai
   -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256 -pkeyopt rsa_mgf1_md:sha256 >/dev/null 2>&1
 [[ -s "$tmp_plain" ]] || { echo "decrypt failed" >&2; exit 25; }
 
+if [[ "$mode" == material-delete-for-everyone-canary ]]; then
+  sequence="$(python3 - "$release/manifest.json" <<'PY'
+import json,sys
+print(int(json.load(open(sys.argv[1],encoding='utf-8')).get('sequence',0)))
+PY
+)"
+  [[ "$sequence" -ge 43 ]] || { echo "PCG_WEB_DELETE_FOR_EVERYONE_RUNTIME=too-old" >&2; exit 52; }
+
+  source_commit="$(tr -d '\r\n' < "$release/source-commit")"
+  [[ "$source_commit" =~ ^[0-9a-f]{40}$ ]] || { echo "PCG_WEB_DELETE_FOR_EVERYONE_SOURCE=invalid" >&2; exit 52; }
+  repo_cache=/var/lib/capability-fabric/deploy/pcg/repo.git
+  [[ -d "$repo_cache" ]] || { echo "PCG_WEB_DELETE_FOR_EVERYONE_SOURCE=cache-missing" >&2; exit 52; }
+  git --git-dir="$repo_cache" cat-file -e "$source_commit^{commit}"
+
+  target_plain="$tmp_plain"
+  chown 65534:65534 "$target_plain"
+  chmod 0400 "$target_plain"
+
+  work="$(mktemp -d "$run_root/.delete-for-everyone-src.XXXXXX")"
+  cleanup_delete_for_everyone() { rm -rf "$work"; }
+  trap 'cleanup_delete_for_everyone; cleanup_files' EXIT
+  chmod 0755 "$work"
+  git --git-dir="$repo_cache" archive "$source_commit" src/capability_fabric | tar -x -C "$work"
+  chown -R 65534:65534 "$work"
+  find "$work" -type d -exec chmod 0755 {} +
+  find "$work" -type f -exec chmod 0644 {} +
+
+  image='python:3.12-slim-bookworm@sha256:392307d22300de8b5986851a12d9176dfc0fc073e65bf6523ebd7dcbeb23564e'
+  docker pull "$image" >/dev/null
+  docker run --rm --network none --user 65534:65534 \
+    -e PYTHONPATH=/src \
+    -v "$work/src:/src:ro" \
+    -v "$target_plain:/run/target-name:ro" \
+    -v /var/lib/capability-fabric/pcg/core-state:/state:rw \
+    -v /var/lib/capability-fabric/pcg/run:/run/pcg:rw \
+    "$image" python - <<'PY'
+import json
+import time
+import unicodedata
+from uuid import uuid4
+
+from capability_fabric.communications_runtime import PrivatePayloadBroker
+from capability_fabric.domain import OutcomeState
+from capability_fabric.persistence import SqliteExecutionStateStore
+from capability_fabric.telegram_web_runtime import (
+    TelegramWebSocketClient,
+    TelegramWebUncertainEffectResolver,
+    build_telegram_web_kernel_runtime,
+)
+
+def norm(value):
+    return unicodedata.normalize("NFC", value).strip()
+
+with open("/run/target-name", "r", encoding="utf-8") as stream:
+    target_title = norm(stream.read())
+if not target_title or len(target_title) > 256 or "\n" in target_title or "\r" in target_title:
+    raise SystemExit("encrypted target title is invalid")
+
+client = TelegramWebSocketClient("/run/pcg/web.sock", timeout=60.0)
+search = client.call({
+    "op": "semantic.invoke",
+    "operation": "communication.conversation.search",
+    "purpose": "PROTECTED_DISPLAY",
+    "args": {"query": target_title, "limit": 50},
+})
+if search.get("state") != "ACHIEVED":
+    raise SystemExit("target conversation search failed")
+protected = search.get("protected_provider_data")
+conversations = protected.get("conversations") if isinstance(protected, dict) else None
+if not isinstance(conversations, list):
+    raise SystemExit("target conversation search returned no protected results")
+matches = [
+    item for item in conversations
+    if isinstance(item, dict)
+    and item.get("type") == "user"
+    and isinstance(item.get("name"), str)
+    and norm(item["name"]) == target_title
+    and isinstance(item.get("handle"), str)
+    and item["handle"].startswith("tgchat:")
+]
+target_title = ""
+if len(matches) != 1:
+    raise SystemExit("exact controlled user conversation resolution was not unique")
+conversation_handle = matches[0]["handle"]
+matches = []
+
+state = SqliteExecutionStateStore("/state/web-material-send.sqlite3")
+payloads = PrivatePayloadBroker(
+    "/state/web-material-payloads",
+    ttl_seconds=86400,
+    max_payload_bytes=8 * 1024 * 1024,
+)
+cleanup_handles = []
+try:
+    runtime = build_telegram_web_kernel_runtime(
+        client=client,
+        payloads=payloads,
+        state_store=state,
+        journal=state,
+    )
+
+    canary_text = "PCG delete-for-everyone test " + str(uuid4())
+    sent = runtime.send_text(
+        conversation_handle=conversation_handle,
+        text=canary_text,
+    )
+    if sent.outcome.state is not OutcomeState.ACHIEVED:
+        raise SystemExit("delete-for-everyone source send did not achieve")
+    payload_handle = sent.dispatch.evidence.get("payload.handle")
+    if isinstance(payload_handle, str):
+        cleanup_handles.append(payload_handle)
+
+    message_handle = None
+    for _ in range(8):
+        listed = client.call({
+            "op": "semantic.invoke",
+            "operation": "communication.message.list",
+            "purpose": "PROTECTED_DISPLAY",
+            "args": {
+                "conversation_handle": conversation_handle,
+                "limit": 50,
+            },
+        })
+        if listed.get("state") == "ACHIEVED":
+            protected_messages = listed.get("protected_provider_data")
+            messages = protected_messages.get("messages") if isinstance(protected_messages, dict) else None
+            if isinstance(messages, list):
+                exact = [
+                    item for item in messages
+                    if isinstance(item, dict)
+                    and item.get("outgoing") is True
+                    and item.get("text") == canary_text
+                    and isinstance(item.get("handle"), str)
+                    and item["handle"].startswith("tgmsg:")
+                ]
+                if len(exact) == 1:
+                    message_handle = exact[0]["handle"]
+                    break
+        time.sleep(0.5)
+
+    canary_text = ""
+    if not isinstance(message_handle, str):
+        raise SystemExit("exact delete-for-everyone canary message was not resolved")
+
+    deleted = runtime.delete_message(
+        conversation_handle=conversation_handle,
+        message_handle=message_handle,
+        scope="FOR_EVERYONE",
+    )
+    if deleted.outcome.state is not OutcomeState.ACHIEVED:
+        raise SystemExit("delete-for-everyone did not achieve")
+    if deleted.dispatch.evidence.get("telegram_web.delete_scope") != "FOR_EVERYONE":
+        raise SystemExit("delete-for-everyone scope correlation mismatch")
+
+    resolver = TelegramWebUncertainEffectResolver(client, payloads)
+    observed = resolver.resolve(deleted.operation, deleted.attempt, deleted.dispatch)
+    if observed.state is not OutcomeState.ACHIEVED:
+        raise SystemExit("delete-for-everyone authoritative absence readback failed")
+
+    durable = any(
+        item.get("kind") == "state.dispatch_intent.persisted"
+        and item.get("entity_id") == deleted.attempt.attempt_id
+        for item in state.event_records()
+    )
+    if not durable:
+        raise SystemExit("delete-for-everyone durable dispatch intent missing")
+
+    print(json.dumps({
+        "state": "ACHIEVED",
+        "controlled_counterparty_resolved": True,
+        "exact_outgoing_canary": True,
+        "scope": "FOR_EVERYONE",
+        "provider_acknowledged": deleted.observation.ack_state.value == "ACKNOWLEDGED",
+        "provider_confirmed": deleted.observation.detail == "provider_confirmed",
+        "authoritative_absence": True,
+        "reconciliation_readback": "ACHIEVED",
+        "kernel_dispatch_intent": True,
+        "provider_content_model_visible": False,
+    }, separators=(",", ":")))
+finally:
+    for handle in cleanup_handles:
+        try:
+            payloads.remove(handle)
+        except Exception:
+            pass
+    state.close()
+PY
+  : > "$tmp_plain"
+  printf 'PCG_WEB_DELETE_FOR_EVERYONE_CANARY=pass\n'
+  exit 0
+fi
+
 case "$mode" in
   phone) op='login.phone' ;;
   code) op='login.code' ;;
