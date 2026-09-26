@@ -1,0 +1,4 @@
+action=phase0-body-semantic-discovery-v1
+candidate=c0cadee962c2059ba939c40c6bb9adf1bc99edfe
+fixture=a19e0fa5152af9f7ce106b6e:e5e7d0173fd1f1d0307a2cb6:e0929361aadb6135b5cecffa
+reason=semantic-DOM-body-target-discovery
