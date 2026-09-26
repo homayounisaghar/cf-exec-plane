@@ -55,6 +55,19 @@ const viewer=async(params)=>{
   if(r?.outcome?.state!=="ACHIEVED"||r?.observation?.ackState!=="ACKNOWLEDGED") throw new Error(JSON.stringify(r));
   return r.observation.evidence.result;
 };
+const nativeEval=async(expression)=>{
+  const w=await call("onshape_ui_native",{document_id:did,workspace_id:wid,element_id:eid,action:"page.evaluate",params:{expression}});
+  const r=w.result;
+  if(r?.outcome?.state!=="ACHIEVED"||r?.observation?.ackState!=="ACKNOWLEDGED") throw new Error(JSON.stringify(r));
+  return r.observation.evidence.result.value;
+};
+const input=async(label,steps)=>{
+  const w=await call("onshape_ui_input",{document_id:did,workspace_id:wid,element_id:eid,steps});
+  const r=w.result;
+  console.log("CF_PHASE0_COVER_INPUT_"+label+"="+JSON.stringify({outcome:r?.outcome||null,observation:r?.observation||null}));
+  if(r?.outcome?.state!=="ACHIEVED"||r?.observation?.ackState!=="ACKNOWLEDGED") throw new Error(label+" input not achieved");
+  return r;
+};
 const triples=flat=>{const a=[];for(let i=0;i+2<flat.length;i+=3)a.push([+flat[i],+flat[i+1],+flat[i+2]]);return a};
 const mid=(a,b)=>[(a[0]+b[0])/2,(a[1]+b[1])/2,(a[2]+b[2])/2];
 const invert4ColumnMajor=a=>{
@@ -100,13 +113,23 @@ try{
     {name:"edge_bottom_1_2",world:mid(pts[1],pts[2])},
     {name:"edge_top_8_9",world:mid(pts[8],pts[9])}
   ];
+  const canvas=await nativeEval('(() => {const e=document.querySelector("#canvas"),r=e?.getBoundingClientRect();return r?{x:r.x,y:r.y,w:r.width,h:r.height}:null})()');
+  if(!canvas||canvas.w<=1||canvas.h<=1) throw new Error("canvas");
   const out=[];
   for(const q of candidates){
-    const p=project(q.world,scan.view_data);
+    const p=project(q.world,anchor.view_data);
+    if(!(p.x_fraction>.02&&p.x_fraction<.98&&p.y_fraction>.02&&p.y_fraction<.98)) {
+      out.push({name:q.name,world:q.world,projection:p,status:"OUTSIDE"});
+      continue;
+    }
+    const xy={x:Math.round(canvas.x+canvas.w*p.x_fraction),y:Math.round(canvas.y+canvas.h*p.y_fraction)};
+    await input("HOVER_"+q.name,[{action:"mouse.move",x:xy.x,y:xy.y,steps:1,after_ms:120}]);
+    const hoverScan=await viewer({op:"selection_scan"});
     const v=await viewer({op:"probe",x_fraction:p.x_fraction,y_fraction:p.y_fraction});
     out.push({
-      name:q.name,world:q.world,projection:p,
+      name:q.name,world:q.world,projection:p,screen:xy,
       status:v?.probe?.status||null,
+      edge_heap:hoverScan?.selection_scan?.edges||null,
       picks:(v?.probe?.picks||[]).map(x=>({
         deterministic_id:x.deterministic_id,id:x.id,occurrence_id:x.occurrence_id,primitive_id:x.primitive_id,
         getters:x.getters,entity_metadata:x.entity_metadata
