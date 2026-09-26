@@ -21,9 +21,18 @@ const parse=r=>{
 };
 const invoke=async(operationId,args={})=>parse(await c.callTool({name:"onshape_fabric_invoke",arguments:{capability_id:"onshape.documented.operation",arguments:{operationId,...args}}}));
 const q='qBodyType(qCreatedBy(makeId("'+FID+'"), EntityType.BODY), BodyType.MATE_CONNECTOR)';
+const spec=JSON.parse(fs.readFileSync("/openapi/onshape-openapi.json","utf8"));
+for(const wanted of ["addPartStudioFeature","deletePartStudioFeature","updatePartStudioFeature"]){
+  for(const [p,item] of Object.entries(spec.paths||{})){
+    for(const [m,op] of Object.entries(item||{})){
+      if(op?.operationId!==wanted) continue;
+      console.log("CF_E9_MATE_PROBE_OPENAPI_"+wanted+"="+JSON.stringify({path:p,method:m,parameters:[...(item.parameters||[]),...(op.parameters||[])],requestBody:op.requestBody}));
+    }
+  }
+}
 for(const [label,script] of [
  ["COUNT",'function(context is Context, queries) { return size(evaluateQuery(context, '+q+')); }'],
- ["FRAME",'function(context is Context, queries) { return evMateConnector(context, {mateConnector : '+q+'}); }']
+ ["FRAME",'function(context is Context, queries) { return evMateConnector(context, {'mateConnector' : '+q+'}); }']
 ]){
  const w=await invoke("evalFeatureScript",{pathParams:{did:DID,wvm:"w",wvmid:WID,eid:EID},query:{},body:{script}});
  console.log("CF_E9_MATE_PROBE_"+label+"_WRAP="+JSON.stringify(w));
