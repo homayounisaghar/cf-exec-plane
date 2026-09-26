@@ -1,0 +1,4 @@
+action=phase0-research-gate-v1
+request_id=phase0-research-gate-20260926-07
+candidate_commit=ae9bc114d84cfd7991cbdd38489b18d33a2d34bf
+scope=private-candidate-regression-no-deploy
