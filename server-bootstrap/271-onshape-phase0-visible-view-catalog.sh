@@ -3,7 +3,7 @@ set -euo pipefail
 umask 077
 [[ "$(id -u)" -eq 0 ]] || exit 2
 
-candidate="c0cadee962c2059ba939c40c6bb9adf1bc99edfe"
+candidate="d9354b6bb26b10dd198aab2a7417c746ae90de66"
 fixture="a19e0fa5152af9f7ce106b6e:e5e7d0173fd1f1d0307a2cb6:e0929361aadb6135b5cecffa"
 research=capability-fabric-onshape-phase0-research
 sidecar=capability-fabric-onshape-phase0-fabric
@@ -130,9 +130,9 @@ try{
   const baselineSig=selSig(pre);
   await input("BOOTSTRAP_ISO",keySteps(["Shift+7","f"]));
   const bootstrapPoints=[
-    {x_fraction:.50,y_fraction:.50},
-    {x_fraction:.52,y_fraction:.50},
-    {x_fraction:.48,y_fraction:.50}
+    {x_fraction:.48003471323534147,y_fraction:.40177663488528204},
+    {x_fraction:.4726713018737533,y_fraction:.4073717835320432},
+    {x_fraction:.52,y_fraction:.50}
   ];
   let anchor=null,anchorFace=null;
   const bootstrapProbes=[];
@@ -233,7 +233,7 @@ try{
     schema:"capability-fabric.onshape-virtual-ui-visible-view-catalog.v2",
     benchmark_id:"onshape-virtual-ui-delegability-v2",
     fixture:{document_id:did,workspace_id:wid,element_id:eid},
-    research_candidate:"c0cadee962c2059ba939c40c6bb9adf1bc99edfe",
+    research_candidate:"d9354b6bb26b10dd198aab2a7417c746ae90de66",
     source:"standard Onshape keyboard views + documented 5-degree rotation shortcuts; semantic visibility probe",
     model_outputs_inspected:false,
     thresholds:{min_screen_seed_separation:MIN_SCREEN_SEPARATION,replay_matrix_tolerance:REPLAY_MATRIX_TOL,max_semantic_probes_per_target_view:3},
