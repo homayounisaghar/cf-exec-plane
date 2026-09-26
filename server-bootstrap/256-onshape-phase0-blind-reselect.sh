@@ -155,11 +155,21 @@ try{
   const canvas=await nativeEval('(() => {const e=document.querySelector("#canvas"),r=e?.getBoundingClientRect();return r?{x:r.x,y:r.y,w:r.width,h:r.height}:null})()');
   if(!canvas||canvas.w<=1||canvas.h<=1) throw new Error("canvas");
 
-  const blankProbe=await viewer({op:"probe",x_fraction:.94,y_fraction:.08});
-  if(blankProbe?.probe?.status!=="MISS") throw new Error("clear-selection point is not empty");
-  console.log("CF_PHASE0_BLIND_CLEAR_PROBE="+JSON.stringify(blankProbe.probe));
-
-  const blank={x:Math.round(canvas.x+canvas.w*.94),y:Math.round(canvas.y+canvas.h*.08)};
+  const clearCandidates=[
+    {x_fraction:.58,y_fraction:.52},
+    {x_fraction:.90,y_fraction:.88},
+    {x_fraction:.10,y_fraction:.10}
+  ];
+  let clearChoice=null;
+  const clearProbes=[];
+  for(const q of clearCandidates){
+    const v=await viewer({op:"probe",x_fraction:q.x_fraction,y_fraction:q.y_fraction});
+    clearProbes.push({point:q,status:v?.probe?.status||null,hit_ids:(v?.probe?.picks||[]).map(x=>x.deterministic_id||null)});
+    if(v?.probe?.status==="MISS"){clearChoice=q;break;}
+  }
+  console.log("CF_PHASE0_BLIND_CLEAR_PROBES="+JSON.stringify(clearProbes));
+  if(!clearChoice) throw new Error("no bounded clear-selection MISS");
+  const blank={x:Math.round(canvas.x+canvas.w*clearChoice.x_fraction),y:Math.round(canvas.y+canvas.h*clearChoice.y_fraction)};
   await input("CLEAR",[{action:"mouse.click",x:blank.x,y:blank.y,button:"left",click_count:1,after_ms:180}]);
   const cleared=await viewer({op:"selection_scan"});
   if((cleared?.model_selection?.count??-1)!==0) throw new Error("selection did not clear");
