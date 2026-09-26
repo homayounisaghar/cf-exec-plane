@@ -2988,7 +2988,29 @@ for row in rows:
     }
     break
 conn.close()
-print(json.dumps(found or {"forward_operation_found":False},separators=(",",":")))
+
+correlation_path="/var/lib/capability-fabric/pcg/telegram-web-profile/.pcg-send-correlation.json"
+correlation=None
+try:
+    with open(correlation_path,encoding="utf-8") as stream:
+        registry=json.load(stream)
+    attempts=registry.get("attempts") if isinstance(registry,dict) else None
+    if isinstance(attempts,dict):
+        for record in reversed(list(attempts.values())):
+            if isinstance(record,dict) and record.get("operation_kind")=="forward_native":
+                correlation={
+                    "correlation_state":record.get("state"),
+                    "provider_error_code":record.get("provider_error_code"),
+                    "final_message_known":isinstance(record.get("final_message_id"),int),
+                }
+                break
+except Exception:
+    correlation={"correlation_readable":False}
+
+out=found or {"forward_operation_found":False}
+if correlation is not None:
+    out.update(correlation)
+print(json.dumps(out,separators=(",",":")))
 PY
   exit 0
 fi
