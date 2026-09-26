@@ -105,21 +105,26 @@ PY
 install -m 0750 -o root -g root "$tmp" "$publisher"
 systemctl restart capability-fabric-paa-publisher.service
 
+bad_app=""
 for _ in $(seq 1 20); do
-  if systemctl is-active --quiet capability-fabric-paa-publisher.service       && [[ -S /run/capability-fabric/paa-publisher.sock ]]; then
-    break
+  if systemctl is-active --quiet capability-fabric-paa-publisher.service \
+      && [[ -S /run/capability-fabric/paa-publisher.sock ]]; then
+    bad_app="$(printf '%s' '{"schema":"personal-android-agent.remote-request.v1","request_id":"paa-policy-app-open-negative-20260926-003","action":"app.open","parameters":{"package":"com.android.settings"},"ttl_seconds":300}' | runuser -u "$remote_user" -- /usr/local/bin/paa-publish-envelope 2>/dev/null || true)"
+    if [[ "$bad_app" == *"app package not admitted"* ]]; then
+      break
+    fi
   fi
   sleep 1
 done
 systemctl is-active --quiet capability-fabric-paa-publisher.service
 [[ -S /run/capability-fabric/paa-publisher.sock ]]
+[[ "$bad_app" == *"app package not admitted"* ]]
 
 if runuser -u "$remote_user" -- cat "$producer_key" >/dev/null 2>&1; then exit 20; fi
 if runuser -u "$remote_user" -- cat "$binding" >/dev/null 2>&1; then exit 21; fi
 
 # Runtime negative tests verify fail-closed behavior without publishing any phone-visible effect.
-bad_app="$(printf '%s' '{"schema":"personal-android-agent.remote-request.v1","request_id":"paa-policy-app-open-negative-20260926-002","action":"app.open","parameters":{"package":"com.android.settings"},"ttl_seconds":300}' | runuser -u "$remote_user" -- /usr/local/bin/paa-publish-envelope)"
-bad_url="$(printf '%s' '{"schema":"personal-android-agent.remote-request.v1","request_id":"paa-policy-url-open-negative-20260926-002","action":"url.open","parameters":{"url":"https://openai.com/"},"ttl_seconds":300}' | runuser -u "$remote_user" -- /usr/local/bin/paa-publish-envelope)"
+bad_url="$(printf '%s' '{"schema":"personal-android-agent.remote-request.v1","request_id":"paa-policy-url-open-negative-20260926-003","action":"url.open","parameters":{"url":"https://openai.com/"},"ttl_seconds":300}' | runuser -u "$remote_user" -- /usr/local/bin/paa-publish-envelope)"
 
 BAD_APP="$bad_app" BAD_URL="$bad_url" python3 - <<'PY'
 import json,os
