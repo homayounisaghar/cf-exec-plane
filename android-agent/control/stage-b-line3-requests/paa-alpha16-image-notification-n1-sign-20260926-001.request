@@ -1,0 +1,7 @@
+request_id=paa-alpha16-image-notification-n1-sign-20260926-001
+candidate_commit=538a55e5bf003db296c2edb0eb97bcceb1bada8e
+stage_a_run_id=36235743249
+stage_a_artifact_id=10903977562
+unsigned_sha256=e294be65210adfbe1313e20cbcc1851d20692ec5204ec0afe173391c7afe6e92
+version_code=16
+version_name=0.1.0-alpha16
