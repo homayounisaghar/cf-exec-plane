@@ -7,6 +7,8 @@ expected_control_blob="7c03d59b613a7c91249f4c56efd045e1ed13a8dc"
 fixture="a19e0fa5152af9f7ce106b6e:e5e7d0173fd1f1d0307a2cb6:e0929361aadb6135b5cecffa"
 control=/var/lib/capability-fabric/onshape/runtime-control/ONSHAPE_RUNTIME_CONTROL.json
 active=/opt/capability-fabric/current
+gate=/var/lib/capability-fabric/state/release-in-progress
+lock=/run/lock/capability-fabric-pull.lock
 
 [[ -s "$control" ]] || { echo CF_PHASE0_PREFLIGHT_CONTROL=missing; exit 20; }
 actual_control_blob="$(git hash-object "$control")"
@@ -95,6 +97,12 @@ done
 [[ -s /etc/capability-fabric/secrets/mcp-token ]] || { echo CF_PHASE0_PREFLIGHT_PROD_MCP_TOKEN=missing; exit 27; }
 echo CF_PHASE0_PREFLIGHT_SECRETS=present
 
+[[ -f "$gate" ]] && grep -Fxq RELEASE_IN_PROGRESS "$gate" || { echo CF_PHASE0_PREFLIGHT_RELEASE_GATE=unexpected; exit 29; }
+echo CF_PHASE0_PREFLIGHT_RELEASE_GATE=closed-as-authorized
+exec 9>"$lock"
+flock -w 10 9 || { echo CF_PHASE0_PREFLIGHT_SHARED_LOCK=busy; exit 30; }
+echo CF_PHASE0_PREFLIGHT_SHARED_LOCK=free
+
 docker exec -i "$server" sh -lc 'cd /tmp/app && node --input-type=module' <<'NODE'
 import fs from "node:fs";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
@@ -117,21 +125,12 @@ try {
   console.log("CF_PHASE0_PREFLIGHT_PROD_TOOL_CATALOG=pass");
 
   const caps=parse(await client.callTool({name:"onshape_fabric_capabilities",arguments:{}}));
-  assert(caps.public_surface==="semantic-only","production surface not semantic-only");
-  assert(caps.qualification_only===false,"production marked qualification-only");
-  const ids=(caps.capabilities||[]).map(x=>x.id);
-  assert(!ids.includes("onshape.ui.native") && !ids.includes("onshape.ui.input.sequence"),"UI capability admitted in production");
-  console.log("CF_PHASE0_PREFLIGHT_PROD_CAPABILITIES="+ids.sort().join(","));
+  assert(caps.status==="FAILED" && caps?.error?.code==="RELEASE_IN_PROGRESS","closed production capability gate not enforced");
+  console.log("CF_PHASE0_PREFLIGHT_PROD_CAPABILITY_GATE=closed-as-authorized");
 
   const pool=parse(await client.callTool({name:"onshape_pool_status",arguments:{}}));
-  assert(pool.pool_enabled===true,"production pool not enabled");
-  assert(pool.size===3,"production pool size mismatch");
-  assert(Number(pool.active_count||0)===0,"production pool active");
-  assert(Number(pool.queued_count||0)===0,"production pool queued");
-  assert(Number(pool.document_lock_count||0)===0,"production document lock active");
-  assert(Array.isArray(pool.sessions) && pool.sessions.length===3,"production session count mismatch");
-  assert(pool.sessions.every(s=>s?.auth?.state==="PROVEN" && s?.auth?.http_status===200 && s?.busy!==true),"production session not idle/proven");
-  console.log("CF_PHASE0_PREFLIGHT_PROD_POOL=pass");
+  assert(pool.status==="FAILED" && pool?.error?.code==="RELEASE_IN_PROGRESS","closed production pool gate not enforced");
+  console.log("CF_PHASE0_PREFLIGHT_PROD_POOL_GATE=closed-as-authorized");
 } finally {
   await client.close().catch(()=>{});
 }
