@@ -81,10 +81,17 @@ try{
   if(st?.auth?.state!=="PROVEN"||st?.auth?.http_status!==200) throw new Error("auth");
   console.log("CF_PHASE0_COVER_AUTH=PROVEN");
   const scan=await viewer({op:"selection_scan"});
-  const sel=scan?.model_selection?.selections||[];
-  if(sel.length!==1||sel[0]?.deterministic_id!=="JHK"||sel[0]?.is_face!==true) throw new Error("JHK Face baseline absent");
-  const flat=sel[0]?.entity_metadata?.meshIncrement?.points||sel[0]?.source_pick?.entity_metadata?.meshIncrement?.points;
+  const anchor=await viewer({op:"probe",x_fraction:.52,y_fraction:.50});
+  const anchorPicks=anchor?.probe?.picks||[];
+  const face=anchorPicks.find(x=>x?.deterministic_id==="JHK");
+  if(!face) throw new Error("JHK read-only anchor probe absent");
+  const flat=face?.entity_metadata?.meshIncrement?.points;
   if(!Array.isArray(flat)||flat.length<30) throw new Error("JHK mesh absent");
+  console.log("CF_PHASE0_COVER_FACE_ANCHOR="+JSON.stringify({
+    status:anchor?.probe?.status||null,deterministic_id:face.deterministic_id,id:face.id,
+    body_id:face?.getters?.body_id??null,is_face:face?.getters?.is_face??null,
+    model_selection_count:anchor?.model_selection?.count??null
+  }));
   const pts=triples(flat);
   const candidates=[
     {name:"edge_left_0_1",world:mid(pts[0],pts[1])},
