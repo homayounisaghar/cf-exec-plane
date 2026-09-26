@@ -1236,6 +1236,135 @@ PY
   exit 0
 fi
 
+if [[ "$mode" == material-text-limit-canary ]]; then
+  sequence="$(python3 - "$release/manifest.json" <<'PY'
+import json,sys
+print(int(json.load(open(sys.argv[1],encoding='utf-8')).get('sequence',0)))
+PY
+)"
+  [[ "$sequence" -ge 39 ]] || { echo "PCG_WEB_TEXT_LIMIT_RUNTIME=too-old" >&2; exit 49; }
+
+  source_commit="$(tr -d '\r\n' < "$release/source-commit")"
+  [[ "$source_commit" =~ ^[0-9a-f]{40}$ ]] || { echo "PCG_WEB_TEXT_LIMIT_SOURCE=invalid" >&2; exit 49; }
+  repo_cache=/var/lib/capability-fabric/deploy/pcg/repo.git
+  [[ -d "$repo_cache" ]] || { echo "PCG_WEB_TEXT_LIMIT_SOURCE=cache-missing" >&2; exit 49; }
+  git --git-dir="$repo_cache" cat-file -e "$source_commit^{commit}"
+
+  work="$(mktemp -d "$run_root/.text-limit-src.XXXXXX")"
+  cleanup_text_limit() { rm -rf "$work"; }
+  trap cleanup_text_limit EXIT
+  chmod 0755 "$work"
+  git --git-dir="$repo_cache" archive "$source_commit" src/capability_fabric | tar -x -C "$work"
+  chown -R 65534:65534 "$work"
+  find "$work" -type d -exec chmod 0755 {} +
+  find "$work" -type f -exec chmod 0644 {} +
+
+  image='python:3.12-slim-bookworm@sha256:392307d22300de8b5986851a12d9176dfc0fc073e65bf6523ebd7dcbeb23564e'
+  docker pull "$image" >/dev/null
+  docker run --rm --network none --user 65534:65534 \
+    -e PYTHONPATH=/src \
+    -v "$work/src:/src:ro" \
+    -v /var/lib/capability-fabric/pcg/core-state:/state:rw \
+    -v /var/lib/capability-fabric/pcg/run:/run/pcg:rw \
+    "$image" python - <<'PY'
+import json
+from uuid import uuid4
+
+from capability_fabric.communications_runtime import PrivatePayloadBroker
+from capability_fabric.domain import OutcomeState
+from capability_fabric.persistence import SqliteExecutionStateStore
+from capability_fabric.telegram_web_runtime import TelegramWebSocketClient, build_telegram_web_kernel_runtime
+
+client = TelegramWebSocketClient("/run/pcg/web.sock", timeout=60.0)
+self_target = client.call({"op": "material.self_target"})
+conversation_handle = self_target.get("conversation_handle")
+if not isinstance(conversation_handle, str) or not conversation_handle.startswith("tgchat:"):
+    raise SystemExit("long-text self target resolution failed")
+
+state = SqliteExecutionStateStore("/state/web-material-send.sqlite3")
+payloads = PrivatePayloadBroker(
+    "/state/web-material-payloads",
+    ttl_seconds=86400,
+    max_payload_bytes=16384,
+)
+handles = []
+try:
+    runtime = build_telegram_web_kernel_runtime(
+        client=client,
+        payloads=payloads,
+        state_store=state,
+        journal=state,
+    )
+
+    suffix = str(uuid4())
+    send_text = ("pcg-long-send-" + suffix + "-") + ("s" * 900)
+    if not (512 < len(send_text) < 4096):
+        raise SystemExit("long-text send canary length invalid")
+    sent = runtime.send_text(conversation_handle=conversation_handle, text=send_text)
+    if sent.outcome.state is not OutcomeState.ACHIEVED:
+        raise SystemExit("long-text send did not achieve")
+    handles.append(str(sent.dispatch.evidence["payload.handle"]))
+
+    target = client.call({"op": "material.self_relay_target", "expected_text": send_text})
+    message_handle = target.get("source_message_handle")
+    if target.get("source_conversation_handle") != conversation_handle:
+        raise SystemExit("long-text source conversation mismatch")
+    if not isinstance(message_handle, str) or not message_handle.startswith("tgmsg:"):
+        raise SystemExit("long-text source resolution failed")
+
+    reply_text = ("pcg-long-reply-" + suffix + "-") + ("r" * 900)
+    replied = runtime.reply_text(
+        conversation_handle=conversation_handle,
+        source_message_handle=message_handle,
+        text=reply_text,
+    )
+    if replied.outcome.state is not OutcomeState.ACHIEVED:
+        raise SystemExit("long-text reply did not achieve")
+    handles.append(str(replied.dispatch.evidence["payload.handle"]))
+
+    edit_text = ("pcg-long-edit-" + suffix + "-") + ("e" * 900)
+    edited = runtime.edit_text(
+        conversation_handle=conversation_handle,
+        message_handle=message_handle,
+        text=edit_text,
+    )
+    if edited.outcome.state is not OutcomeState.ACHIEVED:
+        raise SystemExit("long-text edit did not achieve")
+    handles.append(str(edited.dispatch.evidence["payload.handle"]))
+
+    relayed = runtime.relay_text(
+        source_conversation_handle=conversation_handle,
+        source_message_handle=message_handle,
+        conversation_handle=conversation_handle,
+        purpose="TRANSPORT_RELAY",
+    )
+    if relayed.outcome.state is not OutcomeState.ACHIEVED:
+        raise SystemExit("long-text relay did not achieve")
+
+    safe = {
+        "state": "ACHIEVED",
+        "provider_limit_chars": 4096,
+        "exercised_over_512": True,
+        "send_over_512": True,
+        "reply_over_512": True,
+        "edit_over_512": True,
+        "relay_over_512": True,
+        "provider_confirmed": True,
+        "provider_content_model_visible": False,
+    }
+    print(json.dumps(safe, separators=(",", ":")))
+finally:
+    for handle in handles:
+        try:
+            payloads.remove(handle)
+        except Exception:
+            pass
+    state.close()
+PY
+  printf 'PCG_WEB_TEXT_LIMIT_CANARY=pass\n'
+  exit 0
+fi
+
 if [[ "$mode" == semantic-reaction-canary ]]; then
   sequence="$(python3 - "$release/manifest.json" <<'PY'
 import json,sys
