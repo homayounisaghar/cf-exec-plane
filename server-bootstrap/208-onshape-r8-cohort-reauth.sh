@@ -28,7 +28,7 @@ import json,sys
 x=json.load(open(sys.argv[1])); a=x["authority"]; g=a["productionGuard"]
 assert x["controlRevision"]==552 and a["productionEpoch"]==23
 assert a["mode"]=="VPS_PRODUCTION" and a["materialAuthority"]=="vps-fabric"
-assert a["planes"]["vps-fabric"]["releaseSequence"]==72
+assert a["planes"]["vps-fabric"]["releaseSequence"]==73
 assert a["planes"]["vps-fabric"]["releaseId"]=="onshape-vps-hardened-production-r8"
 assert x["lease"]["state"]=="FREE"
 assert g["killSwitch"]=="ENGAGED" and g["allowedDocumentIds"]==[] and g["mutationBudget"]["maxMutations"]==0
