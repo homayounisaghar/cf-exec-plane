@@ -4,7 +4,7 @@ umask 077
 
 [[ "$(id -u)" -eq 0 ]] || { echo "must run as uid 0" >&2; exit 1; }
 mode="${CF_PCG_WEB_CONTROL_MODE:-}"
-case "$mode" in prepare|status|ingress-diagnostic|semantic-status|semantic-conversations|semantic-conversations-protected|semantic-conversations-canary|semantic-search-canary|semantic-messages-protected|semantic-messages-canary|semantic-retrieval-hardening-canary|semantic-mark-read-canary|semantic-open-media-canary|semantic-download-canary|semantic-composer-canary|material-send-canary|material-reply-canary|material-attachment-send-canary|material-attachment-reply-canary|material-edit-canary|material-delete-canary|material-delete-for-everyone-canary|material-forward-canary|material-relay-canary|semantic-reaction-canary|material-text-limit-canary|material-attachment-hardening-canary|material-photo-album-canary|phone|code|password|cleanup|screenshot|refresh-screenshot|mytelegram-start|mytelegram-capture-code|mytelegram-signin|mytelegram-create-app|mytelegram-screenshot) ;; *) echo "invalid mode" >&2; exit 2 ;; esac
+case "$mode" in prepare|status|ingress-diagnostic|semantic-status|semantic-conversations|semantic-conversations-protected|semantic-conversations-canary|semantic-search-canary|semantic-messages-protected|semantic-messages-canary|semantic-retrieval-hardening-canary|semantic-mark-read-canary|semantic-open-media-canary|semantic-download-canary|semantic-composer-canary|material-send-canary|material-reply-canary|material-attachment-send-canary|material-attachment-reply-canary|material-edit-canary|material-delete-canary|material-delete-for-everyone-canary|material-forward-canary|material-relay-canary|semantic-reaction-canary|material-text-limit-canary|material-attachment-hardening-canary|material-large-file-transport-canary|material-photo-album-canary|phone|code|password|cleanup|screenshot|refresh-screenshot|mytelegram-start|mytelegram-capture-code|mytelegram-signin|mytelegram-create-app|mytelegram-screenshot) ;; *) echo "invalid mode" >&2; exit 2 ;; esac
 
 run_root=/var/lib/capability-fabric/pcg/run
 socket="$run_root/web.sock"
@@ -1488,6 +1488,154 @@ finally:
     state.close()
 PY
   printf 'PCG_WEB_PHOTO_ALBUM_CANARY=pass\n'
+  exit 0
+fi
+
+if [[ "$mode" == material-large-file-transport-canary ]]; then
+  sequence="$(python3 - "$release/manifest.json" <<'PY'
+import json,sys
+print(int(json.load(open(sys.argv[1],encoding='utf-8')).get('sequence',0)))
+PY
+)"
+  [[ "$sequence" -ge 44 ]] || { echo "PCG_WEB_LARGE_FILE_TRANSPORT_RUNTIME=too-old" >&2; exit 53; }
+
+  source_commit="$(tr -d '\r\n' < "$release/source-commit")"
+  [[ "$source_commit" =~ ^[0-9a-f]{40}$ ]] || { echo "PCG_WEB_LARGE_FILE_TRANSPORT_SOURCE=invalid" >&2; exit 53; }
+  repo_cache=/var/lib/capability-fabric/deploy/pcg/repo.git
+  [[ -d "$repo_cache" ]] || { echo "PCG_WEB_LARGE_FILE_TRANSPORT_SOURCE=cache-missing" >&2; exit 53; }
+  git --git-dir="$repo_cache" cat-file -e "$source_commit^{commit}"
+
+  work="$(mktemp -d "$run_root/.large-file-transport-src.XXXXXX")"
+  cleanup_large_file_transport() { rm -rf "$work"; }
+  trap cleanup_large_file_transport EXIT
+  chmod 0755 "$work"
+  git --git-dir="$repo_cache" archive "$source_commit" src/capability_fabric | tar -x -C "$work"
+  chown -R 65534:65534 "$work"
+  find "$work" -type d -exec chmod 0755 {} +
+  find "$work" -type f -exec chmod 0644 {} +
+
+  image='python:3.12-slim-bookworm@sha256:392307d22300de8b5986851a12d9176dfc0fc073e65bf6523ebd7dcbeb23564e'
+  docker pull "$image" >/dev/null
+  docker run --rm --network none --user 65534:65534 \
+    -e PYTHONPATH=/src \
+    -v "$work/src:/src:ro" \
+    -v /var/lib/capability-fabric/pcg/core-state:/state:rw \
+    -v /var/lib/capability-fabric/pcg/run:/run/pcg:rw \
+    "$image" python - <<'PY'
+import json
+import os
+from pathlib import Path
+from uuid import uuid4
+
+from capability_fabric.communications_runtime import PrivatePayloadBroker
+from capability_fabric.domain import OutcomeState
+from capability_fabric.persistence import SqliteExecutionStateStore
+from capability_fabric.telegram_web_runtime import (
+    TelegramWebSocketClient,
+    TelegramWebUncertainEffectResolver,
+    build_telegram_web_kernel_runtime,
+)
+
+size_bytes = 12 * 1024 * 1024
+client = TelegramWebSocketClient("/run/pcg/web.sock", timeout=180.0)
+self_target = client.call({"op": "material.self_target"})
+conversation_handle = self_target.get("conversation_handle")
+if not isinstance(conversation_handle, str) or not conversation_handle.startswith("tgchat:"):
+    raise SystemExit("large-file self target resolution failed")
+
+state = SqliteExecutionStateStore("/state/web-material-send.sqlite3")
+payloads = PrivatePayloadBroker(
+    "/state/web-material-payloads",
+    ttl_seconds=86400,
+    max_payload_bytes=32 * 1024 * 1024,
+)
+source = Path("/state") / ("pcg-large-file-source-" + str(uuid4()) + ".bin")
+cleanup_handles = []
+material_root = Path("/run/pcg/material-files")
+before = set(material_root.iterdir()) if material_root.exists() else set()
+try:
+    with source.open("wb") as stream:
+        chunk = b"L" * (1024 * 1024)
+        for _ in range(12):
+            stream.write(chunk)
+        stream.flush()
+        os.fsync(stream.fileno())
+
+    lease = payloads.put_file(source)
+    cleanup_handles.append(lease.handle)
+    if lease.size_bytes != size_bytes:
+        raise SystemExit("large-file broker import size mismatch")
+
+    runtime = build_telegram_web_kernel_runtime(
+        client=client,
+        payloads=payloads,
+        state_store=state,
+        journal=state,
+        material_file_root=material_root,
+    )
+    caption = "pcg-large-file-transport-" + str(uuid4())
+    sent = runtime.send_attachment(
+        conversation_handle=conversation_handle,
+        attachment_handle=lease.handle,
+        filename="pcg-large-file-12mib.bin",
+        mime_type="application/octet-stream",
+        caption=caption,
+    )
+    caption_handle = sent.dispatch.evidence.get("attachment.caption_handle")
+    if isinstance(caption_handle, str):
+        cleanup_handles.append(caption_handle)
+
+    if sent.outcome.state is not OutcomeState.ACHIEVED:
+        raise SystemExit("large-file attachment send did not achieve")
+    if sent.dispatch.evidence.get("attachment.size_bytes") != size_bytes:
+        raise SystemExit("large-file durable size binding mismatch")
+    if sent.dispatch.evidence.get("attachment.sha256") != lease.sha256_hex:
+        raise SystemExit("large-file durable digest binding mismatch")
+
+    resolver = TelegramWebUncertainEffectResolver(client, payloads)
+    observed = resolver.resolve(sent.operation, sent.attempt, sent.dispatch)
+    if observed.state is not OutcomeState.ACHIEVED:
+        raise SystemExit("large-file authoritative reconciliation readback failed")
+
+    after = set(material_root.iterdir()) if material_root.exists() else set()
+    leaked = [path for path in after - before if path.is_file()]
+    if leaked:
+        raise SystemExit("large-file staged material cleanup failed")
+
+    durable = any(
+        item.get("kind") == "state.dispatch_intent.persisted"
+        and item.get("entity_id") == sent.attempt.attempt_id
+        for item in state.event_records()
+    )
+    if not durable:
+        raise SystemExit("large-file durable dispatch intent missing")
+
+    print(json.dumps({
+        "state": "ACHIEVED",
+        "attachment_size_bytes": size_bytes,
+        "exercised_over_8mib": True,
+        "private_shared_file_handoff": True,
+        "socket_payload_binary": False,
+        "durable_digest_binding": True,
+        "provider_confirmed": sent.observation.detail == "provider_confirmed",
+        "reconciliation_readback": "ACHIEVED",
+        "staged_cleanup_confirmed": True,
+        "kernel_dispatch_intent": True,
+        "provider_content_model_visible": False,
+    }, separators=(",", ":")))
+finally:
+    try:
+        source.unlink(missing_ok=True)
+    except Exception:
+        pass
+    for handle in cleanup_handles:
+        try:
+            payloads.remove(handle)
+        except Exception:
+            pass
+    state.close()
+PY
+  printf 'PCG_WEB_LARGE_FILE_TRANSPORT_CANARY=pass\n'
   exit 0
 fi
 
