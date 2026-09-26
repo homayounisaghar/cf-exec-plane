@@ -1,0 +1,3 @@
+action=phase0-passive-auth-v1
+candidate_commit=d9354b6bb26b10dd198aab2a7417c746ae90de66
+reason=verify_research_auth_after_keyboard_press_upgrade
