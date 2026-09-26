@@ -132,7 +132,7 @@ if runuser -u "$remote_user" -- cat "$binding" >/dev/null 2>&1; then
 fi
 
 positive="$probe"
-negative="$(printf '%s' '{"schema":"personal-android-agent.remote-request.v1","request_id":"paa-policy-volume-set-negative-20260926-001","action":"volume.get_set","parameters":{"stream":"music","operation":"set","percent":50},"ttl_seconds":300}' | runuser -u "$remote_user" -- /usr/local/bin/paa-publish-envelope)"
+negative="$(printf '%s' '{"schema":"personal-android-agent.remote-request.v1","request_id":"paa-policy-volume-set-negative-20260926-001","action":"volume.get_set","parameters":{"stream":"music","operation":"set"},"ttl_seconds":300}' | runuser -u "$remote_user" -- /usr/local/bin/paa-publish-envelope)"
 
 POSITIVE="$positive" NEGATIVE="$negative" python3 - <<'PY'
 import json,os
