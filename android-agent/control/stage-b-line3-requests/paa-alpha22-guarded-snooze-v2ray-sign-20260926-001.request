@@ -1,0 +1,7 @@
+request_id=paa-alpha22-guarded-snooze-v2ray-sign-20260926-001
+candidate_commit=3bd43e1b9328dffc5b403c53cbda02575098a3c8
+stage_a_run_id=36256129270
+stage_a_artifact_id=10910457658
+unsigned_sha256=3213fb126af3d14420fb403de04599c488ddea5297f3f29ad3b681b21a85dfd3
+version_code=22
+version_name=0.1.0-alpha22
