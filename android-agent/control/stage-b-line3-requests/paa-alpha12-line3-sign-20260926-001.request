@@ -1,0 +1,7 @@
+request_id=paa-alpha12-line3-sign-20260926-001
+candidate_commit=5a26a7f12e73fef9a0b1d514c8340e24038b27ba
+stage_a_run_id=36225106664
+stage_a_artifact_id=10900301919
+unsigned_sha256=a2f70c2a936291079a8a00d11f0323e45a7798fa63c977066831e7089ad7711a
+version_code=12
+version_name=0.1.0-alpha12
