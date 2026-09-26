@@ -125,6 +125,7 @@ jobs:
           python tests/test_telegram_web_material_edit_effect_v01.py
           python tests/test_pcg_web_stage5_message_delete_v01.py
           python tests/test_telegram_web_message_delete_effect_v01.py
+          python tests/test_pcg_web_stage5_delete_for_everyone_hardening_v01.py
           python tests/test_pcg_web_stage5_native_forward_v01.py
           python tests/test_telegram_web_native_forward_effect_v01.py
           python tests/test_pcg_web_stage5_relay_v01.py
