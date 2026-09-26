@@ -1,0 +1,245 @@
+name: Personal Android Agent Stage B Line3 Sign
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'android-agent/control/stage-b-requests/*.request'
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: personal-android-agent-stage-b-line3
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  sign:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+      GH_TOKEN: ${{ github.token }}
+      EXPECTED_PACKAGE: com.homayounisaghar.androidagent
+      EXPECTED_ALIAS: personal_android_agent_line3
+      EXPECTED_SIGNER_SHA256: e5b102356f271078a3d03e982782c3776e3d9f301c1b24c0e7194f06e5a001fa
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+
+      - id: req
+        name: Validate immutable signing request
+        run: |
+          set -euo pipefail
+          changes="$(git diff --name-status "$GITHUB_SHA^" "$GITHUB_SHA")"
+          [[ "$(printf '%s\n' "$changes" | sed '/^$/d' | wc -l | tr -d ' ')" == 1 ]] || exit 10
+          IFS=$'\t' read -r status path <<<"$changes"
+          [[ "$status" == A ]] || exit 11
+          [[ "$path" == android-agent/control/stage-b-requests/*.request ]] || exit 12
+
+          request_id="$(awk -F= '$1=="request_id"{print $2}' "$path" | tail -n1 | tr -d '[:space:]')"
+          candidate_commit="$(awk -F= '$1=="candidate_commit"{print $2}' "$path" | tail -n1 | tr -d '[:space:]')"
+          stage_a_run_id="$(awk -F= '$1=="stage_a_run_id"{print $2}' "$path" | tail -n1 | tr -d '[:space:]')"
+          stage_a_artifact_id="$(awk -F= '$1=="stage_a_artifact_id"{print $2}' "$path" | tail -n1 | tr -d '[:space:]')"
+          unsigned_sha256="$(awk -F= '$1=="unsigned_sha256"{print $2}' "$path" | tail -n1 | tr -d '[:space:]')"
+          version_code="$(awk -F= '$1=="version_code"{print $2}' "$path" | tail -n1 | tr -d '[:space:]')"
+          version_name="$(awk -F= '$1=="version_name"{print $2}' "$path" | tail -n1 | tr -d '[:space:]')"
+
+          [[ "$request_id" == "$(basename "$path" .request)" ]] || exit 13
+          [[ "$candidate_commit" =~ ^[0-9a-f]{40}$ ]] || exit 14
+          [[ "$stage_a_run_id" =~ ^[0-9]+$ ]] || exit 15
+          [[ "$stage_a_artifact_id" =~ ^[0-9]+$ ]] || exit 16
+          [[ "$unsigned_sha256" =~ ^[0-9a-f]{64}$ ]] || exit 17
+          [[ "$version_code" =~ ^[0-9]+$ ]] || exit 18
+          [[ "$version_name" =~ ^0\.1\.0-alpha[0-9]+$ ]] || exit 19
+
+          echo "candidate_commit=$candidate_commit" >> "$GITHUB_OUTPUT"
+          echo "stage_a_run_id=$stage_a_run_id" >> "$GITHUB_OUTPUT"
+          echo "stage_a_artifact_id=$stage_a_artifact_id" >> "$GITHUB_OUTPUT"
+          echo "unsigned_sha256=$unsigned_sha256" >> "$GITHUB_OUTPUT"
+          echo "version_code=$version_code" >> "$GITHUB_OUTPUT"
+          echo "version_name=$version_name" >> "$GITHUB_OUTPUT"
+
+      - name: Mask VPS endpoint
+        run: |
+          set -euo pipefail
+          printf '::add-mask::%s\n' "$VPS_HOST"
+          printf '::add-mask::%s\n' "$VPS_SSH_USER"
+          while IFS= read -r addr; do [[ -n "$addr" ]] && printf '::add-mask::%s\n' "$addr"; done < <(getent ahosts "$VPS_HOST" 2>/dev/null | awk '{print $1}' | sort -u)
+
+      - name: Download exact Stage-A artifact
+        env:
+          ARTIFACT_ID: ${{ steps.req.outputs.stage_a_artifact_id }}
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/paa-stage-a /tmp/paa-stage-a.zip
+          mkdir -p /tmp/paa-stage-a
+          gh api "repos/homayounisaghar/cf-exec-plane/actions/artifacts/$ARTIFACT_ID/zip" > /tmp/paa-stage-a.zip
+          unzip -q /tmp/paa-stage-a.zip -d /tmp/paa-stage-a
+          test -s /tmp/paa-stage-a/BUILD_MANIFEST.json
+          test -s /tmp/paa-stage-a/personal-android-agent-release-unsigned.apk
+
+      - name: Verify Stage-A provenance and exact bytes
+        env:
+          CANDIDATE_COMMIT: ${{ steps.req.outputs.candidate_commit }}
+          UNSIGNED_SHA256: ${{ steps.req.outputs.unsigned_sha256 }}
+          VERSION_CODE: ${{ steps.req.outputs.version_code }}
+          VERSION_NAME: ${{ steps.req.outputs.version_name }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib,json,os
+          from pathlib import Path
+          root=Path('/tmp/paa-stage-a')
+          manifest=json.loads((root/'BUILD_MANIFEST.json').read_text())
+          if manifest.get('checkoutRef') != os.environ['CANDIDATE_COMMIT']:
+              raise SystemExit('candidate commit mismatch')
+          app=manifest.get('application') or {}
+          if app.get('packageId') != os.environ['EXPECTED_PACKAGE']:
+              raise SystemExit('package mismatch')
+          if str(app.get('versionCode')) != os.environ['VERSION_CODE']:
+              raise SystemExit('version code mismatch')
+          if app.get('versionName') != os.environ['VERSION_NAME']:
+              raise SystemExit('version name mismatch')
+          signer=manifest.get('expectedSigner') or {}
+          if signer.get('alias') != os.environ['EXPECTED_ALIAS']:
+              raise SystemExit('expected signer alias mismatch')
+          if signer.get('certificateSha256') != os.environ['EXPECTED_SIGNER_SHA256']:
+              raise SystemExit('expected signer fingerprint mismatch')
+          apk=root/'personal-android-agent-release-unsigned.apk'
+          sha=hashlib.sha256(apk.read_bytes()).hexdigest()
+          if sha != os.environ['UNSIGNED_SHA256']:
+              raise SystemExit('unsigned sha mismatch')
+          if (manifest.get('artifact') or {}).get('sha256') != sha:
+              raise SystemExit('manifest artifact sha mismatch')
+          PY
+
+      - name: Set up Android signing tools
+        run: |
+          set -euo pipefail
+          : "$ANDROID_HOME"
+          sdkmanager="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          set +o pipefail
+          yes | "$sdkmanager" --licenses >/dev/null 2>&1 || true
+          set -o pipefail
+          "$sdkmanager" "build-tools;35.0.0"
+          echo "BT=$ANDROID_HOME/build-tools/35.0.0" >> "$GITHUB_ENV"
+
+      - name: Fetch durable line3 signer over pinned SSH
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/paa-line3-signer
+          bash server-bootstrap/runner/fetch-android-agent-line3-signer.sh /tmp/paa-line3-signer
+          test -s /tmp/paa-line3-signer/signer.p12
+          test -s /tmp/paa-line3-signer/signer.pass
+          test -s /tmp/paa-line3-signer/signer-cert.pem
+
+      - name: Verify signer identity
+        run: |
+          set -euo pipefail
+          observed="$(openssl x509 -in /tmp/paa-line3-signer/signer-cert.pem -noout -fingerprint -sha256 | awk -F= '{print $2}' | tr -d ':' | tr 'A-F' 'a-f')"
+          [[ "$observed" == "$EXPECTED_SIGNER_SHA256" ]] || exit 30
+          tmpcert="$(mktemp)"
+          openssl pkcs12 -in /tmp/paa-line3-signer/signer.p12 -passin file:/tmp/paa-line3-signer/signer.pass -clcerts -nokeys -out "$tmpcert" >/dev/null 2>&1
+          p12fp="$(openssl x509 -in "$tmpcert" -noout -fingerprint -sha256 | awk -F= '{print $2}' | tr -d ':' | tr 'A-F' 'a-f')"
+          rm -f "$tmpcert"
+          [[ "$p12fp" == "$EXPECTED_SIGNER_SHA256" ]] || exit 31
+
+      - name: Sign exact Stage-A APK
+        env:
+          VERSION_NAME: ${{ steps.req.outputs.version_name }}
+        run: |
+          set -euo pipefail
+          unsigned=/tmp/paa-stage-a/personal-android-agent-release-unsigned.apk
+          outdir="$RUNNER_TEMP/paa-stage-b-output"
+          rm -rf "$outdir"
+          mkdir -p "$outdir"
+          signed="$outdir/personal-android-agent-$VERSION_NAME.apk"
+
+          "$BT/zipalign" -c -p 4 "$unsigned"
+          cp "$unsigned" "$signed"
+          "$BT/apksigner" sign             --ks /tmp/paa-line3-signer/signer.p12             --ks-type PKCS12             --ks-key-alias "$EXPECTED_ALIAS"             --ks-pass file:/tmp/paa-line3-signer/signer.pass             --key-pass file:/tmp/paa-line3-signer/signer.pass             --v1-signing-enabled true             --v2-signing-enabled true             --v3-signing-enabled true             "$signed"
+
+          "$BT/apksigner" verify --verbose --print-certs "$signed" | tee "$outdir/apksigner.txt"
+          "$BT/zipalign" -c -p 4 "$signed"
+          unzip -t "$signed" >/dev/null
+
+      - name: Verify final APK and payload identity
+        env:
+          CANDIDATE_COMMIT: ${{ steps.req.outputs.candidate_commit }}
+          UNSIGNED_SHA256: ${{ steps.req.outputs.unsigned_sha256 }}
+          VERSION_CODE: ${{ steps.req.outputs.version_code }}
+          VERSION_NAME: ${{ steps.req.outputs.version_name }}
+        run: |
+          set -euo pipefail
+          unsigned=/tmp/paa-stage-a/personal-android-agent-release-unsigned.apk
+          signed="$RUNNER_TEMP/paa-stage-b-output/personal-android-agent-$VERSION_NAME.apk"
+
+          cert_sha="$("$BT/apksigner" verify --print-certs "$signed" | awk -F': ' '/Signer #1 certificate SHA-256 digest:/{print tolower($2); exit}')"
+          [[ "$cert_sha" == "$EXPECTED_SIGNER_SHA256" ]] || exit 40
+
+          badging="$("$BT/aapt" dump badging "$signed" | head -n1)"
+          [[ "$badging" == *"package: name='$EXPECTED_PACKAGE'"* ]] || exit 41
+          [[ "$badging" == *"versionCode='$VERSION_CODE'"* ]] || exit 42
+          [[ "$badging" == *"versionName='$VERSION_NAME'"* ]] || exit 43
+
+          python3 - <<'PY'
+          import hashlib,json,os,zipfile
+          from pathlib import Path
+          unsigned=Path('/tmp/paa-stage-a/personal-android-agent-release-unsigned.apk')
+          signed=Path(os.environ['RUNNER_TEMP'])/'paa-stage-b-output'/('personal-android-agent-'+os.environ['VERSION_NAME']+'.apk')
+          with zipfile.ZipFile(unsigned) as u, zipfile.ZipFile(signed) as s:
+              s_names=set(s.namelist())
+              for name in u.namelist():
+                  if name.upper().startswith('META-INF/'):
+                      continue
+                  if name not in s_names:
+                      raise SystemExit('signed apk missing original entry: '+name)
+                  if u.read(name) != s.read(name):
+                      raise SystemExit('payload changed during signing: '+name)
+          signed_sha=hashlib.sha256(signed.read_bytes()).hexdigest()
+          manifest={
+              'schema':'personal-android-agent.signed-apk.v1',
+              'candidate_commit':os.environ['CANDIDATE_COMMIT'],
+              'unsigned_sha256':os.environ['UNSIGNED_SHA256'],
+              'signed_sha256':signed_sha,
+              'package_id':os.environ['EXPECTED_PACKAGE'],
+              'version_code':int(os.environ['VERSION_CODE']),
+              'version_name':os.environ['VERSION_NAME'],
+              'signer_alias':os.environ['EXPECTED_ALIAS'],
+              'signer_certificate_sha256':os.environ['EXPECTED_SIGNER_SHA256'],
+              'signature_schemes':['v1','v2','v3'],
+              'payload_identity':'pass',
+              'zip_integrity':'pass',
+              'alignment':'pass'
+          }
+          out=Path(os.environ['RUNNER_TEMP'])/'paa-stage-b-output'/'SIGNING_MANIFEST.json'
+          out.write_text(json.dumps(manifest,indent=2)+'\n')
+          print('CF_PAA_SIGNED_APK_SHA256='+signed_sha)
+          PY
+
+      - name: Scrub signer material
+        if: always()
+        run: |
+          rm -rf /tmp/paa-line3-signer /tmp/paa-stage-a /tmp/paa-stage-a.zip
+
+      - name: Upload final signed APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: personal-android-agent-stage-b-line3
+          path: ${{ runner.temp }}/paa-stage-b-output/
+          if-no-files-found: error
+          retention-days: 30
