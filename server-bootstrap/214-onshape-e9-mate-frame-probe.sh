@@ -32,7 +32,7 @@ for(const wanted of ["addPartStudioFeature","deletePartStudioFeature","updatePar
 }
 for(const [label,script] of [
  ["COUNT",'function(context is Context, queries) { return size(evaluateQuery(context, '+q+')); }'],
- ["FRAME",'function(context is Context, queries) { return evMateConnector(context, {'mateConnector' : '+q+'}); }']
+ ["FRAME","function(context is Context, queries) { return evMateConnector(context, {'mateConnector' : "+q+"}); }"]
 ]){
  const w=await invoke("evalFeatureScript",{pathParams:{did:DID,wvm:"w",wvmid:WID,eid:EID},query:{},body:{script}});
  console.log("CF_E9_MATE_PROBE_"+label+"_WRAP="+JSON.stringify(w));
