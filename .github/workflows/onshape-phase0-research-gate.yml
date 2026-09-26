@@ -43,7 +43,7 @@ jobs:
           candidate="$(awk -F= '$1=="candidate_commit"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
           [[ "$request_id" == "$file_id" && "$request_id" =~ ^[A-Za-z0-9_.-]{8,96}$ ]] || exit 12
           [[ "$action" == "phase0-research-gate-v1" ]] || exit 13
-          [[ "$candidate" == "010de3149a83aa9e70be8dca469466df1785a76b" ]] || exit 14
+          [[ "$candidate" == "ae9bc114d84cfd7991cbdd38489b18d33a2d34bf" ]] || exit 14
       - name: Mask host and login
         shell: bash
         run: |
