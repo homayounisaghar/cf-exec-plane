@@ -54,6 +54,9 @@ const native=async(action,params={})=>{
   return r.observation.evidence.result;
 };
 try{
+ const listed=await c.listTools();
+ const inputTool=(listed.tools||[]).find(x=>x.name==="onshape_ui_input");
+ console.log("CF_PHASE0_VIEWCATDISC_INPUT_SCHEMA="+JSON.stringify(inputTool?.inputSchema||null));
  const st=await call("onshape_session_status");
  if(st?.auth?.state!=="PROVEN"||st?.auth?.http_status!==200)throw new Error("auth");
  console.log("CF_PHASE0_VIEWCATDISC_AUTH=PROVEN");
