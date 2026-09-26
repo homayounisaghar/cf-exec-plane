@@ -58,8 +58,10 @@ const viewer=async(params)=>{
 };
 const input=async(label,steps)=>{
   const w=await call("onshape_ui_input",{document_id:did,workspace_id:wid,element_id:eid,steps});
-  const r=w.result;
+  console.log("CF_PHASE0_VIEWCAT_INPUT_RAW_"+label+"="+JSON.stringify(w));
+  const r=w?.result??w;
   console.log("CF_PHASE0_VIEWCAT_INPUT_"+label+"="+JSON.stringify({
+    status:w?.status??null,error:w?.error??null,
     attemptId:r?.attemptId||null,operationId:r?.operationId||null,
     outcome:r?.outcome||null,ackState:r?.observation?.ackState||null,
     sequenceCompleted:r?.observation?.evidence?.sequenceCompleted??null
