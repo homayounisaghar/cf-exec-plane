@@ -1236,6 +1236,125 @@ PY
   exit 0
 fi
 
+if [[ "$mode" == semantic-reaction-canary ]]; then
+  sequence="$(python3 - "$release/manifest.json" <<'PY'
+import json,sys
+print(int(json.load(open(sys.argv[1],encoding='utf-8')).get('sequence',0)))
+PY
+)"
+  [[ "$sequence" -ge 38 ]] || { echo "PCG_WEB_REACTION_RUNTIME=too-old" >&2; exit 48; }
+
+  source_commit="$(tr -d '\r\n' < "$release/source-commit")"
+  [[ "$source_commit" =~ ^[0-9a-f]{40}$ ]] || { echo "PCG_WEB_REACTION_SOURCE=invalid" >&2; exit 48; }
+  repo_cache=/var/lib/capability-fabric/deploy/pcg/repo.git
+  [[ -d "$repo_cache" ]] || { echo "PCG_WEB_REACTION_SOURCE=cache-missing" >&2; exit 48; }
+  git --git-dir="$repo_cache" cat-file -e "$source_commit^{commit}"
+
+  work="$(mktemp -d "$run_root/.reaction-src.XXXXXX")"
+  cleanup_reaction() { rm -rf "$work"; }
+  trap cleanup_reaction EXIT
+  chmod 0755 "$work"
+  git --git-dir="$repo_cache" archive "$source_commit" src/capability_fabric | tar -x -C "$work"
+  chown -R 65534:65534 "$work"
+  find "$work" -type d -exec chmod 0755 {} +
+  find "$work" -type f -exec chmod 0644 {} +
+
+  image='python:3.12-slim-bookworm@sha256:392307d22300de8b5986851a12d9176dfc0fc073e65bf6523ebd7dcbeb23564e'
+  docker pull "$image" >/dev/null
+  docker run --rm --network none --user 65534:65534 \
+    -e PYTHONPATH=/src \
+    -v "$work/src:/src:ro" \
+    -v /var/lib/capability-fabric/pcg/core-state:/state:rw \
+    -v /var/lib/capability-fabric/pcg/run:/run/pcg:rw \
+    "$image" python - <<'PY'
+import json
+from uuid import uuid4
+
+from capability_fabric.communications_runtime import PrivatePayloadBroker
+from capability_fabric.domain import OutcomeState
+from capability_fabric.persistence import SqliteExecutionStateStore
+from capability_fabric.telegram_web_runtime import TelegramWebSocketClient, build_telegram_web_kernel_runtime
+
+client = TelegramWebSocketClient("/run/pcg/web.sock", timeout=45.0)
+self_target = client.call({"op": "material.self_target"})
+conversation_handle = self_target.get("conversation_handle")
+if not isinstance(conversation_handle, str) or not conversation_handle.startswith("tgchat:"):
+    raise SystemExit("self reaction conversation resolution failed")
+
+state = SqliteExecutionStateStore("/state/web-material-send.sqlite3")
+payloads = PrivatePayloadBroker(
+    "/state/web-material-payloads",
+    ttl_seconds=86400,
+    max_payload_bytes=8192,
+)
+try:
+    runtime = build_telegram_web_kernel_runtime(
+        client=client,
+        payloads=payloads,
+        state_store=state,
+        journal=state,
+    )
+
+    canary_text = "pcg-reaction-source-" + str(uuid4())
+    source = runtime.send_text(conversation_handle=conversation_handle, text=canary_text)
+    if source.outcome.state is not OutcomeState.ACHIEVED:
+        raise SystemExit("reaction source send did not achieve")
+    payloads.remove(str(source.dispatch.evidence["payload.handle"]))
+
+    target = client.call({
+        "op": "material.self_relay_target",
+        "expected_text": canary_text,
+    })
+    message_handle = target.get("source_message_handle")
+    if target.get("source_conversation_handle") != conversation_handle:
+        raise SystemExit("reaction source conversation mismatch")
+    if not isinstance(message_handle, str) or not message_handle.startswith("tgmsg:"):
+        raise SystemExit("reaction source resolution failed")
+
+    request = {
+        "op": "semantic.invoke",
+        "operation": "communication.message.react",
+        "args": {
+            "conversation_handle": conversation_handle,
+            "message_handle": message_handle,
+            "emoji": "👍",
+        },
+    }
+    first = client.call(request)
+    if first.get("state") != "ACHIEVED":
+        raise SystemExit("reaction effect did not achieve")
+    observation = first.get("observation")
+    if not isinstance(observation, dict):
+        raise SystemExit("reaction observation missing")
+    if observation.get("selected_after") is not True or observation.get("provider_confirmed") is not True:
+        raise SystemExit("reaction provider confirmation missing")
+
+    second = client.call(request)
+    if second.get("state") != "ACHIEVED":
+        raise SystemExit("reaction idempotence check failed")
+    second_obs = second.get("observation")
+    if not isinstance(second_obs, dict) or second_obs.get("selected_after") is not True:
+        raise SystemExit("reaction idempotence observation missing")
+    if second_obs.get("effect_attempted") is not False:
+        raise SystemExit("reaction desired-state replay was not idempotent")
+
+    safe = {
+        "state": "ACHIEVED",
+        "message_target_opaque": True,
+        "standard_emoji": True,
+        "provider_confirmed": True,
+        "desired_state_idempotent": True,
+        "second_effect_attempted": False,
+        "provider_content_model_visible": False,
+    }
+    print(json.dumps(safe, separators=(",", ":"), ensure_ascii=True))
+finally:
+    state.close()
+PY
+  printf 'PCG_WEB_REACTION_CANARY=pass\n'
+  exit 0
+fi
+
 if [[ "$mode" == material-relay-canary ]]; then
   sequence="$(python3 - "$release/manifest.json" <<'PY'
 import json,sys
