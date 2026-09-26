@@ -406,9 +406,33 @@ if runuser -u "$remote_user" -- cat "$binding_file" >/dev/null 2>&1; then
 fi
 
 rm -f "$pairing_file"
+journal_tmp="$(mktemp)"
+trap 'rm -f "$cfg" "$api_json" "$binding_tmp" "$journal_tmp" "$pairing_file.tmp"' EXIT
 for _ in $(seq 1 90); do
-  journalctl -u capability-fabric-paa-remote.service --since '-3 minutes' --no-pager -o cat 2>/dev/null     | grep -E 'https?://|[Vv]erif|[Pp]air|[Cc]ode|[Dd]evice'     | tail -n 12 > "$pairing_file.tmp" || true
-  if [[ -s "$pairing_file.tmp" ]] && grep -Eq 'https?://|code|Code|verify|Verify' "$pairing_file.tmp"; then
+  journalctl -u capability-fabric-paa-remote.service --since '-15 minutes' --no-pager -o cat > "$journal_tmp" 2>/dev/null || true
+  python3 - "$journal_tmp" "$pairing_file.tmp" <<'PY'
+import re,sys
+src,dst=sys.argv[1:]
+lines=open(src,encoding="utf-8",errors="replace").read().splitlines()
+url=None
+code=None
+expiry=None
+for i,line in enumerate(lines):
+    s=line.strip()
+    if s=="1. Open this URL in your browser:" and i+1 < len(lines):
+        url=lines[i+1].strip()
+    elif s=="2. Enter this code when prompted:" and i+1 < len(lines):
+        code=lines[i+1].strip()
+    elif s.startswith("Code expires in "):
+        expiry=s
+if url=="https://mcp.desktopcommander.app/device/verify" and re.fullmatch(r"[A-Z0-9]{4}-[A-Z0-9]{4}", code or ""):
+    with open(dst,"w",encoding="utf-8") as out:
+        out.write(url+"\n")
+        out.write(code+"\n")
+        if expiry:
+            out.write(expiry+"\n")
+PY
+  if [[ -s "$pairing_file.tmp" ]]; then
     install -m 0600 -o root -g root "$pairing_file.tmp" "$pairing_file"
     rm -f "$pairing_file.tmp"
     break
