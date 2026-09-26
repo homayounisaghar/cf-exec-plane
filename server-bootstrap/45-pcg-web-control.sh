@@ -4,7 +4,7 @@ umask 077
 
 [[ "$(id -u)" -eq 0 ]] || { echo "must run as uid 0" >&2; exit 1; }
 mode="${CF_PCG_WEB_CONTROL_MODE:-}"
-case "$mode" in prepare|status|ingress-diagnostic|semantic-status|semantic-conversations|semantic-conversations-protected|semantic-conversations-canary|semantic-conversation-structure-canary|semantic-conversation-pin-pair|semantic-topic-canary|semantic-search-canary|semantic-messages-protected|semantic-messages-canary|semantic-retrieval-hardening-canary|semantic-mark-read-canary|semantic-open-media-canary|semantic-download-canary|semantic-composer-canary|material-send-canary|material-reply-canary|material-attachment-send-canary|material-attachment-reply-canary|material-edit-canary|material-delete-canary|material-delete-for-everyone-canary|material-forward-canary|material-relay-canary|semantic-reaction-canary|material-text-limit-canary|material-attachment-hardening-canary|material-large-file-transport-canary|material-photo-album-canary|phone|code|password|cleanup|screenshot|refresh-screenshot|mytelegram-start|mytelegram-capture-code|mytelegram-signin|mytelegram-create-app|mytelegram-screenshot) ;; *) echo "invalid mode" >&2; exit 2 ;; esac
+case "$mode" in prepare|status|ingress-diagnostic|semantic-status|semantic-conversations|semantic-conversations-protected|semantic-conversations-canary|semantic-conversation-structure-canary|semantic-conversation-pin-pair|semantic-saved-native-forward-to-contact|semantic-topic-canary|semantic-search-canary|semantic-messages-protected|semantic-messages-canary|semantic-retrieval-hardening-canary|semantic-mark-read-canary|semantic-open-media-canary|semantic-download-canary|semantic-composer-canary|material-send-canary|material-reply-canary|material-attachment-send-canary|material-attachment-reply-canary|material-edit-canary|material-delete-canary|material-delete-for-everyone-canary|material-forward-canary|material-relay-canary|semantic-reaction-canary|material-text-limit-canary|material-attachment-hardening-canary|material-large-file-transport-canary|material-photo-album-canary|phone|code|password|cleanup|screenshot|refresh-screenshot|mytelegram-start|mytelegram-capture-code|mytelegram-signin|mytelegram-create-app|mytelegram-screenshot) ;; *) echo "invalid mode" >&2; exit 2 ;; esac
 
 run_root=/var/lib/capability-fabric/pcg/run
 socket="$run_root/web.sock"
@@ -2960,6 +2960,244 @@ printf '%s' "$cipher" | base64 -d > "$tmp_cipher"
 openssl pkeyutl -decrypt -inkey "$private_key" -in "$tmp_cipher" -out "$tmp_plain" \
   -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256 -pkeyopt rsa_mgf1_md:sha256 >/dev/null 2>&1
 [[ -s "$tmp_plain" ]] || { echo "decrypt failed" >&2; exit 25; }
+
+if [[ "$mode" == semantic-saved-native-forward-to-contact ]]; then
+  sequence="$(python3 - "$release/manifest.json" <<'PY'
+import json,sys
+print(int(json.load(open(sys.argv[1],encoding='utf-8')).get('sequence',0)))
+PY
+)"
+  [[ "$sequence" -ge 46 ]] || { echo "PCG_WEB_SAVED_FORWARD_RUNTIME=too-old" >&2; exit 57; }
+
+  source_commit="$(tr -d '\r\n' < "$release/source-commit")"
+  [[ "$source_commit" =~ ^[0-9a-f]{40}$ ]] || { echo "PCG_WEB_SAVED_FORWARD_SOURCE=invalid" >&2; exit 57; }
+  repo_cache=/var/lib/capability-fabric/deploy/pcg/repo.git
+  [[ -d "$repo_cache" ]] || { echo "PCG_WEB_SAVED_FORWARD_SOURCE=cache-missing" >&2; exit 57; }
+  git --git-dir="$repo_cache" cat-file -e "$source_commit^{commit}"
+
+  target_plain="$tmp_plain"
+  chown 65534:65534 "$target_plain"
+  chmod 0400 "$target_plain"
+
+  work="$(mktemp -d "$run_root/.saved-forward-src.XXXXXX")"
+  cleanup_saved_forward() { rm -rf "$work"; }
+  trap 'cleanup_saved_forward; cleanup_files' EXIT
+  chmod 0755 "$work"
+  git --git-dir="$repo_cache" archive "$source_commit" src/capability_fabric | tar -x -C "$work"
+  chown -R 65534:65534 "$work"
+  find "$work" -type d -exec chmod 0755 {} +
+  find "$work" -type f -exec chmod 0644 {} +
+
+  image='python:3.12-slim-bookworm@sha256:392307d22300de8b5986851a12d9176dfc0fc073e65bf6523ebd7dcbeb23564e'
+  docker pull "$image" >/dev/null
+  docker run -i --rm --network none --user 65534:65534 \
+    -e PYTHONPATH=/src \
+    -v "$work/src:/src:ro" \
+    -v "$target_plain:/run/forward-request.json:ro" \
+    -v /var/lib/capability-fabric/pcg/core-state:/state:rw \
+    -v /var/lib/capability-fabric/pcg/run:/run/pcg:rw \
+    "$image" python - <<'PY'
+import json
+import socket
+import unicodedata
+
+from capability_fabric.communications_runtime import PrivatePayloadBroker
+from capability_fabric.domain import OutcomeState
+from capability_fabric.persistence import SqliteExecutionStateStore
+from capability_fabric.telegram_web_runtime import (
+    TelegramWebSocketClient,
+    TelegramWebUncertainEffectResolver,
+    build_telegram_web_kernel_runtime,
+)
+
+SOCK="/run/pcg/web.sock"
+
+def norm(value):
+    if not isinstance(value, str):
+        return ""
+    return " ".join(unicodedata.normalize("NFKC", value).strip().split())
+
+def norm_emoji(value):
+    return norm(value).replace("\ufe0f", "")
+
+def call(payload, timeout=75):
+    raw=(json.dumps(payload,separators=(",",":"),ensure_ascii=False)+"\n").encode("utf-8")
+    sock=socket.socket(socket.AF_UNIX,socket.SOCK_STREAM)
+    sock.settimeout(timeout)
+    sock.connect(SOCK)
+    sock.sendall(raw)
+    buf=b""
+    while b"\n" not in buf:
+        chunk=sock.recv(65536)
+        if not chunk:
+            break
+        buf+=chunk
+    sock.close()
+    if not buf:
+        raise SystemExit("empty Telegram Web response")
+    return json.loads(buf.split(b"\n",1)[0])
+
+def semantic(operation, args):
+    response=call({
+        "op":"semantic.invoke",
+        "operation":operation,
+        "purpose":"PROTECTED_DISPLAY",
+        "args":args,
+    })
+    if response.get("state")!="ACHIEVED":
+        raise SystemExit(operation+" did not achieve")
+    protected=response.get("protected_provider_data")
+    if not isinstance(protected,dict) or protected.get("model_visible") is not False:
+        raise SystemExit(operation+" protected payload contract invalid")
+    return response
+
+with open("/run/forward-request.json","r",encoding="utf-8") as stream:
+    request=json.load(stream)
+target_name=norm(request.get("target_name"))
+expected_like=norm_emoji(request.get("last_outgoing_text"))
+if not target_name or expected_like!="👍" or request.get("require_pinned") is not True:
+    raise SystemExit("forward target request invalid")
+
+searched=semantic("communication.conversation.search",{"query":target_name,"limit":50})
+search_items=searched["protected_provider_data"].get("conversations")
+if not isinstance(search_items,list):
+    raise SystemExit("conversation search payload invalid")
+candidates={}
+for item in search_items:
+    if (
+        isinstance(item,dict)
+        and item.get("type")=="user"
+        and norm(item.get("name"))==target_name
+        and isinstance(item.get("handle"),str)
+        and item["handle"].startswith("tgchat:")
+    ):
+        candidates[item["handle"]]=item
+if len(candidates)<2:
+    raise SystemExit("expected multiple exact-name target conversations were not found")
+
+listed=semantic("communication.conversation.list",{"limit":50})
+list_items=listed["protected_provider_data"].get("conversations")
+if not isinstance(list_items,list):
+    raise SystemExit("conversation list payload invalid")
+pinned_handles={
+    item.get("handle") for item in list_items
+    if isinstance(item,dict) and item.get("pinned") is True
+}
+
+qualified=[]
+for handle in candidates:
+    if handle not in pinned_handles:
+        continue
+    history=semantic("communication.message.list",{
+        "conversation_handle":handle,
+        "limit":50,
+    })
+    messages=history["protected_provider_data"].get("messages")
+    if not isinstance(messages,list):
+        continue
+    last_outgoing=next(
+        (
+            item for item in messages
+            if isinstance(item,dict)
+            and item.get("kind")=="message"
+            and item.get("outgoing") is True
+        ),
+        None,
+    )
+    if last_outgoing is not None and norm_emoji(last_outgoing.get("text"))==expected_like:
+        qualified.append(handle)
+
+qualified=list(dict.fromkeys(qualified))
+if len(qualified)!=1:
+    raise SystemExit("pinned exact-name target with thumbs-up discriminator was not unique")
+target_handle=qualified[0]
+
+client=TelegramWebSocketClient(SOCK, timeout=75.0)
+self_target=client.call({"op":"material.self_target"})
+source_conversation_handle=self_target.get("conversation_handle")
+if not isinstance(source_conversation_handle,str) or not source_conversation_handle.startswith("tgchat:"):
+    raise SystemExit("Saved Messages self target resolution failed")
+
+saved=semantic("communication.message.list",{
+    "conversation_handle":source_conversation_handle,
+    "limit":10,
+})
+saved_messages=saved["protected_provider_data"].get("messages")
+if not isinstance(saved_messages,list) or not saved_messages:
+    raise SystemExit("Saved Messages history is empty")
+source=saved_messages[0]
+if not isinstance(source,dict) or source.get("kind")!="message":
+    raise SystemExit("latest Saved Messages entry is not a message")
+source_message_handle=source.get("handle")
+if not isinstance(source_message_handle,str) or not source_message_handle.startswith("tgmsg:"):
+    raise SystemExit("latest Saved Messages message handle invalid")
+attachments=source.get("attachments")
+if not isinstance(attachments,list) or len(attachments)!=1 or not isinstance(attachments[0],dict):
+    raise SystemExit("latest Saved Messages entry is not a single-file message")
+attachment=attachments[0]
+mime=str(attachment.get("media_type") or "").lower()
+filename=str(attachment.get("filename") or "").lower()
+text_suffixes=(".txt",".text",".md",".csv",".json",".log")
+if not (mime.startswith("text/") or filename.endswith(text_suffixes)):
+    raise SystemExit("latest Saved Messages attachment is not recognized as a text file")
+
+state=SqliteExecutionStateStore("/state/web-material-send.sqlite3")
+payloads=PrivatePayloadBroker(
+    "/state/web-material-payloads",
+    ttl_seconds=86400,
+    max_payload_bytes=32*1024*1024,
+)
+try:
+    runtime=build_telegram_web_kernel_runtime(
+        client=client,
+        payloads=payloads,
+        state_store=state,
+        journal=state,
+    )
+    result=runtime.forward_native(
+        source_conversation_handle=source_conversation_handle,
+        source_message_handle=source_message_handle,
+        conversation_handle=target_handle,
+    )
+    if result.outcome.state is not OutcomeState.ACHIEVED:
+        raise SystemExit("native forward did not achieve")
+
+    resolver=TelegramWebUncertainEffectResolver(client,payloads)
+    observed=resolver.resolve(result.operation,result.attempt,result.dispatch)
+    if observed.state is not OutcomeState.ACHIEVED:
+        raise SystemExit("native forward authoritative readback failed")
+
+    durable=any(
+        item.get("kind")=="state.dispatch_intent.persisted"
+        and item.get("entity_id")==result.attempt.attempt_id
+        for item in state.event_records()
+    )
+    if not durable:
+        raise SystemExit("native forward durable dispatch intent missing")
+
+    print(json.dumps({
+        "state":"ACHIEVED",
+        "multiple_exact_name_candidates_seen":True,
+        "target_unique_after_pinned_and_last_outgoing_like":True,
+        "target_pinned":True,
+        "last_outgoing_thumbsup":True,
+        "saved_latest_message_selected":True,
+        "saved_latest_single_text_file":True,
+        "native_forward":True,
+        "download_performed":False,
+        "reattach_performed":False,
+        "provider_acknowledged":result.observation.ack_state.value=="ACKNOWLEDGED",
+        "provider_confirmed":result.observation.detail=="provider_confirmed",
+        "authoritative_forward_readback":True,
+        "provider_content_model_visible":False,
+    },separators=(",",":")))
+finally:
+    state.close()
+PY
+  : > "$tmp_plain"
+  printf 'PCG_WEB_SAVED_NATIVE_FORWARD=pass\n'
+  exit 0
+fi
 
 if [[ "$mode" == semantic-conversation-pin-pair ]]; then
   sequence="$(python3 - "$release/manifest.json" <<'PY'
