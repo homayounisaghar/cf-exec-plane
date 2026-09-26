@@ -23,7 +23,8 @@ if(e.apiVersion!=="v17"||e.observedApiVersion!=="v17"||e.apiVersionMatched!==tru
 console.log("CF_E9_MATE_REF_SOURCE_MICROVERSION="+String(b.sourceMicroversion||""));
 const targets=new Set(["FKzbp5AVTcxyATj","Fe6PsC3LkqmEwnQ","F4D5F3ieOBhi3l5","FsqvR1htqYMsjKK","FtXfdTAOwVHYRkf","Fdv6b8J1gRZg1kL","FGzVLhO3o6EnZLD","FhIxU9X8H7G4qaG","FuL4ZV2rBRVQvsV","Fk8Kk48kCKLiOQs","FFazcm9kW1blGWE","FXyNJA8fdequEuf","FCfP1Z5tQcoSupl_5","FNw2DaKskKXLYs2_5","F3SXsDSwe9zdg32_132"]);
 for(const [i,f] of (b.features||[]).entries()){
-  if(f.featureType==="mateConnector"||targets.has(f.featureId)){
+  const serialized=JSON.stringify(f.parameters||[]);
+  if(f.featureType==="mateConnector"||targets.has(f.featureId)||serialized.includes("FHTzF0N7ggWpsS6_5")){
     console.log("CF_E9_MATE_REF_FEATURE="+JSON.stringify({
       i,featureId:f.featureId,name:f.name,featureType:f.featureType,btType:f.btType,
       suppressed:f.suppressed,status:b?.featureStates?.[f.featureId]?.featureStatus||f.featureStatus||null,
