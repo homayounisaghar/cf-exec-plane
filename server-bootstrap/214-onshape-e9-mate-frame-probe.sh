@@ -19,7 +19,7 @@ const parse=r=>{
  if(!raw) throw new Error("empty");
  return JSON.parse(raw);
 };
-const invoke=async(operationId,args={})=>parse(await c.callTool({name:"onshape_fabric_invoke",arguments:{capability_id:"onshape.documented.operation",arguments:{operationId,...args}}));
+const invoke=async(operationId,args={})=>parse(await c.callTool({name:"onshape_fabric_invoke",arguments:{capability_id:"onshape.documented.operation",arguments:{operationId,...args}}}));
 const q='qBodyType(qCreatedBy(makeId("'+FID+'"), EntityType.BODY), BodyType.MATE_CONNECTOR)';
 for(const [label,script] of [
  ["COUNT",'function(context is Context, queries) { return size(evaluateQuery(context, '+q+')); }'],
