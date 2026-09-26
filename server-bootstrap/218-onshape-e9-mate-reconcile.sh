@@ -20,7 +20,7 @@ FROM invocations i
 LEFT JOIN operations o ON o.invocation_id=i.invocation_id
 LEFT JOIN attempts a ON a.operation_id=o.operation_id
 WHERE i.payload LIKE ? OR i.dispatch_payload LIKE ?
-ORDER BY rowid DESC LIMIT 12
+ORDER BY i.rowid DESC LIMIT 12
 """,("%"+did+"%","%"+did+"%")).fetchall()
 print("CF_E9_MATE_RECON_ROWS="+str(len(rows)))
 for r in rows:
