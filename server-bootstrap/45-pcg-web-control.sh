@@ -3125,21 +3125,39 @@ saved=semantic("communication.message.list",{
 saved_messages=saved["protected_provider_data"].get("messages")
 if not isinstance(saved_messages,list) or not saved_messages:
     raise SystemExit("Saved Messages history is empty")
-source=saved_messages[0]
-if not isinstance(source,dict) or source.get("kind")!="message":
-    raise SystemExit("latest Saved Messages entry is not a message")
+
+source=None
+attachment=None
+skipped_internal_canaries=0
+text_suffixes=(".txt",".text",".md",".csv",".json",".log")
+for candidate in saved_messages:
+    if not isinstance(candidate,dict) or candidate.get("kind")!="message":
+        raise SystemExit("newer Saved Messages entry is not an ordinary message")
+    candidate_attachments=candidate.get("attachments")
+    if isinstance(candidate_attachments,list) and len(candidate_attachments)==1 and isinstance(candidate_attachments[0],dict):
+        candidate_attachment=candidate_attachments[0]
+        mime=str(candidate_attachment.get("media_type") or "").lower()
+        filename=str(candidate_attachment.get("filename") or "").lower()
+        if mime.startswith("text/") or filename.endswith(text_suffixes):
+            source=candidate
+            attachment=candidate_attachment
+            break
+    candidate_text=candidate.get("text")
+    if (
+        candidate.get("outgoing") is True
+        and isinstance(candidate_text,str)
+        and candidate_text.startswith("pcg-forward-source-")
+        and not candidate_attachments
+    ):
+        skipped_internal_canaries += 1
+        continue
+    raise SystemExit("a newer non-canary Saved Messages entry exists; refusing to select an older file")
+
+if source is None or attachment is None:
+    raise SystemExit("no text-file source found after bounded internal-canary cleanup")
 source_message_handle=source.get("handle")
 if not isinstance(source_message_handle,str) or not source_message_handle.startswith("tgmsg:"):
-    raise SystemExit("latest Saved Messages message handle invalid")
-attachments=source.get("attachments")
-if not isinstance(attachments,list) or len(attachments)!=1 or not isinstance(attachments[0],dict):
-    raise SystemExit("latest Saved Messages entry is not a single-file message")
-attachment=attachments[0]
-mime=str(attachment.get("media_type") or "").lower()
-filename=str(attachment.get("filename") or "").lower()
-text_suffixes=(".txt",".text",".md",".csv",".json",".log")
-if not (mime.startswith("text/") or filename.endswith(text_suffixes)):
-    raise SystemExit("latest Saved Messages attachment is not recognized as a text file")
+    raise SystemExit("Saved Messages text-file message handle invalid")
 
 state=SqliteExecutionStateStore("/state/web-material-send.sqlite3")
 payloads=PrivatePayloadBroker(
@@ -3181,8 +3199,9 @@ try:
         "target_unique_after_pinned_and_last_outgoing_like":True,
         "target_pinned":True,
         "last_outgoing_thumbsup":True,
-        "saved_latest_message_selected":True,
-        "saved_latest_single_text_file":True,
+        "saved_source_selected_after_internal_canary_skip":True,
+        "internal_forward_canaries_skipped":skipped_internal_canaries,
+        "saved_latest_user_source_single_text_file":True,
         "native_forward":True,
         "download_performed":False,
         "reattach_performed":False,
