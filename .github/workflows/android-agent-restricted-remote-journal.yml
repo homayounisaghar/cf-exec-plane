@@ -1,0 +1,102 @@
+name: Personal Android Agent Restricted Remote Journal Readback
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'android-agent/control/remote-journal/*.request'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: personal-android-agent-remote-journal
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  read:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+
+      - id: req
+        name: Validate immutable journal request
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || exit 10
+          IFS=$'\t' read -r status path <<<"${changes[0]}"
+          [[ "$status" == A ]] || exit 11
+          [[ "$path" == android-agent/control/remote-journal/*.request ]] || exit 12
+          request_id="$(awk -F= '$1=="request_id"{print $2}' "$path" | tail -n1 | tr -d '[:space:]')"
+          pub_b64="$(awk -F= '$1=="pairing_public_key_spki_b64"{print substr($0,index($0,"=")+1)}' "$path" | tail -n1 | tr -d '[:space:]')"
+          [[ "$request_id" == "$(basename "$path" .request)" ]] || exit 13
+          [[ "$pub_b64" =~ ^[A-Za-z0-9+/=]{500,900}$ ]] || exit 14
+          echo "pairing_public_key_spki_b64=$pub_b64" >> "$GITHUB_OUTPUT"
+
+      - name: Fetch journal without logging it
+        env:
+          PAIRING_PUBLIC_KEY_SPKI_B64: ${{ steps.req.outputs.pairing_public_key_spki_b64 }}
+        run: |
+          set -euo pipefail
+          printf '::add-mask::%s\n' "$VPS_HOST"
+          printf '::add-mask::%s\n' "$VPS_SSH_USER"
+          key_file="$(mktemp "${RUNNER_TEMP}/cf-vps-key.XXXXXX")"
+          known_hosts="$(mktemp "${RUNNER_TEMP}/cf-known-hosts.XXXXXX")"
+          raw="$(mktemp "${RUNNER_TEMP}/paa-remote-journal.XXXXXX")"
+          cleanup() { rm -f "$key_file" "$known_hosts" "$raw" "$RUNNER_TEMP/paa-pairing-public.der" "$RUNNER_TEMP/paa-pairing-public.pem"; }
+          trap cleanup EXIT
+          umask 077
+          printf '%s\n' "$VPS_SSH_KEY" > "$key_file"
+          chmod 600 "$key_file"
+          host_key_line="${VPS_HOST_KEY//$'\r'/}"
+          read -r key_type key_data extra <<< "$host_key_line"
+          [[ "$key_type" == ssh-ed25519 && -n "$key_data" && -z "${extra:-}" ]]
+          port="${VPS_PORT:-22}"
+          printf '%s %s %s\n' "$VPS_HOST" "$key_type" "$key_data" > "$known_hosts"
+          printf '[%s]:%s %s %s\n' "$VPS_HOST" "$port" "$key_type" "$key_data" >> "$known_hosts"
+          ssh -i "$key_file" -p "$port" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$known_hosts"             "$VPS_SSH_USER@$VPS_HOST"             "journalctl -u capability-fabric-paa-remote.service --since '-20 minutes' --no-pager -o cat" > "$raw"
+          [[ -s "$raw" ]]
+
+          printf '%s' "$PAIRING_PUBLIC_KEY_SPKI_B64" | base64 -d > "$RUNNER_TEMP/paa-pairing-public.der"
+          openssl pkey -pubin -inform DER -in "$RUNNER_TEMP/paa-pairing-public.der" -out "$RUNNER_TEMP/paa-pairing-public.pem" >/dev/null 2>&1
+          mkdir -p "$RUNNER_TEMP/paa-remote-journal-artifact"
+          RAW="$raw" OUT="$RUNNER_TEMP/paa-remote-journal-artifact/journal-envelope.json" PUB="$RUNNER_TEMP/paa-pairing-public.pem" node <<'NODE'
+          const fs=require('fs'), crypto=require('crypto');
+          const raw=fs.readFileSync(process.env.RAW);
+          const key=crypto.randomBytes(32), nonce=crypto.randomBytes(12);
+          const cipher=crypto.createCipheriv('aes-256-gcm',key,nonce);
+          const ct=Buffer.concat([cipher.update(raw),cipher.final(),cipher.getAuthTag()]);
+          const pub=fs.readFileSync(process.env.PUB);
+          const wrapped=crypto.publicEncrypt({key:pub,oaepHash:'sha256'},key);
+          fs.writeFileSync(process.env.OUT, JSON.stringify({
+            schema:'paa.remote-journal-envelope.v1',
+            wrapped_key_b64:wrapped.toString('base64'),
+            nonce_b64:nonce.toString('base64'),
+            ciphertext_b64:ct.toString('base64')
+          }));
+          NODE
+
+      - name: Upload encrypted journal artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: paa-restricted-remote-journal
+          path: ${{ runner.temp }}/paa-remote-journal-artifact/journal-envelope.json
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
