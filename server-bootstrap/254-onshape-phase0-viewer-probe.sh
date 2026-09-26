@@ -51,7 +51,16 @@ try{
    arr.push([[-Date.now()],{},r=>{req=r}]); if(arr.length>before)arr.splice(before);
    const V=req?.(74266)?.jM; if(typeof V!=="function") return null;
    const names=["setUISelection","setHoveredSelection","getActiveElementViewerState","getSelectionFitBounds","retrieveSelectionPosition","doPick","doPreHighlightPick","pick"];
-   return Object.fromEntries(names.map(n=>[n,typeof V.prototype[n]==="function"?String(V.prototype[n]).slice(0,12000):null]));
+   const methods=Object.fromEntries(names.map(n=>[n,typeof V.prototype[n]==="function"?String(V.prototype[n]).slice(0,12000):null]));
+   let factory=null;
+   for(const entry of arr){const map=entry?.[1];if(map&&typeof map==="object"&&typeof map[74266]==="function"){factory=map[74266];break;}}
+   let factorySource=""; try{factorySource=factory?String(factory):""}catch{}
+   const di=factorySource.indexOf("doPick(");
+   return {
+     methods,
+     factory_prefix:factorySource.slice(0,9000),
+     factory_around_do_pick:di>=0?factorySource.slice(Math.max(0,di-5000),Math.min(factorySource.length,di+3000)):""
+   };
  })()`);
  console.log("CF_PHASE0_VIEWPROBE_METHOD_SOURCE="+JSON.stringify(source));
  const inspect=await viewer({op:"inspect"});
