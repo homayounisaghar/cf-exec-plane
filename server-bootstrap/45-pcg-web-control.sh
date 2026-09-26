@@ -809,6 +809,11 @@ m=json.load(open(sys.argv[1],encoding='utf-8'))
 print(f"PCG_WEB_ACTIVE_SEQUENCE={int(m.get('sequence',0))}")
 print(f"PCG_WEB_ACTIVE_RELEASE={m.get('release_id','UNKNOWN')}")
 PY
+  [[ -s "$release/source-commit" ]] && printf 'PCG_WEB_ACTIVE_SOURCE_COMMIT=%s\n' "$(tr -d '\r\n' < "$release/source-commit")"
+  [[ -s "$release/pcg_web_send.mjs" ]] && printf 'PCG_WEB_RELEASE_SEND_SHA256=%s\n' "$(sha256sum "$release/pcg_web_send.mjs" | awk '{print $1}')"
+  if docker inspect capability-fabric-pcg-web >/dev/null 2>&1; then
+    printf 'PCG_WEB_CONTAINER_SEND_SHA256=%s\n' "$(docker exec capability-fabric-pcg-web sha256sum /tmp/pcg-web-app/pcg_web_send.mjs 2>/dev/null | awk '{print $1}')"
+  fi
   socket_simple health
   exit 0
 fi
