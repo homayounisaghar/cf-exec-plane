@@ -129,10 +129,13 @@ try{
     out.push({
       name:q.name,world:q.world,projection:p,screen:xy,
       status:v?.probe?.status||null,
+      selection_manager:hoverScan?.selection_manager||null,
+      model_selection:hoverScan?.model_selection||null,
       edge_heap:hoverScan?.selection_scan?.edges||null,
       picks:(v?.probe?.picks||[]).map(x=>({
         deterministic_id:x.deterministic_id,id:x.id,occurrence_id:x.occurrence_id,primitive_id:x.primitive_id,
-        getters:x.getters,entity_metadata:x.entity_metadata
+        getters:x.getters,ui_selection:x.ui_selection||null,
+        occurrence:x.occurrence||null,body_metadata:x.body_metadata||null,entity_metadata:x.entity_metadata||null
       }))
     });
   }
