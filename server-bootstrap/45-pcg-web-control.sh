@@ -3173,12 +3173,17 @@ payloads=PrivatePayloadBroker(
 )
 try:
     reconciled_internal_canaries=0
-    recent_self=semantic("communication.message.list",{
+    recent_self_a=semantic("communication.message.list",{
         "conversation_handle":source_conversation_handle,
         "limit":100,
     })
-    recent_self_messages=recent_self["protected_provider_data"].get("messages")
-    if not isinstance(recent_self_messages,list):
+    recent_self_b=semantic("communication.message.list",{
+        "conversation_handle":source_conversation_handle,
+        "limit":100,
+    })
+    recent_self_messages_a=recent_self_a["protected_provider_data"].get("messages")
+    recent_self_messages_b=recent_self_b["protected_provider_data"].get("messages")
+    if not isinstance(recent_self_messages_a,list) or not isinstance(recent_self_messages_b,list):
         raise SystemExit("Saved Messages reconciliation history invalid")
 
     for case in tuple(state.recoverable()):
@@ -3204,19 +3209,31 @@ try:
             continue
         if not canary_text.startswith("pcg-forward-source-"):
             continue
-        matches=[
-            item for item in recent_self_messages
-            if isinstance(item,dict)
-            and item.get("kind")=="message"
-            and item.get("outgoing") is True
-            and item.get("text")==canary_text
-        ]
-        if len(matches)!=1:
+        def matching(items):
+            return [
+                item for item in items
+                if isinstance(item,dict)
+                and item.get("kind")=="message"
+                and item.get("outgoing") is True
+                and item.get("text")==canary_text
+            ]
+        matches_a=matching(recent_self_messages_a)
+        matches_b=matching(recent_self_messages_b)
+        if len(matches_a)==1 and len(matches_b)==1 and matches_a[0].get("handle")==matches_b[0].get("handle"):
+            canary_outcome=Outcome(
+                operation.operation_id,
+                OutcomeState.ACHIEVED,
+                "exact internal canary observed consistently in Saved Messages",
+            )
+        elif len(matches_a)==0 and len(matches_b)==0:
+            canary_outcome=Outcome(
+                operation.operation_id,
+                OutcomeState.FAILED,
+                "exact internal canary absent from two bounded authoritative Saved Messages readbacks",
+            )
+        else:
             raise SystemExit("internal forward canary remains ambiguous; refusing new effect")
-        state.record_outcome(
-            operation,
-            Outcome(operation.operation_id, OutcomeState.ACHIEVED, "exact internal canary observed in Saved Messages"),
-        )
+        state.record_outcome(operation, canary_outcome)
         try:
             payloads.remove(payload_handle)
         except Exception:
