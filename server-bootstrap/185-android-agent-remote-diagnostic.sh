@@ -17,10 +17,9 @@ if [[ -s "$config" ]]; then
   printf 'CONFIG_OWNER_MODE=%s\n' "$(stat -c '%U:%G:%a' "$config")"
 else
   printf 'CONFIG_PRESENT=no\n'
-  printf 'CF_PAA_RDC_DIAG_END\n'
-  exit 0
 fi
 
+if [[ -s "$config" ]]; then
 python3 - "$config" <<'PY'
 import base64, hashlib, json, sys
 p=sys.argv[1]
@@ -44,10 +43,12 @@ print("SESSION_SUB="+sub)
 print("SESSION_EMAIL_SHA256="+(hashlib.sha256(email.lower().encode()).hexdigest() if email else ""))
 print("SESSION_HAS_REFRESH_TOKEN="+("yes" if session.get("refresh_token") else "no"))
 PY
+fi
 
 tmp_info="$(mktemp)"
 tmp_rows="$(mktemp)"
 trap 'rm -f "$tmp_info" "$tmp_rows"' EXIT
+if [[ -s "$config" ]]; then
 curl --fail --silent --show-error --max-time 15 https://mcp.desktopcommander.app/api/mcp-info > "$tmp_info"
 
 python3 - "$config" "$tmp_info" > /tmp/paa-rdc-query.env <<'PY'
@@ -81,9 +82,15 @@ if rows:
     if isinstance(caps,dict):
         print("BACKEND_TRANSPORT_BROADCAST_V1="+str(bool(caps.get("transport_broadcast_v1"))).lower())
 PY
+fi
 
 journal="$(journalctl -u "$service" --since '-30 minutes' --no-pager -o cat 2>/dev/null || true)"
-for marker in   'Device verified'   'Device ID assigned'   'Session restored'   'Device ready'   'Device registered, but NOT reachable'   'Channel subscribed'   'Realtime channel is not open'   'Device not found'   'Persisted device'   'Remote session expired'; do
+for marker in   'Device verified'   'Device ID assigned'   'Session restored'   'Device ready'   'Device registered, but NOT reachable'   'Channel subscribed'   'Realtime channel is not open'   'Device not found'   'Persisted device'   'Remote session expired' \
+  'Failed to save config' \
+  'Authorization failed' \
+  'authorization timeout' \
+  'Persisted session invalid' \
+  'Device code received'; do
   key="$(printf '%s' "$marker" | tr '[:lower:] ' '[:upper:]_' | tr -cd 'A-Z0-9_')"
   if grep -Fq "$marker" <<<"$journal"; then
     printf 'JOURNAL_%s=yes\n' "$key"
