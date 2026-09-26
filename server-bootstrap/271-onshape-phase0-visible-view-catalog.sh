@@ -124,13 +124,28 @@ try{
   if(st?.auth?.state!=="PROVEN"||st?.auth?.http_status!==200)throw new Error("auth");
   console.log("CF_PHASE0_VIEWCAT_AUTH=PROVEN");
 
-  const anchor=await viewer({op:"probe",x_fraction:.52,y_fraction:.50});
-  const anchorFace=(anchor?.probe?.picks||[]).find(x=>x?.deterministic_id==="JHK");
+  const pre=await viewer({op:"inspect"});
+  const baselineSig=selSig(pre);
+  await input("BOOTSTRAP_ISO",keySteps(["Shift+7","f"]));
+  const bootstrapPoints=[
+    {x_fraction:.50,y_fraction:.50},
+    {x_fraction:.52,y_fraction:.50},
+    {x_fraction:.48,y_fraction:.50}
+  ];
+  let anchor=null,anchorFace=null;
+  const bootstrapProbes=[];
+  for(const p of bootstrapPoints){
+    const v=await viewer({op:"probe",...p});
+    if(selSig(v)!==baselineSig)throw new Error("bootstrap probe changed selection");
+    const hit=(v?.probe?.picks||[]).find(x=>x?.deterministic_id==="JHK")||null;
+    bootstrapProbes.push({point:p,status:v?.probe?.status||null,hit_ids:(v?.probe?.picks||[]).map(x=>x?.deterministic_id||null)});
+    if(hit){anchor=v;anchorFace=hit;break;}
+  }
+  console.log("CF_PHASE0_VIEWCAT_BOOTSTRAP="+JSON.stringify(bootstrapProbes));
   const flat=anchorFace?.entity_metadata?.meshIncrement?.points;
-  if(!anchorFace||!Array.isArray(flat)||flat.length<18)throw new Error("qualified JHK anchor/world mesh absent at preflight");
+  if(!anchorFace||!Array.isArray(flat)||flat.length<18)throw new Error("qualified JHK anchor/world mesh absent after bounded isometric bootstrap");
   const world=triples(flat);
   if(world.length<6)throw new Error("JHK world mesh insufficient");
-  const baselineSig=selSig(anchor);
   const faceAnchors=[
     {name:"mean_first_6",world:mean(world.slice(0,6))},
     {name:"mean_first_4",world:mean(world.slice(0,4))},
