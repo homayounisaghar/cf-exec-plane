@@ -168,9 +168,18 @@ try{
       if(item?.setting_index!==3||!Array.isArray(item?.own?.points))continue;
       const pts=triples(item.own.points);if(pts.length<2)continue;
       const g=desc(pts,vd);if(!g)continue;
-      const seeds=kind==="FACE"?[mean(pts)]:[mean(pts),lerp(pts[0],pts[pts.length-1],.25),lerp(pts[0],pts[pts.length-1],.5)];
+      const faceSeeds=[mean(pts)];
+      if(kind==="FACE"){
+        const ix=Array.isArray(item?.own?.indices)?item.own.indices.map(Number):[];
+        for(let k=0;k+2<ix.length&&faceSeeds.length<6;k+=3){
+          const a=pts[ix[k]],b=pts[ix[k+1]],cc=pts[ix[k+2]];
+          if(a&&b&&cc)faceSeeds.push(mean([a,b,cc]));
+        }
+        for(let k=0;k+2<pts.length&&faceSeeds.length<6;k+=3)faceSeeds.push(mean([pts[k],pts[k+1],pts[k+2]]));
+      }
+      const seeds=kind==="FACE"?faceSeeds:[mean(pts),lerp(pts[0],pts[pts.length-1],.25),lerp(pts[0],pts[pts.length-1],.5)];
       let mapped=null;
-      for(const world of seeds.slice(0,3)){
+      for(const world of seeds.slice(0,6)){
         const p=project(world,vd);if(!inside(p))continue;
         const v=await viewer({op:"probe",x_fraction:p.x,y_fraction:p.y});
         if(selSig(v)!==baselineSig)throw new Error("read-only corpus probe changed selection");
@@ -196,6 +205,9 @@ try{
 
   const faces=await mapEntities("FACE",scan?.selection_scan?.faces?.active||[]);
   const edges=await mapEntities("EDGE",scan?.selection_scan?.edges?.active||[]);
+  console.log("CF_PHASE0_CORPUS_MAPPED_COUNTS="+JSON.stringify({faces:faces.length,edges:edges.length}));
+  console.log("CF_PHASE0_CORPUS_FACE_CANDIDATES_PRECHECK="+JSON.stringify(faces));
+  console.log("CF_PHASE0_CORPUS_EDGE_CANDIDATES_PRECHECK="+JSON.stringify(edges));
   if(faces.length<2)throw new Error("fewer than 2 semantic Face candidates mapped");
   if(edges.length<2)throw new Error("fewer than 2 semantic Edge candidates mapped");
   const faceCandidates=faces.slice(0,5);
