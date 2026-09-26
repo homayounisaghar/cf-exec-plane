@@ -1184,6 +1184,7 @@ try:
         payloads=payloads,
         state_store=state,
         journal=state,
+        material_file_root="/run/pcg/material-files",
     )
     result = runtime.send_attachment(
         conversation_handle=conversation_handle,
@@ -1310,6 +1311,7 @@ try:
         payloads=payloads,
         state_store=state,
         journal=state,
+        material_file_root="/run/pcg/material-files",
     )
     result = runtime.reply_attachment(
         conversation_handle=conversation_handle,
@@ -1439,7 +1441,7 @@ state=SqliteExecutionStateStore("/state/web-material-send.sqlite3")
 payloads=PrivatePayloadBroker("/state/web-material-payloads",ttl_seconds=86400,max_payload_bytes=8*1024*1024)
 cleanup=[]
 try:
-    runtime=build_telegram_web_kernel_runtime(client=client,payloads=payloads,state_store=state,journal=state)
+    runtime=build_telegram_web_kernel_runtime(client=client,payloads=payloads,state_store=state,journal=state,material_file_root="/run/pcg/material-files")
     a=payloads.put_bytes(png_pixel(255,0,0))
     b=payloads.put_bytes(png_pixel(0,0,255))
     cleanup.extend([a.handle,b.handle])
@@ -1702,6 +1704,7 @@ try:
         payloads=payloads,
         state_store=state,
         journal=state,
+        material_file_root="/run/pcg/material-files",
     )
 
     suffix = str(uuid4())
