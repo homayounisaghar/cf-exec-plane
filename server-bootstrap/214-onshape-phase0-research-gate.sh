@@ -3,7 +3,7 @@ set -euo pipefail
 umask 077
 [[ "$(id -u)" -eq 0 ]] || { echo "must run as uid 0" >&2; exit 2; }
 
-candidate_commit="dbb08f8257b4e72e31e203497fa135acdeda5e5b"
+candidate_commit="f109f93befbaa1a8de90396d532abc401d3f92bd"
 cache=/var/lib/capability-fabric/repo.git
 token=/etc/capability-fabric/secrets/repo-read-token
 home=/var/lib/capability-fabric/agent-home
@@ -37,6 +37,7 @@ cd "$tmp/repo"
 for path in \
   pyproject.toml \
   server-deploy/current/server.js \
+  server-deploy/current/browser-native.js \
   server-deploy/current/runtime-mode.js \
   server-deploy/current/runtime-mode.test.mjs \
   server-deploy/current/fabric-agent.js \
@@ -56,7 +57,9 @@ grep -Fq 'CF_RESEARCH_SURFACE_ID' server-deploy/current/server.js
 grep -Fq 'RESEARCH_FIXTURE_MISMATCH' server-deploy/current/server.js
 grep -Fq 'PHASE0_RESEARCH_PORTS' server-deploy/current/runtime-mode.js
 grep -Fq 'apiBasePath' server-deploy/current/server.js
-grep -Fq '"network.snapshot", "websocket.snapshot"' server-deploy/current/server.js
+grep -Fq '"network.snapshot", "websocket.snapshot", "runtime.query_objects"' server-deploy/current/server.js
+grep -Fq '"runtime.query_objects"' server-deploy/current/browser-native.js
+grep -Fq 'async function queryRuntimeObjects' server-deploy/current/browser-native.js
 grep -Fq 'CF_FABRIC_AGENT_PORT: "8899"' server-deploy/research-phase0/compose.yaml
 grep -Fq 'port not in {8789, 8899}' src/capability_fabric/onshape_vps_transport.py
 
@@ -89,6 +92,7 @@ docker run --rm --network none \
   -v "$tmp/repo:/repo:rw" -w /repo \
   "$node_image" sh -ec '
     node --check server-deploy/current/server.js
+    node --check server-deploy/current/browser-native.js
     node --check server-deploy/current/runtime-mode.js
     node --check server-deploy/current/fabric-agent.js
     node --check server-deploy/current/session-pool.js
