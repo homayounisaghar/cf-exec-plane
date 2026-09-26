@@ -69,6 +69,8 @@ for c in capability-fabric-onshape-phase0-research capability-fabric-onshape-pha
   fi
 done
 
+mkdir -p "$root"
+chmod 0700 "$root"
 tmp="$(mktemp -d "$root/.activate.XXXXXX")"
 askpass="$tmp/askpass"
 cleanup(){ rm -rf "$tmp"; }
