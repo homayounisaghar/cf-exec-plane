@@ -352,15 +352,29 @@ for _ in $(seq 1 30); do
   fi
   sleep 1
 done
-jq -e '.schema=="personal-android-agent.ingest-health.v1" and .status=="ok"' /tmp/paa-ingest-health.json >/dev/null
-curl --fail --silent --show-error --max-time 10 https://cf-onshape.duckdns.org/paa/v1/health | jq -e '.status=="ok"' >/dev/null
+python3 - <<'PY'
+import json
+o=json.load(open("/tmp/paa-ingest-health.json",encoding="utf-8"))
+assert o.get("schema")=="personal-android-agent.ingest-health.v1"
+assert o.get("status")=="ok"
+PY
+curl --fail --silent --show-error --max-time 10 https://cf-onshape.duckdns.org/paa/v1/health > /tmp/paa-ingest-public-health.json
+python3 - <<'PY'
+import json
+o=json.load(open("/tmp/paa-ingest-public-health.json",encoding="utf-8"))
+assert o.get("status")=="ok"
+PY
 
 code="$(curl --silent --output /tmp/paa-ingest-negative.json --write-out '%{http_code}' \
   -H 'Content-Type: application/json' \
   --data '{"schema":"personal-android-agent.device-receipt.v1","key_id":"bad","payload_b64":"e30","signature_b64":"eA","public_key_spki_b64":"eA=="}' \
   https://cf-onshape.duckdns.org/paa/v1/receipt)"
 [[ "$code" == "401" ]]
-jq -e '.ok==false' /tmp/paa-ingest-negative.json >/dev/null
+python3 - <<'PY'
+import json
+o=json.load(open("/tmp/paa-ingest-negative.json",encoding="utf-8"))
+assert o.get("ok") is False
+PY
 
 stats="$(curl --fail --silent http://127.0.0.1:8792/local/v1/stats)"
 printf 'CF_PAA_INGEST_DEPLOY_BEGIN\n'
