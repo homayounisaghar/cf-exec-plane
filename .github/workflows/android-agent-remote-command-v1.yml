@@ -60,7 +60,7 @@ jobs:
           [[ "$candidate_commit" =~ ^[0-9a-f]{40}$ ]] || exit 15
           [[ "$request_path" == "projects/personal-android-agent/private/remote-requests/${request_id}.json" ]] || exit 16
           [[ "$request_sha256" =~ ^[0-9a-f]{64}$ ]] || exit 17
-          [[ "$device_binding_path" == "projects/personal-android-agent/private/device-binding-alpha7.json" ]] || exit 18
+          [[ "$device_binding_path" == "projects/personal-android-agent/private/device-binding-alpha10-line3.json" ]] || exit 18
           [[ "$issue_number" == "1" ]] || exit 19
 
           {
