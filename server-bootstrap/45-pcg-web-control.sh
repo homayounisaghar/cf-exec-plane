@@ -2999,6 +2999,7 @@ PY
     "$image" python - <<'PY'
 import json
 import socket
+import sqlite3
 import unicodedata
 
 from capability_fabric.communications_runtime import PrivatePayloadBroker
@@ -3118,46 +3119,51 @@ source_conversation_handle=self_target.get("conversation_handle")
 if not isinstance(source_conversation_handle,str) or not source_conversation_handle.startswith("tgchat:"):
     raise SystemExit("Saved Messages self target resolution failed")
 
-saved=semantic("communication.message.list",{
-    "conversation_handle":source_conversation_handle,
-    "limit":10,
-})
-saved_messages=saved["protected_provider_data"].get("messages")
-if not isinstance(saved_messages,list) or not saved_messages:
-    raise SystemExit("Saved Messages history is empty")
+db=sqlite3.connect("/state/web-material-send.sqlite3")
+try:
+    rows=db.execute(
+        "SELECT phase,payload FROM invocations WHERE phase='ROUTED' ORDER BY rowid DESC LIMIT 200"
+    ).fetchall()
+finally:
+    db.close()
 
-source=None
-attachment=None
-skipped_internal_canaries=0
-text_suffixes=(".txt",".text",".md",".csv",".json",".log")
-for candidate in saved_messages:
-    if not isinstance(candidate,dict) or candidate.get("kind")!="message":
-        raise SystemExit("newer Saved Messages entry is not an ordinary message")
-    candidate_attachments=candidate.get("attachments")
-    if isinstance(candidate_attachments,list) and len(candidate_attachments)==1 and isinstance(candidate_attachments[0],dict):
-        candidate_attachment=candidate_attachments[0]
-        mime=str(candidate_attachment.get("media_type") or "").lower()
-        filename=str(candidate_attachment.get("filename") or "").lower()
-        if mime.startswith("text/") or filename.endswith(text_suffixes):
-            source=candidate
-            attachment=candidate_attachment
-            break
-    candidate_text=candidate.get("text")
-    if (
-        candidate.get("outgoing") is True
-        and isinstance(candidate_text,str)
-        and candidate_text.startswith("pcg-forward-source-")
-        and not candidate_attachments
-    ):
-        skipped_internal_canaries += 1
+source_message_handle=None
+for phase,payload_raw in rows:
+    try:
+        invocation=json.loads(payload_raw)
+    except Exception:
         continue
-    raise SystemExit("a newer non-canary Saved Messages entry exists; refusing to select an older file")
+    args=invocation.get("arguments")
+    if (
+        invocation.get("effect")=="communication.message.forward-native"
+        and isinstance(args,dict)
+        and args.get("conversation_handle")==target_handle
+        and args.get("source_conversation_handle")==source_conversation_handle
+        and isinstance(args.get("source_message_handle"),str)
+        and args["source_message_handle"].startswith("tgmsg:")
+    ):
+        source_message_handle=args["source_message_handle"]
+        break
 
-if source is None or attachment is None:
-    raise SystemExit("no text-file source found after bounded internal-canary cleanup")
-source_message_handle=source.get("handle")
-if not isinstance(source_message_handle,str) or not source_message_handle.startswith("tgmsg:"):
-    raise SystemExit("Saved Messages text-file message handle invalid")
+if source_message_handle is None:
+    raise SystemExit("original pre-dispatch forward source invocation was not recoverable")
+
+fetched=semantic("communication.message.fetch",{
+    "conversation_handle":source_conversation_handle,
+    "message_handle":source_message_handle,
+})
+source=fetched["protected_provider_data"].get("message")
+if not isinstance(source,dict) or source.get("handle")!=source_message_handle:
+    raise SystemExit("recovered Saved source fetch mismatch")
+attachments=source.get("attachments")
+if not isinstance(attachments,list) or len(attachments)!=1 or not isinstance(attachments[0],dict):
+    raise SystemExit("recovered Saved source is not the original single-file message")
+attachment=attachments[0]
+mime=str(attachment.get("media_type") or "").lower()
+filename=str(attachment.get("filename") or "").lower()
+text_suffixes=(".txt",".text",".md",".csv",".json",".log")
+if not (mime.startswith("text/") or filename.endswith(text_suffixes)):
+    raise SystemExit("recovered Saved source is not the original recognized text file")
 
 state=SqliteExecutionStateStore("/state/web-material-send.sqlite3")
 payloads=PrivatePayloadBroker(
@@ -3199,9 +3205,8 @@ try:
         "target_unique_after_pinned_and_last_outgoing_like":True,
         "target_pinned":True,
         "last_outgoing_thumbsup":True,
-        "saved_source_selected_after_internal_canary_skip":True,
-        "internal_forward_canaries_skipped":skipped_internal_canaries,
-        "saved_latest_user_source_single_text_file":True,
+        "original_pre_dispatch_source_recovered":True,
+        "recovered_source_single_text_file":True,
         "native_forward":True,
         "download_performed":False,
         "reattach_performed":False,
