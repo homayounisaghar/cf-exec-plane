@@ -56,10 +56,20 @@ try{
    for(const entry of arr){const map=entry?.[1];if(map&&typeof map==="object"&&typeof map[74266]==="function"){factory=map[74266];break;}}
    let factorySource=""; try{factorySource=factory?String(factory):""}catch{}
    const di=factorySource.indexOf("doPick(");
+   const selectionModule=req?.(85367)||{};
+   const selectionExports={};
+   for(const [k,v] of Object.entries(selectionModule)){
+     selectionExports[k]={type:typeof v,name:v?.name||null,source:typeof v==="function"?String(v).slice(0,5000):null};
+   }
+   let selectionFactory=null;
+   for(const entry of arr){const map=entry?.[1];if(map&&typeof map==="object"&&typeof map[85367]==="function"){selectionFactory=map[85367];break;}}
+   let selectionFactorySource=""; try{selectionFactorySource=selectionFactory?String(selectionFactory):""}catch{}
    return {
      methods,
      factory_prefix:factorySource.slice(0,9000),
-     factory_around_do_pick:di>=0?factorySource.slice(Math.max(0,di-5000),Math.min(factorySource.length,di+3000)):""
+     factory_around_do_pick:di>=0?factorySource.slice(Math.max(0,di-5000),Math.min(factorySource.length,di+3000)):"",
+     selection_exports:selectionExports,
+     selection_factory_prefix:selectionFactorySource.slice(0,16000)
    };
  })()`);
  console.log("CF_PHASE0_VIEWPROBE_METHOD_SOURCE="+JSON.stringify(source));
