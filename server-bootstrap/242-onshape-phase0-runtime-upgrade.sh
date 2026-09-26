@@ -2,8 +2,8 @@
 set -euo pipefail
 umask 077
 [[ "$(id -u)" -eq 0 ]] || exit 2
-candidate="a8662707e1dc32a68d6665d6ec98bbe113e3b750"
-old_candidate="16df8b8b56eac5fb109acb3716a2dbb12d789e1b"
+candidate="c0cadee962c2059ba939c40c6bb9adf1bc99edfe"
+old_candidate="a8662707e1dc32a68d6665d6ec98bbe113e3b750"
 fixture="a19e0fa5152af9f7ce106b6e:e5e7d0173fd1f1d0307a2cb6:e0929361aadb6135b5cecffa"
 control=/var/lib/capability-fabric/onshape/runtime-control/ONSHAPE_RUNTIME_CONTROL.json
 root=/var/lib/capability-fabric/onshape-research-phase0
