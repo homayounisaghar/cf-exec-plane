@@ -1236,6 +1236,139 @@ PY
   exit 0
 fi
 
+if [[ "$mode" == material-forward-canary ]]; then
+  sequence="$(python3 - "$release/manifest.json" <<'PY'
+import json,sys
+print(int(json.load(open(sys.argv[1],encoding='utf-8')).get('sequence',0)))
+PY
+)"
+  [[ "$sequence" -ge 36 ]] || { echo "PCG_WEB_MATERIAL_FORWARD_RUNTIME=too-old" >&2; exit 46; }
+
+  source_commit="$(tr -d '\r\n' < "$release/source-commit")"
+  [[ "$source_commit" =~ ^[0-9a-f]{40}$ ]] || { echo "PCG_WEB_MATERIAL_FORWARD_SOURCE=invalid" >&2; exit 46; }
+  repo_cache=/var/lib/capability-fabric/deploy/pcg/repo.git
+  [[ -d "$repo_cache" ]] || { echo "PCG_WEB_MATERIAL_FORWARD_SOURCE=cache-missing" >&2; exit 46; }
+  git --git-dir="$repo_cache" cat-file -e "$source_commit^{commit}"
+
+  work="$(mktemp -d "$run_root/.material-forward-src.XXXXXX")"
+  cleanup_material_forward() { rm -rf "$work"; }
+  trap cleanup_material_forward EXIT
+  chmod 0755 "$work"
+  git --git-dir="$repo_cache" archive "$source_commit" src/capability_fabric | tar -x -C "$work"
+  chown -R 65534:65534 "$work"
+  find "$work" -type d -exec chmod 0755 {} +
+  find "$work" -type f -exec chmod 0644 {} +
+
+  image='python:3.12-slim-bookworm@sha256:392307d22300de8b5986851a12d9176dfc0fc073e65bf6523ebd7dcbeb23564e'
+  docker pull "$image" >/dev/null
+  docker run --rm --network none --user 65534:65534 \
+    -e PYTHONPATH=/src \
+    -v "$work/src:/src:ro" \
+    -v /var/lib/capability-fabric/pcg/core-state:/state:rw \
+    -v /var/lib/capability-fabric/pcg/run:/run/pcg:rw \
+    "$image" python - <<'PY'
+import json
+from uuid import uuid4
+
+from capability_fabric.communications_runtime import PrivatePayloadBroker
+from capability_fabric.domain import OutcomeState
+from capability_fabric.persistence import SqliteExecutionStateStore
+from capability_fabric.telegram_web_runtime import (
+    TelegramWebSocketClient,
+    TelegramWebUncertainEffectResolver,
+    build_telegram_web_kernel_runtime,
+)
+
+client = TelegramWebSocketClient("/run/pcg/web.sock", timeout=45.0)
+self_target = client.call({"op": "material.self_target"})
+conversation_handle = self_target.get("conversation_handle")
+if not isinstance(conversation_handle, str) or not conversation_handle.startswith("tgchat:"):
+    raise SystemExit("self forward conversation resolution failed")
+
+state = SqliteExecutionStateStore("/state/web-material-send.sqlite3")
+payloads = PrivatePayloadBroker(
+    "/state/web-material-payloads",
+    ttl_seconds=86400,
+    max_payload_bytes=8192,
+)
+try:
+    runtime = build_telegram_web_kernel_runtime(
+        client=client,
+        payloads=payloads,
+        state_store=state,
+        journal=state,
+    )
+
+    canary_text = "pcg-forward-source-" + str(uuid4())
+    source = runtime.send_text(
+        conversation_handle=conversation_handle,
+        text=canary_text,
+    )
+    if source.outcome.state is not OutcomeState.ACHIEVED:
+        raise SystemExit("forward source send did not achieve")
+    source_payload = str(source.dispatch.evidence["payload.handle"])
+    payloads.remove(source_payload)
+
+    target = client.call({
+        "op": "material.self_forward_target",
+        "expected_text": canary_text,
+    })
+    source_conversation_handle = target.get("source_conversation_handle")
+    source_message_handle = target.get("source_message_handle")
+    target_conversation_handle = target.get("conversation_handle")
+    if source_conversation_handle != conversation_handle or target_conversation_handle != conversation_handle:
+        raise SystemExit("self forward conversation correlation mismatch")
+    if not isinstance(source_message_handle, str) or not source_message_handle.startswith("tgmsg:"):
+        raise SystemExit("self forward source resolution failed")
+
+    result = runtime.forward_native(
+        source_conversation_handle=source_conversation_handle,
+        source_message_handle=source_message_handle,
+        conversation_handle=target_conversation_handle,
+    )
+    if result.outcome.state is not OutcomeState.ACHIEVED:
+        raise SystemExit("material native forward did not achieve")
+    if result.dispatch.evidence.get("telegram_web.source_conversation_handle") != source_conversation_handle:
+        raise SystemExit("native forward source conversation correlation mismatch")
+    if result.dispatch.evidence.get("telegram_web.source_message_handle") != source_message_handle:
+        raise SystemExit("native forward source message correlation mismatch")
+    if result.dispatch.evidence.get("telegram_web.conversation_handle") != target_conversation_handle:
+        raise SystemExit("native forward target correlation mismatch")
+
+    resolver = TelegramWebUncertainEffectResolver(client, payloads)
+    observed = resolver.resolve(result.operation, result.attempt, result.dispatch)
+    if observed.state is not OutcomeState.ACHIEVED:
+        raise SystemExit("material native forward authoritative readback failed")
+
+    events = state.event_records()
+    durable_intent = any(
+        item.get("kind") == "state.dispatch_intent.persisted"
+        and item.get("entity_id") == result.attempt.attempt_id
+        for item in events
+    )
+    if not durable_intent:
+        raise SystemExit("durable native-forward dispatch intent missing")
+
+    safe = {
+        "state": "ACHIEVED",
+        "source_target_opaque": True,
+        "destination_target_opaque": True,
+        "native_forward": True,
+        "kernel_dispatch_intent": True,
+        "provider_acknowledged": result.observation.ack_state.value == "ACKNOWLEDGED",
+        "provider_confirmed": result.observation.detail == "provider_confirmed",
+        "authoritative_forward_readback": True,
+        "reconciliation_readback": "ACHIEVED",
+        "provider_content_model_visible": False,
+    }
+    print(json.dumps(safe, separators=(",", ":")))
+finally:
+    state.close()
+PY
+  printf 'PCG_WEB_MATERIAL_FORWARD_CANARY=pass\n'
+  exit 0
+fi
+
 if [[ "$mode" == material-delete-canary ]]; then
   sequence="$(python3 - "$release/manifest.json" <<'PY'
 import json,sys
