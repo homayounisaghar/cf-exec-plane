@@ -2,9 +2,9 @@
 set -euo pipefail
 umask 077
 
-candidate_commit="ae9bc114d84cfd7991cbdd38489b18d33a2d34bf"
+candidate_commit="d882fa763b3a55be5a18d6e196d028ff4f77ea07"
 fixture="a19e0fa5152af9f7ce106b6e:e5e7d0173fd1f1d0307a2cb6:e0929361aadb6135b5cecffa"
-expected_control_blob="7c03d59b613a7c91249f4c56efd045e1ed13a8dc"
+expected_control_blob="1b9c248d8b57385a86c5c157bf99ef4f1f6928ce"
 control=/var/lib/capability-fabric/onshape/runtime-control/ONSHAPE_RUNTIME_CONTROL.json
 prod_gate=/var/lib/capability-fabric/state/release-in-progress
 research=capability-fabric-onshape-phase0-research
@@ -29,6 +29,9 @@ grep -Fxq "CF_RESEARCH_FIXTURE_TARGET=$fixture" <<<"$env_dump"
 grep -Fxq 'CF_PUBLIC_SURFACE=shadow' <<<"$env_dump"
 grep -Fxq 'CF_FABRIC_REQUIRE_PRODUCTION_AUTHORITY=0' <<<"$env_dump"
 grep -Fxq 'CF_PRIVILEGED_NATIVE_ENABLED=1' <<<"$env_dump"
+side_env="$(docker inspect -f '{{range .Config.Env}}{{println .}}{{end}}' "$sidecar")"
+grep -Fxq 'CF_FABRIC_AGENT_PORT=8899' <<<"$side_env"
+grep -Fxq 'CF_FABRIC_REQUIRE_PRODUCTION_AUTHORITY=0' <<<"$side_env"
 echo CF_PHASE0_VERIFY_RUNTIME_BINDING=pass
 
 for p in 8898 8899 8901; do
