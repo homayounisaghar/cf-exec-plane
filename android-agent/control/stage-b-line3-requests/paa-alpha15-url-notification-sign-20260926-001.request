@@ -1,0 +1,7 @@
+request_id=paa-alpha15-url-notification-sign-20260926-001
+candidate_commit=3abcac6d7f1e60beb9f7aaefdd847331e2cdfe62
+stage_a_run_id=36233297617
+stage_a_artifact_id=10903745811
+unsigned_sha256=7a3bcd254ffc7273cf342ec56c4083e69985ca8424f6329599e16bc1364aa44a
+version_code=15
+version_name=0.1.0-alpha15
