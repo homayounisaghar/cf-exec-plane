@@ -247,6 +247,7 @@ try{
     cases
   };
   console.log("CF_PHASE0_ADJCORPUS_JSON="+JSON.stringify(corpus));
+  console.log("CF_PHASE0_ADJCORPUS_B64="+Buffer.from(JSON.stringify(corpus),"utf8").toString("base64"));
   console.log("CF_PHASE0_ADJCORPUS_SELECTION_UNCHANGED=pass");
   console.log("CF_PHASE0_ADJCORPUS=pass");
 } finally { await c.close().catch(()=>{}); }
