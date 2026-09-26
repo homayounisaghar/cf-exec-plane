@@ -3,7 +3,7 @@ set -euo pipefail
 umask 077
 [[ "$(id -u)" -eq 0 ]] || { echo "must run as uid 0" >&2; exit 2; }
 
-candidate_commit="062f3586bfa4048d97b0a295f934996d666b11fe"
+candidate_commit="01f0feb7ae97db4e34d00da0bc9734519ef74322"
 cache=/var/lib/capability-fabric/repo.git
 token=/etc/capability-fabric/secrets/repo-read-token
 home=/var/lib/capability-fabric/agent-home
@@ -61,6 +61,9 @@ grep -Fq '"network.snapshot", "websocket.snapshot", "runtime.query_objects"' ser
 grep -Fq '"runtime.query_objects"' server-deploy/current/browser-native.js
 grep -Fq '"runtime.viewer"' server-deploy/current/browser-native.js
 grep -Fq 'async function queryViewerRuntime' server-deploy/current/browser-native.js
+grep -Fq 'selection_scan' server-deploy/current/browser-native.js
+grep -Fq 'getEntityType?.()' server-deploy/current/browser-native.js
+grep -Fq 'getSelection?.()' server-deploy/current/browser-native.js
 grep -Fq '"runtime.query_objects", "runtime.viewer", "downloads.snapshot"' server-deploy/current/server.js
 echo CF_PHASE0_VIEWER_SCHEMA=pass
 grep -Fq '"runtime.query_objects"' src/capability_fabric/onshape_vps.py
