@@ -49,7 +49,9 @@ do
   [[ -s "$path" ]] || { echo "missing candidate path: $path" >&2; exit 22; }
 done
 
-grep -Fq 'const BUILD_ID = "onshape-vps-hardened-r8";' server-deploy/current/server.js
+grep -Fq ': "onshape-vps-hardened-r8";' server-deploy/current/server.js
+grep -Fq 'onshape-phase0-${RESEARCH_SOURCE_COMMIT.slice(0, 12)}' server-deploy/current/server.js
+grep -Fq 'Phase 0 research runtime requires exact CF_RESEARCH_SOURCE_COMMIT' server-deploy/current/server.js
 grep -Fq 'CF_RESEARCH_SURFACE_ID' server-deploy/current/server.js
 grep -Fq 'RESEARCH_FIXTURE_MISMATCH' server-deploy/current/server.js
 grep -Fq 'PHASE0_RESEARCH_PORTS' server-deploy/current/runtime-mode.js
