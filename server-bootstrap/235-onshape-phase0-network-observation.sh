@@ -95,7 +95,8 @@ try{
   if(status.build_id!=="onshape-phase0-"+candidate.slice(0,12)) throw new Error("build mismatch");
   console.log("CF_PHASE0_NETOBS_AUTH=pass");
 
-  await native("wait.selector",{selector:"canvas#canvas",state:"visible",timeout_ms:30000});\n  const meta=await native("page.evaluate",{expression:String.raw`(() => {const c=document.querySelector("canvas#canvas"),r=c?.getBoundingClientRect();return r?{x:r.x,y:r.y,w:r.width,h:r.height,view:c.getAttribute("data-view-shown")}:null})()`});
+  await native("wait.selector",{selector:"canvas#canvas",state:"visible",timeout_ms:30000});
+  const meta=await native("page.evaluate",{expression:String.raw`(() => {const c=document.querySelector("canvas#canvas"),r=c?.getBoundingClientRect();return r?{x:r.x,y:r.y,w:r.width,h:r.height,view:c.getAttribute("data-view-shown")}:null})()`});
   const cv=meta.value;
   if(!cv) throw new Error("canvas missing");
   const points=[
