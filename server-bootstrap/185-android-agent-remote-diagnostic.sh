@@ -88,23 +88,8 @@ PY
 fi
 
 journal="$(journalctl -u "$service" --since '-30 minutes' --no-pager -o cat 2>/dev/null || true)"
-python3 - <<'PY' <<<"$journal"
-import re,sys
-lines=sys.stdin.read().splitlines()
-url=None
-code=None
-for i,line in enumerate(lines):
-    s=line.strip()
-    m=re.fullmatch(r"https://mcp\.desktopcommander\.app/device/verify\?user_code=([A-Z0-9]{4}-[A-Z0-9]{4})",s)
-    if m:
-        url=s
-        code=m.group(1)
-    elif s in {"2. Make sure the code matches:","2. Enter this code when prompted:"} and i+1<len(lines):
-        m2=re.fullmatch(r"[A-Z0-9]{4}-[A-Z0-9]{4}",lines[i+1].strip())
-        if m2:
-            code=m2.group(0)
-print("CURRENT_PAIRING_CODE="+(code or ""))
-PY
+current_code="$(printf '%s\n' "$journal" | grep -Eo '[A-Z0-9]{4}-[A-Z0-9]{4}' | tail -n1 || true)"
+printf 'CURRENT_PAIRING_CODE=%s\n' "$current_code"
 for marker in   'Device verified'   'Device ID assigned'   'Session restored'   'Device ready'   'Device registered, but NOT reachable'   'Channel subscribed'   'Realtime channel is not open'   'Device not found'   'Persisted device'   'Remote session expired' \
   'Failed to save config' \
   'Authorization failed' \
