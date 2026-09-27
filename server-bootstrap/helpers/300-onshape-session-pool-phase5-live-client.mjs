@@ -25,11 +25,26 @@ const parse=res=>{
 };
 const call=async(name,args={})=>parse(await c.callTool({name,arguments:args},undefined,{timeout:180000}));
 const invokeRaw=async(capabilityId,args={})=>call("onshape_fabric_invoke",{capability_id:capabilityId,arguments:args});
+const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+const reconcileInDoubt=async r=>{
+  if(r?.outcome?.state!=="IN_DOUBT") return r;
+  const attempt=String(r?.attemptId||"");
+  if(!attempt.startsWith("attempt:")) throw new Error("in-doubt result missing attempt identity "+JSON.stringify(r));
+  for(let i=0;i<180;i++){
+    await sleep(1000);
+    const rec=await call("onshape_fabric_reconcile",{attempt_id:attempt});
+    const rr=rec?.result;
+    if(rr?.outcome?.state==="IN_DOUBT") continue;
+    if(rr) return rr;
+    throw new Error("same-attempt reconcile returned no result "+JSON.stringify(rec));
+  }
+  throw new Error("same-attempt reconcile remained IN_DOUBT "+attempt);
+};
 const achieved=async(capabilityId,args={})=>{
   const x=await invokeRaw(capabilityId,args);
-  const r=x?.result;
+  const r=await reconcileInDoubt(x?.result);
   if(r?.outcome?.state!=="ACHIEVED" || r?.observation?.ackState!=="ACKNOWLEDGED"){
-    throw new Error("invoke failed "+capabilityId+" "+JSON.stringify(x));
+    throw new Error("invoke terminal non-achieved "+capabilityId+" "+JSON.stringify(r));
   }
   return r;
 };
