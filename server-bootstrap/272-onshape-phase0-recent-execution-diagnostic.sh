@@ -47,6 +47,25 @@ for r in rows:
       "evidence":(obs or {}).get("evidence"),"outcome":oc
     })
 print("CF_PHASE0_RECENTDIAG_ROWS="+json.dumps(out,separators=(",",":"),sort_keys=True))
+inputs=[]
+for x in out:
+    if x.get("requirement_id")=="requirement:onshape.ui.input":
+        ev=x.get("evidence") or {}
+        inputs.append({
+          "attempt_id":x.get("attempt_id"),
+          "operation_id":x.get("operation_id"),
+          "operation_state":x.get("operation_state"),
+          "attempt_state":x.get("attempt_state"),
+          "ack_state":x.get("ack_state"),
+          "detail":x.get("detail"),
+          "steps":x.get("steps"),
+          "sequenceCompleted":ev.get("sequenceCompleted"),
+          "completedSteps":ev.get("completedSteps"),
+          "effectSent":ev.get("effectSent"),
+          "finalUrl":ev.get("finalUrl"),
+          "outcome_state":(x.get("outcome") or {}).get("state")
+        })
+print("CF_PHASE0_RECENTDIAG_INPUT_ROWS="+json.dumps(inputs,separators=(",",":"),sort_keys=True))
 con.close()
 PY
 echo CF_PHASE0_RECENTDIAG=pass
