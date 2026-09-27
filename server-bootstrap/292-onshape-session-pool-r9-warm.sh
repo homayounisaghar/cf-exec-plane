@@ -69,8 +69,8 @@ try{
     const st=await terminal(op);
     if(st.status==="AWAITING_INPUT"){
       console.log("CF_R9_WARM_INPUT_REQUIRED="+String(st.input_required||"UNKNOWN"));
-      process.exitCode=42;
-      return;
+      await c.close().catch(()=>{});
+      process.exit(42);
     }
     if(st.status!=="SUCCEEDED") throw new Error("warmup failed "+JSON.stringify(st.error||st));
     p=await call("onshape_pool_status");
