@@ -104,7 +104,7 @@ python3 - "$prod_pool" <<'PY'
 import json,sys
 p=json.loads(sys.argv[1])
 assert p["pool_enabled"] is True and p["size"]==5 and p["warming"] is False
-assert p["navigation_concurrency_limit"]==2
+assert p["navigation_limit"]==2
 assert p["active_count"]==0 and p["queued_count"]==0 and p["document_lock_count"]==0 and p["workflow_lease_count"]==0
 assert p["session_fingerprints_distinct"] is True
 assert len(p["sessions"])==5 and all(s["auth"]["state"]=="PROVEN" and s["auth"]["http_status"]==200 for s in p["sessions"])
@@ -320,7 +320,7 @@ python3 - "$final_pool" <<'PY'
 import json,sys
 p=json.loads(sys.argv[1])
 assert p["pool_enabled"] is True and p["size"]==5 and p["multi_mutator_enabled"] is True
-assert p["navigation_concurrency_limit"]==2 and p["workflow_lease_count"]==0
+assert p["navigation_limit"]==2 and p["workflow_lease_count"]==0
 assert p["active_count"]==0 and p["queued_count"]==0 and p["document_lock_count"]==0
 assert p["session_fingerprints_distinct"] is True
 assert len(p["sessions"])==5 and all(s["auth"]["state"]=="PROVEN" and s["auth"]["http_status"]==200 for s in p["sessions"])
