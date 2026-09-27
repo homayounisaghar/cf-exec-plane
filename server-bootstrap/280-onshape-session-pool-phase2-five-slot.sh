@@ -100,8 +100,8 @@ try {
     if(!terminal) throw new Error("reauth timeout "+sid);
     if(terminal.status==="AWAITING_INPUT"){
       console.log("CF_POOL_PHASE2_RESTORE_REAUTH_INPUT_REQUIRED="+sid);
-      process.exitCode=42;
-      return;
+      await c.close().catch(()=>{});
+      process.exit(42);
     }
     if(terminal.status==="FAILED"){
       if(terminal?.error?.code!=="POOL_FINAL_AUTH_NOT_PROVEN"){
