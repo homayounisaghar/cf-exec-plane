@@ -5,7 +5,7 @@ on:
     paths: ['server-bootstrap/control/onshape-session-pool-r9-precutover/*.request']
 permissions: {contents: read}
 concurrency:
-  group: onshape-session-pool-precutover
+  group: onshape-session-pool-maintenance
   cancel-in-progress: false
 jobs:
   prove:
