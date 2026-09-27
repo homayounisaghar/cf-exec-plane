@@ -34,4 +34,8 @@ jobs:
           node --check server-bootstrap/helpers/283-onshape-session-pool-semantic-client.mjs
       - name: Run live semantic five-context qualification
         shell: bash
-        run: bash server-bootstrap/runner/remote-bundle-exec.sh server-bootstrap/283-onshape-session-pool-semantic-live.sh
+        run: |
+          set -euo pipefail
+          out="$(bash server-bootstrap/runner/remote-bundle-exec.sh server-bootstrap/283-onshape-session-pool-semantic-live.sh)"
+          printf '%s\n' "$out"
+          grep -Fxq 'CF_POOL_SEMANTIC_TEST=pass' <<<"$out"
