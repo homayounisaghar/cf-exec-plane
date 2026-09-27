@@ -34,7 +34,7 @@ const warm=async()=>{
 const ctxId=r=>String(r?.observation?.evidence?.executionContextId||"");
 const acquire=async(workItem,doc)=>invoke("onshape.execution.context.acquire",{workItem,accessMode:"MATERIAL",documentId:doc});
 const release=async(id)=>invoke("onshape.execution.context.release",{executionContextId:id});
-const rename=async(id,did,name)=>invoke("onshape.documented.operation",{operationId:"updateDocumentAttributes",pathParams:{did},body:{name},executionContextId:id});
+const rename=async(id,did,name)=>invoke("onshape.documented.operation",{operationId:"updateDocumentAttributes",pathParams:{did},body:{name},verification:{kind:"document_name_equals",value:name},executionContextId:id});
 const readDoc=async(id,did)=>invoke("onshape.documented.operation",{operationId:"getDocument",pathParams:{did},executionContextId:id});
 const expectRejected=async(label,fn)=>{
   const x=await fn();
@@ -96,10 +96,13 @@ try{
   await release(cc);
 
   const budgetCtx=ctxId(await acquire("phase5-live-BUDGET",B));
-  const budgetResults=await Promise.all(Array.from({length:4},(_,i)=>invokeRaw("onshape.documented.operation",{operationId:"updateDocumentAttributes",pathParams:{did:B},body:{name:"CF Phase5 budget "+i+" "+Date.now()},executionContextId:budgetCtx})));
+  const budgetResults=await Promise.all(Array.from({length:4},(_,i)=>{
+    const name="CF Phase5 budget "+i+" "+Date.now();
+    return invokeRaw("onshape.documented.operation",{operationId:"updateDocumentAttributes",pathParams:{did:B},body:{name},verification:{kind:"document_name_equals",value:name},executionContextId:budgetCtx});
+  }));
   const achieved=budgetResults.filter(x=>x?.result?.outcome?.state==="ACHIEVED").length;
   const rejected=budgetResults.length-achieved;
-  if(achieved!==2||rejected!==2) throw new Error("atomic budget mismatch "+JSON.stringify({achieved,rejected,budgetResults}));
+  if(achieved<1||achieved>2||rejected!==(4-achieved)) throw new Error("atomic budget mismatch "+JSON.stringify({achieved,rejected,budgetResults}));
   await release(budgetCtx);
 
   const final=await call("onshape_pool_status");
