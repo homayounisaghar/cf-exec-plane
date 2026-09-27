@@ -71,7 +71,7 @@ jobs:
           c=json.loads((Path(os.environ['PRIVATE_WORKTREE'])/'android/standard-apps/touchbridge/ci/portable-ci-contract.json').read_text())
           assert c['projectId']=='touchbridge-android'
           assert c['application']['packageId']=='com.homayounisaghar.touchbridge'
-          assert c['application']['versionCode']==2 and c['application']['versionName']=='0.1.0-alpha2'
+          assert c['application']['versionCode']==3 and c['application']['versionName']=='0.1.0-alpha3'
           assert c['pipeline']['buildStageRequiresSigningSecrets'] is False
           assert c['pipeline']['signingSeparatedFromBuild'] is True
           assert c['expectedSigner']['alias']=='personal_android_agent_line3'
@@ -106,8 +106,8 @@ jobs:
           test -f "$unsigned"
           line="$("$BT/aapt" dump badging "$unsigned" | head -n1)"
           [[ "$line" == *"package: name='com.homayounisaghar.touchbridge'"* ]]
-          [[ "$line" == *"versionCode='2'"* ]]
-          [[ "$line" == *"versionName='0.1.0-alpha2'"* ]]
+          [[ "$line" == *"versionCode='3'"* ]]
+          [[ "$line" == *"versionName='0.1.0-alpha3'"* ]]
           if "$BT/apksigner" verify "$unsigned" >/dev/null 2>&1; then exit 30; fi
           echo "UNSIGNED_APK=$unsigned" >> "$GITHUB_ENV"
           echo "UNSIGNED_SHA256=$(sha256sum "$unsigned" | awk '{print $1}')" >> "$GITHUB_ENV"
@@ -132,21 +132,21 @@ jobs:
           PASS="$(cat /tmp/tb-signer/signer.pass)"
           printf '::add-mask::%s\n' "$PASS"
           export PASS
-          "$BT/apksigner" sign --ks /tmp/tb-signer/signer.p12 --ks-type PKCS12 --ks-key-alias "$EXPECTED_ALIAS" --ks-pass env:PASS --key-pass env:PASS --v1-signing-enabled true --v2-signing-enabled true --v3-signing-enabled true --out "$out/touchbridge-0.1.0-alpha2.apk" "$out/aligned.apk"
+          "$BT/apksigner" sign --ks /tmp/tb-signer/signer.p12 --ks-type PKCS12 --ks-key-alias "$EXPECTED_ALIAS" --ks-pass env:PASS --key-pass env:PASS --v1-signing-enabled true --v2-signing-enabled true --v3-signing-enabled true --out "$out/touchbridge-0.1.0-alpha3.apk" "$out/aligned.apk"
           unset PASS
           rm "$out/aligned.apk"
-          apk="$out/touchbridge-0.1.0-alpha2.apk"
+          apk="$out/touchbridge-0.1.0-alpha3.apk"
           "$BT/apksigner" verify --verbose --print-certs "$apk" | tee "$out/apksigner.txt"
           cert="$("$BT/apksigner" verify --print-certs "$apk" | awk -F': ' '/Signer #1 certificate SHA-256 digest:/{print tolower($2); exit}')"
           test "$cert" = "$EXPECTED_SIGNER_SHA256"
           line="$("$BT/aapt" dump badging "$apk" | head -n1)"
           [[ "$line" == *"package: name='com.homayounisaghar.touchbridge'"* ]]
-          [[ "$line" == *"versionCode='2'"* ]]
-          [[ "$line" == *"versionName='0.1.0-alpha2'"* ]]
+          [[ "$line" == *"versionCode='3'"* ]]
+          [[ "$line" == *"versionName='0.1.0-alpha3'"* ]]
           "$BT/zipalign" -c -p 4 "$apk"
           unzip -t "$apk" >/dev/null
           signed_sha="$(sha256sum "$apk" | awk '{print $1}')"
-          printf '{"package":"com.homayounisaghar.touchbridge","versionCode":2,"versionName":"0.1.0-alpha2","candidateCommit":"%s","unsignedSha256":"%s","signedSha256":"%s","signerCertificateSha256":"%s"}\n' "$CANDIDATE_COMMIT" "$UNSIGNED_SHA256" "$signed_sha" "$EXPECTED_SIGNER_SHA256" > "$out/manifest.json"
+          printf '{"package":"com.homayounisaghar.touchbridge","versionCode":3,"versionName":"0.1.0-alpha3","candidateCommit":"%s","unsignedSha256":"%s","signedSha256":"%s","signerCertificateSha256":"%s"}\n' "$CANDIDATE_COMMIT" "$UNSIGNED_SHA256" "$signed_sha" "$EXPECTED_SIGNER_SHA256" > "$out/manifest.json"
           echo "SIGNED_SHA256=$signed_sha"
 
       - name: Scrub signer
@@ -155,7 +155,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: touchbridge-signed-alpha2
+          name: touchbridge-signed-alpha3
           path: ${{ runner.temp }}/tb-final/
           if-no-files-found: error
           retention-days: 30
