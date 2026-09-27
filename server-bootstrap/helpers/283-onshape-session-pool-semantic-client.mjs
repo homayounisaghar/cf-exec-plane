@@ -3,120 +3,115 @@ import { performance } from "node:perf_hooks";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 
-const [did,wid,eid]=String(process.env.CF_FIXTURE||"").split(":");
-if (![did,wid,eid].every(x=>/^[0-9a-f]{24}$/.test(x||""))) throw new Error("invalid fixture");
+const mode=String(process.env.CF_MODE||"qualify");
 const token=fs.readFileSync("/run/secrets/mcp-token","utf8").trim();
-const c=new Client({name:"cf-session-pool-semantic-live",version:"1.0"});
+const c=new Client({name:"cf-session-pool-phase5-live",version:"2.0"});
 await c.connect(new StreamableHTTPClientTransport(new URL("http://127.0.0.1:8788/mcp/"+token)));
-
 const parse=r=>JSON.parse((r.content||[]).filter(x=>x.type==="text").map(x=>x.text||"").join("\n"));
 const call=async(name,args={})=>parse(await c.callTool({name,arguments:args},undefined,{timeout:180000}));
+const invokeRaw=async(capability_id,args={})=>call("onshape_fabric_invoke",{capability_id,arguments:args});
 const invoke=async(capability_id,args={})=>{
-  const x=await call("onshape_fabric_invoke",{capability_id,arguments:args});
+  const x=await invokeRaw(capability_id,args);
   const r=x.result;
-  if(r?.outcome?.state!=="ACHIEVED" || r?.observation?.ackState!=="ACKNOWLEDGED"){
-    throw new Error("semantic invocation failed "+capability_id+" "+JSON.stringify(r));
-  }
+  if(r?.outcome?.state!=="ACHIEVED" || r?.observation?.ackState!=="ACKNOWLEDGED") throw new Error("semantic invocation failed "+capability_id+" "+JSON.stringify(r));
   return r;
 };
-const q=(xs,p)=>{const a=[...xs].sort((x,y)=>x-y);const i=(a.length-1)*p,lo=Math.floor(i),hi=Math.ceil(i);return a[lo]+(a[hi]-a[lo])*(i-lo)};
-const stats=xs=>({n:xs.length,min:+Math.min(...xs).toFixed(2),p50:+q(xs,.5).toFixed(2),p95:+q(xs,.95).toFixed(2),max:+Math.max(...xs).toFixed(2),mean:+(xs.reduce((a,b)=>a+b,0)/xs.length).toFixed(2)});
-
-try {
-  const warmStart=await call("onshape_pool_warmup");
-  const warmOperationId=String(warmStart.operation_id||"");
-  if(!warmOperationId) throw new Error("warmup operation id missing "+JSON.stringify(warmStart));
-  let warmState=null;
-  for(let i=0;i<180;i++){
-    const state=await call("onshape_operation_status",{operation_id:warmOperationId});
-    if(state.status==="SUCCEEDED"){ warmState=state; break; }
-    if(state.status==="FAILED") throw new Error("warmup failed "+JSON.stringify(state.error||state));
-    if(state.status==="AWAITING_INPUT") throw new Error("warmup requires operator input "+JSON.stringify(state));
-    await new Promise(resolve=>setTimeout(resolve,1000));
+const warm=async()=>{
+  const s=await call("onshape_pool_warmup");
+  const id=String(s.operation_id||""); if(!id) throw new Error("warmup id missing");
+  for(let i=0;i<240;i++){
+    const st=await call("onshape_operation_status",{operation_id:id});
+    if(st.status==="SUCCEEDED"){
+      const r=st.result||{};
+      if(r.pool_enabled!==true||r.proven_sessions!==5||r.session_fingerprints_distinct!==true) throw new Error("warm invariant "+JSON.stringify(r));
+      return r;
+    }
+    if(st.status==="FAILED"||st.status==="AWAITING_INPUT") throw new Error("warmup "+st.status+" "+JSON.stringify(st));
+    await new Promise(r=>setTimeout(r,1000));
   }
-  if(!warmState) throw new Error("warmup did not reach terminal state");
-  const warm=warmState.result||{};
-  if(warm.pool_enabled!==true || warm.proven_sessions!==5 || warm.session_fingerprints_distinct!==true) {
-    throw new Error("warmup invariant failed "+JSON.stringify(warm));
-  }
+  throw new Error("warmup timeout");
+};
+const ctxId=r=>String(r?.observation?.evidence?.executionContextId||"");
+const acquire=async(workItem,doc)=>invoke("onshape.execution.context.acquire",{workItem,accessMode:"MATERIAL",documentId:doc});
+const release=async(id)=>invoke("onshape.execution.context.release",{executionContextId:id});
+const rename=async(id,did,name)=>invoke("onshape.documented.operation",{operationId:"updateDocumentAttributes",pathParams:{did},body:{name},executionContextId:id});
+const readDoc=async(id,did)=>invoke("onshape.documented.operation",{operationId:"getDocument",pathParams:{did},executionContextId:id});
+const expectRejected=async(label,fn)=>{
+  const x=await fn();
+  const r=x?.result;
+  if(r?.outcome?.state==="ACHIEVED") throw new Error(label+" unexpectedly achieved");
+  return {label,state:r?.outcome?.state||null,ack:r?.observation?.ackState||null,detail:r?.observation?.detail||null};
+};
 
-  const catalog=await call("onshape_fabric_capabilities");
-  const ids=new Set((catalog.capabilities||[]).map(x=>x.id));
-  for(const id of ["onshape.execution.context.acquire","onshape.execution.context.status","onshape.execution.context.release","onshape.documented.operation"]){
-    if(!ids.has(id)) throw new Error("missing capability "+id);
-  }
-
-  const contexts=[];
-  const acquireMs=[];
-  const specs=[
-    ["semantic-client-1","MATERIAL"],
-    ["semantic-client-2","READ_ONLY"],
-    ["semantic-client-3","READ_ONLY"],
-    ["semantic-client-4","READ_ONLY"],
-    ["semantic-client-5","READ_ONLY"],
-  ];
-  for(const [workItem,accessMode] of specs){
-    const t=performance.now();
-    const r=await invoke("onshape.execution.context.acquire",{workItem,accessMode,documentId:did,workspaceId:wid,elementId:eid});
-    acquireMs.push(performance.now()-t);
-    const id=r.observation?.evidence?.executionContextId;
-    if(!/^ctx_[0-9a-f]{32}$/.test(String(id||""))) throw new Error("bad context id");
-    const exposed=JSON.stringify(r.observation?.evidence||{});
-    if(/session[_-]?id|sessionRole|session_role/.test(exposed)) throw new Error("physical slot leaked");
-    contexts.push(id);
+try{
+  await warm();
+  if(mode==="setup"){
+    const stamp=Date.now();
+    const make=async suffix=>{
+      const name="CF Phase5 disposable "+suffix+" "+stamp;
+      const r=await invoke("onshape.documented.operation",{operationId:"createDocument",body:{name}});
+      const b=r.observation?.evidence?.body||{};
+      const did=String(b.id||b.documentId||b.newDocumentId||"");
+      const wid=String(b.defaultWorkspace?.id||b.defaultWorkspaceId||b.newWorkspaceId||"");
+      if(!/^[0-9a-f]{24}$/i.test(did)||!/^[0-9a-f]{24}$/i.test(wid)) throw new Error("createDocument ids missing "+JSON.stringify(r.observation?.evidence));
+      return {did:did.toLowerCase(),wid:wid.toLowerCase(),name};
+    };
+    const [a,b]=await Promise.all([make("A"),make("B")]);
+    console.log(JSON.stringify({ok:true,mode:"setup",a,b}));
+    process.exit(0);
   }
 
-  const operator=await call("onshape_pool_status");
-  if(operator.workflow_lease_count!==5) throw new Error("lease count mismatch");
-  const slots=(operator.workflow_leases||[]).map(x=>x.session_id);
-  if(new Set(slots).size!==5) throw new Error("physical slots not distinct");
+  const docs=JSON.parse(String(process.env.CF_DOCS||"{}"));
+  const A=String(docs?.a?.did||""), B=String(docs?.b?.did||"");
+  if(!/^[0-9a-f]{24}$/.test(A)||!/^[0-9a-f]{24}$/.test(B)||A===B) throw new Error("bad docs");
 
-  for(const ctx of contexts){
-    const r=await invoke("onshape.execution.context.status",{executionContextId:ctx});
-    if(r.observation?.evidence?.executionContextId!==ctx) throw new Error("status context mismatch");
-    if(/session[_-]?id|sessionRole|session_role/.test(JSON.stringify(r.observation?.evidence||{}))) throw new Error("status leaked physical slot");
-  }
+  const [ar,br]=await Promise.all([acquire("phase5-live-A",A),acquire("phase5-live-B",B)]);
+  const ca=ctxId(ar), cb=ctxId(br);
+  if(!/^ctx_[0-9a-f]{32}$/.test(ca)||!/^ctx_[0-9a-f]{32}$/.test(cb)) throw new Error("bad contexts");
+  const op=await call("onshape_pool_status");
+  const leaseByWork=new Map((op.workflow_leases||[]).map(x=>[x.work_item,x]));
+  const sa=leaseByWork.get("phase5-live-A")?.session_id, sb=leaseByWork.get("phase5-live-B")?.session_id;
+  if(!sa||!sb||sa===sb) throw new Error("different-doc contexts did not use distinct slots");
 
-  const readMs=[];
-  for(let round=0;round<20;round++){
-    const rr=await Promise.all(contexts.map(async(ctx)=>{
-      const t=performance.now();
-      const r=await invoke("onshape.documented.operation",{operationId:"getDocument",pathParams:{did},executionContextId:ctx});
-      const ms=performance.now()-t;
-      if(r.observation?.evidence?.executionContextId!==ctx) throw new Error("read context mismatch");
-      const pe=r.observation?.evidence?.poolExecution||{};
-      if(pe.session_id!==undefined || pe.session_role!==undefined || pe.session_durability!==undefined) throw new Error("pool slot leaked");
-      return ms;
-    }));
-    readMs.push(...rr);
-  }
+  const conflict=await expectRejected("same-document-fence",()=>invokeRaw("onshape.execution.context.acquire",{workItem:"phase5-live-C",accessMode:"MATERIAL",documentId:A}));
 
-  const releaseMs=[];
-  for(const ctx of contexts){
-    const t=performance.now();
-    const r=await invoke("onshape.execution.context.release",{executionContextId:ctx});
-    releaseMs.push(performance.now()-t);
-    if(r.observation?.evidence?.contextReleased!==true) throw new Error("release failed");
-  }
+  const t0=performance.now();
+  const [ma,mb]=await Promise.all([
+    rename(ca,A,"CF Phase5 A achieved "+Date.now()),
+    rename(cb,B,"CF Phase5 B achieved "+Date.now())
+  ]);
+  const concurrentMs=performance.now()-t0;
+  const ra=await readDoc(ca,A), rb=await readDoc(cb,B);
+  if(!String(ra.observation?.evidence?.body?.name||"").startsWith("CF Phase5 A achieved")) throw new Error("A readback mismatch");
+  if(!String(rb.observation?.evidence?.body?.name||"").startsWith("CF Phase5 B achieved")) throw new Error("B readback mismatch");
 
-  const finalPool=await call("onshape_pool_status");
-  if(finalPool.workflow_lease_count!==0 || finalPool.active_count!==0 || finalPool.queued_count!==0) throw new Error("pool not clean");
-  if((finalPool.sessions||[]).some(x=>x?.auth?.state!=="PROVEN" || x?.auth?.http_status!==200)) throw new Error("post auth failed");
+  const wrongWork=await expectRejected("wrong-workitem",()=>invokeRaw("onshape.execution.context.acquire",{workItem:"phase5-live-NO-GRANT",accessMode:"MATERIAL",documentId:A}));
+  const wrongDoc=await expectRejected("wrong-document",()=>invokeRaw("onshape.execution.context.acquire",{workItem:"phase5-live-A",accessMode:"MATERIAL",documentId:B}));
+  const revoked=await expectRejected("revoked-grant",()=>invokeRaw("onshape.execution.context.acquire",{workItem:"phase5-live-REVOKED",accessMode:"MATERIAL",documentId:B}));
+  const exhausted=await expectRejected("exhausted-budget",()=>invokeRaw("onshape.execution.context.acquire",{workItem:"phase5-live-EXHAUSTED",accessMode:"MATERIAL",documentId:B}));
+
+  await release(ca); await release(cb);
+  const cr=await acquire("phase5-live-C",A); const cc=ctxId(cr);
+  if(!/^ctx_[0-9a-f]{32}$/.test(cc)) throw new Error("post-release fence did not reopen");
+  await release(cc);
+
+  const budgetCtx=ctxId(await acquire("phase5-live-BUDGET",B));
+  const budgetResults=await Promise.all(Array.from({length:4},(_,i)=>invokeRaw("onshape.documented.operation",{operationId:"updateDocumentAttributes",pathParams:{did:B},body:{name:"CF Phase5 budget "+i+" "+Date.now()},executionContextId:budgetCtx})));
+  const achieved=budgetResults.filter(x=>x?.result?.outcome?.state==="ACHIEVED").length;
+  const rejected=budgetResults.length-achieved;
+  if(achieved!==2||rejected!==2) throw new Error("atomic budget mismatch "+JSON.stringify({achieved,rejected,budgetResults}));
+  await release(budgetCtx);
+
+  const final=await call("onshape_pool_status");
+  if(final.workflow_lease_count!==0||final.active_count!==0||final.navigation_limit!==2) throw new Error("pool not clean");
+  if((final.sessions||[]).some(x=>x?.auth?.state!=="PROVEN"||x?.auth?.http_status!==200)) throw new Error("post auth not proven");
 
   console.log(JSON.stringify({
-    ok:true,
-    semantic_contexts:5,
-    physical_slots_distinct:new Set(slots).size,
-    acquire_ms:stats(acquireMs),
-    documented_reads:readMs.length,
-    documented_read_ms:stats(readMs),
-    release_ms:stats(releaseMs),
-    post_auth_proven:(finalPool.sessions||[]).length,
-    fingerprints_distinct:finalPool.session_fingerprints_distinct,
-    final_workflow_lease_count:finalPool.workflow_lease_count,
-    final_active_count:finalPool.active_count,
-    physical_slot_redaction:true,
+    ok:true,mode:"qualify",different_document_slots:[sa,sb],different_document_slots_distinct:true,
+    same_document_conflict:conflict,different_document_concurrent_client_window_ms:+concurrentMs.toFixed(2),
+    authoritative_readback:true,wrong_workitem:wrongWork,wrong_document:wrongDoc,revoked_grant:revoked,
+    exhausted_budget:exhausted,budget_atomic:{attempts:4,achieved,rejected,max:2},
+    navigation_limit:final.navigation_limit,post_auth_proven:(final.sessions||[]).length,
+    fingerprints_distinct:final.session_fingerprints_distinct,final_workflow_lease_count:final.workflow_lease_count
   }));
-} finally {
-  await c.close().catch(()=>{});
-}
+} finally { await c.close().catch(()=>{}); }
