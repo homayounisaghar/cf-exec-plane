@@ -36,22 +36,54 @@ echo "CF_POOL_PRECUTOVER_DIAG_CONTROL_BLOB=$(git hash-object "$control")"
 echo "CF_POOL_PRECUTOVER_DIAG_MIRROR_BLOB=$(tr -d '\r\n' < "$mirror" 2>/dev/null || true)"
 echo "CF_POOL_PRECUTOVER_DIAG_ACTIVE=$(basename "$(readlink -f "$active")")"
 
-PYTHONPATH="$active/fabric-src" python3 - "$db" <<'PY'
-import sys
-from capability_fabric.persistence import SqliteExecutionStateStore
-with SqliteExecutionStateStore(sys.argv[1]) as state:
-    pending=state.recoverable()
-    print("CF_POOL_PRECUTOVER_DIAG_RECOVERABLE_COUNT="+str(len(pending)))
-    for i,item in enumerate(pending[:20],1):
-        op=item.operation
-        att=item.attempt
-        print("CF_POOL_PRECUTOVER_DIAG_RECOVERABLE_"+str(i)+"="+repr({
-            "operation_id": None if op is None else op.operation_id,
-            "attempt_id": None if att is None else att.attempt_id,
-            "operation_state": None if op is None else str(op.state),
-            "attempt_state": None if att is None else str(att.state),
-            "effect": None if op is None else str(op.effect),
-        }))
+python3 - "$db" <<'PY'
+import json,sqlite3,sys
+db=sys.argv[1]
+con=sqlite3.connect("file:"+db+"?mode=ro",uri=True)
+con.row_factory=sqlite3.Row
+rows=con.execute("""
+SELECT i.invocation_id,i.phase,i.payload AS invocation_payload,i.dispatch_payload,
+       o.operation_id,o.state AS operation_state,o.payload AS operation_payload,o.outcome_payload,
+       a.attempt_id,a.state AS attempt_state,a.payload AS attempt_payload,a.observation_payload
+FROM invocations i
+LEFT JOIN operations o ON o.invocation_id=i.invocation_id
+LEFT JOIN attempts a ON a.operation_id=o.operation_id
+WHERE i.phase IN ('DISPATCH_FINALIZED','DISPATCH_INTENT','OBSERVED')
+ORDER BY i.rowid
+""").fetchall()
+print("CF_POOL_PRECUTOVER_DIAG_RECOVERABLE_COUNT="+str(len(rows)))
+for n,row in enumerate(rows[:20],1):
+    inv=json.loads(row["invocation_payload"])
+    op=None if row["operation_payload"] is None else json.loads(row["operation_payload"])
+    att=None if row["attempt_payload"] is None else json.loads(row["attempt_payload"])
+    obs=None if row["observation_payload"] is None else json.loads(row["observation_payload"])
+    if op is None and att is None:
+        disposition="READMIT_AND_REFINALIZE"
+    elif op is not None and att is not None and obs is None:
+        disposition="EFFECT_STATUS_UNKNOWN"
+    elif op is not None and att is not None and obs is not None:
+        disposition="RECONCILIATION_PENDING"
+    else:
+        disposition="INCOMPLETE"
+    safe={
+      "disposition":disposition,
+      "invocation_id":row["invocation_id"],
+      "invocation_phase":row["phase"],
+      "requirement_id":inv.get("requirement_id"),
+      "definition_id":inv.get("definition_id"),
+      "invocation_effect":inv.get("effect"),
+      "target_id":inv.get("target_id"),
+      "operation_id":row["operation_id"],
+      "operation_state":row["operation_state"],
+      "operation_effect":None if op is None else op.get("effect"),
+      "attempt_id":row["attempt_id"],
+      "attempt_state":row["attempt_state"],
+      "ack_state":None if obs is None else obs.get("ack_state"),
+      "observation_detail":None if obs is None else obs.get("detail"),
+      "external_reference":None if obs is None else obs.get("external_reference"),
+    }
+    print("CF_POOL_PRECUTOVER_DIAG_RECOVERABLE_"+str(n)+"="+json.dumps(safe,sort_keys=True,separators=(",",":")))
+con.close()
 PY
 
 echo CF_POOL_PRECUTOVER_DIAG_DONE=pass
