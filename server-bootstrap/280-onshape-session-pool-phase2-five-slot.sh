@@ -87,35 +87,55 @@ const parse=r=>JSON.parse((r.content||[]).filter(x=>x.type==="text").map(x=>x.te
 const call=async(name,args={})=>parse(await c.callTool({name,arguments:args},undefined,{timeout:180000}));
 try {
   for(const sid of ["session-1","session-2","session-3"]){
-    console.log("CF_POOL_PHASE2_RESTORE_REAUTH_START="+sid);
-    const started=await call("onshape_pool_session_reauth",{session_id:sid});
-    const op=started.operation_id;
-    if(!op) throw new Error("missing reauth operation "+sid);
-    let terminal=null;
-    for(let i=0;i<180;i++){
-      const state=await call("onshape_operation_status",{operation_id:op});
-      if(["SUCCEEDED","FAILED","AWAITING_INPUT"].includes(state.status)){terminal=state;break;}
-      await new Promise(r=>setTimeout(r,1000));
-    }
-    if(!terminal) throw new Error("reauth timeout "+sid);
-    if(terminal.status==="AWAITING_INPUT"){
-      console.log("CF_POOL_PHASE2_RESTORE_REAUTH_INPUT_REQUIRED="+sid);
-      await c.close().catch(()=>{});
-      process.exit(42);
-    }
-    if(terminal.status==="FAILED"){
-      if(terminal?.error?.code!=="POOL_FINAL_AUTH_NOT_PROVEN"){
-        throw new Error("reauth failed "+sid+" "+JSON.stringify(terminal.error||terminal));
+    let selectedRecovered=false;
+    for(let authAttempt=1;authAttempt<=2;authAttempt++){
+      console.log("CF_POOL_PHASE2_RESTORE_REAUTH_START="+sid+":attempt="+authAttempt);
+      const started=await call("onshape_pool_session_reauth",{session_id:sid});
+      const op=started.operation_id;
+      if(!op) throw new Error("missing reauth operation "+sid);
+      let terminal=null;
+      for(let i=0;i<180;i++){
+        const state=await call("onshape_operation_status",{operation_id:op});
+        if(["SUCCEEDED","FAILED","AWAITING_INPUT"].includes(state.status)){terminal=state;break;}
+        await new Promise(r=>setTimeout(r,1000));
       }
+      if(!terminal) throw new Error("reauth timeout "+sid);
+      if(terminal.status==="AWAITING_INPUT"){
+        console.log("CF_POOL_PHASE2_RESTORE_REAUTH_INPUT_REQUIRED="+sid);
+        await c.close().catch(()=>{});
+        process.exit(42);
+      }
+      if(terminal.status==="SUCCEEDED"){
+        selectedRecovered=true;
+        console.log("CF_POOL_PHASE2_RESTORE_REAUTH_PASS="+sid+":attempt="+authAttempt);
+        break;
+      }
+
+      const code=String(terminal?.error?.code||"");
       const interim=await call("onshape_pool_status");
       const selected=(interim.sessions||[]).find(x=>x.session_id===sid);
-      if(selected?.auth?.state!=="PROVEN" || selected?.auth?.http_status!==200){
-        throw new Error("selected session did not recover "+sid);
+      const selectedProven=selected?.auth?.state==="PROVEN" && selected?.auth?.http_status===200;
+
+      if(code==="POOL_FINAL_AUTH_NOT_PROVEN" && selectedProven){
+        selectedRecovered=true;
+        console.log("CF_POOL_PHASE2_RESTORE_REAUTH_STAGED="+sid+"=PROVEN");
+        break;
       }
-      console.log("CF_POOL_PHASE2_RESTORE_REAUTH_STAGED="+sid+"=PROVEN");
-      continue;
+
+      if(code==="LOGIN_STATE_UNRESOLVED" && !selectedProven && authAttempt===1){
+        console.log("CF_POOL_PHASE2_RESTORE_REAUTH_BOUNDED_RETRY="+sid);
+        continue;
+      }
+
+      if(code==="LOGIN_STATE_UNRESOLVED" && selectedProven){
+        selectedRecovered=true;
+        console.log("CF_POOL_PHASE2_RESTORE_REAUTH_READBACK_PROVEN="+sid);
+        break;
+      }
+
+      throw new Error("reauth failed "+sid+" "+JSON.stringify(terminal.error||terminal));
     }
-    console.log("CF_POOL_PHASE2_RESTORE_REAUTH_PASS="+sid);
+    if(!selectedRecovered) throw new Error("selected session did not recover "+sid);
   }
   const p=await call("onshape_pool_status");
   if(p.pool_enabled!==true || p.size!==3 || p.session_fingerprints_distinct!==true) throw new Error("final pool not enabled/distinct");
