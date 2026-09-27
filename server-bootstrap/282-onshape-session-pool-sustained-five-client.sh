@@ -271,7 +271,7 @@ try {
       },
       async(session)=> {
         const t=performance.now();
-        await session.page.goto(target,{waitUntil:"domcontentloaded",timeout:45000});
+        await session.openDocument(did,wid,eid);
         return {navigation_ms:performance.now()-t};
       }
     )
