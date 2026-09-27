@@ -154,7 +154,7 @@ for i in $(seq 1 30); do
 done
 [[ "$(curl -fsS --max-time 2 http://127.0.0.1:8787/)" == "cf-onshape-single ok" ]]
 
-docker exec -i "$GATEWAY" sh -lc 'cd /app && node --input-type=module' <<'NODE'
+docker exec -i "$SERVER" sh -lc 'cd /tmp/app && node --input-type=module' <<'NODE'
 import fs from "node:fs";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
