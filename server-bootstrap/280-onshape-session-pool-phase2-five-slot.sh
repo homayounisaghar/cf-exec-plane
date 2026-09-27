@@ -75,21 +75,67 @@ restore_production() {
   echo CF_POOL_PHASE2_RESTORE_GATE=clear
 
   if [[ "$restore_failed" == false ]]; then
-    for sid in session-1 session-2 session-3; do
-      echo "CF_POOL_PHASE2_RESTORE_REAUTH_START=$sid"
-      CF_REAUTH_SESSION_ID="$sid" bash server-bootstrap/101-onshape-production-session-reauth.sh
-      rc=$?
-      if (( rc == 42 )); then
-        echo "CF_POOL_PHASE2_RESTORE_REAUTH_INPUT_REQUIRED=$sid"
-        restore_failed=true
-        break
-      elif (( rc != 0 )); then
-        echo "CF_POOL_PHASE2_RESTORE_REAUTH_FAILED=$sid:$rc"
-        restore_failed=true
-        break
-      fi
-      echo "CF_POOL_PHASE2_RESTORE_REAUTH_PASS=$sid"
-    done
+    set +e
+    docker exec -i "$prod_server" sh -lc 'cd /tmp/app && node --input-type=module' <<'NODE'
+import fs from "node:fs";
+import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
+const token=fs.readFileSync("/run/secrets/mcp-token","utf8").trim();
+const c=new Client({name:"cf-session-pool-phase2-staged-restore",version:"1.0"});
+await c.connect(new StreamableHTTPClientTransport(new URL("http://127.0.0.1:8788/mcp/"+token)));
+const parse=r=>JSON.parse((r.content||[]).filter(x=>x.type==="text").map(x=>x.text||"").join("\n"));
+const call=async(name,args={})=>parse(await c.callTool({name,arguments:args},undefined,{timeout:180000}));
+try {
+  for(const sid of ["session-1","session-2","session-3"]){
+    console.log("CF_POOL_PHASE2_RESTORE_REAUTH_START="+sid);
+    const started=await call("onshape_pool_session_reauth",{session_id:sid});
+    const op=started.operation_id;
+    if(!op) throw new Error("missing reauth operation "+sid);
+    let terminal=null;
+    for(let i=0;i<180;i++){
+      const state=await call("onshape_operation_status",{operation_id:op});
+      if(["SUCCEEDED","FAILED","AWAITING_INPUT"].includes(state.status)){terminal=state;break;}
+      await new Promise(r=>setTimeout(r,1000));
+    }
+    if(!terminal) throw new Error("reauth timeout "+sid);
+    if(terminal.status==="AWAITING_INPUT"){
+      console.log("CF_POOL_PHASE2_RESTORE_REAUTH_INPUT_REQUIRED="+sid);
+      process.exitCode=42;
+      return;
+    }
+    if(terminal.status==="FAILED"){
+      if(terminal?.error?.code!=="POOL_FINAL_AUTH_NOT_PROVEN"){
+        throw new Error("reauth failed "+sid+" "+JSON.stringify(terminal.error||terminal));
+      }
+      const interim=await call("onshape_pool_status");
+      const selected=(interim.sessions||[]).find(x=>x.session_id===sid);
+      if(selected?.auth?.state!=="PROVEN" || selected?.auth?.http_status!==200){
+        throw new Error("selected session did not recover "+sid);
+      }
+      console.log("CF_POOL_PHASE2_RESTORE_REAUTH_STAGED="+sid+"=PROVEN");
+      continue;
+    }
+    console.log("CF_POOL_PHASE2_RESTORE_REAUTH_PASS="+sid);
+  }
+  const p=await call("onshape_pool_status");
+  if(p.pool_enabled!==true || p.size!==3 || p.session_fingerprints_distinct!==true) throw new Error("final pool not enabled/distinct");
+  if(p.active_count!==0 || p.queued_count!==0 || p.document_lock_count!==0) throw new Error("final pool not idle");
+  if((p.sessions||[]).length!==3 || p.sessions.some(x=>x?.auth?.state!=="PROVEN" || x?.auth?.http_status!==200)) {
+    throw new Error("final cohort not 3/3 PROVEN");
+  }
+  console.log("CF_POOL_PHASE2_RESTORE_REAUTH_FINAL=3of3-PROVEN-idle");
+} finally {
+  await c.close().catch(()=>{});
+}
+NODE
+    rc=$?
+    set -e
+    if (( rc == 42 )); then
+      restore_failed=true
+    elif (( rc != 0 )); then
+      echo "CF_POOL_PHASE2_RESTORE_REAUTH_FAILED=$rc"
+      restore_failed=true
+    fi
   fi
 
   if [[ "$gateway_was_running" == true ]]; then
