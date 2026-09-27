@@ -68,4 +68,31 @@ for x in out:
 print("CF_PHASE0_RECENTDIAG_INPUT_ROWS="+json.dumps(inputs,separators=(",",":"),sort_keys=True))
 con.close()
 PY
+research=capability-fabric-onshape-phase0-research
+fixture="a19e0fa5152af9f7ce106b6e:e5e7d0173fd1f1d0307a2cb6:e0929361aadb6135b5cecffa"
+[[ "$(docker inspect -f '{{.State.Running}}' "$research" 2>/dev/null || echo false)" == true ]]
+[[ "$(docker inspect -f '{{.State.Health.Status}}' "$research")" == healthy ]]
+env_dump="$(docker inspect -f '{{range .Config.Env}}{{println .}}{{end}}' "$research")"
+grep -Fxq "CF_RESEARCH_SOURCE_COMMIT=$candidate" <<<"$env_dump"
+grep -Fxq "CF_RESEARCH_FIXTURE_TARGET=$fixture" <<<"$env_dump"
+echo CF_PHASE0_RECENTDIAG_SESSION_BINDING=pass
+
+docker exec -i "$research" sh -lc 'cd /tmp/app && node --input-type=module' <<'NODE'
+import fs from "node:fs";
+import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
+const token=fs.readFileSync("/run/secrets/mcp-token","utf8").trim();
+const c=new Client({name:"cf-phase0-recentdiag-session",version:"1.0"});
+await c.connect(new StreamableHTTPClientTransport(new URL("http://127.0.0.1:8898/mcp/"+token)));
+const parse=r=>JSON.parse((r.content||[]).filter(x=>x.type==="text").map(x=>x.text).join("\n"));
+try {
+  const status=parse(await c.callTool({name:"onshape_session_status",arguments:{}},undefined,{timeout:180000}));
+  console.log("CF_PHASE0_RECENTDIAG_SESSION_STATUS="+JSON.stringify({
+    build_id:status?.build_id??null,
+    auth:status?.auth??null,
+    url:status?.url??status?.session?.url??null
+  }));
+} finally {await c.close().catch(()=>{});}
+NODE
+
 echo CF_PHASE0_RECENTDIAG=pass
