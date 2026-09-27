@@ -88,6 +88,38 @@ done
 gateway_was_running=true
 systemctl is-active --quiet "$timer" && timer_was_active=true || true
 
+prod_pool="$(docker exec -i "$prod_server" sh -lc 'cd /tmp/app && node --input-type=module' <<'NODE'
+import fs from "node:fs";
+import {Client} from "@modelcontextprotocol/sdk/client/index.js";
+import {StreamableHTTPClientTransport} from "@modelcontextprotocol/sdk/client/streamableHttp.js";
+const token=fs.readFileSync("/run/secrets/mcp-token","utf8").trim();
+const c=new Client({name:"phase5-live-preflight",version:"1"});
+await c.connect(new StreamableHTTPClientTransport(new URL("http://127.0.0.1:8788/mcp/"+token)));
+const r=await c.callTool({name:"onshape_pool_status",arguments:{}},undefined,{timeout:180000});
+console.log((r.content||[]).filter(x=>x.type==="text").map(x=>x.text||"").join("\n"));
+await c.close();
+NODE
+)"
+python3 - "$prod_pool" <<'PY'
+import json,sys
+p=json.loads(sys.argv[1])
+assert p["pool_enabled"] is True and p["size"]==5 and p["warming"] is False
+assert p["navigation_concurrency_limit"]==2
+assert p["active_count"]==0 and p["queued_count"]==0 and p["document_lock_count"]==0 and p["workflow_lease_count"]==0
+assert p["session_fingerprints_distinct"] is True
+assert len(p["sessions"])==5 and all(s["auth"]["state"]=="PROVEN" and s["auth"]["http_status"]==200 for s in p["sessions"])
+assert len({s["auth"]["account_id"] for s in p["sessions"]})==1
+print("CF_PHASE5_LIVE_PREFLIGHT_POOL=5of5-PROVEN-idle")
+PY
+
+docker exec -i "$prod_fabric" python - <<'PY'
+from capability_fabric.persistence import SqliteExecutionStateStore
+with SqliteExecutionStateStore("/fabric-state/execution.sqlite3") as state:
+    rows=state.recoverable()
+    assert not rows, rows
+print("CF_PHASE5_LIVE_PREFLIGHT_RECOVERABLE=zero")
+PY
+
 exec 9>"$lock"
 flock -w 30 9 || { echo CF_PHASE5_LIVE_SHARED_LOCK=busy >&2; exit 23; }
 printf '%s\n' RELEASE_IN_PROGRESS > "$gate"
