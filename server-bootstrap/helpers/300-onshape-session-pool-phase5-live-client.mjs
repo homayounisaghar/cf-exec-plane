@@ -162,7 +162,7 @@ try{
       mutation_window_ms:+mutationWindowMs.toFixed(2),
       elapsed_ms:+(performance.now()-t0).toFixed(2),
       readback:{[docA]:readA,[docB]:readB},
-      nav_limit:final.navigation_concurrency_limit,
+      nav_limit:final.navigation_limit,
       auth_proven:(final.sessions||[]).filter(x=>x?.auth?.state==="PROVEN"&&x?.auth?.http_status===200).length,
     }));
   }
