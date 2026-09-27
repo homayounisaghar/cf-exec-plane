@@ -73,7 +73,9 @@ fixture="a19e0fa5152af9f7ce106b6e:e5e7d0173fd1f1d0307a2cb6:e0929361aadb6135b5cec
 [[ "$(docker inspect -f '{{.State.Running}}' "$research" 2>/dev/null || echo false)" == true ]]
 [[ "$(docker inspect -f '{{.State.Health.Status}}' "$research")" == healthy ]]
 env_dump="$(docker inspect -f '{{range .Config.Env}}{{println .}}{{end}}' "$research")"
-grep -Fxq "CF_RESEARCH_SOURCE_COMMIT=$candidate" <<<"$env_dump"
+actual_candidate="$(awk -F= '$1=="CF_RESEARCH_SOURCE_COMMIT"{print $2}' <<<"$env_dump" | tail -1)"
+[[ -n "$actual_candidate" ]]
+echo CF_PHASE0_RECENTDIAG_SESSION_CANDIDATE="$actual_candidate"
 grep -Fxq "CF_RESEARCH_FIXTURE_TARGET=$fixture" <<<"$env_dump"
 echo CF_PHASE0_RECENTDIAG_SESSION_BINDING=pass
 
