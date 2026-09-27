@@ -57,6 +57,7 @@ const parse=(r)=>{
   return JSON.parse(raw);
 };
 const call=async(name,args={})=>parse(await c.callTool({name,arguments:args},undefined,{timeout:180000}));
+async function main(){
 try {
   let s=await call("onshape_session_status");
   const expected="onshape-phase0-"+candidate.slice(0,12);
@@ -92,6 +93,8 @@ try {
   }
   throw new Error("login operation timed out");
 } finally { await c.close().catch(()=>{}); }
+}
+await main();
 NODE
 rc=$?
 set -e
