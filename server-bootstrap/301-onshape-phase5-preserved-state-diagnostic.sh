@@ -68,4 +68,51 @@ print("CF_PHASE5_PRESERVED_RECOVERABLE="+json.dumps([dict(r) for r in recoverabl
 con.close()
 PY
 
+python3 - "$marker" "$db" "$root/agent-state" <<'PY'
+import hashlib,json,os,sqlite3,sys
+marker_path,db,agent_dir=sys.argv[1:4]
+con=sqlite3.connect("file:"+db+"?mode=ro",uri=True)
+con.row_factory=sqlite3.Row
+rows=con.execute("""
+SELECT a.attempt_id
+FROM invocations i
+JOIN operations o ON o.invocation_id=i.invocation_id
+JOIN attempts a ON a.operation_id=o.operation_id
+WHERE i.phase IN ('DISPATCH_FINALIZED','DISPATCH_INTENT','OBSERVED')
+ORDER BY i.rowid
+""").fetchall()
+for row in rows:
+    attempt=str(row["attempt_id"])
+    h=hashlib.sha256(attempt.encode()).hexdigest()
+    p=os.path.join(agent_dir,h+".json")
+    if not os.path.isfile(p):
+        print("CF_PHASE5_PRESERVED_AGENT_RECORD="+json.dumps({"attemptId":attempt,"present":False},sort_keys=True,separators=(",",":")))
+        continue
+    r=json.load(open(p))
+    o=r.get("observation") or {}
+    e=o.get("evidence") or {}
+    safe={
+      "attemptId":attempt,
+      "present":True,
+      "recordState":r.get("state"),
+      "operationId":r.get("operationId"),
+      "createdAt":r.get("createdAt"),
+      "updatedAt":r.get("updatedAt"),
+      "hasBudgetReservation":bool(r.get("budgetReservation")),
+      "hasRecovery":bool(r.get("recovery")),
+      "observation":{
+        "state":o.get("state"),
+        "detail":o.get("detail"),
+        "externalReference":o.get("externalReference"),
+        "effectSent":e.get("effectSent"),
+        "httpStatus":e.get("httpStatus"),
+        "postconditionVerified":e.get("postconditionVerified"),
+        "verification":e.get("verification"),
+        "transportUncertain":e.get("transportUncertain"),
+      },
+    }
+    print("CF_PHASE5_PRESERVED_AGENT_RECORD="+json.dumps(safe,sort_keys=True,separators=(",",":")))
+con.close()
+PY
+
 echo CF_PHASE5_PRESERVED_DIAG=pass
