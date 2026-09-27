@@ -23,7 +23,7 @@ const parse=res=>{
   if(!raw) return {};
   try{return JSON.parse(raw);}catch{return {raw,isError:res?.isError===true};}
 };
-const call=async(name,args={})=>parse(await c.callTool({name,arguments:args},undefined,{timeout:180000}));
+const call=async(name,args={})=>parse(await c.callTool({name,arguments:args},undefined,{timeout:240000}));
 const invokeRaw=async(capabilityId,args={})=>call("onshape_fabric_invoke",{capability_id:capabilityId,arguments:args});
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const reconcileInDoubt=async r=>{
@@ -122,30 +122,44 @@ try{
       const acq=await achieved("onshape.execution.context.acquire",{workItem,accessMode:"MATERIAL",documentId:sourceDid,workspaceId:sourceWid,elementId:sourceEid});
       const ctx=ctxId(acq);
       const name="CF Phase5 Disposable "+suffix+" "+Date.now();
-      const raw=await invokeRaw("onshape.documented.operation",{
-        operationId:"copyWorkspace",
-        pathParams:{did:sourceDid,wid:sourceWid},
-        body:{newName:name,isPublic:false},
-        executionContextId:ctx,
-      });
+      const unresolvedPath="/agent-state/phase5-live-unresolved.json";
+      fs.writeFileSync(unresolvedPath,JSON.stringify({
+        attemptId:null,phase:"create-copyWorkspace-dispatching",expectedName:name,workItem,executionContextId:ctx
+      })+"\n",{mode:0o600});
+      let raw;
+      try{
+        raw=await invokeRaw("onshape.documented.operation",{
+          operationId:"copyWorkspace",
+          pathParams:{did:sourceDid,wid:sourceWid},
+          body:{newName:name,isPublic:false},
+          executionContextId:ctx,
+        });
+      }catch(error){
+        throw new Error("copy transport failed before authoritative result; unresolved state preserved "+String(error?.name||error));
+      }
       let r=raw?.result;
+      if(!r){
+        throw new Error("copy returned no authoritative result; unresolved state preserved "+JSON.stringify(raw));
+      }
       if(r?.outcome?.state==="IN_DOUBT"){
         const attempt=String(r.attemptId||"");
-        if(!attempt.startsWith("attempt:")) throw new Error("copy uncertainty missing attempt");
-        fs.writeFileSync("/agent-state/phase5-live-unresolved.json",JSON.stringify({
-          attemptId:attempt,phase:"create-copyWorkspace",expectedName:name,workItem
+        if(!attempt.startsWith("attempt:")) throw new Error("copy uncertainty missing attempt; unresolved state preserved");
+        fs.writeFileSync(unresolvedPath,JSON.stringify({
+          attemptId:attempt,phase:"create-copyWorkspace",expectedName:name,workItem,executionContextId:ctx
         })+"\n",{mode:0o600});
         const rec=await call("onshape_fabric_reconcile",{attempt_id:attempt});
         const resolved=rec?.result;
         if(resolved?.outcome?.state==="ACHIEVED"){
-          fs.rmSync("/agent-state/phase5-live-unresolved.json",{force:true});
+          fs.rmSync(unresolvedPath,{force:true});
           r=resolved;
         }else if(resolved?.outcome?.state==="ABSENT"){
-          fs.rmSync("/agent-state/phase5-live-unresolved.json",{force:true});
+          fs.rmSync(unresolvedPath,{force:true});
           throw new Error("copy Attempt authoritatively ABSENT; no replay in this run "+attempt);
         }else{
           throw new Error("copy Attempt remains unresolved "+attempt+" "+JSON.stringify(rec));
         }
+      }else{
+        fs.rmSync(unresolvedPath,{force:true});
       }
       if(r?.outcome?.state!=="ACHIEVED"||r?.observation?.ackState!=="ACKNOWLEDGED") throw new Error("copy failed "+JSON.stringify(r));
       const v=r?.observation?.evidence?.verification||{};
