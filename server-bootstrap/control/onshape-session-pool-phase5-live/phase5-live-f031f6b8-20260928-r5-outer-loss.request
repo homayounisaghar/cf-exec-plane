@@ -1,0 +1,5 @@
+request_id=phase5-live-f031f6b8-20260928-r5-outer-loss
+action=onshape-session-pool-phase5-live-v1
+candidate_commit=f031f6b8dc11ef7fba2ad800a86a74a0421ecff7
+expected_script_blob=07567c9fbc6563c7d87c7b98c2aa80e287b56345
+expected_client_blob=5628fe20ce8ea390514f93f519b8c4e634d683da
