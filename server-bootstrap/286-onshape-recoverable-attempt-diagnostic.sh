@@ -39,13 +39,14 @@ for idx,step in enumerate(steps):
     for k in ("selector","target_selector"):
         if k in step:
             v=str(step.get(k) or "")
-            item[k+"_present"]=bool(v)
-            item[k+"_length"]=len(v)
+            item[k]=v
+    import hashlib
     for k in ("text","value"):
         if k in step:
             v=str(step.get(k) or "")
             item[k+"_present"]=True
             item[k+"_length"]=len(v)
+            item[k+"_sha256"]=hashlib.sha256(v.encode()).hexdigest()
     safe_steps.append(item)
 print("CF_RECOVERABLE_ATTEMPT_INVOCATION="+json.dumps({
   "invocation_id":row["invocation_id"],
