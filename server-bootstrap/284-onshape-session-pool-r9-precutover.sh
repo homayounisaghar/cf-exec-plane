@@ -122,6 +122,8 @@ echo "CF_POOL_R9_PREFLIGHT_MANIFEST_SHA256_C=${manifest_sha:32:16}"
 echo "CF_POOL_R9_PREFLIGHT_MANIFEST_SHA256_D=${manifest_sha:48:16}"
 echo "CF_POOL_R9_PREFLIGHT_MANIFEST_SHA256_D1=${manifest_sha:48:8}"
 echo "CF_POOL_R9_PREFLIGHT_MANIFEST_SHA256_D2=${manifest_sha:56:8}"
+echo "CF_POOL_R9_PREFLIGHT_MANIFEST_SHA256_D1A=${manifest_sha:48:4}"
+echo "CF_POOL_R9_PREFLIGHT_MANIFEST_SHA256_D1B=${manifest_sha:52:4}"
 sig="/var/lib/capability-fabric/signatures/$manifest_sha.sig"
 [[ -s "$sig" ]]
 printf '%s %s\n' capability-fabric-deploy "$(cat "$trust")" > "$tmp/allowed_signers"
