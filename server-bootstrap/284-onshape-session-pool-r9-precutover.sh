@@ -116,6 +116,10 @@ echo CF_POOL_R9_PREFLIGHT_FILE_CLOSURE=pass
 
 manifest_sha="$(sha256sum "$tmp/manifest.json" | awk '{print $1}')"
 echo "CF_POOL_R9_PREFLIGHT_MANIFEST_SHA256=$manifest_sha"
+echo "CF_POOL_R9_PREFLIGHT_MANIFEST_SHA256_A=${manifest_sha:0:16}"
+echo "CF_POOL_R9_PREFLIGHT_MANIFEST_SHA256_B=${manifest_sha:16:16}"
+echo "CF_POOL_R9_PREFLIGHT_MANIFEST_SHA256_C=${manifest_sha:32:16}"
+echo "CF_POOL_R9_PREFLIGHT_MANIFEST_SHA256_D=${manifest_sha:48:16}"
 sig="/var/lib/capability-fabric/signatures/$manifest_sha.sig"
 [[ -s "$sig" ]]
 printf '%s %s\n' capability-fabric-deploy "$(cat "$trust")" > "$tmp/allowed_signers"
