@@ -18,6 +18,7 @@ prod_gateway="capability-fabric-onshape-gateway"
 lab_server="capability-fabric-onshape-phase5-lab-server"
 lab_fabric="capability-fabric-onshape-phase5-lab-fabric"
 root="/var/lib/capability-fabric/onshape-session-pool-phase5-lab"
+unresolved_marker="$root/agent-state/phase5-live-unresolved.json"
 node_image="mcr.microsoft.com/playwright:v1.62.1-resolute@sha256:aebd85bce8056dcdc2269853fd94ea432b6a201da4f0ef125b509489ecd52ddb"
 py_image="python:3.12-slim-bookworm@sha256:392307d22300de8b5986851a12d9176dfc0fc073e65bf6523ebd7dcbeb23564e"
 maintenance=false
@@ -32,7 +33,12 @@ wait_json(){ local url="$1" max="$2"; for _ in $(seq 1 "$max"); do curl -fsS "$u
 restore(){
   set +e
   docker rm -f "$lab_fabric" "$lab_server" >/dev/null 2>&1 || true
-  rm -rf "$root" >/dev/null 2>&1 || true
+  if [[ -f "$unresolved_marker" ]]; then
+    chmod -R go-rwx "$root" >/dev/null 2>&1 || true
+    echo "CF_PHASE5_LIVE_UNRESOLVED_STATE_PRESERVED=$unresolved_marker" >&2
+  else
+    rm -rf "$root" >/dev/null 2>&1 || true
+  fi
   [[ -n "$tmp" ]] && rm -rf "$tmp" >/dev/null 2>&1 || true
 
   docker start "$prod_server" >/dev/null 2>&1 || true
@@ -65,6 +71,7 @@ cleanup(){ rc=$?; [[ "$maintenance" == true ]] && restore || true; [[ "$restore_
 trap cleanup EXIT
 
 [[ -s "$control" && -d "$cache" && -s "$token" ]] || exit 20
+[[ ! -f "$unresolved_marker" ]] || { echo "CF_PHASE5_LIVE_PREFLIGHT_UNRESOLVED=$unresolved_marker" >&2; exit 27; }
 [[ ! -e "$gate" ]] || { echo CF_PHASE5_LIVE_PREFLIGHT_GATE=present >&2; exit 21; }
 python3 - "$control" <<'PY'
 import json,sys
