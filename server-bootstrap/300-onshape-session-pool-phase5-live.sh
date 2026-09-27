@@ -3,7 +3,7 @@ set -euo pipefail
 umask 077
 [[ "$(id -u)" -eq 0 ]] || { echo CF_PHASE5_LIVE_ROOT=required >&2; exit 2; }
 
-candidate="45b1cedb5b0021fd4c396cf36f1327b742306e4c"
+candidate="d4642f4bbc33fe3054fd85053a1cffac0d48159f"
 fixture="a19e0fa5152af9f7ce106b6e:e5e7d0173fd1f1d0307a2cb6:e0929361aadb6135b5cecffa"
 control="/var/lib/capability-fabric/onshape/runtime-control/ONSHAPE_RUNTIME_CONTROL.json"
 gate="/var/lib/capability-fabric/state/release-in-progress"
@@ -200,7 +200,7 @@ wait_text http://127.0.0.1:8788/ "cf-onshape-single ok" 180 || { docker logs --t
 docker run -d --name "$lab_fabric" --network host --cap-drop ALL --security-opt no-new-privileges --read-only --tmpfs /tmp:rw,nosuid,nodev,size=512m \
   -e HOST=127.0.0.1 -e PORT=8791 -e PYTHONPATH=/release/fabric-src -e PYTHONDONTWRITEBYTECODE=1 -e PYTHONUNBUFFERED=1 -e HOME=/tmp \
   -e MCP_TOKEN_FILE=/run/secrets/mcp-token -e CF_FABRIC_POLICY_FILE=/release/fabric-policy/semantic-enforcement.v1.json \
-  -e CF_FABRIC_STATE_DB=/fabric-state/execution.sqlite3 -e CF_FABRIC_PROJECT_STATE_REVISION=phase5-live-45b1cedb5b00 \
+  -e CF_FABRIC_STATE_DB=/fabric-state/execution.sqlite3 -e CF_FABRIC_PROJECT_STATE_REVISION=phase5-live-d4642f4bbc33 \
   -e CF_FABRIC_QUALIFICATION_MODE=1 -e CF_FABRIC_REQUIRE_PRODUCTION_AUTHORITY=1 \
   -e CF_ONSHAPE_RUNTIME_CONTROL_FILE=/run/cf-authority/ONSHAPE_RUNTIME_CONTROL.json \
   -v "$release/fabric-src:/release/fabric-src:ro" -v "$release/fabric-policy:/release/fabric-policy:ro" \
