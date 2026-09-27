@@ -1,0 +1,5 @@
+request_id=2026-09-27-current-benchmark-d9354
+action=phase0-current-benchmark-preflight-v1
+candidate_commit=d9354b6bb26b10dd198aab2a7417c746ae90de66
+benchmark_id=onshape-virtual-ui-phase0-v1
+binding_amendment=v1.1
