@@ -1,0 +1,6 @@
+request_id=2026-09-27T1558-cf-server-ingress-restore
+action=restore-production-ingress-v1
+expected_control_blob=1b9c248d8b57385a86c5c157bf99ef4f1f6928ce
+expected_release=onshape-vps-hardened-production-r8
+expected_sequence=73
+mode=guarded-fail-closed
