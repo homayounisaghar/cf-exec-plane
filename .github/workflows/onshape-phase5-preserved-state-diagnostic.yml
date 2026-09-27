@@ -1,0 +1,40 @@
+name: Onshape Phase 5 Preserved State Diagnostic
+on:
+  push:
+    branches: [main]
+    paths: ['server-bootstrap/control/onshape-phase5-preserved-state-diagnostic/*.request']
+permissions: {contents: read}
+concurrency:
+  group: onshape-phase5-preserved-state-diagnostic
+  cancel-in-progress: false
+jobs:
+  diagnose:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 2, persist-credentials: false}
+      - name: Validate immutable request
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t c < <(git diff --name-status "${GITHUB_SHA}^" "${GITHUB_SHA}")
+          [[ "${#c[@]}" -eq 1 ]]
+          IFS=$'\t' read -r s p <<<"${c[0]}"
+          [[ "$s" == A && "$p" == server-bootstrap/control/onshape-phase5-preserved-state-diagnostic/*.request ]]
+          id="$(basename "$p" .request)"
+          [[ "$(awk -F= '$1=="request_id"{print $2}' "$p"|tail -1|tr -d '[:space:]')" == "$id" ]]
+          [[ "$(awk -F= '$1=="action"{print $2}' "$p"|tail -1|tr -d '[:space:]')" == onshape-phase5-preserved-state-diagnostic-v1 ]]
+          expected_script_blob="$(awk -F= '$1=="expected_script_blob"{print $2}' "$p"|tail -1|tr -d '[:space:]')"
+          [[ "$(git rev-parse "${GITHUB_SHA}:server-bootstrap/301-onshape-phase5-preserved-state-diagnostic.sh")" == "$expected_script_blob" ]]
+          bash -n server-bootstrap/301-onshape-phase5-preserved-state-diagnostic.sh
+      - name: Inspect preserved Phase 5 state
+        shell: bash
+        run: bash server-bootstrap/runner/remote-bundle-exec.sh server-bootstrap/301-onshape-phase5-preserved-state-diagnostic.sh
