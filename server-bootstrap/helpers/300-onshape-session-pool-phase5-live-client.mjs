@@ -60,20 +60,41 @@ const update=async(did,ctx,name)=>{
 };
 
 async function warm(){
-  const s=await call("onshape_pool_status");
-  if(s.pool_enabled===true && s.warming===false && (s.sessions||[]).length===5 && (s.sessions||[]).every(x=>x?.auth?.state==="PROVEN"&&x?.auth?.http_status===200)) return s;
-  const w=await call("onshape_pool_warmup");
-  const op=String(w.operation_id||"");
-  if(!op) throw new Error("warm operation missing");
-  for(let i=0;i<240;i++){
-    const st=await call("onshape_operation_status",{operation_id:op});
-    if(st.status==="SUCCEEDED") break;
-    if(st.status==="FAILED"||st.status==="AWAITING_INPUT") throw new Error("warm failed "+JSON.stringify(st));
-    await new Promise(r=>setTimeout(r,1000));
+  const proven=x=>x?.auth?.state==="PROVEN"&&x?.auth?.http_status===200;
+  let s=await call("onshape_pool_status");
+  if(s.pool_enabled===true&&s.warming===false&&(s.sessions||[]).length===5&&(s.sessions||[]).every(proven)) return s;
+  const ids=(s.sessions||[]).map(x=>String(x.session_id||"")).sort();
+  if(ids.length!==5||ids.some(id=>!/^session-[1-5]$/.test(id))) throw new Error("invalid pool session ids");
+  for(const sid of ids){
+    s=await call("onshape_pool_status");
+    if(proven((s.sessions||[]).find(x=>x.session_id===sid))) continue;
+    let recovered=false;
+    for(let authAttempt=1;authAttempt<=2&&!recovered;authAttempt++){
+      const started=await call("onshape_pool_session_reauth",{session_id:sid});
+      const op=String(started.operation_id||"");
+      if(!op) throw new Error("missing reauth operation "+sid+" "+JSON.stringify(started));
+      let terminal=null;
+      for(let i=0;i<180;i++){
+        const st=await call("onshape_operation_status",{operation_id:op});
+        if(["SUCCEEDED","FAILED","AWAITING_INPUT"].includes(st.status)){terminal=st;break;}
+        await new Promise(r=>setTimeout(r,1000));
+      }
+      if(!terminal) throw new Error("reauth timeout "+sid);
+      if(terminal.status==="AWAITING_INPUT") throw new Error("reauth input required "+sid+" "+JSON.stringify(terminal));
+      const after=await call("onshape_pool_status");
+      const ok=proven((after.sessions||[]).find(x=>x.session_id===sid));
+      const code=String(terminal?.error?.code||"");
+      if(terminal.status==="SUCCEEDED"&&ok){recovered=true;break;}
+      if((code==="POOL_FINAL_AUTH_NOT_PROVEN"||code==="LOGIN_STATE_UNRESOLVED")&&ok){recovered=true;break;}
+      if(code==="LOGIN_STATE_UNRESOLVED"&&!ok&&authAttempt===1) continue;
+      throw new Error("reauth failed "+sid+" "+JSON.stringify(terminal));
+    }
+    if(!recovered) throw new Error("session did not recover "+sid);
   }
   const p=await call("onshape_pool_status");
-  if(p.pool_enabled!==true||p.size!==5||p.navigation_concurrency_limit!==2||p.session_fingerprints_distinct!==true) throw new Error("pool invariant failed");
-  if((p.sessions||[]).some(x=>x?.auth?.state!=="PROVEN"||x?.auth?.http_status!==200)) throw new Error("auth not proven");
+  if(p.pool_enabled!==true||p.size!==5||p.navigation_limit!==2||p.session_fingerprints_distinct!==true) throw new Error("pool invariant failed "+JSON.stringify(p));
+  if((p.sessions||[]).some(x=>!proven(x))) throw new Error("auth not proven");
+  if(new Set((p.sessions||[]).map(x=>x?.auth?.account_id).filter(Boolean)).size!==1) throw new Error("account mismatch");
   return p;
 }
 
