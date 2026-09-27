@@ -23,8 +23,22 @@ const q=(xs,p)=>{const a=[...xs].sort((x,y)=>x-y);const i=(a.length-1)*p,lo=Math
 const stats=xs=>({n:xs.length,min:+Math.min(...xs).toFixed(2),p50:+q(xs,.5).toFixed(2),p95:+q(xs,.95).toFixed(2),max:+Math.max(...xs).toFixed(2),mean:+(xs.reduce((a,b)=>a+b,0)/xs.length).toFixed(2)});
 
 try {
-  const warm=await call("onshape_pool_warmup");
-  if(warm.pool_enabled!==true || warm.proven_sessions!==5 || warm.session_fingerprints_distinct!==true) throw new Error("warmup failed");
+  const warmStart=await call("onshape_pool_warmup");
+  const warmOperationId=String(warmStart.operation_id||"");
+  if(!warmOperationId) throw new Error("warmup operation id missing "+JSON.stringify(warmStart));
+  let warmState=null;
+  for(let i=0;i<180;i++){
+    const state=await call("onshape_operation_status",{operation_id:warmOperationId});
+    if(state.status==="SUCCEEDED"){ warmState=state; break; }
+    if(state.status==="FAILED") throw new Error("warmup failed "+JSON.stringify(state.error||state));
+    if(state.status==="AWAITING_INPUT") throw new Error("warmup requires operator input "+JSON.stringify(state));
+    await new Promise(resolve=>setTimeout(resolve,1000));
+  }
+  if(!warmState) throw new Error("warmup did not reach terminal state");
+  const warm=warmState.result||{};
+  if(warm.pool_enabled!==true || warm.proven_sessions!==5 || warm.session_fingerprints_distinct!==true) {
+    throw new Error("warmup invariant failed "+JSON.stringify(warm));
+  }
 
   const catalog=await call("onshape_fabric_capabilities");
   const ids=new Set((catalog.capabilities||[]).map(x=>x.id));
