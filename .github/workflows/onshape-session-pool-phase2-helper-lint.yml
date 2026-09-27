@@ -1,0 +1,52 @@
+name: Onshape Session Pool Phase 2 Helper Lint
+on:
+  push:
+    branches: [main]
+    paths: ['server-bootstrap/control/onshape-session-pool-phase2-helper-lint/*.request']
+permissions: {contents: read}
+jobs:
+  lint:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 2, persist-credentials: false}
+      - name: Validate immutable request
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t c < <(git diff --name-status "${GITHUB_SHA}^" "${GITHUB_SHA}")
+          [[ "${#c[@]}" -eq 1 ]]
+          IFS=$'\t' read -r s p <<<"${c[0]}"
+          [[ "$s" == A && "$p" == server-bootstrap/control/onshape-session-pool-phase2-helper-lint/*.request ]]
+          [[ "$(awk -F= '$1=="action"{print $2}' "$p"|tail -1|tr -d '[:space:]')" == onshape-session-pool-phase2-helper-lint-v1 ]]
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: Lint shell and embedded Node modules
+        shell: bash
+        run: |
+          set -euo pipefail
+          f=server-bootstrap/280-onshape-session-pool-phase2-five-slot.sh
+          bash -n "$f"
+          python3 - "$f" "$RUNNER_TEMP" <<'PY'
+          import pathlib,sys
+          src=pathlib.Path(sys.argv[1]).read_text()
+          out=pathlib.Path(sys.argv[2])
+          marker="<<'NODE'"
+          pos=0
+          n=0
+          while True:
+              i=src.find(marker,pos)
+              if i<0: break
+              start=src.find("\n",i)+1
+              end=src.find("\nNODE\n",start)
+              if end<0: raise SystemExit("unterminated NODE heredoc")
+              n+=1
+              (out/f"phase2-heredoc-{n}.mjs").write_text(src[start:end])
+              pos=end+6
+          if n<2: raise SystemExit(f"expected at least two NODE heredocs, got {n}")
+          print(f"CF_POOL_PHASE2_EMBEDDED_NODE_BLOCKS={n}")
+          PY
+          for f in "$RUNNER_TEMP"/phase2-heredoc-*.mjs; do node --check "$f"; done
+          echo CF_POOL_PHASE2_HELPER_LINT=pass
