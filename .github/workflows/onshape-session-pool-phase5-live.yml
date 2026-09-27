@@ -32,7 +32,7 @@ jobs:
           id="$(basename "$p" .request)"
           [[ "$(awk -F= '$1=="request_id"{print $2}' "$p"|tail -1|tr -d '[:space:]')" == "$id" ]]
           [[ "$(awk -F= '$1=="action"{print $2}' "$p"|tail -1|tr -d '[:space:]')" == onshape-session-pool-phase5-live-v1 ]]
-          [[ "$(awk -F= '$1=="candidate_commit"{print $2}' "$p"|tail -1|tr -d '[:space:]')" == d4642f4bbc33fe3054fd85053a1cffac0d48159f ]]
+          [[ "$(awk -F= '$1=="candidate_commit"{print $2}' "$p"|tail -1|tr -d '[:space:]')" == f031f6b8dc11ef7fba2ad800a86a74a0421ecff7 ]]
           expected_script_blob="$(awk -F= '$1=="expected_script_blob"{print $2}' "$p"|tail -1|tr -d '[:space:]')"
           expected_client_blob="$(awk -F= '$1=="expected_client_blob"{print $2}' "$p"|tail -1|tr -d '[:space:]')"
           [[ "$(git rev-parse "${GITHUB_SHA}:server-bootstrap/300-onshape-session-pool-phase5-live.sh")" == "$expected_script_blob" ]]
