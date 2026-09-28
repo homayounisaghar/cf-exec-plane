@@ -3,9 +3,9 @@ set -euo pipefail
 umask 077
 [[ "$(id -u)" -eq 0 ]] || exit 2
 
-CANDIDATE=7faa8346b1c54e3a9517592e8723793b47f8e7c8
+CANDIDATE=cfe48ed229cc5de1499ce5da777a515e0886aec2
 MANIFEST_REL=server-deploy/candidates/onshape-vps-hardened-r10/manifest.json
-EXPECTED_MANIFEST=50c7a75af1c575ad31c7b2d0054cf1ecf7fabd494c42c98e5eb32ab6e9ec603e
+EXPECTED_MANIFEST=7721d027e36e0911c867bc9baf25e57177671c0ec27603c304c0fe8cad73ba75
 ACTIVE=/opt/capability-fabric/current
 STATE=/var/lib/capability-fabric/state
 CONTROL=/var/lib/capability-fabric/onshape/runtime-control/ONSHAPE_RUNTIME_CONTROL.json
