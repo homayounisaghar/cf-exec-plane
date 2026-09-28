@@ -12,14 +12,16 @@ TIMER=capability-fabric-pull.timer
 SERVICE=capability-fabric-pull.service
 PULL=/usr/local/libexec/capability-fabric-pull-agent
 CACHE=/var/lib/capability-fabric/repo.git
-CONTROL_COMMIT=51a6076cb5a6bcb3abfc77904749f4c5fb02a714
+CONTROL_COMMIT=ea03ad26a30d42162dcea443b9aca5182fcc1802
 CONTROL_REL=runtime/onshape/ONSHAPE_RUNTIME_CONTROL.json
 GATEWAY=capability-fabric-onshape-gateway
 SERVER=capability-fabric-onshape-server
 STANDBY=/var/lib/capability-fabric/onshape/browser-profile-standby
 EXCLUDE=/etc/capability-fabric/backup.exclude
-EXPECTED_MANIFEST=50c7a75af1c575ad31c7b2d0054cf1ecf7fabd494c42c98e5eb32ab6e9ec603e
-EXPECTED_CONTROL_BLOB=4f33988ab09f4334960b3a6c346957774822ad9d
+FAILED_RELEASE=/var/lib/capability-fabric/releases/onshape-vps-hardened-r10
+FAILED_RELEASE_QUARANTINE=/var/lib/capability-fabric/releases/onshape-vps-hardened-r10.failed-50c7a75a
+EXPECTED_MANIFEST=7721d027e36e0911c867bc9baf25e57177671c0ec27603c304c0fe8cad73ba75
+EXPECTED_CONTROL_BLOB=c0de8f59af9b6f3f97a0402ead1329adf348032c
 
 ensure_closed() {
   local tmp="$GATE.tmp.r10-activate.$$"
@@ -76,11 +78,11 @@ echo CF_R10_ACTIVATE_CONTROL=epoch30-quiesced
 python3 - "$CONTROL" <<'PY'
 import json,sys
 d=json.load(open(sys.argv[1])); a=d["authority"]; v=a["planes"]["vps-fabric"]; g=a["productionGuard"]
-assert d["controlRevision"]==559 and a["productionEpoch"]==30
+assert d["controlRevision"]==561 and a["productionEpoch"]==30
 assert a["mode"]=="QUIESCED_RECONCILING" and a["materialAuthority"] is None
 assert v["ingress"]=="CLOSED" and v["materialEffectsAllowed"] is False
 assert v["releaseSequence"]==75 and v["releaseId"]=="onshape-vps-hardened-r10"
-assert v["manifestSha256"]=="50c7a75af1c575ad31c7b2d0054cf1ecf7fabd494c42c98e5eb32ab6e9ec603e"
+assert v["manifestSha256"]=="7721d027e36e0911c867bc9baf25e57177671c0ec27603c304c0fe8cad73ba75"
 assert d["lease"]["state"]=="FREE" and a["reconciliationHold"]["active"] is False
 assert g["killSwitch"]=="ENGAGED" and g["allowedDocumentIds"]==[]
 assert g["mutationBudget"]["maxMutations"]==0
@@ -100,6 +102,14 @@ if ! grep -Fxq "$STANDBY" "$EXCLUDE"; then
   chmod 0600 "$exclude_tmp"; chown root:root "$exclude_tmp"; mv -f "$exclude_tmp" "$EXCLUDE"
 fi
 grep -Fxq "$STANDBY" "$EXCLUDE"
+
+if [[ -d "$FAILED_RELEASE" ]]; then
+  [[ "$(readlink -f "$ACTIVE")" != "$FAILED_RELEASE" ]]
+  [[ "$(sha256sum "$FAILED_RELEASE/manifest.json"|awk '{print $1}')" == "50c7a75af1c575ad31c7b2d0054cf1ecf7fabd494c42c98e5eb32ab6e9ec603e" ]]
+  [[ ! -e "$FAILED_RELEASE_QUARANTINE" ]]
+  mv "$FAILED_RELEASE" "$FAILED_RELEASE_QUARANTINE"
+  echo CF_R10_ACTIVATE_FAILED_RELEASE=quarantined
+fi
 
 out="$("$PULL" pull)"
 printf '%s\n' "$out"
