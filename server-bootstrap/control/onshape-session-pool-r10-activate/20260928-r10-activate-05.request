@@ -1,0 +1,6 @@
+action=onshape-session-pool-r10-activate-v1
+candidate_commit=cfe48ed229cc5de1499ce5da777a515e0886aec2
+manifest_sha256=7721d027e36e0911c867bc9baf25e57177671c0ec27603c304c0fe8cad73ba75
+control_commit=ea03ad26a30d42162dcea443b9aca5182fcc1802
+control_blob=c0de8f59af9b6f3f97a0402ead1329adf348032c
+rollback_repair=verified
