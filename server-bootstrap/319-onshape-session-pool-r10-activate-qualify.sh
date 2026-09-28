@@ -11,6 +11,9 @@ GATE="$STATE/release-in-progress"
 TIMER=capability-fabric-pull.timer
 SERVICE=capability-fabric-pull.service
 PULL=/usr/local/libexec/capability-fabric-pull-agent
+CACHE=/var/lib/capability-fabric/repo.git
+CONTROL_COMMIT=51a6076cb5a6bcb3abfc77904749f4c5fb02a714
+CONTROL_REL=runtime/onshape/ONSHAPE_RUNTIME_CONTROL.json
 GATEWAY=capability-fabric-onshape-gateway
 SERVER=capability-fabric-onshape-server
 STANDBY=/var/lib/capability-fabric/onshape/browser-profile-standby
@@ -41,7 +44,34 @@ trap recover_pre_pull ERR
 ! systemctl is-active --quiet "$TIMER"
 ! systemctl is-active --quiet "$SERVICE"
 [[ "$(docker inspect -f '{{.State.Running}}' "$GATEWAY")" == false ]]
+echo CF_R10_ACTIVATE_PREFLIGHT=r9-gated
+
+# The arm step deliberately stops the pull timer before canonical authority is
+# changed. Fetch only the exact, pinned fail-closed control commit here, verify
+# its Git blob, and atomically install it before touching the signed release.
+control_stage="$(mktemp -d /root/.cf-r10-control.XXXXXX)"
+control_askpass="$control_stage/askpass"
+control_next="$control_stage/ONSHAPE_RUNTIME_CONTROL.json"
+cat >"$control_askpass" <<'ASK'
+#!/usr/bin/env bash
+case "${1:-}" in
+  *Username*) printf '%s\n' x-access-token ;;
+  *Password*) cat /etc/capability-fabric/secrets/repo-read-token ;;
+  *) exit 1 ;;
+esac
+ASK
+chmod 0700 "$control_askpass"
+GIT_ASKPASS="$control_askpass" GIT_TERMINAL_PROMPT=0 \
+  git --git-dir="$CACHE" fetch --quiet --force --depth=1 origin "$CONTROL_COMMIT"
+[[ "$(git --git-dir="$CACHE" rev-parse FETCH_HEAD)" == "$CONTROL_COMMIT" ]]
+git --git-dir="$CACHE" show "$CONTROL_COMMIT:$CONTROL_REL" >"$control_next"
+[[ "$(git hash-object "$control_next")" == "$EXPECTED_CONTROL_BLOB" ]]
+chmod 0644 "$control_next"; chown root:root "$control_next"
+mv -f "$control_next" "$CONTROL"
+rm -f "$control_askpass"
+rmdir "$control_stage"
 [[ "$(git hash-object "$CONTROL")" == "$EXPECTED_CONTROL_BLOB" ]]
+echo CF_R10_ACTIVATE_CONTROL=epoch30-quiesced
 
 python3 - "$CONTROL" <<'PY'
 import json,sys
