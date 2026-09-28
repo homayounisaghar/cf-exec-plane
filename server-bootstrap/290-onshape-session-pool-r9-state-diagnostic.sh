@@ -19,6 +19,19 @@ echo "SERVICE=$(systemctl is-active capability-fabric-pull.service 2>/dev/null |
 for c in "$SERVER" capability-fabric-onshape-fabric "$GATEWAY"; do
   echo "$c=$(docker inspect -f '{{.State.Status}}/{{.State.Running}}{{if .State.Health}}/{{.State.Health.Status}}{{end}}' "$c" 2>/dev/null || echo absent)"
 done
+server_log="$(docker logs --tail 160 "$SERVER" 2>&1 || true)"
+for signature in \
+  POOL_LEASE_STATE_INVALID \
+  ERR_MODULE_NOT_FOUND \
+  FABRIC_AUTHORITY_RELEASE_MISMATCH \
+  FABRIC_AUTHORITY_RELEASE_MISSING \
+  STANDBY_PROFILE_DIR; do
+  if grep -Fq "$signature" <<<"$server_log"; then
+    echo "SERVER_ERROR_SIGNATURE_$signature=present"
+  else
+    echo "SERVER_ERROR_SIGNATURE_$signature=absent"
+  fi
+done
 python3 - "$CONTROL" <<'PY'
 import json,sys
 d=json.load(open(sys.argv[1])); a=d["authority"]; v=a["planes"]["vps-fabric"]
@@ -33,7 +46,7 @@ print("VPS_RELEASE="+str(v["releaseId"]))
 print("LEASE="+str(d["lease"]["state"]))
 print("HOLD="+str(a["reconciliationHold"]["active"]))
 PY
-if [[ "$(docker inspect -f '{{.State.Running}}' "$SERVER" 2>/dev/null || echo false)" == true ]]; then
+if [[ "$(docker inspect -f '{{.State.Status}}' "$SERVER" 2>/dev/null || echo absent)" == running ]]; then
 docker exec -i "$SERVER" sh -lc 'cd /tmp/app && node --input-type=module' <<'NODE'
 import fs from "node:fs";
 import {Client} from "@modelcontextprotocol/sdk/client/index.js";
