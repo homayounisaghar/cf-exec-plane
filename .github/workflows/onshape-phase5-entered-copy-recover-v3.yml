@@ -32,7 +32,7 @@ jobs:
           id="$(basename "$p" .request)"
           [[ "$(awk -F= '$1=="request_id"{print $2}' "$p"|tail -1|tr -d '[:space:]')" == "$id" ]]
           [[ "$(awk -F= '$1=="action"{print $2}' "$p"|tail -1|tr -d '[:space:]')" == onshape-phase5-entered-copy-recover-v3 ]]
-          [[ "$(awk -F= '$1=="candidate_commit"{print $2}' "$p"|tail -1|tr -d '[:space:]')" == 527ce68488319137048012f1942adb00e192dc95 ]]
+          [[ "$(awk -F= '$1=="candidate_commit"{print $2}' "$p"|tail -1|tr -d '[:space:]')" == 513c6653a8f7ba2097f8233f8b43d4dac76443a4 ]]
           expected_script="$(awk -F= '$1=="expected_script_blob"{print $2}' "$p"|tail -1|tr -d '[:space:]')"
           expected_runner="$(awk -F= '$1=="expected_runner_blob"{print $2}' "$p"|tail -1|tr -d '[:space:]')"
           [[ "$(git rev-parse "${GITHUB_SHA}:server-bootstrap/316-onshape-phase5-entered-copy-recover-v3.sh")" == "$expected_script" ]]
