@@ -15,6 +15,9 @@ jobs:
       VPS_PORT: ${{ secrets.VPS_PORT }}
       VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
       VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+      CF_REMOTE_BUNDLE_WAIT_SECONDS: 1500
+      CF_REMOTE_BUNDLE_RUNTIME_SECONDS: 1620
+      CF_REMOTE_BUNDLE_POLL_SECONDS: 5
     steps:
       - uses: actions/checkout@v4
         with: {fetch-depth: 2, persist-credentials: false}
@@ -30,14 +33,18 @@ jobs:
           [[ "$(awk -F= '$1=="request_id"{print $2}' "$p"|tail -1|tr -d '[:space:]')" == "$id" ]]
           [[ "$(awk -F= '$1=="action"{print $2}' "$p"|tail -1|tr -d '[:space:]')" == onshape-phase5-orphan-takeover-recover-v1 ]]
           expected="$(awk -F= '$1=="expected_script_blob"{print $2}' "$p"|tail -1|tr -d '[:space:]')"
+          expected_runner="$(awk -F= '$1=="expected_runner_blob"{print $2}' "$p"|tail -1|tr -d '[:space:]')"
           [[ "$(git rev-parse "${GITHUB_SHA}:server-bootstrap/307-onshape-phase5-orphan-takeover-recover.sh")" == "$expected" ]]
+          [[ "$(git rev-parse "${GITHUB_SHA}:server-bootstrap/runner/remote-bundle-exec-resilient.sh")" == "$expected_runner" ]]
           bash -n server-bootstrap/307-onshape-phase5-orphan-takeover-recover.sh
+          bash -n server-bootstrap/runner/remote-bundle-exec-resilient.sh
       - name: Restore orphaned production and reconcile exact Attempt
         shell: bash
         run: |
           set -euo pipefail
-          out="$(bash server-bootstrap/runner/remote-bundle-exec.sh server-bootstrap/307-onshape-phase5-orphan-takeover-recover.sh)"
+          out="$(bash server-bootstrap/runner/remote-bundle-exec-resilient.sh server-bootstrap/307-onshape-phase5-orphan-takeover-recover.sh)"
           printf '%s\n' "$out"
+          grep -Fxq 'CF_REMOTE_BUNDLE_EXECUTION=detached-systemd' <<<"$out"
           grep -Fxq 'CF_PHASE5_ORPHAN_PROOF=no-owner-lock-free' <<<"$out"
           grep -Fxq 'CF_PHASE5_ORPHAN_PRODUCTION_RESTORED=pass' <<<"$out"
           grep -Fxq 'CF_PHASE5_RECOVERY_DURABLE_TERMINAL=ABSENT' <<<"$out"
