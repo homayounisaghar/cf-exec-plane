@@ -234,6 +234,69 @@ docker run -d --name "$lab_server" --network host --ipc host --memory 5g --cpus 
   "$node_image" sh -lc 'mkdir -p /tmp/app && cp /release/package.json /release/server.js /release/core.js /release/browser.js /release/session-pool.js /release/onshape-request.cjs /release/fabric-agent.js /release/telegram-ingress.mjs /tmp/app/ && cd /tmp/app && npm install --omit=dev --ignore-scripts --no-audit --no-fund --package-lock=false && exec node server.js' >/dev/null
 wait_text http://127.0.0.1:8788/ "cf-onshape-single ok" 180 || { docker logs --tail 150 "$lab_server" >&2; exit 30; }
 
+reserved_session="$(python3 - "$lease_file" "$expected_context" <<'PY'
+import json,re,sys
+p,context=sys.argv[1:]
+leases=json.load(open(p)).get("leases") or []
+x=next((x for x in leases if x.get("lease_id")==context),None)
+assert x is not None,x
+sid=str(x.get("session_id") or "")
+assert re.fullmatch(r"session-[1-5]",sid),x
+print(sid)
+PY
+)"
+docker exec -e CF_RESERVED_SESSION="$reserved_session" -i "$lab_server" sh -lc 'cd /tmp/app && node --input-type=module' <<'NODE'
+import fs from "node:fs";
+import {Client} from "@modelcontextprotocol/sdk/client/index.js";
+import {StreamableHTTPClientTransport} from "@modelcontextprotocol/sdk/client/streamableHttp.js";
+const token=fs.readFileSync("/run/secrets/mcp-token","utf8").trim();
+const reserved=String(process.env.CF_RESERVED_SESSION||"");
+const c=new Client({name:"phase5-entered-recovery-auth",version:"1"});
+await c.connect(new StreamableHTTPClientTransport(new URL("http://127.0.0.1:8788/mcp/"+token)));
+const parse=r=>JSON.parse((r.content||[]).filter(x=>x.type==="text").map(x=>x.text||"").join("\n"));
+const call=async(name,args={})=>parse(await c.callTool({name,arguments:args},undefined,{timeout:180000}));
+const proven=s=>s?.auth?.state==="PROVEN" && s?.auth?.http_status===200;
+const status=()=>call("onshape_pool_status");
+async function recover(sid){
+  for(let attempt=1;attempt<=2;attempt++){
+    let s=(await status()).sessions.find(x=>x.session_id===sid);
+    if(proven(s)) return;
+    const started=await call("onshape_pool_session_reauth",{session_id:sid});
+    const op=String(started.operation_id||"");
+    if(!op) throw new Error("missing reauth operation "+sid);
+    let terminal=null;
+    for(let i=0;i<180;i++){
+      const state=await call("onshape_operation_status",{operation_id:op});
+      if(["SUCCEEDED","FAILED","AWAITING_INPUT"].includes(state.status)){terminal=state;break;}
+      await new Promise(r=>setTimeout(r,1000));
+    }
+    if(!terminal) throw new Error("reauth timeout "+sid);
+    if(terminal.status==="AWAITING_INPUT") throw new Error("verification input required "+sid);
+    s=(await status()).sessions.find(x=>x.session_id===sid);
+    if(proven(s)) return;
+    const code=String(terminal?.error?.code||"");
+    if(code==="LOGIN_STATE_UNRESOLVED" && attempt===1) continue;
+    throw new Error("reauth failed "+sid+" "+JSON.stringify(terminal.error||terminal));
+  }
+}
+try {
+  const initial=await status();
+  const ids=(initial.sessions||[]).map(x=>String(x.session_id||"")).sort();
+  if(ids.length!==5) throw new Error("expected five lab sessions");
+  for(const sid of ids) await recover(sid);
+  const final=await status();
+  if(final.pool_enabled!==true || final.warming!==false) throw new Error("lab pool not enabled");
+  if(final.session_fingerprints_distinct!==true) throw new Error("lab fingerprints not distinct");
+  if((final.sessions||[]).some(x=>!proven(x))) throw new Error("lab cohort not fully proven");
+  const accounts=new Set(final.sessions.map(x=>x?.auth?.account_id).filter(Boolean));
+  if(accounts.size!==1) throw new Error("lab account mismatch");
+  if(!proven(final.sessions.find(x=>x.session_id===reserved))) throw new Error("reserved session not proven");
+  console.log("CF_PHASE5_ENTERED_RECOVERY_AUTH=5of5-PROVEN");
+} finally {
+  await c.close().catch(()=>{});
+}
+NODE
+
 python3 - "$lease_file" "$expected_attempt" "$expected_context" <<'PY'
 import json,sys
 p,attempt,context=sys.argv[1:]
