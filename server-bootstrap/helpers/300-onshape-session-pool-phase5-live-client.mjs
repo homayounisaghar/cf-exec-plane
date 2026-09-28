@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import { createHash } from "node:crypto";
 import { performance } from "node:perf_hooks";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
@@ -12,9 +13,9 @@ const docB=String(process.env.CF_DOC_B||"");
 const widA=String(process.env.CF_WID_A||"");
 const widB=String(process.env.CF_WID_B||"");
 const hex24=x=>/^[0-9a-f]{24}$/.test(x||"");
-if(!["create","exercise","ackloss","restart-acquire","restart-reconcile"].includes(phase)) throw new Error("bad phase");
+if(!["create","exercise","authdrift","ackloss","restart-acquire","restart-reconcile"].includes(phase)) throw new Error("bad phase");
 if(![sourceDid,sourceWid,sourceEid].every(hex24)) throw new Error("bad source fixture");
-if(["exercise","ackloss","restart-acquire","restart-reconcile"].includes(phase) && ![docA,docB,widA,widB].every(hex24)) throw new Error("bad disposable docs");
+if(["exercise","authdrift","ackloss","restart-acquire","restart-reconcile"].includes(phase) && ![docA,docB,widA,widB].every(hex24)) throw new Error("bad disposable docs");
 
 const c=new Client({name:"cf-phase5-multimutator-live",version:"1.0"});
 await c.connect(new StreamableHTTPClientTransport(new URL("http://127.0.0.1:8788/mcp/"+token)));
@@ -26,6 +27,27 @@ const parse=res=>{
 const call=async(name,args={})=>parse(await c.callTool({name,arguments:args},undefined,{timeout:240000}));
 const invokeRaw=async(capabilityId,args={})=>call("onshape_fabric_invoke",{capability_id:capabilityId,arguments:args});
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+const qualificationAction=async(action,args={})=>{
+  const key=createHash("sha256").update(`fabric-agent:${token}`).digest("hex");
+  const response=await fetch(`http://127.0.0.1:8789/internal/fabric/${key}`,{
+    method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({action,...args}),
+  });
+  const body=await response.json();
+  if(!response.ok||body?.ok!==true) throw new Error("qualification action failed "+JSON.stringify(body));
+  return body.result;
+};
+const restorePool=async()=>{
+  const started=await call("onshape_pool_warmup");
+  const op=String(started.operation_id||"");
+  if(!op) throw new Error("pool warmup missing operation "+JSON.stringify(started));
+  for(let i=0;i<180;i++){
+    const st=await call("onshape_operation_status",{operation_id:op});
+    if(st.status==="SUCCEEDED") return st;
+    if(st.status==="FAILED"||st.status==="AWAITING_INPUT") throw new Error("pool warmup did not recover "+JSON.stringify(st));
+    await sleep(1000);
+  }
+  throw new Error("pool warmup timeout");
+};
 const reconcileInDoubt=async r=>{
   if(r?.outcome?.state!=="IN_DOUBT") return r;
   const attempt=String(r?.attemptId||"");
@@ -195,6 +217,13 @@ try{
     const m0=performance.now();
     const [ra,rb]=await Promise.all([update(docA,ctxA,nameA),update(docB,ctxB,nameB)]);
     const mutationWindowMs=performance.now()-m0;
+    const execA=ra?.observation?.evidence?.poolExecution||{};
+    const execB=rb?.observation?.evidence?.poolExecution||{};
+    const startA=Date.parse(execA.started_at||""), finishA=Date.parse(execA.finished_at||"");
+    const startB=Date.parse(execB.started_at||""), finishB=Date.parse(execB.finished_at||"");
+    if(![startA,finishA,startB,finishB].every(Number.isFinite)) throw new Error("missing mutation execution interval");
+    const overlapMs=Math.min(finishA,finishB)-Math.max(startA,startB);
+    if(!(overlapMs>0)) throw new Error("different-document mutations did not overlap in execution");
     const [readA,readB]=await Promise.all([readName(docA,ctxA),readName(docB,ctxB)]);
     if(readA!==nameA||readB!==nameB) throw new Error("authoritative readback mismatch");
 
@@ -209,10 +238,51 @@ try{
       same_document_competitor_blocked:true,
       different_document_mutations:[ra.attemptId,rb.attemptId],
       mutation_window_ms:+mutationWindowMs.toFixed(2),
+      execution_overlap_ms:overlapMs,
+      execution_intervals:{a:{started_at:execA.started_at,finished_at:execA.finished_at},b:{started_at:execB.started_at,finished_at:execB.finished_at}},
       elapsed_ms:+(performance.now()-t0).toFixed(2),
       readback:{[docA]:readA,[docB]:readB},
       nav_limit:final.navigation_limit,
       auth_proven:(final.sessions||[]).filter(x=>x?.auth?.state==="PROVEN"&&x?.auth?.http_status===200).length,
+    }));
+  }
+
+
+  if(phase==="authdrift"){
+    const acq=await achieved("onshape.execution.context.acquire",{workItem:"phase5-auth",accessMode:"MATERIAL",documentId:docA,workspaceId:widA});
+    const ctx=ctxId(acq);
+    const before=await readName(docA,ctx);
+    const pool=await call("onshape_pool_status");
+    const lease=(pool.workflow_leases||[]).find(x=>x.lease_id===ctx);
+    const sessionId=String(lease?.session_id||"");
+    if(!/^session-[1-5]$/.test(sessionId)) throw new Error("auth drift context has no reserved slot");
+    const armed=await qualificationAction("qualification_auth_drift",{sessionId});
+    if(armed?.armed!==true||armed?.session_id!==sessionId) throw new Error("auth drift fault not armed");
+    const attempted="CF-PHASE5-AUTH-DRIFT-"+Date.now();
+    const raw=await invokeRaw("onshape.documented.operation",{
+      operationId:"updateDocumentAttributes",
+      pathParams:{did:docA},
+      body:{name:attempted},
+      verification:{kind:"document_name_equals",value:attempted},
+      executionContextId:ctx,
+    });
+    const r=raw?.result;
+    if(r?.outcome?.state!=="ABSENT") throw new Error("auth drift did not terminate ABSENT "+JSON.stringify(r));
+    if(r?.observation?.ackState!=="REJECTED"||r?.observation?.evidence?.effectSent!==false) throw new Error("auth drift not proven pre-effect "+JSON.stringify(r));
+    if(!/SESSION_REJECTED/.test(String(r?.observation?.detail||""))) throw new Error("auth drift rejection reason missing");
+    const after=await readName(docA,ctx);
+    if(after!==before||after===attempted) throw new Error("auth drift changed provider state");
+    await release(ctx);
+    const disabled=await call("onshape_pool_status");
+    if(disabled.pool_enabled!==false) throw new Error("auth drift did not fail-close pool");
+    await restorePool();
+    const restored=await call("onshape_pool_status");
+    if(restored.pool_enabled!==true||restored.warming!==false||(restored.sessions||[]).filter(x=>x?.auth?.state==="PROVEN"&&x?.auth?.http_status===200).length!==5) {
+      throw new Error("pool did not recover after qualification auth drift");
+    }
+    console.log(JSON.stringify({
+      ok:true,phase,attemptId:r.attemptId,session_id:sessionId,outcome:"ABSENT",
+      effect_sent:false,provider_state_unchanged:true,pool_fail_closed:true,pool_restored:true,
     }));
   }
 
