@@ -1,0 +1,4 @@
+request_id=onshape-phase5-sticky-lease-deadlock-fix-20260928-r1
+candidate_commit=f5136c73796d64239e05aa17c3cea320dcacf1a8
+expected_sequence=0
+expected_release=source-only
