@@ -250,16 +250,31 @@ os.chmod(tmp,0o600); os.replace(tmp,p)
 PY
 
 exercise_log="$root/exercise.log"
+resource_log="$root/resource.log"
+: >"$resource_log"
 docker exec -e CF_PHASE=exercise -e CF_FIXTURE="$fixture" -e CF_DOC_A="$doc_a" -e CF_WID_A="$wid_a" -e CF_DOC_B="$doc_b" -e CF_WID_B="$wid_b" -i "$lab_server" sh -lc 'cd /tmp/app && node --input-type=module' < "$client" >"$exercise_log" 2>&1 &
 exercise_pid=$!
 sample=0
-while kill -0 "$exercise_pid" 2>/dev/null; do
+sample_resource(){
   sample=$((sample+1))
-  echo "CF_PHASE5_LIVE_RESOURCE_SAMPLE_$sample=$(docker stats --no-stream --format '{{.CPUPerc}}|{{.MemUsage}}|{{.MemPerc}}|{{.PIDs}}' "$lab_server" 2>/dev/null || true)"
-  awk -v i="$sample" '/^(MemAvailable|SwapFree):/ {gsub(/:/,"",$1); print "CF_PHASE5_LIVE_HOST_"i"_"$1"_KIB="$2}' /proc/meminfo
+  stats="$(docker stats --no-stream --format '{{.CPUPerc}}|{{.MemUsage}}|{{.MemPerc}}|{{.PIDs}}' "$lab_server" 2>/dev/null || true)"
+  line="CF_PHASE5_LIVE_RESOURCE_SAMPLE_$sample=$stats"
+  echo "$line"
+  echo "$line" >>"$resource_log"
+  while IFS= read -r host_line; do
+    echo "$host_line"
+    echo "$host_line" >>"$resource_log"
+  done < <(awk -v i="$sample" '/^(MemAvailable|SwapFree):/ {gsub(/:/,"",$1); print "CF_PHASE5_LIVE_HOST_"i"_"$1"_KIB="$2}' /proc/meminfo)
+}
+sample_resource
+while kill -0 "$exercise_pid" 2>/dev/null; do
   sleep 1
+  sample_resource
 done
 wait "$exercise_pid"
+container_state="$(docker inspect -f '{{.State.OOMKilled}}|{{.RestartCount}}' "$lab_server")"
+echo "CF_PHASE5_LIVE_CONTAINER_STATE=$container_state"
+echo "CF_PHASE5_LIVE_CONTAINER_STATE=$container_state" >>"$resource_log"
 cat "$exercise_log"
 exercise_json="$(tail -n1 "$exercise_log")"
 python3 - "$exercise_json" <<'PY'
@@ -276,6 +291,42 @@ print("CF_PHASE5_LIVE_DIFFERENT_DOCS=pass")
 print("CF_PHASE5_LIVE_EXECUTION_OVERLAP_MS="+str(x["execution_overlap_ms"]))
 print("CF_PHASE5_LIVE_SAME_DOC_FENCE=pass")
 print("CF_PHASE5_LIVE_NAV_LIMIT=2")
+PY
+
+python3 - "$resource_log" <<'PY'
+import re,sys
+lines=open(sys.argv[1],encoding="utf-8").read().splitlines()
+mem_pct=[]
+cpu_pct=[]
+mem_available=[]
+swap_free=[]
+container=None
+for line in lines:
+    if line.startswith("CF_PHASE5_LIVE_RESOURCE_SAMPLE_"):
+        value=line.split("=",1)[1]
+        parts=value.split("|")
+        if len(parts)==4:
+            try: cpu_pct.append(float(parts[0].rstrip("%")))
+            except ValueError: pass
+            try: mem_pct.append(float(parts[2].rstrip("%")))
+            except ValueError: pass
+    m=re.match(r"CF_PHASE5_LIVE_HOST_\d+_MemAvailable_KIB=(\d+)$",line)
+    if m: mem_available.append(int(m.group(1)))
+    m=re.match(r"CF_PHASE5_LIVE_HOST_\d+_SwapFree_KIB=(\d+)$",line)
+    if m: swap_free.append(int(m.group(1)))
+    if line.startswith("CF_PHASE5_LIVE_CONTAINER_STATE="):
+        container=line.split("=",1)[1]
+assert mem_pct and mem_available and swap_free, "resource samples missing"
+assert max(mem_pct) < 95.0, ("container memory envelope exceeded",max(mem_pct))
+assert min(mem_available) >= 524288, ("host available memory below 512MiB",min(mem_available))
+assert max(swap_free)-min(swap_free) < 1048576, ("swap free moved by >=1GiB",max(swap_free)-min(swap_free))
+assert container == "false|0", ("lab container OOM/restart",container)
+print("CF_PHASE5_LIVE_RESOURCE_ENVELOPE=pass")
+print("CF_PHASE5_LIVE_RESOURCE_MAX_MEM_PCT="+f"{max(mem_pct):.2f}")
+print("CF_PHASE5_LIVE_RESOURCE_MIN_MEM_AVAILABLE_KIB="+str(min(mem_available)))
+print("CF_PHASE5_LIVE_RESOURCE_SWAP_FREE_SPAN_KIB="+str(max(swap_free)-min(swap_free)))
+if cpu_pct:
+    print("CF_PHASE5_LIVE_RESOURCE_MAX_CPU_PCT="+f"{max(cpu_pct):.2f}")
 PY
 
 auth_out="$(docker exec -e CF_PHASE=authdrift -e CF_FIXTURE="$fixture" -e CF_DOC_A="$doc_a" -e CF_WID_A="$wid_a" -e CF_DOC_B="$doc_b" -e CF_WID_B="$wid_b" -i "$lab_server" sh -lc 'cd /tmp/app && node --input-type=module' < "$client")"
