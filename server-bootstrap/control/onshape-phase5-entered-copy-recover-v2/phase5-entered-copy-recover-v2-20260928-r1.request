@@ -1,0 +1,5 @@
+request_id=phase5-entered-copy-recover-v2-20260928-r1
+action=onshape-phase5-entered-copy-recover-v2
+candidate_commit=6961ce9440508a89de72b0ec7d05671ac221314e
+expected_script_blob=267b832fb9128c69eea8d6dfcb8d4d73f0da5782
+expected_runner_blob=57c775f803d14f25714939f220dfd35a5cf75b58
