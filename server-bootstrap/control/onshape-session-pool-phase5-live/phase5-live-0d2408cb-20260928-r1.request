@@ -1,0 +1,5 @@
+request_id=phase5-live-0d2408cb-20260928-r1
+action=onshape-session-pool-phase5-live-v1
+candidate_commit=0d2408cb7a5f96c5e2221f3e73b33279f72e5574
+expected_script_blob=1bd35ad806abdaef49f85f5c09a12f968c0b53bc
+expected_client_blob=5bc7f8240ad31fcaa2e56120235f73a7dead2ce4
