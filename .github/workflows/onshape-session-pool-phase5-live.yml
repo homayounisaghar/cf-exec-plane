@@ -35,7 +35,7 @@ jobs:
           id="$(basename "$p" .request)"
           [[ "$(awk -F= '$1=="request_id"{print $2}' "$p"|tail -1|tr -d '[:space:]')" == "$id" ]]
           [[ "$(awk -F= '$1=="action"{print $2}' "$p"|tail -1|tr -d '[:space:]')" == onshape-session-pool-phase5-live-v1 ]]
-          [[ "$(awk -F= '$1=="candidate_commit"{print $2}' "$p"|tail -1|tr -d '[:space:]')" == 5485c2ce6c8f1f81757f7be5928130a16e9bf735 ]]
+          [[ "$(awk -F= '$1=="candidate_commit"{print $2}' "$p"|tail -1|tr -d '[:space:]')" == 6961ce9440508a89de72b0ec7d05671ac221314e ]]
           expected_script_blob="$(awk -F= '$1=="expected_script_blob"{print $2}' "$p"|tail -1|tr -d '[:space:]')"
           expected_client_blob="$(awk -F= '$1=="expected_client_blob"{print $2}' "$p"|tail -1|tr -d '[:space:]')"
           expected_runner_blob="$(awk -F= '$1=="expected_runner_blob"{print $2}' "$p"|tail -1|tr -d '[:space:]')"
