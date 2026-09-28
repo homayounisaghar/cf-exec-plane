@@ -1,0 +1,4 @@
+action=onshape-session-pool-r10-rollback-repair-v1
+failed_commit=51a6076cb5a6bcb3abfc77904749f4c5fb02a714
+expected_bad_schema=capability-fabric.onshape-api-leases.v3
+expected_leases=empty
