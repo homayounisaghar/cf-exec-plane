@@ -3,7 +3,7 @@ set -euo pipefail
 umask 077
 [[ "$(id -u)" -eq 0 ]] || { echo CF_PHASE5_RECOVERY_ROOT=required >&2; exit 2; }
 
-candidate="b0ce0ddd21264ce611e622645311b6782804835e"
+candidate="30586532eb81f91d63701088518d3ccb0e6e8688"
 expected_manifest="5abb7ec2ba3525f3f1e3cf535323106436b42d264150fb20c911b221ef3af7a3"
 root="/var/lib/capability-fabric/onshape-session-pool-phase5-lab"
 marker="$root/agent-state/phase5-live-unresolved.json"
@@ -302,7 +302,7 @@ PY
 docker run -d --name "$lab_fabric" --network host --cap-drop ALL --security-opt no-new-privileges --read-only --tmpfs /tmp:rw,nosuid,nodev,size=512m \
   -e HOST=127.0.0.1 -e PORT=8791 -e PYTHONPATH=/release/fabric-src -e PYTHONDONTWRITEBYTECODE=1 -e PYTHONUNBUFFERED=1 -e HOME=/tmp \
   -e MCP_TOKEN_FILE=/run/secrets/mcp-token -e CF_FABRIC_POLICY_FILE=/release/fabric-policy/semantic-enforcement.v1.json \
-  -e CF_FABRIC_STATE_DB=/fabric-state/execution.sqlite3 -e CF_FABRIC_PROJECT_STATE_REVISION=phase5-entered-recovery-b0ce0ddd2126 \
+  -e CF_FABRIC_STATE_DB=/fabric-state/execution.sqlite3 -e CF_FABRIC_PROJECT_STATE_REVISION=phase5-entered-recovery-30586532eb81 \
   -e CF_FABRIC_QUALIFICATION_MODE=1 -e CF_FABRIC_REQUIRE_PRODUCTION_AUTHORITY=1 \
   -e CF_ONSHAPE_RUNTIME_CONTROL_FILE=/run/cf-authority/ONSHAPE_RUNTIME_CONTROL.json \
   -v "$release/fabric-src:/release/fabric-src:ro" -v "$release/fabric-policy:/release/fabric-policy:ro" \
