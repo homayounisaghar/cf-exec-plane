@@ -13,9 +13,9 @@ const docB=String(process.env.CF_DOC_B||"");
 const widA=String(process.env.CF_WID_A||"");
 const widB=String(process.env.CF_WID_B||"");
 const hex24=x=>/^[0-9a-f]{24}$/.test(x||"");
-if(!["create","exercise","authdrift","ackloss","restart-acquire","restart-reconcile"].includes(phase)) throw new Error("bad phase");
+if(!["create","exercise","budget","authdrift","ackloss","restart-acquire","restart-reconcile"].includes(phase)) throw new Error("bad phase");
 if(![sourceDid,sourceWid,sourceEid].every(hex24)) throw new Error("bad source fixture");
-if(["exercise","authdrift","ackloss","restart-acquire","restart-reconcile"].includes(phase) && ![docA,docB,widA,widB].every(hex24)) throw new Error("bad disposable docs");
+if(["exercise","budget","authdrift","ackloss","restart-acquire","restart-reconcile"].includes(phase) && ![docA,docB,widA,widB].every(hex24)) throw new Error("bad disposable docs");
 
 const c=new Client({name:"cf-phase5-multimutator-live",version:"1.0"});
 await c.connect(new StreamableHTTPClientTransport(new URL("http://127.0.0.1:8788/mcp/"+token)));
@@ -194,6 +194,16 @@ try{
   }
 
   if(phase==="exercise"){
+    const mismatch=await invokeRaw("onshape.execution.context.acquire",{
+      workItem:"phase5-A",accessMode:"MATERIAL",documentId:docB,workspaceId:widB,
+    });
+    const mismatchResult=mismatch?.result;
+    if(mismatchResult?.outcome?.state!=="ABSENT"
+      || mismatchResult?.observation?.ackState!=="REJECTED"
+      || mismatchResult?.observation?.evidence?.effectSent!==false
+      || !/FABRIC_GUARD_GRANT|FABRIC_GUARD_WORK_ITEM/.test(String(mismatchResult?.observation?.detail||""))){
+      throw new Error("workItem/grant isolation did not fail pre-effect "+JSON.stringify(mismatch));
+    }
     const t0=performance.now();
     const [a,b]=await Promise.all([
       achieved("onshape.execution.context.acquire",{workItem:"phase5-A",accessMode:"MATERIAL",documentId:docA,workspaceId:widA}),
@@ -235,6 +245,7 @@ try{
       ok:true,phase,
       slots:leases.map(x=>({work_item:x.work_item,session_id:x.session_id,grant_id:x.grant_id})),
       same_document_competitor_blocked:true,
+      grant_isolation_pre_effect:true,
       different_document_mutations:[ra.attemptId,rb.attemptId],
       mutation_window_ms:+mutationWindowMs.toFixed(2),
       execution_overlap_ms:overlapMs,
@@ -246,6 +257,42 @@ try{
     }));
   }
 
+
+  if(phase==="budget"){
+    const acq=await achieved("onshape.execution.context.acquire",{
+      workItem:"phase5-budget",accessMode:"MATERIAL",documentId:docA,workspaceId:widA,
+    });
+    const ctx=ctxId(acq);
+    const names=["CF-PHASE5-BUDGET-A-"+Date.now(),"CF-PHASE5-BUDGET-B-"+Date.now()];
+    const mutate=name=>invokeRaw("onshape.documented.operation",{
+      operationId:"updateDocumentAttributes",
+      pathParams:{did:docA},
+      body:{name},
+      verification:{kind:"document_name_equals",value:name},
+      executionContextId:ctx,
+    });
+    const raw=await Promise.all(names.map(mutate));
+    const rows=raw.map(x=>x?.result);
+    if(rows.some(x=>!x||x.outcome?.state==="IN_DOUBT")) throw new Error("budget race was not immediately authoritative "+JSON.stringify(raw));
+    const won=rows.filter(x=>x.outcome?.state==="ACHIEVED"
+      && x.observation?.ackState==="ACKNOWLEDGED"
+      && x.observation?.evidence?.effectSent===true
+      && x.observation?.evidence?.postconditionVerified===true);
+    const lost=rows.filter(x=>x.outcome?.state==="ABSENT"
+      && x.observation?.ackState==="REJECTED"
+      && x.observation?.evidence?.effectSent===false
+      && /FABRIC_GUARD_BUDGET_(EXHAUSTED|BUSY)/.test(String(x.observation?.detail||"")));
+    if(won.length!==1||lost.length!==1) throw new Error("budget=1 did not admit exactly one effect "+JSON.stringify(rows));
+    const winningIndex=rows.indexOf(won[0]);
+    const observed=await readName(docA,ctx);
+    if(observed!==names[winningIndex]) throw new Error("budget winner readback mismatch");
+    await release(ctx);
+    console.log(JSON.stringify({
+      ok:true,phase,concurrent_requests:2,provider_effects:1,achieved:1,rejected_pre_effect:1,
+      budget_limit:1,final_name_is_winner:true,no_blind_retry:true,
+      winning_attempt:won[0].attemptId,rejected_attempt:lost[0].attemptId,
+    }));
+  }
 
   if(phase==="authdrift"){
     const acq=await achieved("onshape.execution.context.acquire",{workItem:"phase5-auth",accessMode:"MATERIAL",documentId:docA,workspaceId:widA});

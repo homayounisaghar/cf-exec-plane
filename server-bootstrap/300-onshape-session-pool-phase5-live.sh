@@ -3,7 +3,7 @@ set -euo pipefail
 umask 077
 [[ "$(id -u)" -eq 0 ]] || { echo CF_PHASE5_LIVE_ROOT=required >&2; exit 2; }
 
-candidate="6961ce9440508a89de72b0ec7d05671ac221314e"
+candidate="527ce68488319137048012f1942adb00e192dc95"
 fixture="a19e0fa5152af9f7ce106b6e:e5e7d0173fd1f1d0307a2cb6:e0929361aadb6135b5cecffa"
 control="/var/lib/capability-fabric/onshape/runtime-control/ONSHAPE_RUNTIME_CONTROL.json"
 gate="/var/lib/capability-fabric/state/release-in-progress"
@@ -207,7 +207,7 @@ wait_text http://127.0.0.1:8788/ "cf-onshape-single ok" 180 || { docker logs --t
 docker run -d --name "$lab_fabric" --network host --cap-drop ALL --security-opt no-new-privileges --read-only --tmpfs /tmp:rw,nosuid,nodev,size=512m \
   -e HOST=127.0.0.1 -e PORT=8791 -e PYTHONPATH=/release/fabric-src -e PYTHONDONTWRITEBYTECODE=1 -e PYTHONUNBUFFERED=1 -e HOME=/tmp \
   -e MCP_TOKEN_FILE=/run/secrets/mcp-token -e CF_FABRIC_POLICY_FILE=/release/fabric-policy/semantic-enforcement.v1.json \
-  -e CF_FABRIC_STATE_DB=/fabric-state/execution.sqlite3 -e CF_FABRIC_PROJECT_STATE_REVISION=phase5-live-9e7ec9948551 \
+  -e CF_FABRIC_STATE_DB=/fabric-state/execution.sqlite3 -e CF_FABRIC_PROJECT_STATE_REVISION=phase5-live-527ce6848831 \
   -e CF_FABRIC_QUALIFICATION_MODE=1 -e CF_FABRIC_REQUIRE_PRODUCTION_AUTHORITY=1 \
   -e CF_ONSHAPE_RUNTIME_CONTROL_FILE=/run/cf-authority/ONSHAPE_RUNTIME_CONTROL.json \
   -v "$release/fabric-src:/release/fabric-src:ro" -v "$release/fabric-policy:/release/fabric-policy:ro" \
@@ -240,6 +240,7 @@ g["grants"]=[
  {"grantId":"phase5-A","workItem":"phase5-A","documentId":a,"state":"ACTIVE","mutationBudget":{"budgetId":"phase5-A-budget3","maxMutations":3}},
  {"grantId":"phase5-B","workItem":"phase5-B","documentId":b,"state":"ACTIVE","mutationBudget":{"budgetId":"phase5-B-budget3","maxMutations":3}},
  {"grantId":"phase5-C","workItem":"phase5-C","documentId":a,"state":"ACTIVE","mutationBudget":{"budgetId":"phase5-C-budget1","maxMutations":1}},
+ {"grantId":"phase5-budget","workItem":"phase5-budget","documentId":a,"state":"ACTIVE","mutationBudget":{"budgetId":"phase5-budget-budget1","maxMutations":1}},
  {"grantId":"phase5-auth","workItem":"phase5-auth","documentId":a,"state":"ACTIVE","mutationBudget":{"budgetId":"phase5-auth-budget1","maxMutations":1}},
  {"grantId":"phase5-ack","workItem":"phase5-ack","documentId":a,"state":"ACTIVE","mutationBudget":{"budgetId":"phase5-ack-budget1","maxMutations":1}},
  {"grantId":"phase5-restart","workItem":"phase5-restart","documentId":b,"state":"ACTIVE","mutationBudget":{"budgetId":"phase5-restart-budget1","maxMutations":1}},
@@ -283,6 +284,7 @@ x=json.loads(sys.argv[1])
 assert x["ok"] and x["phase"]=="exercise"
 assert len(x["slots"])==2 and len({r["session_id"] for r in x["slots"]})==2
 assert x["same_document_competitor_blocked"] is True
+assert x["grant_isolation_pre_effect"] is True
 assert len(x["different_document_mutations"])==2
 assert x["execution_overlap_ms"] > 0
 assert all(x["execution_intervals"][k]["started_at"] and x["execution_intervals"][k]["finished_at"] for k in ("a","b"))
@@ -290,6 +292,7 @@ assert x["nav_limit"]==2 and x["auth_proven"]==5
 print("CF_PHASE5_LIVE_DIFFERENT_DOCS=pass")
 print("CF_PHASE5_LIVE_EXECUTION_OVERLAP_MS="+str(x["execution_overlap_ms"]))
 print("CF_PHASE5_LIVE_SAME_DOC_FENCE=pass")
+print("CF_PHASE5_LIVE_GRANT_ISOLATION=pass")
 print("CF_PHASE5_LIVE_NAV_LIMIT=2")
 PY
 
@@ -327,6 +330,20 @@ print("CF_PHASE5_LIVE_RESOURCE_MIN_MEM_AVAILABLE_KIB="+str(min(mem_available)))
 print("CF_PHASE5_LIVE_RESOURCE_SWAP_FREE_SPAN_KIB="+str(max(swap_free)-min(swap_free)))
 if cpu_pct:
     print("CF_PHASE5_LIVE_RESOURCE_MAX_CPU_PCT="+f"{max(cpu_pct):.2f}")
+PY
+
+budget_out="$(docker exec -e CF_PHASE=budget -e CF_FIXTURE="$fixture" -e CF_DOC_A="$doc_a" -e CF_WID_A="$wid_a" -e CF_DOC_B="$doc_b" -e CF_WID_B="$wid_b" -i "$lab_server" sh -lc 'cd /tmp/app && node --input-type=module' < "$client")"
+printf '%s\n' "$budget_out"
+budget_json="$(printf '%s\n' "$budget_out" | tail -n1)"
+python3 - "$budget_json" <<'PY'
+import json,sys
+x=json.loads(sys.argv[1])
+assert x["ok"] and x["phase"]=="budget"
+assert x["concurrent_requests"]==2 and x["provider_effects"]==1
+assert x["achieved"]==1 and x["rejected_pre_effect"]==1
+assert x["budget_limit"]==1 and x["final_name_is_winner"] is True
+assert x["no_blind_retry"] is True
+print("CF_PHASE5_LIVE_BUDGET_ATOMIC=pass")
 PY
 
 auth_out="$(docker exec -e CF_PHASE=authdrift -e CF_FIXTURE="$fixture" -e CF_DOC_A="$doc_a" -e CF_WID_A="$wid_a" -e CF_DOC_B="$doc_b" -e CF_WID_B="$wid_b" -i "$lab_server" sh -lc 'cd /tmp/app && node --input-type=module' < "$client")"
