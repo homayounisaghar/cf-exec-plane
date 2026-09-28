@@ -1,0 +1,4 @@
+request_id=remote-bundle-resilient-selftest-20260928-r1
+action=remote-bundle-resilient-selftest-v1
+expected_runner_blob=9d06870ce7ec40cb5be70c112ff77d55a50cacce
+expected_script_blob=2930b1bc8d835e483fffe8ebe1a35a2588d65fd9
