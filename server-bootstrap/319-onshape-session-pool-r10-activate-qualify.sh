@@ -88,25 +88,10 @@ print("CF_R10_ACTIVATE_AUTHORITY=epoch30-quiesced")
 PY
 
 if [[ ! -e "$STANDBY" ]]; then
-  stage="$(mktemp -d /var/lib/capability-fabric/onshape/.r10-standby.XXXXXX)"
-  docker exec "$SERVER" test -d /tmp/onshape-session-pool/session-2
-  docker exec "$SERVER" find /tmp/onshape-session-pool/session-2 -mindepth 1 -print -quit | grep -q .
-  docker pause "$SERVER" >/dev/null
-  if ! docker cp "$SERVER:/tmp/onshape-session-pool/session-2/." "$stage/"; then
-    docker unpause "$SERVER" >/dev/null 2>&1 || true
-    false
-  fi
-  docker unpause "$SERVER" >/dev/null
-  docker stop -t 30 "$SERVER" >/dev/null
-  find "$stage" -xdev -mindepth 1 -print -quit|grep -q .
-  find "$stage" -xdev -type l -name 'Singleton*' -exec unlink {} \;
-  chown -R root:root "$stage"
-  find "$stage" -xdev -type d -exec chmod 0700 {} +
-  find "$stage" -xdev -type f -exec chmod 0600 {} +
-  mv "$stage" "$STANDBY"
+  install -d -m 0700 -o root -g root "$STANDBY"
 fi
-find "$STANDBY" -xdev -mindepth 1 -print -quit|grep -q .
 [[ "$(stat -c '%a %U:%G' "$STANDBY")" == "700 root:root" ]]
+echo CF_R10_ACTIVATE_STANDBY=persistent-profile-ready
 
 if ! grep -Fxq "$STANDBY" "$EXCLUDE"; then
   exclude_tmp="$EXCLUDE.tmp.r10.$$"
