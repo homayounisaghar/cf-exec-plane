@@ -14,8 +14,8 @@ PULL=/usr/local/libexec/capability-fabric-pull-agent
 GATEWAY=capability-fabric-onshape-gateway
 SERVER=capability-fabric-onshape-server
 FABRIC=capability-fabric-onshape-fabric
-EXPECTED_MANIFEST=b3013c916781ac8d4f597a902c829c5f31fc4d1165a3c10f937550e7a1b280c9
-EXPECTED_CONTROL_BLOB=0121ce20caa46946c5665cd7efe53385081bf665
+EXPECTED_MANIFEST=50c7a75af1c575ad31c7b2d0054cf1ecf7fabd494c42c98e5eb32ab6e9ec603e
+EXPECTED_CONTROL_BLOB=f719c1565114b4d9c0a7fad6eeeb2ea114494b89
 
 ensure_closed() {
   local tmp="$GATE.tmp.r10-resume.$$"
@@ -51,7 +51,7 @@ assert d["controlRevision"]==560 and a["productionEpoch"]==31
 assert a["mode"]=="VPS_PRODUCTION" and a["materialAuthority"]=="vps-fabric"
 assert v["ingress"]=="ADMITTED" and v["materialEffectsAllowed"] is True
 assert v["releaseSequence"]==75 and v["releaseId"]=="onshape-vps-hardened-r10"
-assert v["manifestSha256"]=="b3013c916781ac8d4f597a902c829c5f31fc4d1165a3c10f937550e7a1b280c9"
+assert v["manifestSha256"]=="50c7a75af1c575ad31c7b2d0054cf1ecf7fabd494c42c98e5eb32ab6e9ec603e"
 assert d["lease"]["state"]=="FREE" and a["reconciliationHold"]["active"] is False
 assert g["killSwitch"]=="ENGAGED" and g["allowedDocumentIds"]==[]
 assert g["mutationBudget"]["maxMutations"]==0
@@ -77,7 +77,7 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 const token=fs.readFileSync("/run/secrets/mcp-token","utf8").trim();
 const c=new Client({name:"cf-r10-resume",version:"1.0"});
-await c.connect(new StreamableHTTPClientTransport(new URL("http://127.0.0.1:8789/mcp/"+token)));
+await c.connect(new StreamableHTTPClientTransport(new URL("http://127.0.0.1:8788/mcp/"+token)));
 const r=await c.callTool({name:"onshape_pool_status",arguments:{}},undefined,{timeout:180000});
 console.log((r.content||[]).filter(x=>x.type==="text").map(x=>x.text||"").join("\n"));
 await c.close().catch(()=>{});
