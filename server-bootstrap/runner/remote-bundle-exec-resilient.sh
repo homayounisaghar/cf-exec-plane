@@ -57,7 +57,7 @@ ssh_opts=(
 )
 
 ssh_run() {
-  timeout --foreground --signal=TERM "${ssh_call_seconds}s" ssh_run "$@"
+  timeout --foreground --signal=TERM "${ssh_call_seconds}s" ssh "${ssh_opts[@]}" "${VPS_SSH_USER}@${VPS_HOST}" "$@"
 }
 
 remote_env=("VPS_SSH_PORT=$port")
