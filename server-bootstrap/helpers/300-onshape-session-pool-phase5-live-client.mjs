@@ -252,12 +252,10 @@ try{
     const acq=await achieved("onshape.execution.context.acquire",{workItem:"phase5-auth",accessMode:"MATERIAL",documentId:docA,workspaceId:widA});
     const ctx=ctxId(acq);
     const before=await readName(docA,ctx);
-    const pool=await call("onshape_pool_status");
-    const lease=(pool.workflow_leases||[]).find(x=>x.lease_id===ctx);
-    const sessionId=String(lease?.session_id||"");
-    if(!/^session-[1-5]$/.test(sessionId)) throw new Error("auth drift context has no reserved slot");
-    const armed=await qualificationAction("qualification_auth_drift",{sessionId});
-    if(armed?.armed!==true||armed?.session_id!==sessionId) throw new Error("auth drift fault not armed");
+    const fault=await qualificationAction("qualification_auth_drift",{executionContextId:ctx});
+    if(fault?.armed!==true||fault?.execution_context_id!==ctx) throw new Error("auth drift fault not armed on opaque context");
+    if("session_id" in (fault||{})||"sessionId" in (fault||{})) throw new Error("auth drift fault leaked physical slot identity");
+    if(fault?.observed_auth_state==="PROVEN") throw new Error("auth drift did not invalidate browser authentication");
     const attempted="CF-PHASE5-AUTH-DRIFT-"+Date.now();
     const raw=await invokeRaw("onshape.documented.operation",{
       operationId:"updateDocumentAttributes",
@@ -269,20 +267,24 @@ try{
     const r=raw?.result;
     if(r?.outcome?.state!=="ABSENT") throw new Error("auth drift did not terminate ABSENT "+JSON.stringify(r));
     if(r?.observation?.ackState!=="REJECTED"||r?.observation?.evidence?.effectSent!==false) throw new Error("auth drift not proven pre-effect "+JSON.stringify(r));
-    if(!/SESSION_REJECTED/.test(String(r?.observation?.detail||""))) throw new Error("auth drift rejection reason missing");
-    const after=await readName(docA,ctx);
-    if(after!==before||after===attempted) throw new Error("auth drift changed provider state");
-    await release(ctx);
+    if(!/SESSION_REJECTED|SESSION_UNKNOWN/.test(String(r?.observation?.detail||""))) throw new Error("auth drift rejection reason missing");
     const disabled=await call("onshape_pool_status");
     if(disabled.pool_enabled!==false) throw new Error("auth drift did not fail-close pool");
+    await release(ctx);
     await restorePool();
     const restored=await call("onshape_pool_status");
     if(restored.pool_enabled!==true||restored.warming!==false||(restored.sessions||[]).filter(x=>x?.auth?.state==="PROVEN"&&x?.auth?.http_status===200).length!==5) {
       throw new Error("pool did not recover after qualification auth drift");
     }
+    const rd=ctxId(await achieved("onshape.execution.context.acquire",{workItem:"phase5-read",accessMode:"READ_ONLY",documentId:docA,workspaceId:widA}));
+    const after=await readName(docA,rd);
+    await release(rd);
+    if(after!==before||after===attempted) throw new Error("auth drift changed provider state");
     console.log(JSON.stringify({
-      ok:true,phase,attemptId:r.attemptId,session_id:sessionId,outcome:"ABSENT",
+      ok:true,phase,attemptId:r.attemptId,outcome:"ABSENT",
+      observed_auth_state:fault.observed_auth_state,
       effect_sent:false,provider_state_unchanged:true,pool_fail_closed:true,pool_restored:true,
+      physical_slot_hidden:true,
     }));
   }
 
