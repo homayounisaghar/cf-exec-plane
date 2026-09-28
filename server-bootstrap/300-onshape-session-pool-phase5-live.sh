@@ -3,7 +3,7 @@ set -euo pipefail
 umask 077
 [[ "$(id -u)" -eq 0 ]] || { echo CF_PHASE5_LIVE_ROOT=required >&2; exit 2; }
 
-candidate="9e7ec9948551c662e8bf7554f87552f32d035b3f"
+candidate="5485c2ce6c8f1f81757f7be5928130a16e9bf735"
 fixture="a19e0fa5152af9f7ce106b6e:e5e7d0173fd1f1d0307a2cb6:e0929361aadb6135b5cecffa"
 control="/var/lib/capability-fabric/onshape/runtime-control/ONSHAPE_RUNTIME_CONTROL.json"
 gate="/var/lib/capability-fabric/state/release-in-progress"
