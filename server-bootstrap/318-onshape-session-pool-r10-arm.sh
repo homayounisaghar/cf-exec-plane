@@ -3,9 +3,9 @@ set -euo pipefail
 umask 077
 [[ "$(id -u)" -eq 0 ]] || exit 2
 
-CANDIDATE=27665d838d2fd728171d5fdf24963c6149d7cbde
+CANDIDATE=7faa8346b1c54e3a9517592e8723793b47f8e7c8
 MANIFEST_REL=server-deploy/candidates/onshape-vps-hardened-r10/manifest.json
-EXPECTED_MANIFEST=b3013c916781ac8d4f597a902c829c5f31fc4d1165a3c10f937550e7a1b280c9
+EXPECTED_MANIFEST=50c7a75af1c575ad31c7b2d0054cf1ecf7fabd494c42c98e5eb32ab6e9ec603e
 ACTIVE=/opt/capability-fabric/current
 STATE=/var/lib/capability-fabric/state
 CONTROL=/var/lib/capability-fabric/onshape/runtime-control/ONSHAPE_RUNTIME_CONTROL.json
@@ -50,7 +50,7 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 const token=fs.readFileSync("/run/secrets/mcp-token","utf8").trim();
 const c=new Client({name:"cf-r10-arm",version:"1.0"});
-await c.connect(new StreamableHTTPClientTransport(new URL("http://127.0.0.1:8789/mcp/"+token)));
+await c.connect(new StreamableHTTPClientTransport(new URL("http://127.0.0.1:8788/mcp/"+token)));
 const r=await c.callTool({name:"onshape_pool_status",arguments:{}},undefined,{timeout:180000});
 console.log((r.content||[]).filter(x=>x.type==="text").map(x=>x.text||"").join("\n"));
 await c.close().catch(()=>{});
