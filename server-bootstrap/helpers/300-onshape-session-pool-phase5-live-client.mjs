@@ -135,6 +135,41 @@ async function warm(){
   return p;
 }
 
+const recoverUncertainContextAuth=async contextId=>{
+  const proven=x=>x?.auth?.state==="PROVEN"&&x?.auth?.http_status===200;
+  let p=await call("onshape_pool_status");
+  const matches=(p.workflow_leases||[]).filter(x=>
+    x.lease_id===contextId&&x.state==="UNCERTAIN"&&x.effect==="MATERIAL"
+  );
+  if(matches.length!==1) throw new Error("exact uncertain recovery fence missing");
+  const sid=String(matches[0].session_id||"");
+  if(!/^session-[1-5]$/.test(sid)) throw new Error("invalid internal recovery slot");
+  let session=(p.sessions||[]).find(x=>x.session_id===sid);
+  if(!proven(session)){
+    const started=await call("onshape_pool_session_reauth",{session_id:sid});
+    const op=String(started.operation_id||"");
+    if(!op) throw new Error("missing exact-slot recovery reauth operation");
+    let terminal=null;
+    for(let i=0;i<180;i++){
+      const st=await call("onshape_operation_status",{operation_id:op});
+      if(["SUCCEEDED","FAILED","AWAITING_INPUT"].includes(st.status)){terminal=st;break;}
+      await sleep(1000);
+    }
+    if(!terminal) throw new Error("exact-slot recovery reauth timeout");
+    if(terminal.status==="AWAITING_INPUT") throw new Error("exact-slot recovery needs verification input");
+    p=await call("onshape_pool_status");
+    session=(p.sessions||[]).find(x=>x.session_id===sid);
+    const code=String(terminal?.error?.code||"");
+    const accepted=terminal.status==="SUCCEEDED"||
+      ((code==="POOL_FINAL_AUTH_NOT_PROVEN"||code==="LOGIN_STATE_UNRESOLVED")&&proven(session));
+    if(!accepted||!proven(session)) throw new Error("exact-slot recovery reauth failed");
+  }
+  const fence=(p.workflow_leases||[]).find(x=>
+    x.lease_id===contextId&&x.session_id===sid&&x.state==="UNCERTAIN"&&x.effect==="MATERIAL"
+  );
+  if(!fence) throw new Error("uncertain fence changed during recovery auth");
+};
+
 try{
   await warm();
 
@@ -169,6 +204,7 @@ try{
         fs.writeFileSync(unresolvedPath,JSON.stringify({
           attemptId:attempt,phase:"create-copyWorkspace",expectedName:name,workItem,executionContextId:ctx
         })+"\n",{mode:0o600});
+        await recoverUncertainContextAuth(ctx);
         const resolved=await reconcileInDoubt(r);
         if(resolved?.outcome?.state==="ACHIEVED"){
           fs.rmSync(unresolvedPath,{force:true});
