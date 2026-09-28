@@ -18,6 +18,9 @@ jobs:
       VPS_PORT: ${{ secrets.VPS_PORT }}
       VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
       VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+      CF_REMOTE_BUNDLE_WAIT_SECONDS: 2100
+      CF_REMOTE_BUNDLE_RUNTIME_SECONDS: 2220
+      CF_REMOTE_BUNDLE_POLL_SECONDS: 5
     steps:
       - uses: actions/checkout@v4
         with: {fetch-depth: 2, persist-credentials: false}
@@ -35,15 +38,19 @@ jobs:
           [[ "$(awk -F= '$1=="candidate_commit"{print $2}' "$p"|tail -1|tr -d '[:space:]')" == 5485c2ce6c8f1f81757f7be5928130a16e9bf735 ]]
           expected_script_blob="$(awk -F= '$1=="expected_script_blob"{print $2}' "$p"|tail -1|tr -d '[:space:]')"
           expected_client_blob="$(awk -F= '$1=="expected_client_blob"{print $2}' "$p"|tail -1|tr -d '[:space:]')"
+          expected_runner_blob="$(awk -F= '$1=="expected_runner_blob"{print $2}' "$p"|tail -1|tr -d '[:space:]')"
           [[ "$(git rev-parse "${GITHUB_SHA}:server-bootstrap/300-onshape-session-pool-phase5-live.sh")" == "$expected_script_blob" ]]
           [[ "$(git rev-parse "${GITHUB_SHA}:server-bootstrap/helpers/300-onshape-session-pool-phase5-live-client.mjs")" == "$expected_client_blob" ]]
+          [[ "$(git rev-parse "${GITHUB_SHA}:server-bootstrap/runner/remote-bundle-exec-resilient.sh")" == "$expected_runner_blob" ]]
           bash -n server-bootstrap/300-onshape-session-pool-phase5-live.sh
+          bash -n server-bootstrap/runner/remote-bundle-exec-resilient.sh
           node --check server-bootstrap/helpers/300-onshape-session-pool-phase5-live-client.mjs
       - name: Run isolated live multi-mutator qualification
         shell: bash
         run: |
           set -euo pipefail
-          out="$(bash server-bootstrap/runner/remote-bundle-exec.sh server-bootstrap/300-onshape-session-pool-phase5-live.sh)"
+          out="$(bash server-bootstrap/runner/remote-bundle-exec-resilient.sh server-bootstrap/300-onshape-session-pool-phase5-live.sh)"
           printf '%s\n' "$out"
+          grep -Fxq 'CF_REMOTE_BUNDLE_EXECUTION=detached-systemd' <<<"$out"
           grep -Fxq 'CF_PHASE5_LIVE_TEST=pass' <<<"$out"
           grep -Fxq 'CF_PHASE5_LIVE_RESTORE=production-green' <<<"$out"
