@@ -4,7 +4,7 @@ umask 077
 
 [[ "$(id -u)" -eq 0 ]] || { echo "must run as uid 0" >&2; exit 1; }
 mode="${CF_PCG_WEB_CONTROL_MODE:-}"
-case "$mode" in prepare|status|ingress-diagnostic|semantic-status|semantic-conversations|semantic-conversations-protected|semantic-conversations-canary|semantic-conversation-structure-canary|semantic-conversation-pin-pair|semantic-saved-native-forward-to-contact|semantic-contact-photo-forward-to-contact|semantic-forward-state-diagnostic|semantic-topic-canary|semantic-search-canary|semantic-messages-protected|semantic-messages-canary|semantic-retrieval-hardening-canary|semantic-mark-read-canary|semantic-open-media-canary|semantic-download-canary|semantic-composer-canary|material-send-canary|material-reply-canary|material-attachment-send-canary|material-attachment-reply-canary|material-edit-canary|material-delete-canary|material-delete-for-everyone-canary|material-forward-canary|material-relay-canary|semantic-reaction-canary|material-text-limit-canary|material-attachment-hardening-canary|material-large-file-transport-canary|material-photo-album-canary|phone|code|password|cleanup|screenshot|refresh-screenshot|mytelegram-start|mytelegram-capture-code|mytelegram-signin|mytelegram-create-app|mytelegram-screenshot) ;; *) echo "invalid mode" >&2; exit 2 ;; esac
+case "$mode" in prepare|status|ingress-diagnostic|semantic-status|semantic-conversations|semantic-conversations-protected|semantic-conversations-canary|semantic-conversation-structure-canary|semantic-conversation-pin-pair|material-heart-reply-to-contact|semantic-saved-native-forward-to-contact|semantic-contact-photo-forward-to-contact|semantic-forward-state-diagnostic|semantic-topic-canary|semantic-search-canary|semantic-messages-protected|semantic-messages-canary|semantic-retrieval-hardening-canary|semantic-mark-read-canary|semantic-open-media-canary|semantic-download-canary|semantic-composer-canary|material-send-canary|material-reply-canary|material-attachment-send-canary|material-attachment-reply-canary|material-edit-canary|material-delete-canary|material-delete-for-everyone-canary|material-forward-canary|material-relay-canary|semantic-reaction-canary|material-text-limit-canary|material-attachment-hardening-canary|material-large-file-transport-canary|material-photo-album-canary|phone|code|password|cleanup|screenshot|refresh-screenshot|mytelegram-start|mytelegram-capture-code|mytelegram-signin|mytelegram-create-app|mytelegram-screenshot) ;; *) echo "invalid mode" >&2; exit 2 ;; esac
 
 run_root=/var/lib/capability-fabric/pcg/run
 socket="$run_root/web.sock"
@@ -3622,6 +3622,222 @@ finally:
 PY
   : > "$tmp_plain"
   printf 'PCG_WEB_SAVED_NATIVE_FORWARD=pass\n'
+  exit 0
+fi
+
+if [[ "$mode" == material-heart-reply-to-contact ]]; then
+  sequence="$(python3 - "$release/manifest.json" <<'PY'
+import json,sys
+print(int(json.load(open(sys.argv[1],encoding='utf-8')).get('sequence',0)))
+PY
+)"
+  [[ "$sequence" -ge 31 ]] || { echo "PCG_WEB_HEART_REPLY_RUNTIME=too-old" >&2; exit 59; }
+
+  source_commit="$(tr -d '\r\n' < "$release/source-commit")"
+  [[ "$source_commit" =~ ^[0-9a-f]{40}$ ]] || { echo "PCG_WEB_HEART_REPLY_SOURCE=invalid" >&2; exit 59; }
+  repo_cache=/var/lib/capability-fabric/deploy/pcg/repo.git
+  [[ -d "$repo_cache" ]] || { echo "PCG_WEB_HEART_REPLY_SOURCE=cache-missing" >&2; exit 59; }
+  git --git-dir="$repo_cache" cat-file -e "$source_commit^{commit}"
+
+  target_plain="$tmp_plain"
+  chown 65534:65534 "$target_plain"
+  chmod 0400 "$target_plain"
+
+  work="$(mktemp -d "$run_root/.heart-reply-src.XXXXXX")"
+  cleanup_heart_reply() { rm -rf "$work"; }
+  trap 'cleanup_heart_reply; cleanup_files' EXIT
+  chmod 0755 "$work"
+  git --git-dir="$repo_cache" archive "$source_commit" src/capability_fabric | tar -x -C "$work"
+  chown -R 65534:65534 "$work"
+  find "$work" -type d -exec chmod 0755 {} +
+  find "$work" -type f -exec chmod 0644 {} +
+
+  image='python:3.12-slim-bookworm@sha256:392307d22300de8b5986851a12d9176dfc0fc073e65bf6523ebd7dcbeb23564e'
+  docker pull "$image" >/dev/null
+  docker run -i --rm --network none --user 65534:65534 \
+    -e PYTHONPATH=/src \
+    -v "$work/src:/src:ro" \
+    -v "$target_plain:/run/heart-reply-target:ro" \
+    -v /var/lib/capability-fabric/pcg/core-state:/state:rw \
+    -v /var/lib/capability-fabric/pcg/run:/run/pcg:rw \
+    "$image" python - <<'PY'
+import json
+import socket
+import unicodedata
+from difflib import SequenceMatcher
+
+from capability_fabric.communications_runtime import PrivatePayloadBroker
+from capability_fabric.domain import OutcomeState
+from capability_fabric.persistence import SqliteExecutionStateStore
+from capability_fabric.telegram_web_runtime import (
+    TelegramWebSocketClient,
+    TelegramWebUncertainEffectResolver,
+    build_telegram_web_kernel_runtime,
+)
+
+SOCK="/run/pcg/web.sock"
+
+def norm(value):
+    if not isinstance(value,str):
+        return ""
+    value=unicodedata.normalize("NFKC",value).strip().lower()
+    value=value.replace("\u200c"," ").replace("-"," ").replace("_"," ")
+    value=value.replace("ي","ی").replace("ى","ی").replace("ك","ک")
+    return " ".join(value.split())
+
+def compact(value):
+    return "".join(ch for ch in norm(value) if ch.isalnum())
+
+def call(payload, timeout=70):
+    raw=(json.dumps(payload,separators=(",",":"),ensure_ascii=False)+"\n").encode("utf-8")
+    s=socket.socket(socket.AF_UNIX,socket.SOCK_STREAM)
+    s.settimeout(timeout)
+    s.connect(SOCK)
+    s.sendall(raw)
+    buf=b""
+    while b"\n" not in buf:
+        chunk=s.recv(65536)
+        if not chunk:
+            break
+        buf+=chunk
+    s.close()
+    if not buf:
+        raise SystemExit("empty browser response")
+    return json.loads(buf.split(b"\n",1)[0])
+
+with open("/run/heart-reply-target","r",encoding="utf-8") as stream:
+    target_name=norm(stream.read())
+if not target_name or len(target_name)>256:
+    raise SystemExit("encrypted target name is invalid")
+
+tokens=target_name.split()
+query=tokens[-1] if tokens else target_name
+search=call({
+    "op":"semantic.invoke",
+    "operation":"communication.conversation.search",
+    "purpose":"PROTECTED_DISPLAY",
+    "args":{"query":query,"limit":50},
+})
+if search.get("state")!="ACHIEVED":
+    raise SystemExit("target conversation search failed")
+protected=search.get("protected_provider_data")
+items=protected.get("conversations") if isinstance(protected,dict) else None
+if not isinstance(items,list):
+    raise SystemExit("target conversation search returned no protected results")
+
+target_compact=compact(target_name)
+candidates=[]
+for item in items:
+    if not isinstance(item,dict) or item.get("type")!="user":
+        continue
+    name=item.get("name")
+    handle=item.get("handle")
+    if not isinstance(name,str) or not isinstance(handle,str) or not handle.startswith("tgchat:"):
+        continue
+    nc=compact(name)
+    score=SequenceMatcher(None,target_compact,nc).ratio() if target_compact and nc else 0.0
+    surname_ok=compact(query) in nc
+    candidates.append((score,surname_ok,handle))
+if not candidates:
+    raise SystemExit("no user conversation candidate")
+candidates.sort(reverse=True)
+top=candidates[0]
+second=candidates[1] if len(candidates)>1 else None
+if not top[1]:
+    raise SystemExit("best candidate does not contain requested surname")
+if len(candidates)==1:
+    conversation_handle=top[2]
+elif top[0] >= 0.72 and (second is None or top[0]-second[0] >= 0.12):
+    conversation_handle=top[2]
+else:
+    surname_matches=[c for c in candidates if c[1]]
+    if len(surname_matches)==1:
+        conversation_handle=surname_matches[0][2]
+    else:
+        raise SystemExit("target conversation resolution ambiguous")
+target_name=""
+query=""
+candidates=[]
+
+listed=call({
+    "op":"semantic.invoke",
+    "operation":"communication.message.list",
+    "purpose":"PROTECTED_DISPLAY",
+    "args":{"conversation_handle":conversation_handle,"limit":50},
+})
+if listed.get("state")!="ACHIEVED":
+    raise SystemExit("message list failed")
+pdata=listed.get("protected_provider_data")
+messages=pdata.get("messages") if isinstance(pdata,dict) else None
+if not isinstance(messages,list):
+    raise SystemExit("message list returned no protected messages")
+
+source_message_handle=None
+for item in messages:
+    if (
+        isinstance(item,dict)
+        and item.get("outgoing") is False
+        and isinstance(item.get("handle"),str)
+        and item["handle"].startswith("tgmsg:")
+    ):
+        source_message_handle=item["handle"]
+        break
+if not source_message_handle:
+    raise SystemExit("no incoming message available to reply to")
+
+client=TelegramWebSocketClient(SOCK,timeout=70.0)
+state=SqliteExecutionStateStore("/state/web-material-send.sqlite3")
+payloads=PrivatePayloadBroker(
+    "/state/web-material-payloads",
+    ttl_seconds=86400,
+    max_payload_bytes=4096,
+)
+try:
+    runtime=build_telegram_web_kernel_runtime(
+        client=client,
+        payloads=payloads,
+        state_store=state,
+        journal=state,
+    )
+    result=runtime.reply_text(
+        conversation_handle=conversation_handle,
+        source_message_handle=source_message_handle,
+        text="❤️",
+    )
+    if result.outcome.state is not OutcomeState.ACHIEVED:
+        raise SystemExit("heart reply did not achieve")
+
+    resolver=TelegramWebUncertainEffectResolver(client,payloads)
+    observed=resolver.resolve(result.operation,result.attempt,result.dispatch)
+    if observed.state is not OutcomeState.ACHIEVED:
+        raise SystemExit("heart reply authoritative readback failed")
+
+    durable=any(
+        item.get("kind")=="state.dispatch_intent.persisted"
+        and item.get("entity_id")==result.attempt.attempt_id
+        for item in state.event_records()
+    )
+    if not durable:
+        raise SystemExit("heart reply durable dispatch intent missing")
+
+    payload_handle=str(result.dispatch.evidence["payload.handle"])
+    payloads.remove(payload_handle)
+    print(json.dumps({
+        "state":"ACHIEVED",
+        "target_resolved":True,
+        "latest_incoming_replied":True,
+        "heart_only":True,
+        "provider_acknowledged":result.observation.ack_state.value=="ACKNOWLEDGED",
+        "provider_confirmed":result.observation.detail=="provider_confirmed",
+        "reconciliation_readback":"ACHIEVED",
+        "kernel_dispatch_intent":True,
+        "provider_content_model_visible":False,
+    },separators=(",",":"),ensure_ascii=True))
+finally:
+    state.close()
+PY
+  : > "$tmp_plain"
+  printf 'PCG_WEB_HEART_REPLY=pass\n'
   exit 0
 fi
 
