@@ -115,4 +115,29 @@ for row in rows:
 con.close()
 PY
 
+lease_file="$root/agent-state/workflow-leases.json"
+if [[ -s "$lease_file" ]]; then
+  python3 - "$lease_file" <<'PY'
+import json,sys
+p=sys.argv[1]
+root=json.load(open(p))
+out=[]
+for raw in root.get("leases") or []:
+    out.append({
+      "leaseId":raw.get("lease_id"),
+      "workItem":raw.get("work_item"),
+      "acquiredByAttemptId":raw.get("acquired_by_attempt_id") or raw.get("attempt_id"),
+      "lastAttemptId":raw.get("last_attempt_id") or raw.get("attempt_id") or raw.get("acquired_by_attempt_id"),
+      "effect":raw.get("effect"),
+      "state":raw.get("state"),
+      "target":raw.get("target"),
+      "grantId":raw.get("grant_id"),
+      "sessionId":raw.get("session_id"),
+    })
+print("CF_PHASE5_PRESERVED_LEASES="+json.dumps(out,sort_keys=True,separators=(",",":")))
+PY
+else
+  echo 'CF_PHASE5_PRESERVED_LEASES=[]'
+fi
+
 echo CF_PHASE5_PRESERVED_DIAG=pass
