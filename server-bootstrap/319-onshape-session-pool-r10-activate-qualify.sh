@@ -89,8 +89,15 @@ PY
 
 if [[ ! -e "$STANDBY" ]]; then
   stage="$(mktemp -d /var/lib/capability-fabric/onshape/.r10-standby.XXXXXX)"
+  docker exec "$SERVER" test -d /tmp/onshape-session-pool/session-2
+  docker exec "$SERVER" find /tmp/onshape-session-pool/session-2 -mindepth 1 -print -quit | grep -q .
+  docker pause "$SERVER" >/dev/null
+  if ! docker cp "$SERVER:/tmp/onshape-session-pool/session-2/." "$stage/"; then
+    docker unpause "$SERVER" >/dev/null 2>&1 || true
+    false
+  fi
+  docker unpause "$SERVER" >/dev/null
   docker stop -t 30 "$SERVER" >/dev/null
-  docker cp "$SERVER:/tmp/onshape-session-pool/session-2/." "$stage/"
   find "$stage" -xdev -mindepth 1 -print -quit|grep -q .
   find "$stage" -xdev -type l -name 'Singleton*' -exec unlink {} \;
   chown -R root:root "$stage"
