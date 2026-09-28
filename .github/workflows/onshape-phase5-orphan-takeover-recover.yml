@@ -4,6 +4,9 @@ on:
     branches: [main]
     paths: ['server-bootstrap/control/onshape-phase5-orphan-takeover-recover/*.request']
 permissions: {contents: read}
+concurrency:
+  group: onshape-production-maintenance
+  cancel-in-progress: false
 jobs:
   recover:
     if: github.actor == 'homayounisaghar'
