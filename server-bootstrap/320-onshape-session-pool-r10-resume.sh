@@ -14,8 +14,8 @@ PULL=/usr/local/libexec/capability-fabric-pull-agent
 GATEWAY=capability-fabric-onshape-gateway
 SERVER=capability-fabric-onshape-server
 FABRIC=capability-fabric-onshape-fabric
-EXPECTED_MANIFEST=50c7a75af1c575ad31c7b2d0054cf1ecf7fabd494c42c98e5eb32ab6e9ec603e
-EXPECTED_CONTROL_BLOB=f719c1565114b4d9c0a7fad6eeeb2ea114494b89
+EXPECTED_MANIFEST=7721d027e36e0911c867bc9baf25e57177671c0ec27603c304c0fe8cad73ba75
+EXPECTED_CONTROL_BLOB=9149050c3c1f684ac9989e7126b4c71eb5b77a6a
 
 ensure_closed() {
   local tmp="$GATE.tmp.r10-resume.$$"
@@ -47,11 +47,11 @@ for _ in $(seq 1 30); do systemctl is-active --quiet "$SERVICE" || break; sleep 
 python3 - "$CONTROL" <<'PY'
 import json,sys
 d=json.load(open(sys.argv[1])); a=d["authority"]; v=a["planes"]["vps-fabric"]; g=a["productionGuard"]
-assert d["controlRevision"]==560 and a["productionEpoch"]==31
+assert d["controlRevision"]==562 and a["productionEpoch"]==31
 assert a["mode"]=="VPS_PRODUCTION" and a["materialAuthority"]=="vps-fabric"
 assert v["ingress"]=="ADMITTED" and v["materialEffectsAllowed"] is True
 assert v["releaseSequence"]==75 and v["releaseId"]=="onshape-vps-hardened-r10"
-assert v["manifestSha256"]=="50c7a75af1c575ad31c7b2d0054cf1ecf7fabd494c42c98e5eb32ab6e9ec603e"
+assert v["manifestSha256"]=="7721d027e36e0911c867bc9baf25e57177671c0ec27603c304c0fe8cad73ba75"
 assert d["lease"]["state"]=="FREE" and a["reconciliationHold"]["active"] is False
 assert g["killSwitch"]=="ENGAGED" and g["allowedDocumentIds"]==[]
 assert g["mutationBudget"]["maxMutations"]==0
