@@ -18,10 +18,12 @@ wait_seconds="${CF_REMOTE_BUNDLE_WAIT_SECONDS:-2100}"
 runtime_seconds="${CF_REMOTE_BUNDLE_RUNTIME_SECONDS:-2220}"
 poll_seconds="${CF_REMOTE_BUNDLE_POLL_SECONDS:-5}"
 inject_poll_failures="${CF_REMOTE_BUNDLE_INJECT_POLL_FAILURES:-0}"
-for n in "$wait_seconds" "$runtime_seconds" "$poll_seconds" "$inject_poll_failures"; do
+max_poll_failures="${CF_REMOTE_BUNDLE_MAX_POLL_FAILURES:-6}"
+ssh_call_seconds="${CF_REMOTE_BUNDLE_SSH_CALL_SECONDS:-75}"
+for n in "$wait_seconds" "$runtime_seconds" "$poll_seconds" "$inject_poll_failures" "$max_poll_failures" "$ssh_call_seconds"; do
   case "$n" in ''|*[!0-9]*) echo "resilient runner timing values must be numeric" >&2; exit 2 ;; esac
 done
-(( wait_seconds >= 60 && runtime_seconds > wait_seconds && poll_seconds >= 1 && poll_seconds <= 30 )) || {
+(( wait_seconds >= 60 && runtime_seconds > wait_seconds && poll_seconds >= 1 && poll_seconds <= 30 && max_poll_failures >= 2 && max_poll_failures <= 30 && ssh_call_seconds >= 15 && ssh_call_seconds <= 120 )) || {
   echo "invalid resilient runner timing bounds" >&2
   exit 2
 }
@@ -48,10 +50,15 @@ ssh_opts=(
   -o StrictHostKeyChecking=yes
   -o UserKnownHostsFile="$known_hosts"
   -o ConnectTimeout=15
+  -o ConnectionAttempts=1
   -o ServerAliveInterval=15
   -o ServerAliveCountMax=4
   -o TCPKeepAlive=yes
 )
+
+ssh_run() {
+  timeout --foreground --signal=TERM "${ssh_call_seconds}s" ssh_run "$@"
+}
 
 remote_env=("VPS_SSH_PORT=$port")
 [[ -n "${CF_PHASE4_MODE:-}" ]] && remote_env+=("CF_PHASE4_MODE=$CF_PHASE4_MODE")
@@ -76,7 +83,7 @@ remote_root="/root/.cf-bootstrap-jobs/$job_key"
 printf -v qroot '%q' "$remote_root"
 printf -v qsha '%q' "$archive_sha"
 upload_cmd="set -euo pipefail; mkdir -p $qroot; chmod 700 $qroot; cat > $qroot/bundle.tgz; chmod 600 $qroot/bundle.tgz; [[ \$(sha256sum $qroot/bundle.tgz | awk '{print \$1}') == $qsha ]]"
-cat "$archive" | ssh "${ssh_opts[@]}" "$VPS_SSH_USER@$VPS_HOST" "$upload_cmd"
+cat "$archive" | ssh_run "$upload_cmd"
 
 remote_runner='#!/usr/bin/env bash
 set -euo pipefail
@@ -89,17 +96,28 @@ work="$root/work"
 rm -rf "$work"
 mkdir -p "$work"
 chmod 700 "$work"
-on_exit(){
-  rc=$?
-  trap - EXIT
+write_status(){
+  local rc="$1"
   printf "%s\n" "$rc" > "$status.tmp"
   chmod 600 "$status.tmp"
   mv -f "$status.tmp" "$status"
 }
+on_exit(){
+  rc=$?
+  trap - EXIT
+  [[ -s "$status" ]] || write_status "$rc"
+  exit "$rc"
+}
 trap on_exit EXIT
 tar -xzf "$root/bundle.tgz" -C "$work"
 cd "$work"
+set +e
 env "$@" bash "$script_rel" >"$log" 2>&1
+rc=$?
+set -e
+write_status "$rc"
+trap - EXIT
+exit "$rc"
 '
 
 runner_b64="$(printf '%s' "$remote_runner" | base64 -w0)"
@@ -115,7 +133,7 @@ for kv in "${remote_env[@]}"; do
   start_cmd+=" $q"
 done
 start_cmd+="; fi"
-ssh "${ssh_opts[@]}" "$VPS_SSH_USER@$VPS_HOST" "$start_cmd"
+ssh_run "$start_cmd"
 
 echo "CF_REMOTE_BUNDLE_EXECUTION=detached-systemd"
 echo "CF_REMOTE_BUNDLE_JOB=$job_key"
@@ -128,21 +146,25 @@ while (( SECONDS < deadline )); do
   if (( injected < inject_poll_failures )); then
     injected=$((injected + 1))
     poll_failures=$((poll_failures + 1))
+    if (( poll_failures >= max_poll_failures )); then
+      echo "CF_REMOTE_BUNDLE_POLL_HANDOFF=detached-unit-continues" >&2
+      exit 75
+    fi
     sleep "$poll_seconds"
     continue
   fi
   check_cmd="set -euo pipefail; if [[ -s $qroot/status ]]; then printf 'DONE:'; cat $qroot/status; elif systemctl is-active --quiet $qunit.service; then echo RUNNING; elif systemctl is-failed --quiet $qunit.service; then echo UNIT_FAILED; else echo UNIT_UNKNOWN; fi"
-  if state="$(ssh "${ssh_opts[@]}" "$VPS_SSH_USER@$VPS_HOST" "$check_cmd" 2>/dev/null)"; then
+  if state="$(ssh_run "$check_cmd" 2>/dev/null)"; then
     poll_failures=0
     case "$state" in
       DONE:*)
         rc="${state#DONE:}"
         case "$rc" in ''|*[!0-9]*) rc=125 ;; esac
         log_cmd="cat $qroot/output.log 2>/dev/null || true"
-        ssh "${ssh_opts[@]}" "$VPS_SSH_USER@$VPS_HOST" "$log_cmd" || true
+        ssh_run "$log_cmd" || true
         if [[ "$rc" -eq 0 ]]; then
           cleanup_cmd="rm -rf $qroot; systemctl reset-failed $qunit.service >/dev/null 2>&1 || true"
-          ssh "${ssh_opts[@]}" "$VPS_SSH_USER@$VPS_HOST" "$cleanup_cmd" >/dev/null 2>&1 || true
+          ssh_run "$cleanup_cmd" >/dev/null 2>&1 || true
         else
           echo "CF_REMOTE_BUNDLE_REMOTE_FAILURE=$rc" >&2
         fi
@@ -153,8 +175,10 @@ while (( SECONDS < deadline )); do
     esac
   else
     poll_failures=$((poll_failures + 1))
-    if (( poll_failures % 6 == 0 )); then
-      echo "CF_REMOTE_BUNDLE_POLL_TRANSPORT_UNAVAILABLE=$poll_failures" >&2
+    echo "CF_REMOTE_BUNDLE_POLL_TRANSPORT_UNAVAILABLE=$poll_failures" >&2
+    if (( poll_failures >= max_poll_failures )); then
+      echo "CF_REMOTE_BUNDLE_POLL_HANDOFF=detached-unit-continues" >&2
+      exit 75
     fi
   fi
   sleep "$poll_seconds"
@@ -162,5 +186,5 @@ done
 
 echo "CF_REMOTE_BUNDLE_LOCAL_DEADLINE=expired" >&2
 stop_cmd="systemctl stop $qunit.service >/dev/null 2>&1 || true; for i in \$(seq 1 36); do [[ -s $qroot/status ]] && break; sleep 5; done; cat $qroot/output.log 2>/dev/null || true; if [[ -s $qroot/status ]]; then printf 'CF_REMOTE_BUNDLE_STOP_RC='; cat $qroot/status; fi"
-ssh "${ssh_opts[@]}" "$VPS_SSH_USER@$VPS_HOST" "$stop_cmd" || true
+ssh_run "$stop_cmd" || true
 exit 124
