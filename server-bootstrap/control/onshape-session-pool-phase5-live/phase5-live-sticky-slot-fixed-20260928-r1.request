@@ -1,0 +1,5 @@
+request_id=phase5-live-sticky-slot-fixed-20260928-r1
+action=onshape-session-pool-phase5-live-v1
+candidate_commit=5485c2ce6c8f1f81757f7be5928130a16e9bf735
+expected_script_blob=a17634fa5bd8f562f03c2836bf7b48ba3760c872
+expected_client_blob=128146a2340d2bab619df1a69230c13dc2198bf6
