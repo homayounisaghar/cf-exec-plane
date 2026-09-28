@@ -15,8 +15,8 @@ GATEWAY=capability-fabric-onshape-gateway
 SERVER=capability-fabric-onshape-server
 STANDBY=/var/lib/capability-fabric/onshape/browser-profile-standby
 EXCLUDE=/etc/capability-fabric/backup.exclude
-EXPECTED_MANIFEST=b3013c916781ac8d4f597a902c829c5f31fc4d1165a3c10f937550e7a1b280c9
-EXPECTED_CONTROL_BLOB=76fb484bf4ed42fcf8471609db428134218810df
+EXPECTED_MANIFEST=50c7a75af1c575ad31c7b2d0054cf1ecf7fabd494c42c98e5eb32ab6e9ec603e
+EXPECTED_CONTROL_BLOB=4f33988ab09f4334960b3a6c346957774822ad9d
 
 ensure_closed() {
   local tmp="$GATE.tmp.r10-activate.$$"
@@ -50,7 +50,7 @@ assert d["controlRevision"]==559 and a["productionEpoch"]==30
 assert a["mode"]=="QUIESCED_RECONCILING" and a["materialAuthority"] is None
 assert v["ingress"]=="CLOSED" and v["materialEffectsAllowed"] is False
 assert v["releaseSequence"]==75 and v["releaseId"]=="onshape-vps-hardened-r10"
-assert v["manifestSha256"]=="b3013c916781ac8d4f597a902c829c5f31fc4d1165a3c10f937550e7a1b280c9"
+assert v["manifestSha256"]=="50c7a75af1c575ad31c7b2d0054cf1ecf7fabd494c42c98e5eb32ab6e9ec603e"
 assert d["lease"]["state"]=="FREE" and a["reconciliationHold"]["active"] is False
 assert g["killSwitch"]=="ENGAGED" and g["allowedDocumentIds"]==[]
 assert g["mutationBudget"]["maxMutations"]==0
