@@ -1,0 +1,54 @@
+name: Onshape Phase 5 Entered Copy Rescue
+on:
+  push:
+    branches: [main]
+    paths: ['server-bootstrap/control/onshape-phase5-entered-copy-rescue/*.request']
+permissions: {contents: read}
+jobs:
+  recover:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+      CF_REMOTE_BUNDLE_WAIT_SECONDS: 1200
+      CF_REMOTE_BUNDLE_RUNTIME_SECONDS: 1320
+      CF_REMOTE_BUNDLE_POLL_SECONDS: 5
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 2, persist-credentials: false}
+      - name: Validate immutable stale-concurrency rescue request
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t c < <(git diff --name-status "${GITHUB_SHA}^" "${GITHUB_SHA}")
+          [[ "${#c[@]}" -eq 1 ]]
+          IFS=$'\t' read -r s p <<<"${c[0]}"
+          [[ "$s" == A && "$p" == server-bootstrap/control/onshape-phase5-entered-copy-rescue/*.request ]]
+          id="$(basename "$p" .request)"
+          [[ "$(awk -F= '$1=="request_id"{print $2}' "$p"|tail -1|tr -d '[:space:]')" == "$id" ]]
+          [[ "$(awk -F= '$1=="action"{print $2}' "$p"|tail -1|tr -d '[:space:]')" == onshape-phase5-entered-copy-rescue-v1 ]]
+          [[ "$(awk -F= '$1=="candidate_commit"{print $2}' "$p"|tail -1|tr -d '[:space:]')" == d7c6336e0ae2e4bc78725ad02508bdbf935971e3 ]]
+          expected_script="$(awk -F= '$1=="expected_script_blob"{print $2}' "$p"|tail -1|tr -d '[:space:]')"
+          expected_runner="$(awk -F= '$1=="expected_runner_blob"{print $2}' "$p"|tail -1|tr -d '[:space:]')"
+          [[ "$(git rev-parse "${GITHUB_SHA}:server-bootstrap/313-onshape-phase5-entered-copy-recover.sh")" == "$expected_script" ]]
+          [[ "$(git rev-parse "${GITHUB_SHA}:server-bootstrap/runner/remote-bundle-exec-resilient.sh")" == "$expected_runner" ]]
+          bash -n server-bootstrap/313-onshape-phase5-entered-copy-recover.sh
+          bash -n server-bootstrap/runner/remote-bundle-exec-resilient.sh
+      - name: Recover exact Attempt under VPS flock
+        shell: bash
+        run: |
+          set -euo pipefail
+          out="$(bash server-bootstrap/runner/remote-bundle-exec-resilient.sh server-bootstrap/313-onshape-phase5-entered-copy-recover.sh)"
+          printf '%s\n' "$out"
+          grep -Fxq 'CF_REMOTE_BUNDLE_EXECUTION=detached-systemd' <<<"$out"
+          grep -Fxq 'CF_PHASE5_ENTERED_RECOVERY_AUTH=5of5-PROVEN' <<<"$out"
+          grep -Fxq 'CF_PHASE5_ENTERED_RECOVERY_READ_ONLY_PROOF=pass' <<<"$out"
+          grep -Eq '^CF_PHASE5_ENTERED_RECOVERY_DURABLE_TERMINAL=(ACHIEVED|ABSENT)$' <<<"$out"
+          grep -Fxq 'CF_PHASE5_ENTERED_RECOVERY_MARKER=cleared-after-terminal-proof' <<<"$out"
+          grep -Fxq 'CF_PHASE5_ENTERED_RECOVERY=pass' <<<"$out"
+          grep -Fxq 'CF_PHASE5_RECOVERY_RESTORE=production-green' <<<"$out"
