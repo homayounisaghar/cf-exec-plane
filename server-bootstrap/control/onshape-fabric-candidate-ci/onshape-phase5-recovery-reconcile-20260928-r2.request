@@ -1,0 +1,4 @@
+request_id=onshape-phase5-recovery-reconcile-20260928-r2
+candidate_commit=c9e8104cfa2bebfc42bf4adddb458d66e60f67fc
+expected_sequence=0
+expected_release=source-only
