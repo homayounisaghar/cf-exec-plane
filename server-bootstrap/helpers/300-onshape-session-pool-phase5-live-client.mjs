@@ -169,8 +169,7 @@ try{
         fs.writeFileSync(unresolvedPath,JSON.stringify({
           attemptId:attempt,phase:"create-copyWorkspace",expectedName:name,workItem,executionContextId:ctx
         })+"\n",{mode:0o600});
-        const rec=await call("onshape_fabric_reconcile",{attempt_id:attempt});
-        const resolved=rec?.result;
+        const resolved=await reconcileInDoubt(r);
         if(resolved?.outcome?.state==="ACHIEVED"){
           fs.rmSync(unresolvedPath,{force:true});
           r=resolved;
