@@ -1,0 +1,6 @@
+request_id=phase5-live-full-frontier-20260928-r2
+action=onshape-session-pool-phase5-live-v1
+candidate_commit=513c6653a8f7ba2097f8233f8b43d4dac76443a4
+expected_script_blob=c4def9d9855b28af21824da5f08c4f82f0b928c7
+expected_client_blob=1704f34c4804529f521e2797778b2d3d8d7fa43d
+expected_runner_blob=8482d5d567fd579dc1827f18454d0dd6be0c8838
