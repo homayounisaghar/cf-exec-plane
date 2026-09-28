@@ -1,0 +1,5 @@
+action=onshape-session-pool-r10-resume-v1
+manifest_sha256=7721d027e36e0911c867bc9baf25e57177671c0ec27603c304c0fe8cad73ba75
+control_commit=1d5cc05d97e3f17e4c0a7beb54fc3ed1cbfacd4d
+control_blob=9149050c3c1f684ac9989e7126b4c71eb5b77a6a
+qualification_run=36471254921
