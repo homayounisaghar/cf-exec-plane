@@ -9,6 +9,12 @@ script_rel="${1:?usage: remote-bundle-exec.sh <server-bootstrap-script>}"
 port="${VPS_PORT:-22}"
 case "$port" in ''|*[!0-9]*) echo "VPS_PORT must be numeric" >&2; exit 2 ;; esac
 case "$VPS_SSH_USER" in ''|*[!a-zA-Z0-9_-]*) echo "VPS_SSH_USER contains unsupported characters" >&2; exit 2 ;; esac
+case "$script_rel" in
+  server-bootstrap/300-onshape-session-pool-phase5-live.sh|server-bootstrap/305-onshape-phase5-current-pre-effect-recover.sh|server-bootstrap/307-onshape-phase5-orphan-takeover-recover.sh)
+    echo "production maintenance script requires remote-bundle-exec-resilient.sh" >&2
+    exit 4
+    ;;
+esac
 workspace="${GITHUB_WORKSPACE:-$(pwd)}"
 [[ -f "$workspace/$script_rel" ]] || { echo "bootstrap script missing" >&2; exit 2; }
 
