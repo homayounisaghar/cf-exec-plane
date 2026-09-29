@@ -123,12 +123,17 @@ jobs:
               assert actual == expected, (rel, actual, expected)
 
           server = (root / "server.js").read_text()
-          assert "agent.executeDocumentedOperation(args)" in server
-          assert 'execution_path: "mcp->onshape-agent->browser-session->onshape"' in server
+          assert "agent.executeIntent(args)" in server
+          assert 'execution_path: "mcp->semantic-contract->onshape-agent->browser-session->onshape"' in server
+          assert 'server.registerTool("onshape_operation_execute"' in server
+          assert 'server.registerTool("onshape_intent_execute"' not in server
 
           agent = (root / "onshape-agent.js").read_text()
           assert "_buildOperationRegistry()" in agent
+          assert "_buildSemanticRegistry()" in agent
+          assert "executeIntent" in agent
           assert "executeDocumentedOperation" in agent
+          assert "startup-precompiled-semantic" in agent
           assert "provider_acknowledged" in agent
 
           print("CF_ONSHAPE_FAST_R12_PUBLIC_QUALIFICATION=pass")
