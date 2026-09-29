@@ -1,0 +1,1304 @@
+import fs from "node:fs";
+import path from "node:path";
+import { createHash, randomBytes } from "node:crypto";
+
+const METHODS = new Set(["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"]);
+const READ_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
+// Semantic effect is not identical to HTTP method. Keep POST exceptions
+// evidence-backed and intentionally small.
+const READ_ONLY_POST_OPERATION_IDS = new Set(["evalFeatureScript"]);
+const RISK_READ = "READ";
+const RISK_ORDINARY_WRITE = "ORDINARY_WRITE";
+const RISK_HIGH_IMPACT = "HIGH_IMPACT";
+const QUALIFIED = "READY";
+const QUALIFIED_OWNER_INTENT = "READY_REQUIRES_EXPLICIT_OWNER_INTENT";
+const HIGH_IMPACT_OPERATION_PATTERN = /(?:share|permission|public|transfer.*ownership|ownership.*transfer|invite.*(?:team|company)|(?:team|company|account).*(?:member|admin|delete|remove)|api.?key|oauth|webhook|admin(?:istration)?)/i;
+const REQUEST_ID_RE = /^[A-Za-z0-9:._-]{1,160}$/;
+const SEMANTIC_BACKEND_DOCUMENTED = "DOCUMENTED_OPERATION";
+const SEMANTIC_BACKEND_BOUNDED_UI = "BOUNDED_UI";
+
+const DOCUMENTED_SEMANTIC_ALIASES = Object.freeze({
+  updateDocumentAttributes: ["rename document", "update document metadata"],
+  createPartStudio: ["create part studio", "add part studio", "new part studio"],
+  addPartStudioFeature: ["add feature", "create feature", "add part studio feature"],
+  updatePartStudioFeature: ["update feature", "edit feature", "update part studio feature"],
+  deletePartStudioFeature: ["delete feature", "remove feature", "delete part studio feature"],
+  updateWVEPMetadata: ["update metadata", "update part metadata"],
+});
+
+const BOUNDED_UI_CAPABILITIES = Object.freeze([
+  Object.freeze({
+    capabilityId: "part.visibility",
+    aliases: Object.freeze([
+      Object.freeze({ phrase: "hide part", defaults: Object.freeze({ visible: false }) }),
+      Object.freeze({ phrase: "hide body", defaults: Object.freeze({ visible: false }) }),
+      Object.freeze({ phrase: "show part", defaults: Object.freeze({ visible: true }) }),
+      Object.freeze({ phrase: "show body", defaults: Object.freeze({ visible: true }) }),
+      Object.freeze({ phrase: "set part visibility", defaults: Object.freeze({}) }),
+    ]),
+    surfaceAliases: Object.freeze(["hide part", "show part", "set part visibility"]),
+    backend: Object.freeze({
+      kind: SEMANTIC_BACKEND_BOUNDED_UI,
+      executor: "PART_VISIBILITY",
+      targetResolverOperationId: "getPartsWMVE",
+    }),
+    riskClass: RISK_ORDINARY_WRITE,
+    verificationStrategy: "EXACT_PART_ROW_DIRECTIONAL_VISIBILITY_COMMAND",
+    qualificationState: QUALIFIED,
+    targetDescription: "document_id, workspace_id, element_id, plus part_id/entity_id or part_name/entity_name",
+    argumentDescription: "visible:boolean; hide/show aliases supply visible automatically",
+  }),
+]);
+
+function stableJson(value) {
+  if (Array.isArray(value)) return `[${value.map((item) => stableJson(item)).join(",")}]`;
+  if (value && typeof value === "object") {
+    return `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${stableJson(value[key])}`).join(",")}}`;
+  }
+  return JSON.stringify(value);
+}
+
+function sha256Json(value) {
+  return createHash("sha256").update(stableJson(value)).digest("hex");
+}
+
+function elapsedMs(startNs) {
+  return Number(process.hrtime.bigint() - startNs) / 1e6;
+}
+
+function codedError(code, message) {
+  const error = new Error(message);
+  error.code = code;
+  return error;
+}
+
+function plainObject(value, label) {
+  if (value == null) return {};
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw codedError("ONSHAPE_AGENT_INVALID", `${label} must be an object`);
+  }
+  return value;
+}
+
+function cleanRequestId(value) {
+  const text = String(value || "").trim();
+  if (!REQUEST_ID_RE.test(text)) throw codedError("ONSHAPE_REQUEST_ID_INVALID", "Invalid request identity.");
+  return text;
+}
+
+function operationAliasKey(value) {
+  return String(value || "")
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim()
+    .replace(/\s+/g, " ");
+}
+
+function operationAliases(operation) {
+  const values = new Set();
+  const operationId = String(operation?.operationId || "").trim();
+  if (operationId) {
+    values.add(operationId);
+    values.add(operationAliasKey(operationId));
+  }
+  const summary = String(operation?.summary || "").trim();
+  if (summary) values.add(operationAliasKey(summary));
+  return [...values].filter(Boolean);
+}
+
+function operationRiskClass({ operationId, method, pathTemplate, summary = "" }) {
+  if (READ_METHODS.has(method) || READ_ONLY_POST_OPERATION_IDS.has(operationId)) return RISK_READ;
+  const semanticText = [
+    operationAliasKey(operationId),
+    operationAliasKey(summary),
+    operationAliasKey(pathTemplate),
+  ].join(" ");
+  if (HIGH_IMPACT_OPERATION_PATTERN.test(semanticText)) return RISK_HIGH_IMPACT;
+  return RISK_ORDINARY_WRITE;
+}
+
+function operationVerificationStrategy(operationId, riskClass) {
+  if (riskClass === RISK_READ) return "HTTP_SUCCESS";
+  if (operationId === "updateDocumentAttributes") return "DOCUMENT_NAME_READBACK";
+  if (operationId === "copyWorkspace") return "WORKSPACE_COPY_READBACK";
+  if (operationId === "updatePartStudioFeature") return "PARTSTUDIO_FEATURE_PROJECTION_READBACK";
+  if (operationId === "addPartStudioFeature") return "PARTSTUDIO_FEATURE_ADDED_READBACK";
+  if (operationId === "deletePartStudioFeature") return "PARTSTUDIO_FEATURE_ABSENCE_READBACK";
+  return "PROVIDER_ACKNOWLEDGEMENT";
+}
+
+function operationQualificationState(riskClass) {
+  return riskClass === RISK_HIGH_IMPACT ? QUALIFIED_OWNER_INTENT : QUALIFIED;
+}
+
+export class OnshapeAgent {
+  constructor({
+    core,
+    openApiFile,
+    stateDir,
+    buildId,
+    allowedOpenApiRoot = "/openapi",
+  }) {
+    if (!core) throw new Error("OnshapeAgent requires Onshape core.");
+    this.core = core;
+    this.openApiFile = path.resolve(String(openApiFile || ""));
+    this.stateDir = String(stateDir || "");
+    this.buildId = String(buildId || "unknown");
+    const openApiRoot = path.resolve(String(allowedOpenApiRoot || "/openapi"));
+    const openApiRelative = path.relative(openApiRoot, this.openApiFile);
+    if (!openApiRelative || openApiRelative === ".." || openApiRelative.startsWith(".." + path.sep) || path.isAbsolute(openApiRelative)) {
+      throw new Error("Invalid OpenAPI path.");
+    }
+    if (!this.stateDir.startsWith("/")) throw new Error("Agent state directory must be absolute.");
+    fs.mkdirSync(this.stateDir, { recursive: true, mode: 0o700 });
+    fs.chmodSync(this.stateDir, 0o700);
+    this._operationRegistry = this._buildOperationRegistry();
+    this._semanticRegistry = this._buildSemanticRegistry();
+  }
+
+  _recordPath(requestId) {
+    const safe = cleanRequestId(requestId);
+    const name = createHash("sha256").update(safe).digest("hex") + ".json";
+    return path.join(this.stateDir, name);
+  }
+
+  _readRecord(requestId) {
+    const file = this._recordPath(requestId);
+    if (!fs.existsSync(file)) return null;
+    const parsed = JSON.parse(fs.readFileSync(file, "utf8"));
+    if (!parsed || typeof parsed !== "object" || parsed.requestId !== requestId) {
+      throw codedError("ONSHAPE_JOURNAL_INVALID", "Persisted request record is invalid.");
+    }
+    return parsed;
+  }
+
+  _writeRecord(record) {
+    const file = this._recordPath(record.requestId);
+    const tmp = file + ".tmp-" + process.pid + "-" + randomBytes(4).toString("hex");
+    fs.writeFileSync(tmp, JSON.stringify(record), { encoding: "utf8", mode: 0o600 });
+    fs.renameSync(tmp, file);
+    fs.chmodSync(file, 0o600);
+  }
+
+  _readSpec() {
+    const raw = fs.readFileSync(this.openApiFile, "utf8");
+    const spec = JSON.parse(raw);
+    if (!spec || typeof spec !== "object" || !spec.paths || typeof spec.info?.version !== "string") {
+      throw codedError("OPENAPI_SPEC_INVALID", "Local OpenAPI specification is invalid.");
+    }
+    const servers = Array.isArray(spec.servers) ? spec.servers : [];
+    if (servers.length !== 1 || typeof servers[0]?.url !== "string") {
+      throw codedError("OPENAPI_SERVER_INVALID", "Official OpenAPI contract must expose exactly one executable server.");
+    }
+    let server;
+    try {
+      server = new URL(servers[0].url);
+    } catch {
+      throw codedError("OPENAPI_SERVER_INVALID", "Official OpenAPI server URL is invalid.");
+    }
+    if (server.protocol !== "https:" || server.hostname !== "cad.onshape.com" || server.search || server.hash) {
+      throw codedError("OPENAPI_SERVER_INVALID", "Official OpenAPI server must be the expected HTTPS Onshape origin.");
+    }
+    const apiBasePath = server.pathname.replace(/\/$/, "");
+    if (!/^\/api\/v[1-9][0-9]*$/.test(apiBasePath)) {
+      throw codedError("OPENAPI_SERVER_INVALID", "Official OpenAPI server must provide an explicit versioned /api/vN base path.");
+    }
+    return {
+      spec,
+      hash: sha256Json(spec),
+      version: spec.info.version,
+      apiBasePath,
+      apiVersion: apiBasePath.split("/").pop(),
+    };
+  }
+
+  _buildOperationRegistry() {
+    const { spec, hash, version, apiBasePath, apiVersion } = this._readSpec();
+    const byId = new Map();
+    const aliasCandidates = new Map();
+
+    for (const [pathTemplate, item] of Object.entries(spec.paths || {})) {
+      if (!item || typeof item !== "object") continue;
+      const pathParameters = Array.isArray(item.parameters) ? item.parameters : [];
+      for (const [methodRaw, operation] of Object.entries(item)) {
+        const method = String(methodRaw).toUpperCase();
+        if (!METHODS.has(method) || !operation || typeof operation !== "object") continue;
+        const operationId = String(operation.operationId || "").trim();
+        if (!operationId) continue;
+        if (byId.has(operationId)) {
+          throw codedError("OPENAPI_OPERATION_AMBIGUOUS", `Duplicate official OpenAPI operationId: ${operationId}.`);
+        }
+        const parameters = [
+          ...pathParameters,
+          ...(Array.isArray(operation.parameters) ? operation.parameters : []),
+        ];
+        const requiredPathParameters = parameters
+          .filter((p) => p?.in === "path" && p?.required)
+          .map((p) => String(p.name));
+        const summary = typeof operation.summary === "string" ? operation.summary : null;
+        const riskClass = operationRiskClass({ operationId, method, pathTemplate, summary: summary || "" });
+        const contract = Object.freeze({
+          operationId,
+          method,
+          pathTemplate,
+          openapiHash: hash,
+          openapiVersion: version,
+          apiBasePath,
+          apiVersion,
+          riskClass,
+          verificationStrategy: operationVerificationStrategy(operationId, riskClass),
+          qualificationState: operationQualificationState(riskClass),
+          requiredPathParameters,
+          parameters: parameters.slice(0, 80).map((p) => ({
+            name: p?.name ?? null,
+            in: p?.in ?? null,
+            required: !!p?.required,
+            schema: p?.schema?.type ?? null,
+          })),
+          requestContentTypes: Object.keys(operation.requestBody?.content || {}),
+          responseContentTypes: [...new Set(
+            Object.values(operation.responses || {}).flatMap((r) => Object.keys(r?.content || {})),
+          )],
+          summary,
+        });
+        byId.set(operationId, contract);
+        for (const alias of operationAliases(operation)) {
+          const key = operationAliasKey(alias);
+          if (!key) continue;
+          if (!aliasCandidates.has(key)) aliasCandidates.set(key, []);
+          aliasCandidates.get(key).push(operationId);
+        }
+      }
+    }
+
+    const byAlias = new Map();
+    for (const [key, ids] of aliasCandidates.entries()) {
+      const unique = [...new Set(ids)];
+      if (unique.length === 1) byAlias.set(key, unique[0]);
+    }
+    if (byId.size < 1) {
+      throw codedError("OPENAPI_SPEC_INVALID", "Official OpenAPI registry contains no executable operations.");
+    }
+    return Object.freeze({
+      byId,
+      byAlias,
+      count: byId.size,
+      openapiHash: hash,
+      openapiVersion: version,
+      apiBasePath,
+      apiVersion,
+    });
+  }
+
+  resolveOperation(operationIdOrAlias) {
+    const requested = String(operationIdOrAlias || "").trim();
+    if (!requested || requested.length > 240 || /[\r\n\0]/.test(requested)) {
+      throw codedError("OPENAPI_OPERATION_ID_INVALID", "Invalid OpenAPI operation selector.");
+    }
+    const direct = this._operationRegistry.byId.get(requested);
+    if (direct) return direct;
+    const canonicalId = this._operationRegistry.byAlias.get(operationAliasKey(requested));
+    if (!canonicalId) {
+      throw codedError(
+        "OPENAPI_OPERATION_NOT_FOUND",
+        `No unique pre-indexed official OpenAPI operation for ${requested}.`,
+      );
+    }
+    return this._operationRegistry.byId.get(canonicalId);
+  }
+
+  operationRegistryStatus() {
+    return {
+      count: this._operationRegistry.count,
+      openapiHash: this._operationRegistry.openapiHash,
+      openapiVersion: this._operationRegistry.openapiVersion,
+      apiBasePath: this._operationRegistry.apiBasePath,
+      apiVersion: this._operationRegistry.apiVersion,
+      resolution: "startup-preindexed",
+    };
+  }
+
+  operationRegistry() {
+    return {
+      ...this.operationRegistryStatus(),
+      operations: [...this._operationRegistry.byId.values()].map((item) => ({
+        operationId: item.operationId,
+        method: item.method,
+        pathTemplate: item.pathTemplate,
+        requiredPathParameters: item.requiredPathParameters,
+        parameters: item.parameters,
+        requestContentTypes: item.requestContentTypes,
+        responseContentTypes: item.responseContentTypes,
+        summary: item.summary,
+        riskClass: item.riskClass,
+        verificationStrategy: item.verificationStrategy,
+        qualificationState: item.qualificationState,
+        agentEffect: (
+          READ_METHODS.has(item.method) || READ_ONLY_POST_OPERATION_IDS.has(item.operationId)
+        ) ? "READ_ONLY" : "MUTATION",
+      })),
+    };
+  }
+
+  _buildSemanticRegistry() {
+    const byId = new Map();
+    const aliasCandidates = new Map();
+    const publicCapabilities = [];
+
+    const addAlias = (capabilityId, phrase, defaults = {}, replace = false) => {
+      const key = operationAliasKey(phrase);
+      if (!key) return;
+      if (replace || !aliasCandidates.has(key)) aliasCandidates.set(key, []);
+      aliasCandidates.get(key).push({
+        capabilityId,
+        defaults: plainObject(defaults, "semantic alias defaults"),
+      });
+    };
+
+    for (const operation of this._operationRegistry.byId.values()) {
+      const capabilityId = `documented.${operation.operationId}`;
+      const contract = Object.freeze({
+        capabilityId,
+        backend: Object.freeze({
+          kind: SEMANTIC_BACKEND_DOCUMENTED,
+          operationId: operation.operationId,
+        }),
+        riskClass: operation.riskClass,
+        verificationStrategy: operation.verificationStrategy,
+        qualificationState: operation.qualificationState,
+        targetDescription: "documented operation path parameters; common document/workspace/element/entity ids auto-map from target",
+        argumentDescription: "query/body/headers/multipart follow the precompiled documented contract",
+      });
+      byId.set(capabilityId, contract);
+      for (const alias of operationAliases(operation)) addAlias(capabilityId, alias, {});
+
+      const curated = DOCUMENTED_SEMANTIC_ALIASES[operation.operationId] || [];
+      for (const phrase of curated) addAlias(capabilityId, phrase, {}, true);
+      if (curated.length) {
+        publicCapabilities.push(Object.freeze({
+          capabilityId,
+          intents: Object.freeze([...new Set([
+            ...(operation.summary ? [operation.summary] : []),
+            ...curated,
+          ])]),
+          backend: SEMANTIC_BACKEND_DOCUMENTED,
+          riskClass: operation.riskClass,
+          target: contract.targetDescription,
+          arguments: contract.argumentDescription,
+        }));
+      }
+    }
+
+    for (const capability of BOUNDED_UI_CAPABILITIES) {
+      if (!this._operationRegistry.byId.has(capability.backend.targetResolverOperationId)) continue;
+      const contract = Object.freeze({
+        capabilityId: capability.capabilityId,
+        backend: Object.freeze({ ...capability.backend }),
+        riskClass: capability.riskClass,
+        verificationStrategy: capability.verificationStrategy,
+        qualificationState: capability.qualificationState,
+        targetDescription: capability.targetDescription,
+        argumentDescription: capability.argumentDescription,
+      });
+      byId.set(contract.capabilityId, contract);
+      for (const alias of capability.aliases) {
+        addAlias(contract.capabilityId, alias.phrase, alias.defaults, true);
+      }
+      publicCapabilities.push(Object.freeze({
+        capabilityId: contract.capabilityId,
+        intents: [...capability.surfaceAliases],
+        backend: contract.backend.kind,
+        riskClass: contract.riskClass,
+        target: contract.targetDescription,
+        arguments: contract.argumentDescription,
+      }));
+    }
+
+    const byAlias = new Map();
+    for (const [key, candidates] of aliasCandidates.entries()) {
+      const unique = new Map();
+      for (const candidate of candidates) {
+        unique.set(`${candidate.capabilityId}\n${stableJson(candidate.defaults)}`, candidate);
+      }
+      if (unique.size === 1) byAlias.set(key, [...unique.values()][0]);
+    }
+
+    return Object.freeze({
+      byId,
+      byAlias,
+      publicCapabilities: Object.freeze(publicCapabilities),
+      count: byId.size,
+      resolution: "startup-precompiled-semantic",
+    });
+  }
+
+  resolveIntent(intentInput) {
+    const requested = String(intentInput || "").trim();
+    if (!requested || requested.length > 240 || /[\r\n\0]/.test(requested)) {
+      throw codedError("ONSHAPE_INTENT_INVALID", "Invalid Onshape intent selector.");
+    }
+    const direct = this._semanticRegistry.byId.get(requested);
+    if (direct) return { contract: direct, defaults: {} };
+    const resolved = this._semanticRegistry.byAlias.get(operationAliasKey(requested));
+    if (!resolved) {
+      throw codedError(
+        "ONSHAPE_INTENT_NOT_FOUND",
+        `No unique precompiled semantic capability for ${requested}.`,
+      );
+    }
+    return {
+      contract: this._semanticRegistry.byId.get(resolved.capabilityId),
+      defaults: { ...resolved.defaults },
+    };
+  }
+
+  semanticCapabilitySurface() {
+    const capabilities = this._semanticRegistry.publicCapabilities.map((item) => ({ ...item }));
+    const prompt = [
+      "Use this semantic intent tool for ordinary human Onshape commands. Do not guess operationIds and do not perform source/OpenAPI discovery.",
+      ...capabilities.map((item) => (
+        `${item.capabilityId}: intents=[${item.intents.join(" | ")}]; target=${item.target}; args=${item.arguments}; backend=${item.backend}`
+      )),
+      "Exact documented operationIds and their precompiled summaries are also accepted as intents for advanced documented operations.",
+    ].join("\n");
+    return {
+      count: this._semanticRegistry.count,
+      public_count: capabilities.length,
+      resolution: this._semanticRegistry.resolution,
+      capabilities,
+      prompt,
+    };
+  }
+
+  _semanticPathParams(operation, targetInput, explicitInput) {
+    const target = plainObject(targetInput, "target");
+    const explicit = plainObject(explicitInput, "pathParams");
+    const mapped = {};
+    const valueFor = (name) => {
+      const key = String(name || "").toLowerCase();
+      if (key === "did" || key === "documentid") return target.document_id ?? target.documentId;
+      if (key === "wid" || key === "workspaceid") return target.workspace_id ?? target.workspaceId;
+      if (key === "wvm") return target.wvm ?? "w";
+      if (key === "wvmid") return target.workspace_id ?? target.workspaceId ?? target.wvmid;
+      if (key === "eid" || key === "elementid") return target.element_id ?? target.elementId;
+      if (key === "pid" || key === "partid") return target.part_id ?? target.partId ?? target.entity_id ?? target.entityId;
+      if (key === "fid" || key === "featureid") return target.feature_id ?? target.featureId ?? target.entity_id ?? target.entityId;
+      if (key === "vid" || key === "versionid") return target.version_id ?? target.versionId;
+      if (key === "mid" || key === "microversionid") return target.microversion_id ?? target.microversionId;
+      return undefined;
+    };
+
+    for (const name of operation.requiredPathParameters) {
+      const value = valueFor(name);
+      if (value !== undefined && value !== null && String(value).trim() !== "") mapped[name] = value;
+    }
+    for (const [name, value] of Object.entries(explicit)) {
+      if (
+        Object.prototype.hasOwnProperty.call(mapped, name)
+        && String(mapped[name]) !== String(value)
+      ) {
+        throw codedError("ONSHAPE_TARGET_CONFLICT", `Target and path_params disagree for ${name}.`);
+      }
+      mapped[name] = value;
+    }
+    return mapped;
+  }
+
+  async _resolvePartTarget(targetInput) {
+    const target = plainObject(targetInput, "target");
+    const operation = this.resolveOperation("getPartsWMVE");
+    const pathParams = this._semanticPathParams(operation, target, {});
+    const read = await this.executeDocumentedOperation({
+      operationId: operation.operationId,
+      pathParams,
+    });
+    if (read.state !== "SUCCEEDED") {
+      throw codedError("ONSHAPE_TARGET_RESOLUTION_FAILED", "Part target resolution read did not succeed.");
+    }
+
+    const body = read?.evidence?.body;
+    const parts = Array.isArray(body)
+      ? body
+      : Array.isArray(body?.items)
+        ? body.items
+        : Array.isArray(body?.parts)
+          ? body.parts
+          : [];
+    const requestedId = String(
+      target.part_id ?? target.partId ?? target.entity_id ?? target.entityId ?? "",
+    ).trim();
+    const requestedName = String(
+      target.part_name ?? target.partName ?? target.entity_name ?? target.entityName ?? "",
+    ).trim();
+    if (!requestedId && !requestedName) {
+      throw codedError("ONSHAPE_TARGET_REQUIRED", "Part visibility requires a part id or part name.");
+    }
+
+    const matches = parts.filter((part) => {
+      const id = String(part?.partId ?? part?.id ?? "").trim();
+      const name = String(part?.name ?? "").trim();
+      const idMatches = !requestedId || id === requestedId;
+      const nameMatches = !requestedName || name.toLowerCase() === requestedName.toLowerCase();
+      return idMatches && nameMatches;
+    });
+    if (matches.length !== 1) {
+      throw codedError(
+        matches.length === 0 ? "ONSHAPE_TARGET_NOT_FOUND" : "ONSHAPE_TARGET_AMBIGUOUS",
+        `Part target resolved to ${matches.length} candidates.`,
+      );
+    }
+    const partId = String(matches[0]?.partId ?? matches[0]?.id ?? "").trim();
+    const partName = String(matches[0]?.name ?? "").trim();
+    if (!partId || !partName) {
+      throw codedError("ONSHAPE_TARGET_INVALID", "Resolved part target lacks stable id/name identity.");
+    }
+    return {
+      partId,
+      partName,
+      readTiming: read.timing || null,
+      readOperationId: operation.operationId,
+    };
+  }
+
+  _expandPath(template, pathParamsInput) {
+    const params = plainObject(pathParamsInput, "pathParams");
+    const names = [...String(template).matchAll(/\{([^{}]+)\}/g)].map((match) => match[1]);
+    const unique = [...new Set(names)];
+    const extras = Object.keys(params).filter((key) => !unique.includes(key));
+    if (extras.length) throw codedError("OPENAPI_PATH_PARAMS", `Unexpected path parameters: ${extras.join(",")}`);
+    let pathValue = String(template);
+    for (const name of unique) {
+      const raw = params[name];
+      if (raw === undefined || raw === null || String(raw).trim() === "") {
+        throw codedError("OPENAPI_PATH_PARAMS", `Missing path parameter: ${name}`);
+      }
+      pathValue = pathValue.replaceAll(`{${name}}`, encodeURIComponent(String(raw)));
+    }
+    return pathValue;
+  }
+
+  _versionedApiPath(requestPath, apiBasePathInput = null) {
+    const raw = String(requestPath || "").trim();
+    if (!raw.startsWith("/") || raw.startsWith("/api/")) {
+      throw codedError(
+        "OPENAPI_PATH_VERSION",
+        "Execution-agent API paths must be unprefixed OpenAPI paths and are versioned only from the pinned OpenAPI server contract.",
+      );
+    }
+    const apiBasePath = apiBasePathInput == null
+      ? this._operationRegistry.apiBasePath
+      : String(apiBasePathInput);
+    if (!/^\/api\/v[1-9][0-9]*$/.test(apiBasePath)) {
+      throw codedError("OPENAPI_SERVER_INVALID", "Pinned OpenAPI API base path is invalid.");
+    }
+    return apiBasePath + raw;
+  }
+
+  async _request(method, requestPath, query = null, body = undefined, options = {}, apiBasePath = null) {
+    const versionedPath = this._versionedApiPath(requestPath, apiBasePath);
+    return this.core.request(method, versionedPath, query, body, options);
+  }
+
+  _apiVersionFromBase(apiBasePathInput) {
+    const apiBasePath = String(apiBasePathInput || "");
+    const match = apiBasePath.match(/^\/api\/(v[1-9][0-9]*)$/);
+    if (!match) {
+      throw codedError("OPENAPI_SERVER_INVALID", "Pinned OpenAPI API base path is invalid.");
+    }
+    return match[1];
+  }
+
+  _observedApiVersion(response) {
+    const headers = response?.responseHeaders;
+    if (!headers || typeof headers !== "object" || Array.isArray(headers)) return null;
+    for (const [name, value] of Object.entries(headers)) {
+      if (String(name).toLowerCase() === "x-api-version") {
+        const normalized = String(value || "").trim();
+        return normalized || null;
+      }
+    }
+    return null;
+  }
+
+  _assertVersionedReadResponse(response, apiBasePath) {
+    const expected = this._apiVersionFromBase(apiBasePath);
+    const observed = this._observedApiVersion(response);
+    if (observed !== expected) {
+      throw codedError(
+        "OPENAPI_RESPONSE_VERSION_MISMATCH",
+        `Onshape response API version ${observed || "missing"} does not match pinned ${expected}.`,
+      );
+    }
+    return observed;
+  }
+
+  _projectionMatches(expected, actual) {
+    if (Array.isArray(expected)) {
+      return Array.isArray(actual)
+        && expected.length === actual.length
+        && expected.every((item, index) => this._projectionMatches(item, actual[index]));
+    }
+    if (expected && typeof expected === "object") {
+      if (!actual || typeof actual !== "object" || Array.isArray(actual)) return false;
+      return Object.keys(expected).every(
+        (key) => Object.prototype.hasOwnProperty.call(actual, key)
+          && this._projectionMatches(expected[key], actual[key]),
+      );
+    }
+    return Object.is(expected, actual);
+  }
+
+  _featureId(value) {
+    const candidates = [
+      value?.featureId,
+      value?.message?.featureId,
+      value?.feature?.featureId,
+      value?.feature?.message?.featureId,
+    ];
+    for (const candidate of candidates) {
+      if (typeof candidate === "string" && candidate.trim()) return candidate.trim();
+    }
+    return null;
+  }
+
+  async _readPartStudioFeature(documentId, workspaceId, elementId, featureId, apiBasePath = null) {
+    const response = await this._request(
+      "GET",
+      `/partstudios/d/${encodeURIComponent(documentId)}/w/${encodeURIComponent(workspaceId)}/e/${encodeURIComponent(elementId)}/features`,
+      { featureId: [featureId] },
+      undefined,
+      {},
+      apiBasePath,
+    );
+    this._assertVersionedReadResponse(response, apiBasePath);
+    if (!response?.ok) {
+      throw codedError("ONSHAPE_READBACK_FAILED", "Part Studio feature readback failed.");
+    }
+    const features = Array.isArray(response?.body?.features) ? response.body.features : [];
+    const matches = features.filter((feature) => this._featureId(feature) === featureId);
+    if (matches.length > 1) {
+      throw codedError("ONSHAPE_READBACK_AMBIGUOUS", "Part Studio feature readback returned duplicate feature ids.");
+    }
+    return { httpStatus: Number(response?.http ?? 0) || null, feature: matches[0] ?? null };
+  }
+
+  async executeIntent(input = {}) {
+    const totalStart = process.hrtime.bigint();
+    const timings = {
+      intent_resolution_ms: 0,
+      registry_ms: 0,
+      validation_ms: 0,
+      journal_ms: 0,
+      target_resolution_ms: 0,
+      provider_ms: 0,
+      verification_ms: null,
+      total_ms: 0,
+    };
+
+    const resolutionStart = process.hrtime.bigint();
+    const request = plainObject(input, "intent request");
+    const intent = String(request.intent || "").trim();
+    const resolved = this.resolveIntent(intent);
+    const contract = resolved.contract;
+    timings.intent_resolution_ms = elapsedMs(resolutionStart);
+
+    if (contract.backend.kind === SEMANTIC_BACKEND_DOCUMENTED) {
+      const operation = this.resolveOperation(contract.backend.operationId);
+      const validationStart = process.hrtime.bigint();
+      const target = plainObject(request.target, "target");
+      const pathParams = this._semanticPathParams(operation, target, request.pathParams);
+      const query = plainObject(request.query, "query");
+      const headers = plainObject(request.headers, "headers");
+      const args = {
+        operationId: operation.operationId,
+        pathParams,
+        query,
+        headers,
+      };
+      if (Object.prototype.hasOwnProperty.call(request, "body")) args.body = request.body;
+      if (request.multipart !== undefined) args.multipart = request.multipart;
+      if (request.ownerConfirmedHighImpact !== undefined) {
+        args.ownerConfirmedHighImpact = request.ownerConfirmedHighImpact;
+      }
+      if (request.requestId !== undefined) args.requestId = request.requestId;
+      timings.validation_ms = elapsedMs(validationStart);
+
+      const delegated = await this.executeDocumentedOperation(args);
+      const dt = delegated?.timing || {};
+      timings.registry_ms = Number(dt.registry_ms ?? 0) || 0;
+      timings.validation_ms += Number(dt.validation_ms ?? 0) || 0;
+      timings.journal_ms = Number(dt.journal_ms ?? 0) || 0;
+      timings.provider_ms = Number(dt.provider_ms ?? 0) || 0;
+      timings.verification_ms = dt.verification_ms == null ? null : Number(dt.verification_ms) || 0;
+      if (dt.queue_wait_ms != null) timings.queue_wait_ms = Number(dt.queue_wait_ms) || 0;
+      if (dt.pacing_wait_ms != null) timings.pacing_wait_ms = Number(dt.pacing_wait_ms) || 0;
+      if (dt.provider_execution_ms != null) timings.provider_execution_ms = Number(dt.provider_execution_ms) || 0;
+      timings.total_ms = elapsedMs(totalStart);
+      return {
+        ...delegated,
+        intent,
+        capabilityId: contract.capabilityId,
+        semanticBackend: contract.backend.kind,
+        resolvedOperationId: operation.operationId,
+        timing: timings,
+      };
+    }
+
+    if (contract.backend.kind !== SEMANTIC_BACKEND_BOUNDED_UI || contract.backend.executor !== "PART_VISIBILITY") {
+      throw codedError("ONSHAPE_SEMANTIC_BACKEND_INVALID", "Unsupported semantic backend.");
+    }
+
+    const validationStart = process.hrtime.bigint();
+    const target = plainObject(request.target, "target");
+    const args = {
+      ...resolved.defaults,
+      ...plainObject(request.arguments, "arguments"),
+    };
+    if (typeof args.visible !== "boolean") {
+      throw codedError("ONSHAPE_INTENT_ARGUMENTS", "Part visibility requires visible=true or visible=false.");
+    }
+    const documentId = String(target.document_id ?? target.documentId ?? "").trim();
+    const workspaceId = String(target.workspace_id ?? target.workspaceId ?? "").trim();
+    const elementId = String(target.element_id ?? target.elementId ?? "").trim();
+    if (![documentId, workspaceId, elementId].every((value) => /^[0-9a-fA-F]{24}$/.test(value))) {
+      throw codedError("ONSHAPE_TARGET_ID_INVALID", "Part visibility requires 24-hex document/workspace/element ids.");
+    }
+    const requestedPartId = String(
+      target.part_id ?? target.partId ?? target.entity_id ?? target.entityId ?? "",
+    ).trim();
+    const requestedPartName = String(
+      target.part_name ?? target.partName ?? target.entity_name ?? target.entityName ?? "",
+    ).trim();
+    if (!requestedPartId && !requestedPartName) {
+      throw codedError("ONSHAPE_TARGET_REQUIRED", "Part visibility requires a part id or part name.");
+    }
+    if (requestedPartId && !/^[A-Za-z0-9_.:-]{1,160}$/.test(requestedPartId)) {
+      throw codedError("ONSHAPE_TARGET_ID_INVALID", "Part id contains unsupported characters.");
+    }
+    if (requestedPartName && (requestedPartName.length > 300 || /[\r\n\0]/.test(requestedPartName))) {
+      throw codedError("ONSHAPE_TARGET_NAME_INVALID", "Part name is invalid.");
+    }
+    const requestId = request.requestId == null
+      ? "req_" + randomBytes(16).toString("hex")
+      : cleanRequestId(request.requestId);
+    const requestHash = sha256Json({
+      capabilityId: contract.capabilityId,
+      documentId,
+      workspaceId,
+      elementId,
+      requestedPartId,
+      requestedPartName,
+      visible: args.visible,
+    });
+    timings.validation_ms = elapsedMs(validationStart);
+
+    const journalStart = process.hrtime.bigint();
+    const existing = this._readRecord(requestId);
+    if (existing) {
+      if (existing.schema !== "onshape.semantic-request.v1" || existing.requestHash !== requestHash) {
+        throw codedError("ONSHAPE_REQUEST_ID_CONFLICT", "request_id was reused for a different Onshape semantic operation.");
+      }
+      timings.journal_ms = elapsedMs(journalStart);
+      timings.total_ms = elapsedMs(totalStart);
+      if (existing.observation) {
+        return {
+          ...existing.observation,
+          replayedFromJournal: true,
+          timing: {
+            ...(existing.observation.timing || {}),
+            replay_lookup_ms: timings.total_ms,
+          },
+        };
+      }
+      return {
+        requestId,
+        intent,
+        capabilityId: contract.capabilityId,
+        semanticBackend: contract.backend.kind,
+        state: "UNCERTAIN",
+        externalReference: "onshape-agent:" + requestId,
+        detail: "The same semantic mutation is already in-flight or ended before a terminal journal write.",
+        evidence: { effectSent: null, blindReplayAllowed: false },
+        timing: timings,
+      };
+    }
+    const claimed = {
+      schema: "onshape.semantic-request.v1",
+      requestId,
+      capabilityId: contract.capabilityId,
+      requestHash,
+      state: "EXECUTING",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      observation: null,
+    };
+    this._writeRecord(claimed);
+    timings.journal_ms = elapsedMs(journalStart);
+
+    const finish = (observation) => {
+      timings.total_ms = elapsedMs(totalStart);
+      const finalObservation = { ...observation, timing: { ...timings } };
+      this._writeRecord({
+        ...claimed,
+        state: finalObservation.state,
+        updatedAt: new Date().toISOString(),
+        observation: finalObservation,
+      });
+      return finalObservation;
+    };
+
+    let partTarget;
+    const targetStart = process.hrtime.bigint();
+    try {
+      partTarget = await this._resolvePartTarget({
+        ...target,
+        document_id: documentId,
+        workspace_id: workspaceId,
+        element_id: elementId,
+      });
+      timings.target_resolution_ms = elapsedMs(targetStart);
+      const rt = partTarget.readTiming || {};
+      timings.registry_ms += Number(rt.registry_ms ?? 0) || 0;
+      if (rt.queue_wait_ms != null) timings.target_queue_wait_ms = Number(rt.queue_wait_ms) || 0;
+      if (rt.pacing_wait_ms != null) timings.target_pacing_wait_ms = Number(rt.pacing_wait_ms) || 0;
+      if (rt.provider_execution_ms != null) timings.target_provider_execution_ms = Number(rt.provider_execution_ms) || 0;
+    } catch (error) {
+      timings.target_resolution_ms = elapsedMs(targetStart);
+      return finish({
+        requestId,
+        intent,
+        capabilityId: contract.capabilityId,
+        semanticBackend: contract.backend.kind,
+        state: "REJECTED",
+        externalReference: "onshape-agent:" + requestId,
+        detail: `Part target resolution failed: ${error?.code || error?.name || "error"}`,
+        evidence: {
+          effectSent: false,
+          blindReplayAllowed: false,
+          operationRiskClass: contract.riskClass,
+          verificationStrategy: contract.verificationStrategy,
+        },
+      });
+    }
+
+    const providerStart = process.hrtime.bigint();
+    let uiResult;
+    try {
+      uiResult = await this.core.setPartVisibility({
+        documentId,
+        workspaceId,
+        elementId,
+        partId: partTarget.partId,
+        partName: partTarget.partName,
+        visible: args.visible,
+      });
+      timings.provider_ms = elapsedMs(providerStart);
+    } catch (error) {
+      timings.provider_ms = elapsedMs(providerStart);
+      return finish({
+        requestId,
+        intent,
+        capabilityId: contract.capabilityId,
+        semanticBackend: contract.backend.kind,
+        state: "UNCERTAIN",
+        externalReference: "onshape-agent:" + requestId,
+        detail: `Bounded UI visibility execution did not return a terminal acknowledgement: ${error?.code || error?.name || "error"}`,
+        evidence: {
+          effectSent: null,
+          blindReplayAllowed: false,
+          operationRiskClass: contract.riskClass,
+          verificationStrategy: contract.verificationStrategy,
+          target: {
+            partId: partTarget.partId,
+            partName: partTarget.partName,
+          },
+        },
+      });
+    }
+
+    return finish({
+      requestId,
+      intent,
+      capabilityId: contract.capabilityId,
+      semanticBackend: contract.backend.kind,
+      state: "SUCCEEDED",
+      externalReference: "onshape-agent:" + requestId,
+      detail: args.visible
+        ? "Onshape UI acknowledged show-part input on the exact semantic Parts-list row."
+        : "Onshape UI acknowledged hide-part input on the exact semantic Parts-list row.",
+      evidence: {
+        effectSent: true,
+        blindReplayAllowed: false,
+        providerAcknowledged: true,
+        postconditionVerified: null,
+        operationRiskClass: contract.riskClass,
+        verificationStrategy: contract.verificationStrategy,
+        targetResolutionOperationId: partTarget.readOperationId,
+        target: {
+          partId: partTarget.partId,
+          partName: partTarget.partName,
+        },
+        desiredVisible: args.visible,
+        ui: uiResult,
+      },
+    });
+  }
+
+  async executeDocumentedOperation(input = {}) {
+    const totalStart = process.hrtime.bigint();
+    const timings = {
+      registry_ms: 0,
+      validation_ms: 0,
+      journal_ms: 0,
+      provider_ms: 0,
+      verification_ms: 0,
+      total_ms: 0,
+    };
+
+    const registryStart = process.hrtime.bigint();
+    const request = plainObject(input, "operation request");
+    const operationId = String(request.operationId || "").trim();
+    const contract = this.resolveOperation(operationId);
+    timings.registry_ms = elapsedMs(registryStart);
+
+    const validationStart = process.hrtime.bigint();
+    const riskClass = contract.riskClass;
+    const agentEffect = riskClass === RISK_READ ? "READ_ONLY" : "MUTATION";
+    if (agentEffect === "MUTATION") {
+      if (riskClass === RISK_HIGH_IMPACT && request.ownerConfirmedHighImpact !== true) {
+        throw codedError(
+          "ONSHAPE_HIGH_IMPACT_CONFIRMATION_REQUIRED",
+          "High-impact Onshape operation requires explicit owner intent in the same invocation.",
+        );
+      }
+    }
+
+    const pathParams = plainObject(request.pathParams, "pathParams");
+    const pathValue = this._expandPath(contract.pathTemplate, pathParams);
+    const query = plainObject(request.query, "query");
+    const headers = plainObject(request.headers, "headers");
+    const body = Object.prototype.hasOwnProperty.call(request, "body") ? request.body : undefined;
+    const multipart = request.multipart ?? undefined;
+    const requestId = request.requestId == null
+      ? "req_" + randomBytes(16).toString("hex")
+      : cleanRequestId(request.requestId);
+    const mutation = agentEffect === "MUTATION";
+    const requestHash = sha256Json({
+      operationId: contract.operationId,
+      pathParams,
+      query,
+      headers,
+      body: body === undefined ? null : body,
+      multipart: multipart === undefined ? null : multipart,
+      ownerConfirmedHighImpact: request.ownerConfirmedHighImpact === true,
+    });
+    timings.validation_ms = elapsedMs(validationStart);
+
+    let claimed = null;
+    if (mutation) {
+      const journalStart = process.hrtime.bigint();
+      const existing = this._readRecord(requestId);
+      if (existing) {
+        if (existing.schema !== "onshape.direct-request.v1" || existing.requestHash !== requestHash) {
+          throw codedError("ONSHAPE_REQUEST_ID_CONFLICT", "request_id was reused for a different Onshape operation.");
+        }
+        timings.journal_ms = elapsedMs(journalStart);
+        timings.total_ms = elapsedMs(totalStart);
+        if (existing.observation) {
+          return {
+            ...existing.observation,
+            requestId,
+            operationId: contract.operationId,
+            replayedFromJournal: true,
+            timing: { ...existing.observation.timing, replay_lookup_ms: timings.total_ms },
+          };
+        }
+        return {
+          requestId,
+          operationId: contract.operationId,
+          state: "UNCERTAIN",
+          externalReference: "onshape-agent:" + requestId,
+          detail: "The same mutation request is already in-flight or ended before a terminal journal write.",
+          evidence: {
+            effectSent: null,
+            blindReplayAllowed: false,
+            operationRiskClass: riskClass,
+          },
+          timing: timings,
+        };
+      }
+
+      claimed = {
+        schema: "onshape.direct-request.v1",
+        requestId,
+        operationId: contract.operationId,
+        requestHash,
+        state: "EXECUTING",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        observation: null,
+      };
+      this._writeRecord(claimed);
+      timings.journal_ms = elapsedMs(journalStart);
+    }
+
+    const externalReference = "onshape-agent:" + requestId;
+    let result;
+    const providerStart = process.hrtime.bigint();
+    try {
+      const options = {
+        headers: Object.keys(headers).length ? headers : undefined,
+        multipart,
+      };
+      result = await this._request(
+        contract.method,
+        pathValue,
+        query,
+        body,
+        options,
+        contract.apiBasePath,
+      );
+    } catch (error) {
+      timings.provider_ms = elapsedMs(providerStart);
+      timings.total_ms = elapsedMs(totalStart);
+      const observed = {
+        requestId,
+        operationId: contract.operationId,
+        state: agentEffect === "MUTATION" ? "UNCERTAIN" : "REJECTED",
+        externalReference,
+        detail: `Onshape ${agentEffect === "MUTATION" ? "write" : "read"} transport failed: ${error?.code || error?.name || "error"}`,
+        evidence: {
+          effectSent: agentEffect === "MUTATION" ? null : false,
+          blindReplayAllowed: false,
+          operationRiskClass: riskClass,
+          verificationStrategy: contract.verificationStrategy,
+        },
+        timing: timings,
+      };
+      if (claimed) {
+        this._writeRecord({
+          ...claimed,
+          state: observed.state,
+          updatedAt: new Date().toISOString(),
+          observation: observed,
+        });
+      }
+      return observed;
+    }
+    timings.provider_ms = elapsedMs(providerStart);
+    if (result?.schedulerTiming && typeof result.schedulerTiming === "object") {
+      timings.queue_wait_ms = Number(result.schedulerTiming.queue_wait_ms ?? 0) || 0;
+      timings.pacing_wait_ms = Number(result.schedulerTiming.pacing_wait_ms ?? 0) || 0;
+      timings.provider_execution_ms = Number(result.schedulerTiming.execution_ms ?? 0) || 0;
+    }
+
+    const http = Number(result?.http ?? 0) || null;
+    const observedApiVersion = this._observedApiVersion(result);
+    const baseEvidence = {
+      httpStatus: http,
+      contentType: result?.contentType ?? null,
+      body: result?.body ?? null,
+      artifact: result?.artifact ?? null,
+      poolExecution: result?.pool_execution ?? null,
+      glassworksDurationMs: Number(result?.durationMs ?? 0) || null,
+      poolDurationMs: Number(result?.pool_execution?.duration_ms ?? 0) || null,
+      apiMinimumIntervalMs: Number(result?.pool_execution?.api_minimum_interval_ms ?? 0) || null,
+      schedulerTiming: result?.schedulerTiming ?? null,
+      apiVersion: contract.apiVersion,
+      observedApiVersion,
+      operationRiskClass: riskClass,
+      verificationStrategy: contract.verificationStrategy,
+      qualificationState: contract.qualificationState,
+      blindReplayAllowed: false,
+    };
+
+    let observed;
+    if (!result?.ok) {
+      const preEffect = result?.layer === "validation" || result?.layer === "anti-forgery";
+      const state = preEffect || agentEffect === "READ_ONLY" || (http && http >= 400 && http < 500)
+        ? "REJECTED"
+        : "UNCERTAIN";
+      observed = {
+        requestId,
+        operationId: contract.operationId,
+        state,
+        externalReference,
+        detail: String(result?.reason || "Onshape operation failed."),
+        evidence: {
+          ...baseEvidence,
+          effectSent: state === "REJECTED" ? false : null,
+        },
+        timing: timings,
+      };
+    } else if (agentEffect === "READ_ONLY") {
+      observed = {
+        requestId,
+        operationId: contract.operationId,
+        state: "SUCCEEDED",
+        externalReference,
+        detail: "Onshape read completed.",
+        evidence: { ...baseEvidence, effectSent: false },
+        timing: timings,
+      };
+    } else {
+      const verifyStart = process.hrtime.bigint();
+      let verification = {
+        kind: "provider_acknowledged",
+        verified: true,
+      };
+      try {
+        if (contract.verificationStrategy === "DOCUMENT_NAME_READBACK") {
+          const did = String(pathParams.did || "").trim();
+          const expectedName = body && typeof body === "object" && !Array.isArray(body)
+            ? String(body.name || "")
+            : "";
+          if (/^[0-9a-fA-F]{24}$/.test(did) && expectedName) {
+            const readback = await this._request(
+              "GET",
+              `/documents/${encodeURIComponent(did)}`,
+              null,
+              undefined,
+              {},
+              contract.apiBasePath,
+            );
+            const observedName = String(readback?.body?.name || "");
+            verification = {
+              kind: "document_name_equals",
+              verified: !!readback?.ok && observedName === expectedName,
+              expectedName,
+              observedName,
+              readbackHttpStatus: Number(readback?.http ?? 0) || null,
+            };
+          }
+        } else if (contract.verificationStrategy === "WORKSPACE_COPY_READBACK") {
+          const newDocumentId = String(result?.body?.newDocumentId || "");
+          const newWorkspaceId = String(result?.body?.newWorkspaceId || "");
+          const expectedName = body && typeof body === "object" && !Array.isArray(body)
+            ? String(body.newName || "")
+            : "";
+          if (/^[0-9a-fA-F]{24}$/.test(newDocumentId) && /^[0-9a-fA-F]{24}$/.test(newWorkspaceId)) {
+            const readback = await this._request(
+              "GET",
+              `/documents/${encodeURIComponent(newDocumentId)}`,
+              null,
+              undefined,
+              {},
+              contract.apiBasePath,
+            );
+            verification = {
+              kind: "workspace_copy_created",
+              verified: !!readback?.ok
+                && String(readback?.body?.id || "").toLowerCase() === newDocumentId.toLowerCase()
+                && String(readback?.body?.defaultWorkspace?.id || "").toLowerCase() === newWorkspaceId.toLowerCase()
+                && (!expectedName || String(readback?.body?.name || "") === expectedName),
+              newDocumentId,
+              newWorkspaceId,
+              expectedName: expectedName || null,
+              observedName: String(readback?.body?.name || ""),
+              readbackHttpStatus: Number(readback?.http ?? 0) || null,
+            };
+          }
+        } else if (
+          contract.verificationStrategy === "PARTSTUDIO_FEATURE_PROJECTION_READBACK"
+          || contract.verificationStrategy === "PARTSTUDIO_FEATURE_ADDED_READBACK"
+        ) {
+          const did = String(pathParams.did || "");
+          const wid = String(pathParams.wid || "");
+          const eid = String(pathParams.eid || "");
+          let fid = contract.verificationStrategy === "PARTSTUDIO_FEATURE_PROJECTION_READBACK"
+            ? String(pathParams.fid || "")
+            : String(this._featureId(result?.body) || "");
+          const expected = body?.feature;
+          if (
+            /^[0-9a-fA-F]{24}$/.test(did)
+            && /^[0-9a-fA-F]{24}$/.test(wid)
+            && /^[0-9a-fA-F]{24}$/.test(eid)
+            && fid
+            && expected && typeof expected === "object"
+          ) {
+            const readback = await this._readPartStudioFeature(
+              did, wid, eid, fid, contract.apiBasePath,
+            );
+            const candidates = [
+              readback.feature,
+              readback.feature?.feature,
+              readback.feature?.message,
+              readback.feature?.feature?.message,
+            ].filter((value) => value && typeof value === "object");
+            verification = {
+              kind: contract.verificationStrategy === "PARTSTUDIO_FEATURE_ADDED_READBACK"
+                ? "partstudio_feature_projection_added"
+                : "partstudio_feature_projection_equals",
+              verified: candidates.some((candidate) => this._projectionMatches(expected, candidate)),
+              featureId: fid,
+              readbackHttpStatus: readback.httpStatus,
+            };
+          }
+        } else if (contract.verificationStrategy === "PARTSTUDIO_FEATURE_ABSENCE_READBACK") {
+          const did = String(pathParams.did || "");
+          const wid = String(pathParams.wid || "");
+          const eid = String(pathParams.eid || "");
+          const fid = String(pathParams.fid || "");
+          if (
+            /^[0-9a-fA-F]{24}$/.test(did)
+            && /^[0-9a-fA-F]{24}$/.test(wid)
+            && /^[0-9a-fA-F]{24}$/.test(eid)
+            && fid
+          ) {
+            const readback = await this._readPartStudioFeature(
+              did, wid, eid, fid, contract.apiBasePath,
+            );
+            verification = {
+              kind: "partstudio_feature_absent",
+              verified: readback.feature == null,
+              featureId: fid,
+              readbackHttpStatus: readback.httpStatus,
+            };
+          }
+        }
+      } catch (error) {
+        verification = {
+          ...verification,
+          verified: false,
+          readbackError: String(error?.code || error?.name || "error"),
+        };
+      }
+      timings.verification_ms = elapsedMs(verifyStart);
+      observed = {
+        requestId,
+        operationId: contract.operationId,
+        state: "SUCCEEDED",
+        externalReference,
+        detail: verification.kind === "provider_acknowledged"
+          ? "Onshape provider acknowledged the write."
+          : verification.verified
+            ? "Onshape write completed and readback verified it."
+            : "Onshape provider acknowledged the write; optional readback did not verify it.",
+        evidence: {
+          ...baseEvidence,
+          effectSent: true,
+          providerAcknowledged: true,
+          postconditionVerified: verification.kind === "provider_acknowledged" ? null : verification.verified,
+          verification,
+        },
+        timing: timings,
+      };
+    }
+
+    timings.total_ms = elapsedMs(totalStart);
+    observed.timing = { ...timings };
+    if (claimed) {
+      this._writeRecord({
+        ...claimed,
+        state: observed.state,
+        updatedAt: new Date().toISOString(),
+        observation: observed,
+      });
+    }
+    return observed;
+  }
+
+}
+
+export { sha256Json };
