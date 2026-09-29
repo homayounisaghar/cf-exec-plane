@@ -1,0 +1,5 @@
+request_id=onshape-fast-r15-telegram-f84890a4-deploy
+candidate_commit=f84890a49f2510f66a9f600c650311a2bf350a47
+expected_sequence=79
+expected_release=onshape-vps-fast-r15
+qualification_run=36625879800
