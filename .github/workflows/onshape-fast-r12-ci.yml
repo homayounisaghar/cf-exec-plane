@@ -1,0 +1,165 @@
+name: Onshape Fast R12 Candidate Qualification
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - server-bootstrap/control/onshape-fast-r12-ci/*.request
+
+permissions:
+  contents: read
+
+jobs:
+  qualify:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CF_REPO_READ_TOKEN: ${{ secrets.CF_REPO_READ_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+
+      - name: Validate immutable request
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || { echo "request commit must add exactly one file" >&2; exit 10; }
+          IFS=$'\t' read -r status request_path <<<"${changes[0]}"
+          [[ "$status" == A ]] || { echo "request must be newly added" >&2; exit 11; }
+          [[ "$request_path" == server-bootstrap/control/onshape-fast-r12-ci/*.request ]] || { echo "unexpected request path" >&2; exit 12; }
+          request_id="$(awk -F= '$1=="request_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          candidate_commit="$(awk -F= '$1=="candidate_commit"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          expected_sequence="$(awk -F= '$1=="expected_sequence"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          expected_release="$(awk -F= '$1=="expected_release"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          [[ "$request_id" =~ ^[A-Za-z0-9_.-]{8,96}$ ]] || exit 13
+          [[ "$candidate_commit" =~ ^[0-9a-f]{40}$ ]] || exit 14
+          [[ "$expected_sequence" =~ ^[0-9]+$ ]] || exit 15
+          [[ "$expected_release" =~ ^[A-Za-z0-9_.-]{8,120}$ ]] || exit 16
+          {
+            echo "CANDIDATE_COMMIT=$candidate_commit"
+            echo "EXPECTED_SEQUENCE=$expected_sequence"
+            echo "EXPECTED_RELEASE=$expected_release"
+          } >> "$GITHUB_ENV"
+
+      - name: Checkout exact private candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          tmp="$RUNNER_TEMP/capability-fabric"
+          askpass="$RUNNER_TEMP/cf-askpass"
+          cat > "$askpass" <<'ASKPASS'
+          #!/usr/bin/env bash
+          case "${1:-}" in
+            *Username*) printf '%s\n' 'x-access-token' ;;
+            *Password*) printf '%s\n' "$CF_REPO_READ_TOKEN" ;;
+            *) exit 1 ;;
+          esac
+          ASKPASS
+          chmod 0700 "$askpass"
+          git init "$tmp" >/dev/null
+          git -C "$tmp" remote add origin https://github.com/homayounisaghar/capability-fabric.git
+          GIT_ASKPASS="$askpass" GIT_TERMINAL_PROMPT=0 git -C "$tmp" fetch --quiet --depth=1 origin "$CANDIDATE_COMMIT"
+          git -C "$tmp" checkout --quiet --detach FETCH_HEAD
+          [[ "$(git -C "$tmp" rev-parse HEAD)" == "$CANDIDATE_COMMIT" ]]
+          echo CF_CANDIDATE_CHECKOUT=pass
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install Node dependencies
+        working-directory: ${{ runner.temp }}/capability-fabric/server-deploy/current
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+        run: npm install --omit=dev --ignore-scripts --no-audit --no-fund --package-lock=false
+
+      - name: Syntax and runtime unit gate
+        working-directory: ${{ runner.temp }}/capability-fabric
+        shell: bash
+        run: |
+          set -euo pipefail
+          for f in \
+            server-deploy/current/browser.js \
+            server-deploy/current/core.js \
+            server-deploy/current/server.js \
+            server-deploy/current/session-pool.js \
+            server-deploy/current/fabric-agent.js \
+            server-deploy/current/gateway.js \
+            server-deploy/current/telegram-ingress.mjs
+          do
+            node --check "$f"
+          done
+          node --test \
+            server-deploy/current/core.test.mjs \
+            server-deploy/current/fabric-agent.test.mjs \
+            server-deploy/current/session-pool.test.mjs \
+            server-deploy/current/telegram-ingress.test.mjs
+
+      - name: Validate lean compose topology
+        working-directory: ${{ runner.temp }}/capability-fabric
+        shell: bash
+        run: |
+          set -euo pipefail
+          services="$(docker compose -f server-deploy/current/compose.yaml config --services)"
+          grep -Fxq onshape_server <<<"$services"
+          grep -Fxq onshape_gateway <<<"$services"
+          ! grep -Fxq fabric_sidecar <<<"$services"
+          [[ "$(printf '%s\n' "$services" | sed '/^$/d' | wc -l)" -eq 2 ]]
+          ! grep -q 'CF_FABRIC_REQUIRE_PRODUCTION_AUTHORITY' server-deploy/current/compose.yaml
+          ! grep -q 'CF_ONSHAPE_RUNTIME_CONTROL_FILE' server-deploy/current/compose.yaml
+          echo CF_LEAN_COMPOSE=pass
+
+      - name: Validate release closure and manifest hashes
+        working-directory: ${{ runner.temp }}/capability-fabric
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib, json, os
+          from pathlib import Path
+
+          root = Path("server-deploy/current")
+          closure = json.loads((root / "release-closure.json").read_text())
+          manifest = json.loads((root / "manifest.json").read_text())
+
+          assert closure["build_id"] == "onshape-vps-fast-r12"
+          cfg = closure["required_runtime_config"]
+          assert cfg["documented_operation_path"] == "DIRECT_NODE_AGENT"
+          assert cfg["python_sidecar_required"] is False
+          assert cfg["production_authority_file_required"] is False
+          assert cfg["per_write_auth_probe_required"] is False
+
+          assert manifest["sequence"] == int(os.environ["EXPECTED_SEQUENCE"])
+          assert manifest["release_id"] == os.environ["EXPECTED_RELEASE"]
+          assert set(manifest["files"]) == set(closure["files"])
+          assert manifest["images"] == closure["images"]
+          assert len(manifest["images"]) == 1
+
+          for rel, expected in manifest["files"].items():
+              p = root / rel
+              assert p.is_file(), rel
+              actual = hashlib.sha256(p.read_bytes()).hexdigest()
+              assert actual == expected, (rel, actual, expected)
+
+          compose = (root / "compose.yaml").read_text()
+          assert "fabric_sidecar:" not in compose
+          assert "CF_FABRIC_REQUIRE_PRODUCTION_AUTHORITY" not in compose
+          assert "CF_ONSHAPE_RUNTIME_CONTROL_FILE" not in compose
+
+          server = (root / "server.js").read_text()
+          assert "fabricAgent.executeDocumentedOperation(args)" in server
+          assert 'execution_path: "mcp->node-agent->local-scheduler->onshape"' in server
+
+          pool = (root / "session-pool.js").read_text()
+          hot_start = pool.index("async executeOnActive")
+          hot_end = pool.index("\n  async run(", hot_start)
+          hot = pool[hot_start:hot_end]
+          assert "await this.probeSlot(slot)" not in hot
+
+          print("CF_ONSHAPE_FAST_R12_QUALIFICATION=pass")
+          PY
