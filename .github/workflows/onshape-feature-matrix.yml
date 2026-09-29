@@ -1,0 +1,137 @@
+name: Onshape Feature Matrix Build
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - server-bootstrap/control/onshape-feature-matrix/*.request
+
+permissions:
+  contents: write
+
+concurrency:
+  group: onshape-feature-matrix
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Validate immutable build request
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || { echo "build request commit must add exactly one file" >&2; exit 10; }
+          IFS=$'\t' read -r status request_path <<<"${changes[0]}"
+          [[ "$status" == A ]] || exit 11
+          [[ "$request_path" == server-bootstrap/control/onshape-feature-matrix/*.request ]] || exit 12
+          request_id="$(awk -F= '$1=="request_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          did="$(awk -F= '$1=="document_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          wid="$(awk -F= '$1=="workspace_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          eid="$(awk -F= '$1=="element_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 13
+          for id in "$did" "$wid" "$eid"; do
+            [[ "$id" =~ ^[0-9a-f]{24}$ ]] || exit 14
+          done
+          {
+            echo "REQUEST_ID=$request_id"
+            echo "DID=$did"
+            echo "WID=$wid"
+            echo "EID=$eid"
+          } >> "$GITHUB_ENV"
+
+      - name: Prepare SSH
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -n "$VPS_SSH_KEY" && -n "$VPS_HOST" && -n "$VPS_SSH_USER" && -n "$VPS_HOST_KEY" ]] || exit 20
+          port="${VPS_PORT:-22}"
+          case "$port" in ''|*[!0-9]*) exit 21 ;; esac
+          tmp="$RUNNER_TEMP/onshape-feature-matrix-ssh"
+          install -d -m 0700 "$tmp"
+          printf '%s\n' "$VPS_SSH_KEY" > "$tmp/key"
+          chmod 0600 "$tmp/key"
+          host_key_line="${VPS_HOST_KEY//$'\r'/}"
+          read -r hkt hkd extra <<< "$host_key_line"
+          [[ "$hkt" == ssh-ed25519 && -n "$hkd" && -z "${extra:-}" ]] || exit 22
+          printf '%s %s %s\n' "$VPS_HOST" "$hkt" "$hkd" > "$tmp/known_hosts"
+          printf '[%s]:%s %s %s\n' "$VPS_HOST" "$port" "$hkt" "$hkd" >> "$tmp/known_hosts"
+          chmod 0600 "$tmp/known_hosts"
+          echo "SSH_DIR=$tmp" >> "$GITHUB_ENV"
+          echo "SSH_PORT=$port" >> "$GITHUB_ENV"
+
+      - name: Upload generator
+        shell: bash
+        run: |
+          set -euo pipefail
+          scp -q -i "$SSH_DIR/key" -P "$SSH_PORT" \
+            -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$SSH_DIR/known_hosts" \
+            tools/onshape/build_feature_matrix.py \
+            "${VPS_SSH_USER}@${VPS_HOST}:/tmp/build_feature_matrix.py"
+
+      - name: Compile feature matrix on VPS
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -i "$SSH_DIR/key" -p "$SSH_PORT" \
+            -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$SSH_DIR/known_hosts" \
+            "${VPS_SSH_USER}@${VPS_HOST}" \
+            "DID='$DID' WID='$WID' EID='$EID' bash -s" <<'REMOTE'
+          set -euo pipefail
+          [[ "$(id -u)" -eq 0 ]] || { echo "FEATURE_MATRIX_REQUIRES_ROOT" >&2; exit 30; }
+          out=/var/lib/capability-fabric/onshape/agent/feature_matrix.json
+          install -d -m 0700 -o root -g root /var/lib/capability-fabric/onshape/agent
+          python3 /tmp/build_feature_matrix.py "$DID" "$WID" "$EID" "$out"
+          rm -f /tmp/build_feature_matrix.py
+          chmod 0600 "$out"
+          echo "FEATURE_MATRIX_PATH=$out"
+          echo "FEATURE_MATRIX_BYTES=$(stat -c%s "$out")"
+          REMOTE
+
+      - name: Fetch compiled matrix
+        shell: bash
+        run: |
+          set -euo pipefail
+          install -d qualification/onshape-feature-matrix
+          scp -q -i "$SSH_DIR/key" -P "$SSH_PORT" \
+            -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$SSH_DIR/known_hosts" \
+            "${VPS_SSH_USER}@${VPS_HOST}:/var/lib/capability-fabric/onshape/agent/feature_matrix.json" \
+            qualification/onshape-feature-matrix/feature_matrix.json
+          python3 -c "
+          import json
+          d = json.load(open('qualification/onshape-feature-matrix/feature_matrix.json'))
+          assert d['schema'] == 'onshape.feature-matrix.v1'
+          assert d['featureTypeCount'] > 0
+          print('FEATURE_TYPES', d['featureTypeCount'], d['counts'])
+          "
+
+      - name: Commit compiled matrix
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'onshape-feature-matrix'
+          git config user.email 'onshape-feature-matrix@users.noreply.github.com'
+          git add qualification/onshape-feature-matrix/feature_matrix.json
+          if git diff --cached --quiet; then
+            echo "FEATURE_MATRIX=unchanged"
+            exit 0
+          fi
+          git commit -m "Onshape feature matrix compiled on VPS (request $REQUEST_ID)"
+          git push origin HEAD:main
