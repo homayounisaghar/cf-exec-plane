@@ -1,0 +1,25 @@
+{
+  "schema": "capability-fabric.deploy.v1",
+  "sequence": 77,
+  "release_id": "onshape-vps-fast-r13",
+  "compose_file": "compose.yaml",
+  "health_file": "health.sh",
+  "health_timeout_seconds": 180,
+  "files": {
+    "browser.js": "489e704f257805fb86811563bed1d3efabc9bc2d18e1c9e6a454716b6265f223",
+    "capability-fabric-onshape-server.service": "e810d312838a4b857870b2e0126c020e01b28ceaae1ddb9cfd66c3d29993f9f7",
+    "compose.yaml": "ff44e8e0574b1cdca3b049133ca5fc3810dd8168801cf94a9fba3624eebac2ae",
+    "core.js": "12c9a154e93359e66668f33f253be98f83b88656bec9e94443021f6dd61bf311",
+    "gateway.js": "8631fe45a8df30a1c4b6957928d9c723140eab91c8020c92511bdafb89ab03c6",
+    "health.sh": "9f387e9c72249b32bcd9c94f79ca500975dd72bea8109d2561e7dff72bff6918",
+    "onshape-agent.js": "85fe07376308505680204647abc92866b397b336ea668dd7285418cd46d49d7e",
+    "onshape-agent.test.mjs": "e75967c04e83bc3773b0424255bd28f8fd6699074c320389be2b2b7aeb90bc71",
+    "onshape-request.cjs": "2351bff7878764178f1c6b53e570e3930e82cb3a923f4b91b2a1eda32780be4d",
+    "package.json": "8dec4ff0845de0710034144bd96da433fed96216412ea031f516285f0c79763a",
+    "release-closure.json": "b9d5c6f197837a94f57c64fffe75122d67468e7450b7873750a7cafece1feeca",
+    "server.js": "c2fbe8c48529a1bac3195d661539fbb7018ba6cb54b371c887377d9bf09284d1"
+  },
+  "images": [
+    "mcr.microsoft.com/playwright:v1.62.1-resolute@sha256:aebd85bce8056dcdc2269853fd94ea432b6a201da4f0ef125b509489ecd52ddb"
+  ]
+}
