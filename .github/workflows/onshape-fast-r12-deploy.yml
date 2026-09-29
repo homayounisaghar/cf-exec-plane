@@ -1,0 +1,193 @@
+name: Onshape Fast R12 Lean Deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - server-bootstrap/control/onshape-fast-r12-deploy/*.request
+
+permissions:
+  contents: read
+
+concurrency:
+  group: onshape-fast-r12-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+
+      - name: Validate immutable deploy request
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || { echo "deploy request commit must add exactly one file" >&2; exit 10; }
+          IFS=$'\t' read -r status request_path <<<"${changes[0]}"
+          [[ "$status" == A ]] || exit 11
+          [[ "$request_path" == server-bootstrap/control/onshape-fast-r12-deploy/*.request ]] || exit 12
+          request_id="$(awk -F= '$1=="request_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          candidate_commit="$(awk -F= '$1=="candidate_commit"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          expected_sequence="$(awk -F= '$1=="expected_sequence"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          expected_release="$(awk -F= '$1=="expected_release"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          qualification_run="$(awk -F= '$1=="qualification_run"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 13
+          [[ "$candidate_commit" =~ ^[0-9a-f]{40}$ ]] || exit 14
+          [[ "$expected_sequence" =~ ^[0-9]+$ ]] || exit 15
+          [[ "$expected_release" =~ ^[A-Za-z0-9_.-]{8,120}$ ]] || exit 16
+          [[ "$qualification_run" =~ ^[0-9]+$ ]] || exit 17
+          snapshot="qualification/onshape-fast-r12/$candidate_commit"
+          [[ -d "$snapshot" ]] || exit 18
+          {
+            echo "SNAPSHOT=$snapshot"
+            echo "CANDIDATE_COMMIT=$candidate_commit"
+            echo "EXPECTED_SEQUENCE=$expected_sequence"
+            echo "EXPECTED_RELEASE=$expected_release"
+            echo "QUALIFICATION_RUN=$qualification_run"
+          } >> "$GITHUB_ENV"
+
+      - name: Revalidate public release snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib, json, os
+          from pathlib import Path
+          root=Path(os.environ["SNAPSHOT"])
+          m=json.loads((root/"manifest.json").read_text())
+          c=json.loads((root/"release-closure.json").read_text())
+          assert m["sequence"]==int(os.environ["EXPECTED_SEQUENCE"])
+          assert m["release_id"]==os.environ["EXPECTED_RELEASE"]
+          assert c["build_id"]==os.environ["EXPECTED_RELEASE"]
+          assert c["required_runtime_config"]["documented_operation_path"]=="DIRECT_NODE_AGENT"
+          assert c["required_runtime_config"]["browser_topology"]=="SINGLE_SESSION"
+          assert set(m["files"])==set(c["files"])
+          for rel,h in m["files"].items():
+              p=root/rel
+              assert p.is_file(), rel
+              assert hashlib.sha256(p.read_bytes()).hexdigest()==h, rel
+          PY
+
+      - name: Prepare SSH
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -n "$VPS_SSH_KEY" && -n "$VPS_HOST" && -n "$VPS_SSH_USER" && -n "$VPS_HOST_KEY" ]] || exit 20
+          port="${VPS_PORT:-22}"
+          case "$port" in ''|*[!0-9]*) exit 21 ;; esac
+          tmp="$RUNNER_TEMP/onshape-r12-ssh"
+          install -d -m 0700 "$tmp"
+          printf '%s\n' "$VPS_SSH_KEY" > "$tmp/key"
+          chmod 0600 "$tmp/key"
+          host_key_line="${VPS_HOST_KEY//$'\r'/}"
+          read -r hkt hkd extra <<< "$host_key_line"
+          [[ "$hkt" == ssh-ed25519 && -n "$hkd" && -z "${extra:-}" ]] || exit 22
+          printf '%s %s %s\n' "$VPS_HOST" "$hkt" "$hkd" > "$tmp/known_hosts"
+          printf '[%s]:%s %s %s\n' "$VPS_HOST" "$port" "$hkt" "$hkd" >> "$tmp/known_hosts"
+          chmod 0600 "$tmp/known_hosts"
+          echo "SSH_DIR=$tmp" >> "$GITHUB_ENV"
+          echo "SSH_PORT=$port" >> "$GITHUB_ENV"
+
+      - name: Upload qualified release
+        shell: bash
+        run: |
+          set -euo pipefail
+          tar -C "$SNAPSHOT" -czf "$RUNNER_TEMP/onshape-r12-release.tgz" .
+          scp -q -i "$SSH_DIR/key" -P "$SSH_PORT"             -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes             -o UserKnownHostsFile="$SSH_DIR/known_hosts"             "$RUNNER_TEMP/onshape-r12-release.tgz"             "${VPS_SSH_USER}@${VPS_HOST}:/tmp/onshape-r12-release.tgz"
+
+      - name: Atomic activate and health check
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -i "$SSH_DIR/key" -p "$SSH_PORT"             -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes             -o UserKnownHostsFile="$SSH_DIR/known_hosts"             "${VPS_SSH_USER}@${VPS_HOST}"             "EXPECTED_RELEASE='$EXPECTED_RELEASE' EXPECTED_SEQUENCE='$EXPECTED_SEQUENCE' CANDIDATE_COMMIT='$CANDIDATE_COMMIT' bash -s" <<'REMOTE'
+          set -euo pipefail
+          [[ "$(id -u)" -eq 0 ]] || { echo "R12_DEPLOY_REQUIRES_ROOT" >&2; exit 30; }
+
+          releases=/var/lib/capability-fabric/releases
+          active=/opt/capability-fabric/current
+          previous=/opt/capability-fabric/previous
+          project=capability-fabric
+          incoming="$releases/.incoming-${EXPECTED_RELEASE}-$$"
+          release="$releases/$EXPECTED_RELEASE"
+
+          install -d -m 0750 -o root -g root "$releases"
+          install -d -m 0755 -o root -g root /opt/capability-fabric
+          rm -rf "$incoming"
+          mkdir -m 0750 "$incoming"
+          tar -xzf /tmp/onshape-r12-release.tgz -C "$incoming"
+          rm -f /tmp/onshape-r12-release.tgz
+          chmod 0750 "$incoming/health.sh"
+
+          python3 - "$incoming/manifest.json" "$EXPECTED_SEQUENCE" "$EXPECTED_RELEASE" <<'PY'
+          import json,sys
+          m=json.load(open(sys.argv[1]))
+          assert m["sequence"]==int(sys.argv[2])
+          assert m["release_id"]==sys.argv[3]
+          PY
+
+          if [[ -e "$release" ]]; then
+            if cmp -s "$release/manifest.json" "$incoming/manifest.json"; then
+              rm -rf "$incoming"
+            else
+              echo "R12_RELEASE_ID_COLLISION" >&2
+              exit 31
+            fi
+          else
+            printf '%s\n' "$CANDIDATE_COMMIT" > "$incoming/source-commit"
+            chown -R root:root "$incoming"
+            chmod -R go-w "$incoming"
+            mv "$incoming" "$release"
+          fi
+
+          docker compose -f "$release/compose.yaml" config >/dev/null
+          docker compose -p "$project" -f "$release/compose.yaml" pull
+
+          old=''
+          if [[ -L "$active" ]]; then old="$(readlink -f "$active")"; fi
+
+          # Retire the old automatic pull path before switching production.
+          systemctl disable --now capability-fabric-pull.timer >/dev/null 2>&1 || true
+
+          if [[ -n "$old" && -d "$old" && "$old" != "$release" ]]; then
+            ln -sfn "$old" "$previous"
+          fi
+          tmp_link="${active}.tmp.$$"
+          ln -s "$release" "$tmp_link"
+          mv -Tf "$tmp_link" "$active"
+
+          if docker compose -p "$project" -f "$release/compose.yaml" up -d --remove-orphans --no-build             && timeout 180 env CF_RELEASE_DIR="$release" CF_COMPOSE_PROJECT="$project" bash "$release/health.sh"; then
+            echo "R12_DEPLOY=success"
+            echo "R12_RELEASE=$EXPECTED_RELEASE"
+            echo "R12_SEQUENCE=$EXPECTED_SEQUENCE"
+            exit 0
+          fi
+
+          echo "R12_DEPLOY_HEALTH_FAILED" >&2
+          if [[ -n "$old" && -d "$old" ]]; then
+            rollback_link="${active}.rollback.$$"
+            ln -s "$old" "$rollback_link"
+            mv -Tf "$rollback_link" "$active"
+            docker compose -p "$project" -f "$old/compose.yaml" up -d --remove-orphans --no-build || true
+            timeout 180 env CF_RELEASE_DIR="$old" CF_COMPOSE_PROJECT="$project" bash "$old/health.sh" || true
+            echo "R12_ROLLBACK=attempted" >&2
+          else
+            rm -f "$active"
+            docker compose -p "$project" -f "$release/compose.yaml" down --remove-orphans || true
+            echo "R12_ROLLBACK=no-previous-release" >&2
+          fi
+          exit 40
+          REMOTE
