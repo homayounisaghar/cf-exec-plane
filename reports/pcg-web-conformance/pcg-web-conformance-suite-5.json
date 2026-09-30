@@ -1,0 +1,142 @@
+{
+ "report_present": true,
+ "report": {
+  "conformance": [
+   {
+    "step": "catalog",
+    "operation": "semantic.list",
+    "state": "ACHIEVED",
+    "catalog_size": 18,
+    "verdict": "PASS"
+   },
+   {
+    "step": "session",
+    "operation": "communication.session.status",
+    "state": "ACHIEVED",
+    "error_code": null,
+    "verdict": "PASS",
+    "ms": 6,
+    "runtime_facts": {
+     "provider_model_healthy": true,
+     "connection_state": "READY"
+    }
+   },
+   {
+    "step": "conversations",
+    "operation": "communication.conversation.list",
+    "state": "ACHIEVED",
+    "error_code": null,
+    "verdict": "PASS",
+    "ms": 86
+   },
+   {
+    "step": "send",
+    "operation": "communication.message.send",
+    "state": "HARNESS_ERROR",
+    "error_code": "TimeoutError",
+    "verdict": "FAIL",
+    "ms": 300060
+   },
+   {
+    "step": "messages_read",
+    "operation": "communication.message.list",
+    "state": "ACHIEVED",
+    "error_code": null,
+    "verdict": "PASS",
+    "ms": 21,
+    "canary_located": false
+   },
+   {
+    "step": "search",
+    "operation": "communication.conversation.search",
+    "state": "ACHIEVED",
+    "error_code": null,
+    "verdict": "PASS",
+    "ms": 2849
+   },
+   {
+    "step": "mark_read_without_message",
+    "operation": "communication.conversation.mark_read",
+    "state": "FAILED",
+    "error_code": "INVALID_MESSAGE_HANDLE",
+    "verdict": "EXPECTED_REFUSAL",
+    "ms": 5
+   },
+   {
+    "step": "topics",
+    "operation": "communication.topic.list",
+    "state": "FAILED",
+    "error_code": "WEBK_TOPIC_TARGET_NOT_SUPPORTED",
+    "verdict": "EXPECTED_REFUSAL",
+    "ms": 8
+   },
+   {
+    "step": "pin_set",
+    "operation": "communication.conversation.pin.set",
+    "state": "ACHIEVED",
+    "error_code": null,
+    "verdict": "PASS",
+    "ms": 99,
+    "original_pinned": true
+   },
+   {
+    "step": "pin_restore",
+    "operation": "communication.conversation.pin.set",
+    "state": "ACHIEVED",
+    "error_code": null,
+    "verdict": "PASS",
+    "ms": 123
+   },
+   {
+    "step": "contact_pair",
+    "operation": "communication.conversation.search",
+    "found": 2,
+    "verdict": "PASS"
+   },
+   {
+    "step": "contact_send",
+    "operation": "communication.message.send",
+    "state": "HARNESS_ERROR",
+    "error_code": "TimeoutError",
+    "verdict": "FAIL",
+    "ms": 300036
+   },
+   {
+    "step": "contact_read",
+    "operation": "communication.message.list",
+    "state": "ACHIEVED",
+    "error_code": null,
+    "verdict": "PASS",
+    "ms": 80,
+    "canary_located": false
+   },
+   {
+    "step": "gaps",
+    "operation": "diagnostics.capability_gap.list",
+    "state": "ACHIEVED",
+    "error_code": null,
+    "verdict": "PASS",
+    "ms": 0
+   },
+   {
+    "step": "coverage",
+    "uncovered_operations": [
+     "communication.attachment.download",
+     "communication.message.delete",
+     "communication.message.edit",
+     "communication.message.fetch",
+     "communication.message.forward-native",
+     "communication.message.open_media",
+     "communication.message.react",
+     "communication.message.relay",
+     "communication.message.reply"
+    ]
+   },
+   {
+    "step": "summary",
+    "checks": 15,
+    "failures": 2
+   }
+  ]
+ }
+}
