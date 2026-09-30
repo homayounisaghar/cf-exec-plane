@@ -1,0 +1,26 @@
+{
+  "schema": "capability-fabric.deploy.v1",
+  "sequence": 82,
+  "release_id": "onshape-vps-fast-r18",
+  "compose_file": "compose.yaml",
+  "health_file": "health.sh",
+  "health_timeout_seconds": 180,
+  "files": {
+    "browser.js": "489e704f257805fb86811563bed1d3efabc9bc2d18e1c9e6a454716b6265f223",
+    "capability-fabric-onshape-server.service": "e810d312838a4b857870b2e0126c020e01b28ceaae1ddb9cfd66c3d29993f9f7",
+    "compose.yaml": "15769cc1700b1c76435e16f77faf046deac711ebaec1ccb7bee18389cfcf67d0",
+    "core.js": "12c9a154e93359e66668f33f253be98f83b88656bec9e94443021f6dd61bf311",
+    "gateway.js": "1121287c8ee7315a6d6cc650d16e801d223510b7ea0f27243fdaf40eee340f85",
+    "health.sh": "373a1517bfc29500924cfe21c3bd1b6a84025ab7b73f9df10017d11d6ee01c77",
+    "onshape-agent.js": "9bf10e5fea6b064dce811688d12db82f4dcfa5c861ebbd06b22c8ea24ef120bd",
+    "onshape-agent.test.mjs": "e75967c04e83bc3773b0424255bd28f8fd6699074c320389be2b2b7aeb90bc71",
+    "onshape-request.cjs": "2351bff7878764178f1c6b53e570e3930e82cb3a923f4b91b2a1eda32780be4d",
+    "package.json": "8dec4ff0845de0710034144bd96da433fed96216412ea031f516285f0c79763a",
+    "release-closure.json": "2de447b1a7d6031a29d1a049da9910990d689ce1ee6130f9f955e0377f4ce087",
+    "server.js": "b5f5fb1bb64947f41efdfa6d3ae1f1471ac2ef05a249190b0f42b8183da8de1c",
+    "telegram-ingress.mjs": "dc1b337c2e7450f75a49d6e2bb673ca72ada7973c3681762ef4b92e320d514a8"
+  },
+  "images": [
+    "mcr.microsoft.com/playwright:v1.62.1-resolute@sha256:aebd85bce8056dcdc2269853fd94ea432b6a201da4f0ef125b509489ecd52ddb"
+  ]
+}
