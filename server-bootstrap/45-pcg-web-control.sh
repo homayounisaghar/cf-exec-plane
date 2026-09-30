@@ -4,7 +4,7 @@ umask 077
 
 [[ "$(id -u)" -eq 0 ]] || { echo "must run as uid 0" >&2; exit 1; }
 mode="${CF_PCG_WEB_CONTROL_MODE:-}"
-case "$mode" in prepare|status|ingress-diagnostic|semantic-status|semantic-conversations|semantic-conversations-protected|semantic-conversations-canary|semantic-conversation-structure-canary|semantic-conversation-pin-pair|material-heart-reply-to-contact|semantic-saved-native-forward-to-contact|semantic-contact-photo-forward-to-contact|semantic-forward-state-diagnostic|semantic-topic-canary|semantic-search-canary|semantic-messages-protected|semantic-messages-canary|semantic-retrieval-hardening-canary|semantic-mark-read-canary|semantic-open-media-canary|semantic-download-canary|semantic-composer-canary|material-send-canary|material-reply-canary|material-attachment-send-canary|material-attachment-reply-canary|material-edit-canary|material-delete-canary|material-delete-for-everyone-canary|material-forward-canary|material-relay-canary|semantic-reaction-canary|material-text-limit-canary|material-attachment-hardening-canary|material-large-file-transport-canary|material-photo-album-canary|phone|code|password|cleanup|screenshot|refresh-screenshot|mytelegram-start|mytelegram-capture-code|mytelegram-signin|mytelegram-create-app|mytelegram-screenshot) ;; *) echo "invalid mode" >&2; exit 2 ;; esac
+case "$mode" in prepare|status|ingress-diagnostic|semantic-status|semantic-conversations|semantic-conversations-protected|semantic-conversations-canary|semantic-conversation-structure-canary|semantic-conversation-pin-pair|material-heart-reply-to-contact|semantic-saved-native-forward-to-contact|semantic-contact-photo-forward-to-contact|semantic-forward-state-diagnostic|semantic-topic-canary|semantic-search-canary|semantic-messages-protected|semantic-messages-canary|semantic-retrieval-hardening-canary|semantic-mark-read-canary|semantic-open-media-canary|semantic-download-canary|semantic-composer-canary|material-send-canary|material-reply-canary|material-attachment-send-canary|material-attachment-reply-canary|material-edit-canary|material-delete-canary|material-delete-for-everyone-canary|material-forward-canary|material-relay-canary|semantic-reaction-canary|semantic-conformance-suite|material-text-limit-canary|material-attachment-hardening-canary|material-large-file-transport-canary|material-photo-album-canary|phone|code|password|cleanup|screenshot|refresh-screenshot|mytelegram-start|mytelegram-capture-code|mytelegram-signin|mytelegram-create-app|mytelegram-screenshot) ;; *) echo "invalid mode" >&2; exit 2 ;; esac
 
 run_root=/var/lib/capability-fabric/pcg/run
 socket="$run_root/web.sock"
@@ -2064,6 +2064,196 @@ finally:
     state.close()
 PY
   printf 'PCG_WEB_TEXT_LIMIT_CANARY=pass\n'
+  exit 0
+fi
+
+if [[ "$mode" == semantic-conformance-suite ]]; then
+  sequence="$(python3 - "$release/manifest.json" <<'PY'
+import json,sys
+print(int(json.load(open(sys.argv[1],encoding='utf-8')).get('sequence',0)))
+PY
+)"
+  [[ "$sequence" -ge 62 ]] || { echo "PCG_WEB_CONFORMANCE_RUNTIME=too-old" >&2; exit 48; }
+
+  python3 - <<'PYCONF'
+import json, socket, uuid
+
+SOCK = "/run/pcg/web.sock"
+report = []
+
+def call(req, timeout=120.0):
+    s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    s.settimeout(timeout)
+    try:
+        s.connect(SOCK)
+        s.sendall((json.dumps(req, ensure_ascii=False) + "\n").encode("utf-8"))
+        buf = b""
+        while not buf.endswith(b"\n"):
+            chunk = s.recv(65536)
+            if not chunk:
+                break
+            buf += chunk
+        return json.loads(buf.decode("utf-8").strip() or "{}")
+    finally:
+        s.close()
+
+def invoke(operation, args=None):
+    try:
+        return call({"op": "semantic.invoke", "operation": operation, "args": args or {}})
+    except Exception as err:
+        return {"state": "HARNESS_ERROR", "error_code": type(err).__name__}
+
+def record(step, operation, res, expect="ACHIEVED", extra=None):
+    state = code = None
+    if isinstance(res, dict):
+        state = res.get("state") or ("ok" if res.get("ok") else None)
+        code = res.get("error_code") or res.get("error")
+        refusal = res.get("refusal")
+        if not code and isinstance(refusal, dict):
+            code = refusal.get("code")
+    if expect == "ACHIEVED":
+        verdict = "PASS" if state == "ACHIEVED" else "FAIL"
+    else:
+        verdict = "EXPECTED_REFUSAL" if state in ("FAILED", "UNSUPPORTED", "REFUSED") else ("PASS" if state == "ACHIEVED" else "FAIL")
+    entry = {"step": step, "operation": operation, "state": state, "error_code": code, "verdict": verdict}
+    if extra:
+        entry.update(extra)
+    report.append(entry)
+    return entry
+
+def walk(node):
+    if isinstance(node, dict):
+        yield node
+        for v in node.values():
+            yield from walk(v)
+    elif isinstance(node, list):
+        for v in node:
+            yield from walk(v)
+
+def handles(res, prefix):
+    found = []
+    for node in walk(res):
+        for v in node.values():
+            if isinstance(v, str) and v.startswith(prefix) and v not in found:
+                found.append(v)
+    return found
+
+def locate(conv, token, limit=15):
+    res = invoke("communication.message.list", {"conversation_handle": conv, "limit": limit})
+    for node in walk(res):
+        h = node.get("handle") if isinstance(node, dict) else None
+        if isinstance(h, str) and h.startswith("tgmsg:") and token in json.dumps(node, ensure_ascii=False):
+            return h, res
+    return None, res
+
+created = []  # (conversation_handle, message_handle, scope)
+
+def cleanup():
+    for conv, handle, scope in created:
+        res = invoke("communication.message.delete", {"conversation_handle": conv, "message_handle": handle, "scope": scope, "confirm_irreversible": True})
+        entry = record("cleanup_delete", "communication.message.delete", res)
+        if entry["verdict"] == "FAIL" and scope == "FOR_EVERYONE":
+            record("cleanup_delete_fallback", "communication.message.delete",
+                   invoke("communication.message.delete", {"conversation_handle": conv, "message_handle": handle, "scope": "SELF_ONLY", "confirm_irreversible": True}))
+
+try:
+    cat = call({"op": "semantic.list"})
+    ops = []
+    for e in (cat.get("capabilities") or cat.get("operations") or []):
+        if isinstance(e, dict):
+            ops.append(e.get("operation") or e.get("name"))
+        elif isinstance(e, str):
+            ops.append(e)
+    ops = [o for o in ops if o]
+    report.append({"step": "catalog", "operation": "semantic.list", "state": "ACHIEVED" if ops else "FAILED",
+                   "catalog_size": len(ops), "verdict": "PASS" if ops else "FAIL"})
+
+    record("session", "communication.session.status", invoke("communication.session.status"))
+    convs = invoke("communication.conversation.list", {"limit": 30})
+    record("conversations", "communication.conversation.list", convs)
+
+    st = call({"op": "material.self_target"})
+    saved = st.get("conversation_handle")
+    if not isinstance(saved, str) or not saved.startswith("tgchat:"):
+        report.append({"step": "target", "operation": "material.self_target", "state": "FAILED", "verdict": "FAIL"})
+        raise SystemExit(0)
+
+    # --- Saved Messages: full single-chat matrix on self-created messages only
+    token = "pcg-conformance-" + str(uuid.uuid4())
+    record("send", "communication.message.send", invoke("communication.message.send", {"conversation_handle": saved, "text": token}))
+    msg, listed = locate(saved, token)
+    record("messages_read", "communication.message.list", listed, extra={"canary_located": bool(msg)})
+
+    if msg:
+        created.append((saved, msg, "SELF_ONLY"))
+        record("fetch", "communication.message.fetch", invoke("communication.message.fetch", {"conversation_handle": saved, "message_handle": msg}))
+        record("react", "communication.message.react", invoke("communication.message.react", {"conversation_handle": saved, "message_handle": msg, "emoji": "\u2764\ufe0f"}))
+        record("unreact", "communication.message.react", invoke("communication.message.react", {"conversation_handle": saved, "message_handle": msg, "remove": True}))
+        record("reply", "communication.message.reply", invoke("communication.message.reply", {"conversation_handle": saved, "source_message_handle": msg, "text": token + "-reply"}))
+        rep, _ = locate(saved, token + "-reply")
+        if rep:
+            created.append((saved, rep, "SELF_ONLY"))
+        record("edit", "communication.message.edit", invoke("communication.message.edit", {"conversation_handle": saved, "message_handle": msg, "text": token + "-edited"}))
+        record("relay", "communication.message.relay", invoke("communication.message.relay", {"conversation_handle": saved, "source_message_handle": msg, "source_conversation_handle": saved, "relay_purpose": "TRANSPORT_RELAY", "source_text": token + "-edited"}))
+        rel, _ = locate(saved, token + "-edited")
+        if rel and rel != msg:
+            created.append((saved, rel, "SELF_ONLY"))
+        record("open_media", "communication.message.open_media", invoke("communication.message.open_media", {"conversation_handle": saved, "message_handle": msg}), expect="REFUSAL")
+        record("download", "communication.attachment.download", invoke("communication.attachment.download", {"conversation_handle": saved, "message_handle": msg}), expect="REFUSAL")
+
+    record("search", "communication.conversation.search", invoke("communication.conversation.search", {"query": "\u0646\u062c\u0645\u0647", "limit": 10}))
+    record("mark_read", "communication.conversation.mark_read", invoke("communication.conversation.mark_read", {"conversation_handle": saved}))
+    record("topics", "communication.topic.list", invoke("communication.topic.list", {"conversation_handle": saved}), expect="REFUSAL")
+
+    # --- pin: preserve and restore the owner's original pin state
+    pinned_now = None
+    for node in walk(convs):
+        if isinstance(node, dict) and node.get("handle") == saved and "pinned" in node:
+            pinned_now = bool(node.get("pinned"))
+    record("pin_set", "communication.conversation.pin.set", invoke("communication.conversation.pin.set", {"conversation_handle": saved, "pinned": not bool(pinned_now)}), extra={"original_pinned": pinned_now})
+    record("pin_restore", "communication.conversation.pin.set", invoke("communication.conversation.pin.set", {"conversation_handle": saved, "pinned": bool(pinned_now)}))
+
+    # --- two authorized contact conversations: cross-chat forward, own messages only
+    search = invoke("communication.conversation.search", {"query": "\u0646\u062c\u0645\u0647", "limit": 10})
+    pair = [h for h in handles(search, "tgchat:") if h != saved][:2]
+    report.append({"step": "contact_pair", "operation": "communication.conversation.search",
+                   "found": len(pair), "verdict": "PASS" if len(pair) == 2 else "SKIP"})
+    if len(pair) == 2:
+        a, b = pair
+        tok2 = "pcg-conformance-x-" + str(uuid.uuid4())
+        record("contact_send", "communication.message.send", invoke("communication.message.send", {"conversation_handle": a, "text": tok2}))
+        m2, listed2 = locate(a, tok2)
+        record("contact_read", "communication.message.list", listed2, extra={"canary_located": bool(m2)})
+        if m2:
+            created.append((a, m2, "FOR_EVERYONE"))
+            record("contact_react", "communication.message.react", invoke("communication.message.react", {"conversation_handle": a, "message_handle": m2, "emoji": "\u2764\ufe0f"}))
+            record("contact_unreact", "communication.message.react", invoke("communication.message.react", {"conversation_handle": a, "message_handle": m2, "remove": True}))
+            record("contact_forward", "communication.message.forward-native", invoke("communication.message.forward-native", {"source_conversation_handle": a, "source_message_handle": m2, "conversation_handle": b}))
+            m3, _ = locate(b, tok2)
+            if m3:
+                created.append((b, m3, "FOR_EVERYONE"))
+            report.append({"step": "contact_forward_readback", "located_in_target": bool(m3), "verdict": "PASS" if m3 else "FAIL"})
+
+    cleanup()
+    created = []
+    record("gaps", "diagnostics.capability_gap.list", invoke("diagnostics.capability_gap.list", {"limit": 30}))
+
+    covered = {e.get("operation") for e in report}
+    report.append({"step": "coverage", "uncovered_operations": sorted(o for o in ops if o not in covered)})
+    fails = [e for e in report if e.get("verdict") == "FAIL"]
+    report.append({"step": "summary", "checks": len(report), "failures": len(fails)})
+except SystemExit:
+    pass
+except Exception as err:
+    report.append({"step": "harness", "state": "FAILED", "verdict": "FAIL", "error": type(err).__name__})
+finally:
+    try:
+        cleanup()
+    except Exception:
+        pass
+    print(json.dumps({"conformance": report}, ensure_ascii=False, indent=1))
+PYCONF
+  printf 'PCG_WEB_CONFORMANCE_SUITE=done\n'
   exit 0
 fi
 
