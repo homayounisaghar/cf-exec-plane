@@ -1,0 +1,4 @@
+request_id=pcg-web-r61-authoritative-reaction-state-1
+candidate_commit=cd354e5bb2e9e712e1d8b0927e1b19a31ead5795
+expected_sequence=61
+expected_release=pcg-web-stage6-authoritative-reaction-state-r61
