@@ -1,0 +1,4 @@
+request_id=pcg-web-r57-capability-derived-ingress-1
+candidate_commit=6648773e7fa043f6814682535a022f4546cfa569
+expected_sequence=57
+expected_release=pcg-web-stage6-capability-derived-ingress-r57
