@@ -1,0 +1,4 @@
+request_id=onshape-r24-reference-verifier-1
+candidate_commit=0814c67bf982cd2aa583a673f375401ea7fd0869
+expected_sequence=88
+expected_release=onshape-vps-fast-r24
