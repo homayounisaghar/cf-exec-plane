@@ -2078,7 +2078,7 @@ SOCK = sys.argv[1] if len(sys.argv) > 1 else "/var/lib/capability-fabric/pcg/run
 OUT = sys.argv[2] if len(sys.argv) > 2 else None
 report = []
 
-def call(req, timeout=300.0):
+def call(req, timeout=90.0):
     s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     s.settimeout(timeout)
     try:
@@ -2189,6 +2189,40 @@ try:
         raise SystemExit(0)
 
     # --- Saved Messages: full single-chat matrix on self-created messages only
+    # Stage diagnostic: the semantic send hangs, so time each primitive stage
+    # separately with a short deadline instead of guessing where it blocks.
+    import hashlib, random, time
+
+    def stage(name, req, timeout=25.0):
+        t0 = time.time()
+        try:
+            res = call(req, timeout=timeout)
+            state = "ANSWERED"
+        except Exception as err:
+            res = {"error": type(err).__name__}
+            state = "TIMEOUT" if "Timeout" in type(err).__name__ else "ERROR"
+        report.append({"step": "stage:" + name, "operation": req.get("op"), "state": state,
+                       "ms": int((time.time() - t0) * 1000),
+                       "error_code": res.get("error") if isinstance(res, dict) else None,
+                       "verdict": "PASS" if state == "ANSWERED" else "FAIL"})
+        return res
+
+    stage("target_check", {"op": "material.target.check", "conversation_handle": saved})
+    probe_text = "pcg-stage-" + str(uuid.uuid4())
+    stage("send_dispatch", {
+        "op": "material.send_text.dispatch",
+        "attemptId": "stage-" + str(uuid.uuid4()),
+        "conversationHandle": saved,
+        "randomId": str(int(time.time() * 1000) * 1000000 + random.randint(1, 999999)),
+        "text": probe_text,
+        "payloadSha256": hashlib.sha256(probe_text.encode()).hexdigest(),
+    })
+
+    pm, _ = locate(saved, probe_text)
+    if pm:
+        created.append((saved, pm, "SELF_ONLY"))
+    report.append({"step": "stage:probe_landed", "state": "ACHIEVED" if pm else "FAILED", "verdict": "PASS" if pm else "FAIL"})
+
     token = "pcg-conformance-" + str(uuid.uuid4())
     record("send", "communication.message.send", invoke("communication.message.send", {"conversation_handle": saved, "text": token}))
     msg, listed = locate(saved, token)
