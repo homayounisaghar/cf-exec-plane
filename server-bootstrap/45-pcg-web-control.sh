@@ -2068,12 +2068,14 @@ PY
 fi
 
 if [[ "$mode" == semantic-conformance-suite ]]; then
-  echo "---CONFORMANCE-BEGIN---"
-  python3 - "$socket" <<'PYCONF' || echo '{"conformance":[{"step":"harness","state":"FAILED","verdict":"FAIL","error":"interpreter_exit"}]}'
+  conf_report="$run_root/conformance-report.json"
+  rm -f "$conf_report"
+  python3 - "$socket" "$conf_report" <<'PYCONF' &
 import json, socket, uuid
 
 import sys
 SOCK = sys.argv[1] if len(sys.argv) > 1 else "/var/lib/capability-fabric/pcg/run/web.sock"
+OUT = sys.argv[2] if len(sys.argv) > 2 else None
 report = []
 
 def call(req, timeout=120.0):
@@ -2253,9 +2255,21 @@ finally:
         cleanup()
     except Exception:
         pass
-    print(json.dumps({"conformance": report}, ensure_ascii=True, indent=1))
+    text = json.dumps({"conformance": report}, ensure_ascii=True, indent=1)
+    if OUT:
+        with open(OUT, "w", encoding="ascii") as fh:
+            fh.write(text)
+    else:
+        print(text)
 PYCONF
+  conf_pid=$!
+  # Keepalive: long provider work must not let the transport idle out.
+  while kill -0 "$conf_pid" 2>/dev/null; do sleep 10; printf '.\n'; done
+  wait "$conf_pid" || true
+  echo "---CONFORMANCE-BEGIN---"
+  if [[ -s "$conf_report" ]]; then cat "$conf_report"; printf '\n'; else echo '{"conformance":[{"step":"harness","state":"FAILED","verdict":"FAIL","error":"no_report_file"}]}'; fi
   echo "---CONFORMANCE-END---"
+  rm -f "$conf_report"
   exit 0
 fi
 
