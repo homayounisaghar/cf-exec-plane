@@ -2068,17 +2068,20 @@ PY
 fi
 
 if [[ "$mode" == semantic-conformance-suite ]]; then
-  sequence="$(python3 - "$release/manifest.json" <<'PY'
+  echo "---CONFORMANCE-BEGIN---"
+  sequence="$(python3 - "$release/manifest.json" <<'PYSEQ'
 import json,sys
 print(int(json.load(open(sys.argv[1],encoding='utf-8')).get('sequence',0)))
-PY
-)"
-  [[ "$sequence" -ge 62 ]] || { echo "PCG_WEB_CONFORMANCE_RUNTIME=too-old" >&2; exit 48; }
-
-  python3 - <<'PYCONF'
+PYSEQ
+)" || sequence=0
+  if [[ "$sequence" -lt 62 ]]; then
+    printf '{"conformance":[{"step":"runtime","state":"FAILED","verdict":"FAIL","sequence":%s}]}\n' "$sequence"
+  else
+    python3 - "$socket" <<'PYCONF' || echo '{"conformance":[{"step":"harness","state":"FAILED","verdict":"FAIL","error":"interpreter_exit"}]}'
 import json, socket, uuid
 
-SOCK = "/run/pcg/web.sock"
+import sys
+SOCK = sys.argv[1] if len(sys.argv) > 1 else "/var/lib/capability-fabric/pcg/run/web.sock"
 report = []
 
 def call(req, timeout=120.0):
@@ -2086,7 +2089,7 @@ def call(req, timeout=120.0):
     s.settimeout(timeout)
     try:
         s.connect(SOCK)
-        s.sendall((json.dumps(req, ensure_ascii=False) + "\n").encode("utf-8"))
+        s.sendall((json.dumps(req, ensure_ascii=True) + "\n").encode("utf-8"))
         buf = b""
         while not buf.endswith(b"\n"):
             chunk = s.recv(65536)
@@ -2142,7 +2145,7 @@ def locate(conv, token, limit=15):
     res = invoke("communication.message.list", {"conversation_handle": conv, "limit": limit})
     for node in walk(res):
         h = node.get("handle") if isinstance(node, dict) else None
-        if isinstance(h, str) and h.startswith("tgmsg:") and token in json.dumps(node, ensure_ascii=False):
+        if isinstance(h, str) and h.startswith("tgmsg:") and token in json.dumps(node, ensure_ascii=True):
             return h, res
     return None, res
 
@@ -2251,9 +2254,10 @@ finally:
         cleanup()
     except Exception:
         pass
-    print(json.dumps({"conformance": report}, ensure_ascii=False, indent=1))
+    print(json.dumps({"conformance": report}, ensure_ascii=True, indent=1))
 PYCONF
-  printf 'PCG_WEB_CONFORMANCE_SUITE=done\n'
+  fi
+  echo "---CONFORMANCE-END---"
   exit 0
 fi
 
