@@ -1,0 +1,30 @@
+{
+  "schema": "capability-fabric.deploy.v1",
+  "sequence": 57,
+  "release_id": "pcg-web-stage6-capability-derived-ingress-r57",
+  "compose_file": "compose.yaml",
+  "health_file": "health.sh",
+  "health_timeout_seconds": 180,
+  "files": {
+    "compose.yaml": "aa88621e0384b308fc1df531c4709c0c1da404f92b4140630c51057c667f4a3b",
+    "health.sh": "d122754e227b9df7ce2f8a5d0c0a55e8d0a1b3af947d40f75cae61f48b7e9546",
+    "pcg_core_stub.py": "2456952dcd43d974386958c2361c626e57a9653931be1381d9524a571b1953a3",
+    "pcg_telegram_provisioning_runtime.py": "40337a8a6101111d1680676b8675d710bc6390e3af76b64ee5b9bbb64d76c41f",
+    "pcg_web_browser.mjs": "4c62c1118b2dcd4d3826a05a270fd3dcd6bd8e6a3a398c5047932d5f900daee5",
+    "pcg_web_identity.mjs": "3edac6cb6a5c405fcfb2d57b671a2f98c2a419d071f40a7d1de70a590a142aa9",
+    "pcg_web_primitives.mjs": "fd4d3c2b813f6f1cd432ab8177eae9b78986aef9f0241f5adb43cba6bd79ffc1",
+    "pcg_web_selectors.mjs": "d0c86b9f43ade028732f2fcf037c6b2f01f76d2f365c5ba778cee6ccda398922",
+    "pcg_web_semantic_ops.mjs": "82d51349fadf8dc57b966b078e18c1195d0ae6cc31e11ff4a0ba0735d99efb7c",
+    "pcg_web_package.json": "ce2335856b733055f078349341e28109414c05186c9c29845c3146feecac4928",
+    "pcg_web_webk_bridge.mjs": "ed95f3b98a1b742eafc3f2f98bcef6d0ee32ad56c6199ba8061ff9504e6046c5",
+    "pcg_web_file_broker.mjs": "5ef56eab709980a3a83355a2128a7a6e10f252823832887c7a3e345361f88f83",
+    "pcg_web_composer.mjs": "ff9a4e557a3d66a44c96c4dc8d79c5c19c875f94c04c79df5ed4ca82cc968260",
+    "pcg_web_send.mjs": "353c20805635d3587c5666c29489ff351197b82a046a95d8dd6ae85b084bfc8d",
+    "pcg_web_structure.mjs": "6f5f8c1e461ed33a7c851916dcf202e3686c7ee7f202f51e69722dac086e86b5"
+  },
+  "images": [
+    "ghcr.io/homayounisaghar/pcg-tdlib-python@sha256:eccb8b5e73ac504aafd8a8b316e2fda951bd7cb23280cccf99c5e6206c4826e4",
+    "mcr.microsoft.com/playwright:v1.62.1-resolute@sha256:aebd85bce8056dcdc2269853fd94ea432b6a201da4f0ef125b509489ecd52ddb",
+    "python:3.12-slim-bookworm@sha256:392307d22300de8b5986851a12d9176dfc0fc073e65bf6523ebd7dcbeb23564e"
+  ]
+}
