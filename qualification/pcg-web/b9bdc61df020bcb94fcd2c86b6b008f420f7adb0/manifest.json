@@ -1,0 +1,31 @@
+{
+  "schema": "capability-fabric.deploy.v1",
+  "sequence": 58,
+  "release_id": "pcg-web-stage6-gap-ledger-teaching-errors-r58",
+  "compose_file": "compose.yaml",
+  "health_file": "health.sh",
+  "health_timeout_seconds": 180,
+  "files": {
+    "compose.yaml": "aa88621e0384b308fc1df531c4709c0c1da404f92b4140630c51057c667f4a3b",
+    "health.sh": "d122754e227b9df7ce2f8a5d0c0a55e8d0a1b3af947d40f75cae61f48b7e9546",
+    "pcg_core_stub.py": "2456952dcd43d974386958c2361c626e57a9653931be1381d9524a571b1953a3",
+    "pcg_telegram_provisioning_runtime.py": "40337a8a6101111d1680676b8675d710bc6390e3af76b64ee5b9bbb64d76c41f",
+    "pcg_web_browser.mjs": "8747707f200e98898471490d04955626ae43a81eefdf2ecf0974988ef45b6076",
+    "pcg_web_identity.mjs": "3edac6cb6a5c405fcfb2d57b671a2f98c2a419d071f40a7d1de70a590a142aa9",
+    "pcg_web_primitives.mjs": "fd4d3c2b813f6f1cd432ab8177eae9b78986aef9f0241f5adb43cba6bd79ffc1",
+    "pcg_web_selectors.mjs": "d0c86b9f43ade028732f2fcf037c6b2f01f76d2f365c5ba778cee6ccda398922",
+    "pcg_web_semantic_ops.mjs": "8e6c2ec9b725f6512ccf6e341fd2118e821995ff36870f1c62fd9af518793e87",
+    "pcg_web_package.json": "ce2335856b733055f078349341e28109414c05186c9c29845c3146feecac4928",
+    "pcg_web_webk_bridge.mjs": "e185508ac85adf5e3e82417e9e8ae7b4ea867eb374012c26b52e131c112aaf57",
+    "pcg_web_file_broker.mjs": "5ef56eab709980a3a83355a2128a7a6e10f252823832887c7a3e345361f88f83",
+    "pcg_web_composer.mjs": "ff9a4e557a3d66a44c96c4dc8d79c5c19c875f94c04c79df5ed4ca82cc968260",
+    "pcg_web_send.mjs": "353c20805635d3587c5666c29489ff351197b82a046a95d8dd6ae85b084bfc8d",
+    "pcg_web_structure.mjs": "6f5f8c1e461ed33a7c851916dcf202e3686c7ee7f202f51e69722dac086e86b5",
+    "pcg_web_gap_ledger.mjs": "0e1f3e1650685f8ae3d6e624f377c225758af9f3d27cb937867748db0d0b2c41"
+  },
+  "images": [
+    "ghcr.io/homayounisaghar/pcg-tdlib-python@sha256:eccb8b5e73ac504aafd8a8b316e2fda951bd7cb23280cccf99c5e6206c4826e4",
+    "mcr.microsoft.com/playwright:v1.62.1-resolute@sha256:aebd85bce8056dcdc2269853fd94ea432b6a201da4f0ef125b509489ecd52ddb",
+    "python:3.12-slim-bookworm@sha256:392307d22300de8b5986851a12d9176dfc0fc073e65bf6523ebd7dcbeb23564e"
+  ]
+}
