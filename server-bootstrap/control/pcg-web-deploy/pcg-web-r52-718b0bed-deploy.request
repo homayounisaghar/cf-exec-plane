@@ -1,0 +1,4 @@
+request_id=pcg-web-r52-718b0bed-deploy
+candidate_commit=718b0bed9678ae45f8c54433fb4d599beaaec7c8
+expected_sequence=52
+expected_release=pcg-web-stage5-ingress-operations-r52
