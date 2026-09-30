@@ -110,11 +110,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          ssh -i "$SSH_DIR/key" -p "$SSH_PORT" \
-            -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
-            -o UserKnownHostsFile="$SSH_DIR/known_hosts" \
-            "${VPS_SSH_USER}@${VPS_HOST}" \
-            "EXPECTED_RELEASE='$EXPECTED_RELEASE' EXPECTED_SEQUENCE='$EXPECTED_SEQUENCE' CANDIDATE_COMMIT='$CANDIDATE_COMMIT' bash -s" <<'REMOTE'
+          cat > "$RUNNER_TEMP/pcg-remote.sh" <<'REMOTE'
           set -euo pipefail
           [[ "$(id -u)" -eq 0 ]] || { echo "PCG_DEPLOY_REQUIRES_ROOT" >&2; exit 30; }
 
@@ -160,7 +156,7 @@ jobs:
           docker compose -p "$project" -f "$release/compose.yaml" config >/dev/null
           docker compose -p "$project" -f "$release/compose.yaml" pull || true
 
-          if docker compose -p "$project" -f "$release/compose.yaml" up -d --remove-orphans --no-build \
+          if docker compose -p "$project" -f "$release/compose.yaml" up -d --remove-orphans --no-build --force-recreate \
             && timeout 240 env CF_RELEASE_DIR="$release" CF_COMPOSE_PROJECT="$project" bash "$release/health.sh"; then
             echo "PCG_DEPLOY=success"
             echo "PCG_RELEASE=$EXPECTED_RELEASE"
@@ -179,3 +175,17 @@ jobs:
           fi
           exit 40
           REMOTE
+          scp -q -i "$SSH_DIR/key" -P "$SSH_PORT" \
+            -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$SSH_DIR/known_hosts" \
+            "$RUNNER_TEMP/pcg-remote.sh" "${VPS_SSH_USER}@${VPS_HOST}:/tmp/pcg-remote.sh"
+          set +e
+          ssh -i "$SSH_DIR/key" -p "$SSH_PORT" \
+            -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$SSH_DIR/known_hosts" \
+            "${VPS_SSH_USER}@${VPS_HOST}" \
+            "EXPECTED_RELEASE='$EXPECTED_RELEASE' EXPECTED_SEQUENCE='$EXPECTED_SEQUENCE' CANDIDATE_COMMIT='$CANDIDATE_COMMIT' bash /tmp/pcg-remote.sh; rc=\$?; rm -f /tmp/pcg-remote.sh; exit \$rc" </dev/null
+          remote_rc=$?
+          set -e
+          echo "PCG_REMOTE_EXIT=$remote_rc"
+          [[ "$remote_rc" -eq 0 ]] || exit "$remote_rc"
