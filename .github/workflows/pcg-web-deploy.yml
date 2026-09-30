@@ -1,0 +1,181 @@
+name: PCG Web Channel Deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - server-bootstrap/control/pcg-web-deploy/*.request
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pcg-web-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+
+      - name: Validate immutable deploy request
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || { echo "deploy request commit must add exactly one file" >&2; exit 10; }
+          IFS=$'\t' read -r status request_path <<<"${changes[0]}"
+          [[ "$status" == A ]] || exit 11
+          [[ "$request_path" == server-bootstrap/control/pcg-web-deploy/*.request ]] || exit 12
+          request_id="$(awk -F= '$1=="request_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          candidate_commit="$(awk -F= '$1=="candidate_commit"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          expected_sequence="$(awk -F= '$1=="expected_sequence"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          expected_release="$(awk -F= '$1=="expected_release"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 13
+          [[ "$candidate_commit" =~ ^[0-9a-f]{40}$ ]] || exit 14
+          [[ "$expected_sequence" =~ ^[0-9]+$ ]] || exit 15
+          [[ "$expected_release" =~ ^[A-Za-z0-9_.-]{8,120}$ ]] || exit 16
+          snapshot="qualification/pcg-web/$candidate_commit"
+          [[ -d "$snapshot" ]] || exit 17
+          {
+            echo "SNAPSHOT=$snapshot"
+            echo "CANDIDATE_COMMIT=$candidate_commit"
+            echo "EXPECTED_SEQUENCE=$expected_sequence"
+            echo "EXPECTED_RELEASE=$expected_release"
+          } >> "$GITHUB_ENV"
+
+      - name: Revalidate release snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib, json, os
+          from pathlib import Path
+          root=Path(os.environ["SNAPSHOT"])
+          m=json.loads((root/"manifest.json").read_text())
+          assert m["sequence"]==int(os.environ["EXPECTED_SEQUENCE"])
+          assert m["release_id"]==os.environ["EXPECTED_RELEASE"]
+          for rel,h in m["files"].items():
+              p=root/rel
+              assert p.is_file(), rel
+              assert hashlib.sha256(p.read_bytes()).hexdigest()==h, rel
+          PY
+          node --check "$SNAPSHOT/pcg_web_browser.mjs"
+
+      - name: Prepare SSH
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -n "$VPS_SSH_KEY" && -n "$VPS_HOST" && -n "$VPS_SSH_USER" && -n "$VPS_HOST_KEY" ]] || exit 20
+          port="${VPS_PORT:-22}"
+          case "$port" in ''|*[!0-9]*) exit 21 ;; esac
+          tmp="$RUNNER_TEMP/pcg-ssh"
+          install -d -m 0700 "$tmp"
+          printf '%s\n' "$VPS_SSH_KEY" > "$tmp/key"
+          chmod 0600 "$tmp/key"
+          host_key_line="${VPS_HOST_KEY//$'\r'/}"
+          read -r hkt hkd extra <<< "$host_key_line"
+          [[ "$hkt" == ssh-ed25519 && -n "$hkd" && -z "${extra:-}" ]] || exit 22
+          printf '%s %s %s\n' "$VPS_HOST" "$hkt" "$hkd" > "$tmp/known_hosts"
+          printf '[%s]:%s %s %s\n' "$VPS_HOST" "$port" "$hkt" "$hkd" >> "$tmp/known_hosts"
+          chmod 0600 "$tmp/known_hosts"
+          echo "SSH_DIR=$tmp" >> "$GITHUB_ENV"
+          echo "SSH_PORT=$port" >> "$GITHUB_ENV"
+
+      - name: Upload release
+        shell: bash
+        run: |
+          set -euo pipefail
+          tar -C "$SNAPSHOT" -czf "$RUNNER_TEMP/pcg-release.tgz" .
+          scp -q -i "$SSH_DIR/key" -P "$SSH_PORT" \
+            -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$SSH_DIR/known_hosts" \
+            "$RUNNER_TEMP/pcg-release.tgz" \
+            "${VPS_SSH_USER}@${VPS_HOST}:/tmp/pcg-release.tgz"
+
+      - name: Activate PCG channel and health check
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -i "$SSH_DIR/key" -p "$SSH_PORT" \
+            -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$SSH_DIR/known_hosts" \
+            "${VPS_SSH_USER}@${VPS_HOST}" \
+            "EXPECTED_RELEASE='$EXPECTED_RELEASE' EXPECTED_SEQUENCE='$EXPECTED_SEQUENCE' CANDIDATE_COMMIT='$CANDIDATE_COMMIT' bash -s" <<'REMOTE'
+          set -euo pipefail
+          [[ "$(id -u)" -eq 0 ]] || { echo "PCG_DEPLOY_REQUIRES_ROOT" >&2; exit 30; }
+
+          releases=/var/lib/capability-fabric/pcg/releases
+          web=capability-fabric-pcg-web
+
+          project="$(docker inspect -f '{{index .Config.Labels "com.docker.compose.project"}}' "$web" 2>/dev/null || true)"
+          [[ -n "$project" ]] || project=capability-fabric-pcg
+          old="$(docker inspect -f '{{range .Mounts}}{{if eq .Destination "/release"}}{{.Source}}{{end}}{{end}}' "$web" 2>/dev/null || true)"
+
+          case "$project" in capability-fabric|capability-fabric-onshape) echo "PCG_REFUSES_ONSHAPE_PROJECT" >&2; exit 32 ;; esac
+
+          incoming="$releases/.incoming-${EXPECTED_RELEASE}-$$"
+          release="$releases/$EXPECTED_RELEASE"
+          install -d -m 0750 -o root -g root "$releases"
+          rm -rf "$incoming"
+          mkdir -m 0755 "$incoming"
+          tar -xzf /tmp/pcg-release.tgz -C "$incoming"
+          rm -f /tmp/pcg-release.tgz
+          chmod 0750 "$incoming/health.sh"
+
+          python3 - "$incoming/manifest.json" "$EXPECTED_SEQUENCE" "$EXPECTED_RELEASE" <<'PY'
+          import json,sys
+          m=json.load(open(sys.argv[1]))
+          assert m["sequence"]==int(sys.argv[2])
+          assert m["release_id"]==sys.argv[3]
+          PY
+
+          if [[ -e "$release" ]]; then
+            if cmp -s "$release/manifest.json" "$incoming/manifest.json"; then
+              rm -rf "$incoming"
+            else
+              echo "PCG_RELEASE_ID_COLLISION" >&2
+              exit 31
+            fi
+          else
+            printf '%s\n' "$CANDIDATE_COMMIT" > "$incoming/source-commit"
+            chown -R root:root "$incoming"
+            chmod -R a+rX,go-w "$incoming"
+            mv "$incoming" "$release"
+          fi
+
+          docker compose -p "$project" -f "$release/compose.yaml" config >/dev/null
+          docker compose -p "$project" -f "$release/compose.yaml" pull || true
+
+          if docker compose -p "$project" -f "$release/compose.yaml" up -d --remove-orphans --no-build \
+            && timeout 240 env CF_RELEASE_DIR="$release" CF_COMPOSE_PROJECT="$project" bash "$release/health.sh"; then
+            echo "PCG_DEPLOY=success"
+            echo "PCG_RELEASE=$EXPECTED_RELEASE"
+            echo "PCG_SEQUENCE=$EXPECTED_SEQUENCE"
+            echo "PCG_PROJECT=$project"
+            exit 0
+          fi
+
+          echo "PCG_DEPLOY_HEALTH_FAILED" >&2
+          if [[ -n "$old" && -d "$old" && "$old" != "$release" ]]; then
+            docker compose -p "$project" -f "$old/compose.yaml" up -d --remove-orphans --no-build || true
+            timeout 240 env CF_RELEASE_DIR="$old" CF_COMPOSE_PROJECT="$project" bash "$old/health.sh" || true
+            echo "PCG_ROLLBACK=attempted" >&2
+          else
+            echo "PCG_ROLLBACK=no-previous-release" >&2
+          fi
+          exit 40
+          REMOTE
