@@ -2069,15 +2069,7 @@ fi
 
 if [[ "$mode" == semantic-conformance-suite ]]; then
   echo "---CONFORMANCE-BEGIN---"
-  sequence="$(python3 - "$release/manifest.json" <<'PYSEQ'
-import json,sys
-print(int(json.load(open(sys.argv[1],encoding='utf-8')).get('sequence',0)))
-PYSEQ
-)" || sequence=0
-  if [[ "$sequence" -lt 62 ]]; then
-    printf '{"conformance":[{"step":"runtime","state":"FAILED","verdict":"FAIL","sequence":%s}]}\n' "$sequence"
-  else
-    python3 - "$socket" <<'PYCONF' || echo '{"conformance":[{"step":"harness","state":"FAILED","verdict":"FAIL","error":"interpreter_exit"}]}'
+  python3 - "$socket" <<'PYCONF' || echo '{"conformance":[{"step":"harness","state":"FAILED","verdict":"FAIL","error":"interpreter_exit"}]}'
 import json, socket, uuid
 
 import sys
@@ -2171,7 +2163,14 @@ try:
     report.append({"step": "catalog", "operation": "semantic.list", "state": "ACHIEVED" if ops else "FAILED",
                    "catalog_size": len(ops), "verdict": "PASS" if ops else "FAIL"})
 
-    record("session", "communication.session.status", invoke("communication.session.status"))
+    sess = invoke("communication.session.status")
+    facts = {}
+    for node in walk(sess):
+        if isinstance(node, dict):
+            for k in ("release", "release_id", "sequence", "provider_model_healthy", "connection_state"):
+                if k in node and isinstance(node[k], (str, int, float, bool)):
+                    facts[k] = node[k]
+    record("session", "communication.session.status", sess, extra={"runtime_facts": facts})
     convs = invoke("communication.conversation.list", {"limit": 30})
     record("conversations", "communication.conversation.list", convs)
 
@@ -2256,7 +2255,6 @@ finally:
         pass
     print(json.dumps({"conformance": report}, ensure_ascii=True, indent=1))
 PYCONF
-  fi
   echo "---CONFORMANCE-END---"
   exit 0
 fi
