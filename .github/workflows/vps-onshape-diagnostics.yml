@@ -1,0 +1,122 @@
+name: VPS Onshape Diagnostics
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - server-bootstrap/control/vps-onshape-diagnostics/*.request
+
+permissions:
+  contents: write
+
+concurrency:
+  group: vps-onshape-diagnostics
+  cancel-in-progress: false
+
+jobs:
+  diagnose:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Validate request
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || exit 10
+          IFS=$'\t' read -r status request_path <<<"${changes[0]}"
+          [[ "$status" == A ]] || exit 11
+          [[ "$request_path" == server-bootstrap/control/vps-onshape-diagnostics/*.request ]] || exit 12
+          request_id="$(awk -F= '$1=="request_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          [[ "$request_id" =~ ^[A-Za-z0-9_.-]{8,120}$ ]] || exit 13
+          [[ "$(basename "$request_path")" == "$request_id.request" ]] || exit 14
+          echo "REQUEST_ID=$request_id" >> "$GITHUB_ENV"
+
+      - name: Prepare SSH
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -n "$VPS_SSH_KEY" && -n "$VPS_HOST" && -n "$VPS_SSH_USER" && -n "$VPS_HOST_KEY" ]] || exit 20
+          port="${VPS_PORT:-22}"
+          case "$port" in ''|*[!0-9]*) exit 21 ;; esac
+          tmp="$RUNNER_TEMP/diag-ssh"
+          install -d -m 0700 "$tmp"
+          printf '%s\n' "$VPS_SSH_KEY" > "$tmp/key"
+          chmod 0600 "$tmp/key"
+          host_key_line="${VPS_HOST_KEY//$'\r'/}"
+          read -r hkt hkd extra <<< "$host_key_line"
+          [[ "$hkt" == ssh-ed25519 && -n "$hkd" && -z "${extra:-}" ]] || exit 22
+          printf '%s %s %s\n' "$VPS_HOST" "$hkt" "$hkd" > "$tmp/known_hosts"
+          printf '[%s]:%s %s %s\n' "$VPS_HOST" "$port" "$hkt" "$hkd" >> "$tmp/known_hosts"
+          chmod 0600 "$tmp/known_hosts"
+          echo "SSH_DIR=$tmp" >> "$GITHUB_ENV"
+          echo "SSH_PORT=$port" >> "$GITHUB_ENV"
+
+      - name: Collect non-secret diagnostics
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p server-bootstrap/diagnostics
+          ssh -i "$SSH_DIR/key" -p "$SSH_PORT" \
+            -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$SSH_DIR/known_hosts" \
+            "${VPS_SSH_USER}@${VPS_HOST}" 'bash -s' \
+            > "server-bootstrap/diagnostics/${REQUEST_ID}.txt" <<'REMOTE'
+          set -uo pipefail
+          echo "== date"; date -u
+          echo "== active symlinks"
+          readlink -f /opt/capability-fabric/current
+          readlink -f /opt/capability-fabric/previous
+          echo "== release dirs"
+          ls -l /var/lib/capability-fabric/releases
+          echo "== per release identity"
+          for d in /var/lib/capability-fabric/releases/*; do
+            [ -d "$d" ] || continue
+            echo "--- $d"
+            python3 -c "import json,sys;print('closure_build_id=',json.load(open(sys.argv[1]))['build_id'])" "$d/release-closure.json" 2>/dev/null || echo "closure_unreadable"
+            grep -m1 'const BUILD_ID' "$d/server.js" 2>/dev/null
+            grep -m1 'assert cfg' "$d/health.sh" 2>/dev/null
+            grep -m1 '"release_id"' "$d/manifest.json" 2>/dev/null
+            echo "source-commit=$(cat "$d/source-commit" 2>/dev/null)"
+          done
+          echo "== containers"
+          docker ps -a --format '{{.Names}} | {{.Status}} | created {{.CreatedAt}} | project={{.Label "com.docker.compose.project"}} | wd={{.Label "com.docker.compose.project.working_dir"}} | cfg={{.Label "com.docker.compose.project.config_files"}}'
+          echo "== onshape container detail"
+          for n in capability-fabric-onshape-server capability-fabric-onshape-gateway; do
+            echo "--- $n"
+            docker inspect -f 'StartedAt={{.State.StartedAt}} Running={{.State.Running}} Restarts={{.RestartCount}}' "$n" 2>/dev/null
+            docker inspect -f '{{range .Mounts}}{{println .Source "->" .Destination}}{{end}}' "$n" 2>/dev/null
+          done
+          echo "== live code identity inside container"
+          docker exec capability-fabric-onshape-server sh -lc 'grep -m1 "const BUILD_ID" /tmp/app/server.js; grep -m1 "const BUILD_ID" /release/server.js; grep -c "IN_DOCUMENT_PATH_PATTERN" /tmp/app/onshape-agent.js' 2>&1 | tail -n 5
+          echo "== listeners"
+          ss -lntp 2>/dev/null | awk '$4 ~ /:(8787|8788)$/ {print $1, $4, $NF}'
+          echo "== systemd unit"
+          systemctl is-enabled capability-fabric-onshape-server.service 2>&1
+          systemctl is-active capability-fabric-onshape-server.service 2>&1
+          systemctl cat capability-fabric-onshape-server.service 2>/dev/null | grep -E '^(ExecStart|ExecStop|WorkingDirectory)' 
+          echo "== END"
+          REMOTE
+          sed -i 's/[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}/IPV4/g' "server-bootstrap/diagnostics/${REQUEST_ID}.txt"
+          wc -l "server-bootstrap/diagnostics/${REQUEST_ID}.txt"
+
+      - name: Commit report
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "cf-exec-plane-bot"
+          git config user.email "cf-exec-plane-bot@users.noreply.github.com"
+          git add "server-bootstrap/diagnostics/${REQUEST_ID}.txt"
+          git commit -m "diagnostics report ${REQUEST_ID}"
+          git push origin HEAD:main
