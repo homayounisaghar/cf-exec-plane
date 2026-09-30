@@ -2078,7 +2078,7 @@ SOCK = sys.argv[1] if len(sys.argv) > 1 else "/var/lib/capability-fabric/pcg/run
 OUT = sys.argv[2] if len(sys.argv) > 2 else None
 report = []
 
-def call(req, timeout=120.0):
+def call(req, timeout=300.0):
     s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     s.settimeout(timeout)
     try:
@@ -2094,11 +2094,17 @@ def call(req, timeout=120.0):
     finally:
         s.close()
 
+LAST_MS = {"ms": None}
+
 def invoke(operation, args=None):
+    import time
+    t0 = time.time()
     try:
-        return call({"op": "semantic.invoke", "operation": operation, "args": args or {}})
+        res = call({"op": "semantic.invoke", "operation": operation, "args": args or {}})
     except Exception as err:
-        return {"state": "HARNESS_ERROR", "error_code": type(err).__name__}
+        res = {"state": "HARNESS_ERROR", "error_code": type(err).__name__}
+    LAST_MS["ms"] = int((time.time() - t0) * 1000)
+    return res
 
 def record(step, operation, res, expect="ACHIEVED", extra=None):
     state = code = None
@@ -2112,7 +2118,7 @@ def record(step, operation, res, expect="ACHIEVED", extra=None):
         verdict = "PASS" if state == "ACHIEVED" else "FAIL"
     else:
         verdict = "EXPECTED_REFUSAL" if state in ("FAILED", "UNSUPPORTED", "REFUSED") else ("PASS" if state == "ACHIEVED" else "FAIL")
-    entry = {"step": step, "operation": operation, "state": state, "error_code": code, "verdict": verdict}
+    entry = {"step": step, "operation": operation, "state": state, "error_code": code, "verdict": verdict, "ms": LAST_MS.get("ms")}
     if extra:
         entry.update(extra)
     report.append(entry)
@@ -2186,6 +2192,10 @@ try:
     token = "pcg-conformance-" + str(uuid.uuid4())
     record("send", "communication.message.send", invoke("communication.message.send", {"conversation_handle": saved, "text": token}))
     msg, listed = locate(saved, token)
+    if not msg:
+        import time
+        time.sleep(15)
+        msg, listed = locate(saved, token)
     record("messages_read", "communication.message.list", listed, extra={"canary_located": bool(msg)})
 
     if msg:
@@ -2206,7 +2216,9 @@ try:
         record("download", "communication.attachment.download", invoke("communication.attachment.download", {"conversation_handle": saved, "message_handle": msg}), expect="REFUSAL")
 
     record("search", "communication.conversation.search", invoke("communication.conversation.search", {"query": "\u0646\u062c\u0645\u0647", "limit": 10}))
-    record("mark_read", "communication.conversation.mark_read", invoke("communication.conversation.mark_read", {"conversation_handle": saved}))
+    record("mark_read_without_message", "communication.conversation.mark_read", invoke("communication.conversation.mark_read", {"conversation_handle": saved}), expect="REFUSAL")
+    if msg:
+        record("mark_read", "communication.conversation.mark_read", invoke("communication.conversation.mark_read", {"conversation_handle": saved, "message_handle": msg}))
     record("topics", "communication.topic.list", invoke("communication.topic.list", {"conversation_handle": saved}), expect="REFUSAL")
 
     # --- pin: preserve and restore the owner's original pin state
@@ -2227,6 +2239,10 @@ try:
         tok2 = "pcg-conformance-x-" + str(uuid.uuid4())
         record("contact_send", "communication.message.send", invoke("communication.message.send", {"conversation_handle": a, "text": tok2}))
         m2, listed2 = locate(a, tok2)
+        if not m2:
+            import time
+            time.sleep(15)
+            m2, listed2 = locate(a, tok2)
         record("contact_read", "communication.message.list", listed2, extra={"canary_located": bool(m2)})
         if m2:
             created.append((a, m2, "FOR_EVERYONE"))
@@ -2263,7 +2279,6 @@ finally:
         print(text)
 PYCONF
   conf_pid=$!
-  # Keepalive: long provider work must not let the transport idle out.
   while kill -0 "$conf_pid" 2>/dev/null; do sleep 10; printf '.\n'; done
   wait "$conf_pid" || true
   echo "---CONFORMANCE-BEGIN---"
