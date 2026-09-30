@@ -113,7 +113,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          ssh -i "$SSH_DIR/key" -p "$SSH_PORT"             -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes             -o UserKnownHostsFile="$SSH_DIR/known_hosts"             "${VPS_SSH_USER}@${VPS_HOST}"             "EXPECTED_RELEASE='$EXPECTED_RELEASE' EXPECTED_SEQUENCE='$EXPECTED_SEQUENCE' CANDIDATE_COMMIT='$CANDIDATE_COMMIT' bash -s" <<'REMOTE'
+          cat > "$RUNNER_TEMP/r12-remote.sh" <<'REMOTE'
           set -euo pipefail
           [[ "$(id -u)" -eq 0 ]] || { echo "R12_DEPLOY_REQUIRES_ROOT" >&2; exit 30; }
 
@@ -191,3 +191,17 @@ jobs:
           fi
           exit 40
           REMOTE
+          scp -q -i "$SSH_DIR/key" -P "$SSH_PORT" \
+            -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$SSH_DIR/known_hosts" \
+            "$RUNNER_TEMP/r12-remote.sh" "${VPS_SSH_USER}@${VPS_HOST}:/tmp/r12-remote.sh"
+          set +e
+          ssh -i "$SSH_DIR/key" -p "$SSH_PORT" \
+            -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$SSH_DIR/known_hosts" \
+            "${VPS_SSH_USER}@${VPS_HOST}" \
+            "EXPECTED_RELEASE='$EXPECTED_RELEASE' EXPECTED_SEQUENCE='$EXPECTED_SEQUENCE' CANDIDATE_COMMIT='$CANDIDATE_COMMIT' bash /tmp/r12-remote.sh; rc=\$?; rm -f /tmp/r12-remote.sh; exit \$rc" </dev/null
+          remote_rc=$?
+          set -e
+          echo "R12_REMOTE_EXIT=$remote_rc"
+          [[ "$remote_rc" -eq 0 ]] || exit "$remote_rc"
