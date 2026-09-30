@@ -1,0 +1,4 @@
+request_id=pcg-web-r60-proven-provider-model-1
+candidate_commit=c75bbbb49b8bf55e909ff5888f1b56ca0e1bbde6
+expected_sequence=60
+expected_release=pcg-web-stage6-proven-provider-model-r60
