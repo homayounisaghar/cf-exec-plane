@@ -1,0 +1,4 @@
+request_id=pcg-web-r59-reaction-ephemeral-guard-1
+candidate_commit=708049026ce51c1014587146f3c320b1370b2293
+expected_sequence=59
+expected_release=pcg-web-stage6-reaction-ephemeral-guard-r59
