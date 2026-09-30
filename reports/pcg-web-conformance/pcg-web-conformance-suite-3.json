@@ -1,0 +1,5 @@
+{
+ "report_present": true,
+ "report_parse_error": true,
+ "report_raw_ascii": "client_loop: send disconnect: Broken pipe"
+}
