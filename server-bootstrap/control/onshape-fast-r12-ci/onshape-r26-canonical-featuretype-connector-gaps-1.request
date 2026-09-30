@@ -1,0 +1,4 @@
+request_id=onshape-r26-canonical-featuretype-connector-gaps-1
+candidate_commit=6b1660c28fcc8c2b6535806f681b8a73c8eb39f3
+expected_sequence=90
+expected_release=onshape-vps-fast-r26
