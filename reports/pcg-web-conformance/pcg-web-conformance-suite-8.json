@@ -1,0 +1,200 @@
+{
+ "report_present": true,
+ "report": {
+  "conformance": [
+   {
+    "step": "catalog",
+    "operation": "semantic.list",
+    "state": "ACHIEVED",
+    "catalog_size": 18,
+    "verdict": "PASS"
+   },
+   {
+    "step": "session",
+    "operation": "communication.session.status",
+    "state": "ACHIEVED",
+    "error_code": null,
+    "verdict": "PASS",
+    "ms": 50,
+    "runtime_facts": {
+     "provider_model_healthy": true,
+     "provider_transport_healthy": true,
+     "connection_state": "READY",
+     "transport_healthy": true,
+     "transport_ms": 42
+    }
+   },
+   {
+    "step": "conversations",
+    "operation": "communication.conversation.list",
+    "state": "ACHIEVED",
+    "error_code": null,
+    "verdict": "PASS",
+    "ms": 86
+   },
+   {
+    "step": "sweep",
+    "conversation": "self",
+    "removed": 0,
+    "failed": 5,
+    "verdict": "FAIL"
+   },
+   {
+    "step": "stage:target_check",
+    "operation": "material.target.check",
+    "state": "TIMEOUT",
+    "ms": 25017,
+    "error_code": "TimeoutError",
+    "verdict": "FAIL"
+   },
+   {
+    "step": "stage:send_dispatch",
+    "operation": "material.send_text.dispatch",
+    "state": "TIMEOUT",
+    "ms": 25001,
+    "error_code": "TimeoutError",
+    "verdict": "FAIL"
+   },
+   {
+    "step": "stage:probe_landed",
+    "state": "FAILED",
+    "verdict": "FAIL"
+   },
+   {
+    "step": "send",
+    "operation": "communication.message.send",
+    "state": "FAILED",
+    "error_code": "WEB_PROVIDER_EVALUATE_TIMEOUT",
+    "verdict": "FAIL",
+    "ms": 30027
+   },
+   {
+    "step": "messages_read",
+    "operation": "communication.message.list",
+    "state": "ACHIEVED",
+    "error_code": null,
+    "verdict": "PASS",
+    "ms": 20,
+    "canary_located": false
+   },
+   {
+    "step": "search",
+    "operation": "communication.conversation.search",
+    "state": "ACHIEVED",
+    "error_code": null,
+    "verdict": "PASS",
+    "ms": 2710
+   },
+   {
+    "step": "mark_read_without_message",
+    "operation": "communication.conversation.mark_read",
+    "state": "FAILED",
+    "error_code": "WEB_PROVIDER_EVALUATE_TIMEOUT",
+    "verdict": "EXPECTED_REFUSAL",
+    "ms": 30030
+   },
+   {
+    "step": "topics",
+    "operation": "communication.topic.list",
+    "state": "FAILED",
+    "error_code": "WEBK_TOPIC_TARGET_NOT_SUPPORTED",
+    "verdict": "EXPECTED_REFUSAL",
+    "ms": 9
+   },
+   {
+    "step": "pin_set",
+    "operation": "communication.conversation.pin.set",
+    "state": "ACHIEVED",
+    "error_code": null,
+    "verdict": "PASS",
+    "ms": 142,
+    "original_pinned": true
+   },
+   {
+    "step": "pin_restore",
+    "operation": "communication.conversation.pin.set",
+    "state": "ACHIEVED",
+    "error_code": null,
+    "verdict": "PASS",
+    "ms": 143
+   },
+   {
+    "step": "contact_pair",
+    "operation": "communication.conversation.search",
+    "found": 2,
+    "verdict": "PASS"
+   },
+   {
+    "step": "sweep",
+    "conversation": "contact",
+    "removed": 0,
+    "failed": 1,
+    "verdict": "FAIL"
+   },
+   {
+    "step": "sweep",
+    "conversation": "contact",
+    "removed": 0,
+    "failed": 0,
+    "verdict": "PASS"
+   },
+   {
+    "step": "contact_send",
+    "operation": "communication.message.send",
+    "state": "FAILED",
+    "error_code": "WEB_PROVIDER_EVALUATE_TIMEOUT",
+    "verdict": "FAIL",
+    "ms": 30011
+   },
+   {
+    "step": "contact_read",
+    "operation": "communication.message.list",
+    "state": "ACHIEVED",
+    "error_code": null,
+    "verdict": "PASS",
+    "ms": 86,
+    "canary_located": false
+   },
+   {
+    "step": "session_after",
+    "operation": "communication.session.status",
+    "state": "ACHIEVED",
+    "error_code": null,
+    "verdict": "PASS",
+    "ms": 174,
+    "runtime_facts": {
+     "provider_transport_healthy": true,
+     "transport_healthy": true,
+     "transport_ms": 166
+    }
+   },
+   {
+    "step": "gaps",
+    "operation": "diagnostics.capability_gap.list",
+    "state": "ACHIEVED",
+    "error_code": null,
+    "verdict": "PASS",
+    "ms": 0
+   },
+   {
+    "step": "coverage",
+    "uncovered_operations": [
+     "communication.attachment.download",
+     "communication.message.delete",
+     "communication.message.edit",
+     "communication.message.fetch",
+     "communication.message.forward-native",
+     "communication.message.open_media",
+     "communication.message.react",
+     "communication.message.relay",
+     "communication.message.reply"
+    ]
+   },
+   {
+    "step": "summary",
+    "checks": 22,
+    "failures": 7
+   }
+  ]
+ }
+}
