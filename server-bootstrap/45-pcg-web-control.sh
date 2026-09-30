@@ -2094,10 +2094,34 @@ def call(req, timeout=90.0):
     finally:
         s.close()
 
+import time as _time
+
+WRITE_GAP_SECONDS = 4.0
+
+def pace():
+    # Provider-side rate limits are real. Writes are paced so that a failure
+    # means the capability is broken, not that we flooded the provider.
+    _time.sleep(WRITE_GAP_SECONDS)
+
 LAST_MS = {"ms": None}
+
+WRITE_OPS = {
+    "communication.message.send",
+    "communication.message.reply",
+    "communication.message.edit",
+    "communication.message.react",
+    "communication.message.relay",
+    "communication.message.forward-native",
+    "communication.message.delete",
+    "communication.conversation.pin.set",
+    "communication.conversation.mark_read",
+}
+
 
 def invoke(operation, args=None):
     import time
+    if operation in WRITE_OPS:
+        pace()
     t0 = time.time()
     try:
         res = call({"op": "semantic.invoke", "operation": operation, "args": args or {}})
@@ -2175,9 +2199,13 @@ try:
     facts = {}
     for node in walk(sess):
         if isinstance(node, dict):
-            for k in ("release", "release_id", "sequence", "provider_model_healthy", "connection_state"):
+            for k in ("release", "release_id", "sequence", "provider_model_healthy", "provider_transport_healthy", "connection_state"):
                 if k in node and isinstance(node[k], (str, int, float, bool)):
                     facts[k] = node[k]
+    for node in walk(sess):
+        if isinstance(node, dict) and "healthy" in node and "ms" in node:
+            facts["transport_healthy"] = node.get("healthy")
+            facts["transport_ms"] = node.get("ms")
     record("session", "communication.session.status", sess, extra={"runtime_facts": facts})
     convs = invoke("communication.conversation.list", {"limit": 30})
     record("conversations", "communication.conversation.list", convs)
@@ -2189,6 +2217,33 @@ try:
         raise SystemExit(0)
 
     # --- Saved Messages: full single-chat matrix on self-created messages only
+    def locate_all(conv, needle, limit=40):
+        res = invoke("communication.message.list", {"conversation_handle": conv, "limit": limit})
+        found = []
+        for node in walk(res):
+            if isinstance(node, dict):
+                hnd = node.get("handle")
+                if isinstance(hnd, str) and hnd.startswith("tgmsg:") and needle in json.dumps(node, ensure_ascii=False):
+                    if hnd not in found:
+                        found.append(hnd)
+        return found
+
+    def sweep(conv, scope):
+        removed = 0
+        failed = 0
+        for needle in ("pcg-conformance", "pcg-stage"):
+            for hnd in locate_all(conv, needle):
+                res = invoke("communication.message.delete", {"conversation_handle": conv, "message_handle": hnd, "scope": scope, "confirm_irreversible": True})
+                if isinstance(res, dict) and res.get("state") == "ACHIEVED":
+                    removed += 1
+                else:
+                    failed += 1
+        report.append({"step": "sweep", "conversation": "self" if scope == "SELF_ONLY" else "contact",
+                       "removed": removed, "failed": failed,
+                       "verdict": "PASS" if failed == 0 else "FAIL"})
+
+    sweep(saved, "SELF_ONLY")
+
     # Stage diagnostic: the semantic send hangs, so time each primitive stage
     # separately with a short deadline instead of guessing where it blocks.
     import hashlib, random, time
@@ -2270,6 +2325,8 @@ try:
                    "found": len(pair), "verdict": "PASS" if len(pair) == 2 else "SKIP"})
     if len(pair) == 2:
         a, b = pair
+        sweep(a, "FOR_EVERYONE")
+        sweep(b, "FOR_EVERYONE")
         tok2 = "pcg-conformance-x-" + str(uuid.uuid4())
         record("contact_send", "communication.message.send", invoke("communication.message.send", {"conversation_handle": a, "text": tok2}))
         m2, listed2 = locate(a, tok2)
@@ -2290,6 +2347,17 @@ try:
 
     cleanup()
     created = []
+    sess2 = invoke("communication.session.status")
+    facts2 = {}
+    for node in walk(sess2):
+        if isinstance(node, dict):
+            if "provider_transport_healthy" in node:
+                facts2["provider_transport_healthy"] = node.get("provider_transport_healthy")
+            if "healthy" in node and "ms" in node:
+                facts2["transport_healthy"] = node.get("healthy")
+                facts2["transport_ms"] = node.get("ms")
+    record("session_after", "communication.session.status", sess2, extra={"runtime_facts": facts2})
+
     record("gaps", "diagnostics.capability_gap.list", invoke("diagnostics.capability_gap.list", {"limit": 30}))
 
     covered = {e.get("operation") for e in report}
