@@ -1,0 +1,4 @@
+request_id=pcg-web-r65-cache-proof-stall-honesty-1
+candidate_commit=ba43991fb68e5c54143b9271cbba508e718c7a41
+expected_sequence=65
+expected_release=pcg-web-stage6-cache-proof-and-stall-honesty-r65
