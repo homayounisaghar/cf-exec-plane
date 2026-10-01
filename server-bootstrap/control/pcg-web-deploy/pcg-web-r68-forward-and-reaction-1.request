@@ -1,0 +1,4 @@
+request_id=pcg-web-r68-forward-and-reaction-1
+candidate_commit=4ae3c3bc44f88a3cbfeb4b479965cd54308f17b1
+expected_sequence=68
+expected_release=pcg-web-stage6-forward-identity-and-server-reaction-proof-r68
