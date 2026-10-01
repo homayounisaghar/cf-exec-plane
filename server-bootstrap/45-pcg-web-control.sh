@@ -2358,6 +2358,51 @@ try:
                 facts2["transport_ms"] = node.get("ms")
     record("session_after", "communication.session.status", sess2, extra={"runtime_facts": facts2})
 
+    # The connector reaches the runtime through the ingress socket, not the
+    # control socket. A capability that works here and fails there is a
+    # connector defect, so both surfaces are measured in the same run.
+    ingress_path = "/var/lib/capability-fabric/pcg/run/ingress/web.sock"
+    import os
+
+    def ingress(req, timeout=60.0):
+        import socket as _socket
+        s = _socket.socket(_socket.AF_UNIX, _socket.SOCK_STREAM)
+        s.settimeout(timeout)
+        try:
+            s.connect(ingress_path)
+            s.sendall((json.dumps(req, ensure_ascii=False) + "\n").encode("utf-8"))
+            buf = b""
+            while not buf.endswith(b"\n"):
+                chunk = s.recv(65536)
+                if not chunk:
+                    break
+                buf += chunk
+            return json.loads(buf.decode("utf-8").strip() or "{}")
+        except Exception as err:
+            return {"state": "HARNESS_ERROR", "error_code": type(err).__name__}
+        finally:
+            s.close()
+
+    report.append({"step": "ingress:socket", "present": os.path.exists(ingress_path),
+                   "verdict": "PASS" if os.path.exists(ingress_path) else "FAIL"})
+    record("ingress:health", "health", ingress({"op": "health"}), expect="REFUSAL")
+    ing_list = ingress({"op": "semantic.list"})
+    report.append({"step": "ingress:catalog", "state": "ACHIEVED" if ing_list.get("ok") else "FAILED",
+                   "verdict": "PASS" if ing_list.get("ok") else "FAIL",
+                   "error_code": ing_list.get("error") or ing_list.get("error_code")})
+    record("ingress:messages", "communication.message.list",
+           ingress({"op": "semantic.invoke", "operation": "communication.message.list",
+                    "args": {"conversation_handle": saved, "limit": 5}}))
+    itok = "pcg-ingress-" + str(uuid.uuid4())
+    isent = ingress({"op": "semantic.invoke", "operation": "communication.message.send",
+                     "args": {"conversation_handle": saved, "text": itok}})
+    record("ingress:send", "communication.message.send", isent)
+    im, _ = locate(saved, itok)
+    if im:
+        created.append((saved, im, "SELF_ONLY"))
+    report.append({"step": "ingress:send_landed", "state": "ACHIEVED" if im else "FAILED",
+                   "verdict": "PASS" if im else "FAIL"})
+
     record("gaps", "diagnostics.capability_gap.list", invoke("diagnostics.capability_gap.list", {"limit": 30}))
 
     covered = {e.get("operation") for e in report}
