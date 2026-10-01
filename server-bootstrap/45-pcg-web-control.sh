@@ -2356,14 +2356,15 @@ try:
             m2, listed2 = newest(a)
             resolved_by = "newest" if m2 else None
         record("contact_read", "communication.message.list", listed2, extra={"canary_located": bool(m2), "resolved_by": resolved_by})
-        if m2:
+        if m2 and resolved_by in ("text", "text_retry", "send_result"):
             created.append((a, m2, "FOR_EVERYONE"))
             record("contact_react", "communication.message.react", invoke("communication.message.react", {"conversation_handle": a, "message_handle": m2, "emoji": "\u2764\ufe0f"}))
             record("contact_unreact", "communication.message.react", invoke("communication.message.react", {"conversation_handle": a, "message_handle": m2, "remove": True}))
             record("contact_forward", "communication.message.forward-native", invoke("communication.message.forward-native", {"source_conversation_handle": a, "source_message_handle": m2, "conversation_handle": b}))
             m3, _ = locate(b, tok2)
-            if not m3:
-                m3, _ = newest(b)
+            # Only a body match proves the message is ours. A newest-message
+            # guess must never be fed to cleanup: deleting someone else's
+            # message, even only on our side, is not ours to do.
             if m3:
                 created.append((b, m3, "FOR_EVERYONE"))
             report.append({"step": "contact_forward_readback", "located_in_target": bool(m3), "verdict": "PASS" if m3 else "FAIL"})
