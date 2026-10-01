@@ -2118,8 +2118,25 @@ WRITE_OPS = {
 }
 
 
+RUN_STARTED = _time.time()
+RUN_BUDGET_SECONDS = 540.0
+BUDGET = {"exhausted": False, "allow_writes": True}
+
+
+def checkpoint():
+    # A run that cannot finish must still produce its report: the control plane
+    # is serial, so a silent hang blocks every later request.
+    if _time.time() - RUN_STARTED > RUN_BUDGET_SECONDS and BUDGET["allow_writes"]:
+        BUDGET["exhausted"] = True
+        report.append({"step": "budget_exhausted", "verdict": "FAIL",
+                       "elapsed_seconds": int(_time.time() - RUN_STARTED)})
+        raise SystemExit(0)
+
+
 def invoke(operation, args=None):
     import time
+    if operation in WRITE_OPS:
+        checkpoint()
     if operation in WRITE_OPS:
         pace()
     t0 = time.time()
@@ -2185,6 +2202,7 @@ def newest(conv, limit=5):
 created = []  # (conversation_handle, message_handle, scope)
 
 def cleanup():
+    BUDGET["allow_writes"] = False
     for conv, handle, scope in created:
         res = invoke("communication.message.delete", {"conversation_handle": conv, "message_handle": handle, "scope": scope, "confirm_irreversible": True})
         entry = record("cleanup_delete", "communication.message.delete", res)

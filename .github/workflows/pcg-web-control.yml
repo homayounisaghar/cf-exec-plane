@@ -85,6 +85,9 @@ jobs:
         id: suite
         if: steps.request.outputs.phase == 'semantic-conformance-suite'
         continue-on-error: true
+        # The control plane is serial: a run without a bound would block every
+        # later request, so the step is cut off and the report is published.
+        timeout-minutes: 12
         env:
           CF_PCG_WEB_CONTROL_MODE: ${{ steps.request.outputs.phase }}
         run: |
