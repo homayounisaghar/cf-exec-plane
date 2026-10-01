@@ -2408,9 +2408,12 @@ try:
                 created.append((a, m2, "FOR_EVERYONE"))
             record("contact_react", "communication.message.react", invoke("communication.message.react", {"conversation_handle": a, "message_handle": m2, "emoji": "\u2764\ufe0f"}))
             record("contact_unreact", "communication.message.react", invoke("communication.message.react", {"conversation_handle": a, "message_handle": m2, "remove": True}))
-            record("contact_forward", "communication.message.forward-native", invoke("communication.message.forward-native", {"source_conversation_handle": a, "source_message_handle": m2, "conversation_handle": b}))
-            m3, _ = locate(b, tok2)
-            target_proof = "text" if m3 else None
+            fwd = invoke("communication.message.forward-native", {"source_conversation_handle": a, "source_message_handle": m2, "conversation_handle": b})
+            record("contact_forward", "communication.message.forward-native", fwd)
+            m3 = next(iter(handles(fwd, "tgmsg:")), None)
+            if not m3:
+                m3, _ = locate(b, tok2)
+            target_proof = "forward_result" if m3 else None
             if not m3:
                 m3, _ = newest(b)
                 if m3:
