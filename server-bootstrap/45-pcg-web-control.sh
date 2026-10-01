@@ -2356,6 +2356,25 @@ try:
             m2, listed2 = newest(a)
             resolved_by = "newest" if m2 else None
         record("contact_read", "communication.message.list", listed2, extra={"canary_located": bool(m2), "resolved_by": resolved_by})
+        # Decisive diagnostic: ids and body visibility only. No message content
+        # from the conversation is ever placed in the report.
+        diag = {"step": "contact_diag", "verdict": "PASS"}
+        diag["send_handles"] = handles(sent2, "tgmsg:")[:3]
+        listed_now = invoke("communication.message.list", {"conversation_handle": a, "limit": 5})
+        rows = []
+        for node in walk(listed_now):
+            if isinstance(node, dict) and isinstance(node.get("handle"), str) and node["handle"].startswith("tgmsg:"):
+                body = node.get("text") if isinstance(node.get("text"), str) else None
+                rows.append({"handle": node["handle"], "has_text_field": "text" in node,
+                             "text_len": len(body) if body is not None else None,
+                             "is_canary": bool(body and tok2 in body), "out": node.get("outgoing", node.get("own"))})
+        diag["listed"] = rows[:5]
+        for h in diag["send_handles"][:1]:
+            f = invoke("communication.message.fetch", {"conversation_handle": a, "message_handle": h})
+            diag["fetch_of_send_handle"] = {"state": f.get("state") if isinstance(f, dict) else None,
+                                            "token_visible": tok2 in json.dumps(f, ensure_ascii=True)}
+        report.append(diag)
+
         # A contact chat does not list message bodies, so ownership is proven
         # by fetching the candidate and comparing the body we just sent. Only a
         # proven handle may ever be deleted.
