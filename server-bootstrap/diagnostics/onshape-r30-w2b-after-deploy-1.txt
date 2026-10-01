@@ -1,0 +1,604 @@
+== date
+Thu Oct  1 07:42:42 PM UTC 2026
+== active symlinks
+/var/lib/capability-fabric/releases/onshape-vps-fast-r30
+/var/lib/capability-fabric/releases/onshape-vps-fast-r29
+== release dirs
+total 372
+drwxr-x--- 2 root root 4096 Sep 17 19:11 bootstrap-canary-v1
+drwxr-x--- 5 root root 4096 Sep 22 22:39 capability-fabric-isolated-telegram-ingress-r69
+drwxr-x--- 5 root root 4096 Sep 22 22:08 capability-fabric-telegram-ingress-r68
+drwxr-x--- 2 root root 4096 Sep 18 17:21 key-rotation-v2
+drwxr-x--- 2 root root 4096 Sep 19 13:24 m1-mcp-echo-v1
+drwxr-x--- 2 root root 4096 Sep 19 13:27 m1-mcp-echo-v2
+drwxr-x--- 2 root root 4096 Sep 19 13:31 m1-mcp-echo-v3
+drwxr-x--- 2 root root 4096 Sep 19 14:35 onshape-single-session-v1
+drwxr-x--- 2 root root 4096 Sep 19 17:25 onshape-single-session-v10-private-partstudio-read
+drwxr-x--- 2 root root 4096 Sep 19 19:11 onshape-single-session-v11-document-create
+drwxr-x--- 2 root root 4096 Sep 19 19:17 onshape-single-session-v12-document-create-ui-fallback
+drwxr-x--- 2 root root 4096 Sep 19 19:21 onshape-single-session-v13-document-create-search-fallback
+drwxr-x--- 2 root root 4096 Sep 19 19:27 onshape-single-session-v14-document-create-search-fixed
+drwxr-x--- 2 root root 4096 Sep 19 19:31 onshape-single-session-v15-documents-ui-diagnostic
+drwxr-x--- 2 root root 4096 Sep 19 19:34 onshape-single-session-v16-documents-network-diagnostic
+drwxr-x--- 2 root root 4096 Sep 19 21:12 onshape-single-session-v17-structured-tool-errors
+drwxr-x--- 2 root root 4096 Sep 19 21:17 onshape-single-session-v18-auth-proof-state
+drwxr-x--- 2 root root 4096 Sep 19 21:21 onshape-single-session-v19-tree-network-capture
+drwxr-x--- 2 root root 4096 Sep 19 15:25 onshape-single-session-v2-safety-metadata
+drwxr-x--- 2 root root 4096 Sep 19 21:25 onshape-single-session-v20-tree-network-capture-safe
+drwxr-x--- 2 root root 4096 Sep 19 21:29 onshape-single-session-v21-natural-api-discovery
+drwxr-x--- 2 root root 4096 Sep 19 21:35 onshape-single-session-v22-natural-network-discovery
+drwxr-x--- 2 root root 4096 Sep 19 21:40 onshape-single-session-v23-resource-bootstrap-capture
+drwxr-x--- 2 root root 4096 Sep 19 22:48 onshape-single-session-v24-bootstrap-error-trace
+drwxr-x--- 2 root root 4096 Sep 19 22:52 onshape-single-session-v25-bootstrap-error-object
+drwxr-x--- 2 root root 4096 Sep 19 22:56 onshape-single-session-v26-storage-readonly-probe
+drwxr-x--- 2 root root 4096 Sep 20 00:25 onshape-single-session-v27-current-user-auth-proof
+drwxr-x--- 2 root root 4096 Sep 20 00:54 onshape-single-session-v28-configured-folder-id
+drwxr-x--- 2 root root 4096 Sep 20 00:58 onshape-single-session-v29-release-gate-aware
+drwxr-x--- 2 root root 4096 Sep 19 15:45 onshape-single-session-v3-interactive-browser
+drwxr-x--- 2 root root 4096 Sep 20 01:01 onshape-single-session-v30-release-proof
+drwxr-x--- 2 root root 4096 Sep 20 01:06 onshape-single-session-v31-stable-gateway-bootstrap
+drwxr-x--- 2 root root 4096 Sep 20 01:08 onshape-single-session-v32-backend
+drwxr-x--- 2 root root 4096 Sep 20 01:48 onshape-single-session-v33-staged-login
+drwxr-x--- 2 root root 4096 Sep 20 01:51 onshape-single-session-v34-login-inspect
+drwxr-x--- 2 root root 4096 Sep 20 01:54 onshape-single-session-v35-profile-recovery
+drwxr-x--- 2 root root 4096 Sep 20 01:58 onshape-single-session-v36-fresh-session-recovery
+drwxr-x--- 2 root root 4096 Sep 20 03:26 onshape-single-session-v37-owner-scopes
+drwxr-x--- 2 root root 4096 Sep 20 07:12 onshape-single-session-v38-write-evidence
+drwxr-x--- 2 root root 4096 Sep 20 07:18 onshape-single-session-v39-write-evidence-cold-nav
+drwxr-x--- 2 root root 4096 Sep 19 15:54 onshape-single-session-v4-rollback-safe-desktop
+drwxr-x--- 2 root root 4096 Sep 20 07:22 onshape-single-session-v40-write-evidence-fresh-page
+drwxr-x--- 2 root root 4096 Sep 20 07:39 onshape-single-session-v41-xsrf-single-variable
+drwxr-x--- 2 root root 4096 Sep 20 08:11 onshape-single-session-v42-shared-request-surface
+drwxr-x--- 2 root root 4096 Sep 20 10:25 onshape-single-session-v43-openapi-refresh-diff
+drwxr-x--- 2 root root 4096 Sep 20 11:39 onshape-single-session-v44-full-openapi-transport
+drwxr-x--- 2 root root 4096 Sep 19 16:00 onshape-single-session-v5-isolated-interactive-profile
+drwxr-x--- 2 root root 4096 Sep 19 16:06 onshape-single-session-v6-readiness-ordered-desktop
+drwxr-x--- 2 root root 4096 Sep 19 16:09 onshape-single-session-v7-direct-input-portal
+drwxr-x--- 2 root root 4096 Sep 19 16:29 onshape-single-session-v8-actions-secret-bootstrap
+drwxr-x--- 2 root root 4096 Sep 19 17:10 onshape-single-session-v9-strong-auth-v10-elements
+drwxr-x--- 2 root root 4096 Sep 20 11:58 onshape-three-session-v45-pool
+drwxr-x--- 5 root root 4096 Sep 20 13:12 onshape-three-session-v46-fabric-shadow
+drwxr-x--- 5 root root 4096 Sep 20 15:42 onshape-three-session-v46-fabric-shadow-r10-pointer-ui
+drwxr-x--- 5 root root 4096 Sep 20 16:04 onshape-three-session-v46-fabric-shadow-r11-ui-input-capability
+drwxr-x--- 5 root root 4096 Sep 20 13:58 onshape-three-session-v46-fabric-shadow-r5
+drwxr-x--- 5 root root 4096 Sep 20 14:12 onshape-three-session-v46-fabric-shadow-r6
+drwxr-x--- 5 root root 4096 Sep 20 15:16 onshape-three-session-v46-fabric-shadow-r7-browser-open
+drwxr-x--- 5 root root 4096 Sep 20 15:24 onshape-three-session-v46-fabric-shadow-r8-browser-ui
+drwxr-x--- 5 root root 4096 Sep 20 15:32 onshape-three-session-v46-fabric-shadow-r9-mouse-ui
+drwxr-x--- 5 root root 4096 Sep 20 17:54 onshape-three-session-v47-fabric-shadow-r12-native-ui-capability
+drwxr-x--- 5 root root 4096 Sep 20 18:00 onshape-three-session-v47-fabric-shadow-r13-native-ui-capability
+drwxr-x--- 5 root root 4096 Sep 20 18:06 onshape-three-session-v47-fabric-shadow-r14-native-ui-capability
+drwxr-xr-x 2 root root 4096 Sep 29 06:48 onshape-vps-fast-r12
+drwxr-xr-x 2 root root 4096 Sep 29 08:22 onshape-vps-fast-r13
+drwxr-xr-x 2 root root 4096 Sep 29 08:27 onshape-vps-fast-r14
+drwxr-xr-x 2 root root 4096 Sep 29 20:34 onshape-vps-fast-r15
+drwxr-xr-x 2 root root 4096 Sep 29 23:35 onshape-vps-fast-r16
+drwxr-xr-x 2 root root 4096 Sep 29 23:42 onshape-vps-fast-r17
+drwxr-xr-x 2 root root 4096 Sep 30 03:19 onshape-vps-fast-r18
+drwxr-xr-x 2 root root 4096 Sep 30 03:44 onshape-vps-fast-r19
+drwxr-xr-x 2 root root 4096 Sep 30 06:24 onshape-vps-fast-r20
+drwxr-xr-x 2 root root 4096 Sep 30 07:03 onshape-vps-fast-r21
+drwxr-xr-x 2 root root 4096 Sep 30 07:20 onshape-vps-fast-r22
+drwxr-xr-x 2 root root 4096 Sep 30 11:40 onshape-vps-fast-r23
+drwxr-xr-x 2 root root 4096 Sep 30 12:04 onshape-vps-fast-r24
+drwxr-xr-x 2 root root 4096 Sep 30 12:13 onshape-vps-fast-r25
+drwxr-xr-x 2 root root 4096 Sep 30 19:49 onshape-vps-fast-r26
+drwxr-xr-x 2 root root 4096 Oct  1 08:31 onshape-vps-fast-r27
+drwxr-xr-x 2 root root 4096 Oct  1 08:45 onshape-vps-fast-r28
+drwxr-xr-x 2 root root 4096 Oct  1 13:46 onshape-vps-fast-r29
+drwxr-xr-x 2 root root 4096 Oct  1 19:41 onshape-vps-fast-r30
+drwxr-x--- 5 root root 4096 Sep 21 09:02 onshape-vps-hardened-production-r2
+drwxr-x--- 5 root root 4096 Sep 21 11:24 onshape-vps-hardened-production-r3
+drwxr-x--- 5 root root 4096 Sep 21 17:48 onshape-vps-hardened-production-r4
+drwxr-x--- 5 root root 4096 Sep 25 16:50 onshape-vps-hardened-production-r5
+drwxr-x--- 5 root root 4096 Sep 25 20:33 onshape-vps-hardened-production-r6
+drwxr-x--- 5 root root 4096 Sep 26 02:26 onshape-vps-hardened-production-r7
+drwxr-x--- 5 root root 4096 Sep 26 02:47 onshape-vps-hardened-production-r8
+drwxr-x--- 5 root root 4096 Sep 28 19:18 onshape-vps-hardened-r10
+drwxr-x--- 5 root root 4096 Sep 28 19:00 onshape-vps-hardened-r10.failed-50c7a75a
+drwxr-x--- 5 root root 4096 Sep 27 20:01 onshape-vps-hardened-r9
+drwxr-x--- 5 root root 4096 Sep 20 22:59 onshape-vps-hardened-rollback-r1
+== per release identity
+--- /var/lib/capability-fabric/releases/bootstrap-canary-v1
+closure_unreadable
+  "release_id": "bootstrap-canary-v1",
+source-commit=920f3645052fe4e54bf24600738a6aaba98ca404
+--- /var/lib/capability-fabric/releases/capability-fabric-isolated-telegram-ingress-r69
+closure_build_id= onshape-vps-hardened-r4
+const BUILD_ID = "onshape-vps-hardened-r4";
+  "release_id": "capability-fabric-isolated-telegram-ingress-r69",
+source-commit=57cd4e6997726a47aeb3554f63c07719ade64db8
+--- /var/lib/capability-fabric/releases/capability-fabric-telegram-ingress-r68
+closure_build_id= onshape-vps-hardened-r4
+const BUILD_ID = "onshape-vps-hardened-r4";
+  "release_id": "capability-fabric-telegram-ingress-r68",
+source-commit=51b93f2005cf6f8800675defbc7f2ebb28284244
+--- /var/lib/capability-fabric/releases/key-rotation-v2
+closure_unreadable
+  "release_id": "key-rotation-v2",
+source-commit=102227dc24279c4d2c7a6b1c46b77b4b211711e8
+--- /var/lib/capability-fabric/releases/m1-mcp-echo-v1
+closure_unreadable
+  "release_id": "m1-mcp-echo-v1",
+source-commit=24360a2fd526e28d8e0a593bc15d85ff638c604b
+--- /var/lib/capability-fabric/releases/m1-mcp-echo-v2
+closure_unreadable
+  "release_id": "m1-mcp-echo-v2",
+source-commit=396bb773195834406afe611ab68e71e9d759d058
+--- /var/lib/capability-fabric/releases/m1-mcp-echo-v3
+closure_unreadable
+  "release_id": "m1-mcp-echo-v3",
+source-commit=5f760690115e5113dd7bb1ea4d51b4ea36118ad8
+--- /var/lib/capability-fabric/releases/onshape-single-session-v1
+closure_unreadable
+  "release_id": "onshape-single-session-v1",
+source-commit=caf294dbac89575e6ece5e15b7d7c8f2238112de
+--- /var/lib/capability-fabric/releases/onshape-single-session-v10-private-partstudio-read
+closure_unreadable
+  "release_id": "onshape-single-session-v10-private-partstudio-read",
+source-commit=6cf893629c98944fb154cb13336d7adb17de870a
+--- /var/lib/capability-fabric/releases/onshape-single-session-v11-document-create
+closure_unreadable
+  "release_id": "onshape-single-session-v11-document-create",
+source-commit=c0c8c63dbd5619d4e8bf1879625c79f3145ccc97
+--- /var/lib/capability-fabric/releases/onshape-single-session-v12-document-create-ui-fallback
+closure_unreadable
+  "release_id": "onshape-single-session-v12-document-create-ui-fallback",
+source-commit=130b4dcb33fc81ed462e1cb359650ed7c5113389
+--- /var/lib/capability-fabric/releases/onshape-single-session-v13-document-create-search-fallback
+closure_unreadable
+  "release_id": "onshape-single-session-v13-document-create-search-fallback",
+source-commit=c4afc78c198c2af8cd755f953a6964182236c977
+--- /var/lib/capability-fabric/releases/onshape-single-session-v14-document-create-search-fixed
+closure_unreadable
+  "release_id": "onshape-single-session-v14-document-create-search-fixed",
+source-commit=ad482bc287ea4cff96c54ac9f39db49d56b04033
+--- /var/lib/capability-fabric/releases/onshape-single-session-v15-documents-ui-diagnostic
+closure_unreadable
+  "release_id": "onshape-single-session-v15-documents-ui-diagnostic",
+source-commit=f3c3a8da736965af574101837fd9b7c30ea8190a
+--- /var/lib/capability-fabric/releases/onshape-single-session-v16-documents-network-diagnostic
+closure_unreadable
+  "release_id": "onshape-single-session-v16-documents-network-diagnostic",
+source-commit=a88898e4902e2215cbd3b1975650027648a9d84e
+--- /var/lib/capability-fabric/releases/onshape-single-session-v17-structured-tool-errors
+closure_unreadable
+const BUILD_ID = "onshape-single-session-v17-structured-tool-errors";
+  "release_id": "onshape-single-session-v17-structured-tool-errors",
+source-commit=9d5cd91fda52766b5fd247368093b2f7e9fe7c83
+--- /var/lib/capability-fabric/releases/onshape-single-session-v18-auth-proof-state
+closure_unreadable
+const BUILD_ID = "onshape-single-session-v18-auth-proof-state";
+  "release_id": "onshape-single-session-v18-auth-proof-state",
+source-commit=2473e67146e91e48642da4b1c6d8a92ee3f20564
+--- /var/lib/capability-fabric/releases/onshape-single-session-v19-tree-network-capture
+closure_unreadable
+const BUILD_ID = "onshape-single-session-v19-tree-network-capture";
+  "release_id": "onshape-single-session-v19-tree-network-capture",
+source-commit=774838636642a9a6cc0fb2b1b38e22c7487093fe
+--- /var/lib/capability-fabric/releases/onshape-single-session-v20-tree-network-capture-safe
+closure_unreadable
+const BUILD_ID = "onshape-single-session-v20-tree-network-capture-safe";
+  "release_id": "onshape-single-session-v20-tree-network-capture-safe",
+source-commit=cb5a1215c6ed3be7587af156436d46b76acc7313
+--- /var/lib/capability-fabric/releases/onshape-single-session-v21-natural-api-discovery
+closure_unreadable
+const BUILD_ID = "onshape-single-session-v21-natural-api-discovery";
+  "release_id": "onshape-single-session-v21-natural-api-discovery",
+source-commit=15d17755f14a5139e10cd9ffc3eecbac5a7e87ff
+--- /var/lib/capability-fabric/releases/onshape-single-session-v22-natural-network-discovery
+closure_unreadable
+const BUILD_ID = "onshape-single-session-v22-natural-network-discovery";
+  "release_id": "onshape-single-session-v22-natural-network-discovery",
+source-commit=cbdc1912e3ad77b1fa7aac8a77a9b9c691502705
+--- /var/lib/capability-fabric/releases/onshape-single-session-v23-resource-bootstrap-capture
+closure_unreadable
+const BUILD_ID = "onshape-single-session-v23-resource-bootstrap-capture";
+  "release_id": "onshape-single-session-v23-resource-bootstrap-capture",
+source-commit=f97a60694bdf6a650d8de1acf14e09442b5bff0c
+--- /var/lib/capability-fabric/releases/onshape-single-session-v24-bootstrap-error-trace
+closure_unreadable
+const BUILD_ID = "onshape-single-session-v24-bootstrap-error-trace";
+  "release_id": "onshape-single-session-v24-bootstrap-error-trace",
+source-commit=6ed8072945145efbdbf4d5f54e6044bfe9e41c8a
+--- /var/lib/capability-fabric/releases/onshape-single-session-v25-bootstrap-error-object
+closure_unreadable
+const BUILD_ID = "onshape-single-session-v25-bootstrap-error-object";
+  "release_id": "onshape-single-session-v25-bootstrap-error-object",
+source-commit=49372539ff1e3410537aa8c88620f49b3d2b414b
+--- /var/lib/capability-fabric/releases/onshape-single-session-v26-storage-readonly-probe
+closure_unreadable
+const BUILD_ID = "onshape-single-session-v26-storage-readonly-probe";
+  "release_id": "onshape-single-session-v26-storage-readonly-probe",
+source-commit=53e6357702ded64015292f7e2dddd7b1a46112ca
+--- /var/lib/capability-fabric/releases/onshape-single-session-v27-current-user-auth-proof
+closure_unreadable
+const BUILD_ID = "onshape-single-session-v27-current-user-auth-proof";
+  "release_id": "onshape-single-session-v27-current-user-auth-proof",
+source-commit=663c5ab155c66f4d421e5d8d021a500de615b427
+--- /var/lib/capability-fabric/releases/onshape-single-session-v28-configured-folder-id
+closure_unreadable
+const BUILD_ID = "onshape-single-session-v28-configured-folder-id";
+  "release_id": "onshape-single-session-v28-configured-folder-id",
+source-commit=c9087c77c31f0a8a575f3c712f63a12ddddf664e
+--- /var/lib/capability-fabric/releases/onshape-single-session-v29-release-gate-aware
+closure_unreadable
+const BUILD_ID = "onshape-single-session-v29-release-gate-aware";
+  "release_id": "onshape-single-session-v29-release-gate-aware",
+source-commit=32d92736d814fbb26ec343fd726461d4bf382d0f
+--- /var/lib/capability-fabric/releases/onshape-single-session-v2-safety-metadata
+closure_unreadable
+  "release_id": "onshape-single-session-v2-safety-metadata",
+source-commit=d8c5e22a42eef8eeb6eb8d108b02eef82054e491
+--- /var/lib/capability-fabric/releases/onshape-single-session-v30-release-proof
+closure_unreadable
+const BUILD_ID = "onshape-single-session-v30-release-proof";
+  "release_id": "onshape-single-session-v30-release-proof",
+source-commit=0713d9ad93d081c3fa94080221df3433cbb4e7e5
+--- /var/lib/capability-fabric/releases/onshape-single-session-v31-stable-gateway-bootstrap
+closure_unreadable
+const BUILD_ID = "onshape-single-session-v31-backend-8788";
+  "release_id": "onshape-single-session-v31-stable-gateway-bootstrap",
+source-commit=099545e8487f7c2f9b36e93b85765c80b2d8e3b4
+--- /var/lib/capability-fabric/releases/onshape-single-session-v32-backend
+closure_unreadable
+const BUILD_ID = "onshape-single-session-v32-backend";
+  "release_id": "onshape-single-session-v32-backend",
+source-commit=28e2b1c34f39a42c089eb013c8733301a6aa0986
+--- /var/lib/capability-fabric/releases/onshape-single-session-v33-staged-login
+closure_unreadable
+const BUILD_ID = "onshape-single-session-v33-staged-login";
+  "release_id": "onshape-single-session-v33-staged-login",
+source-commit=a6701282ef7cc216be17375a13498b12ef28a112
+--- /var/lib/capability-fabric/releases/onshape-single-session-v34-login-inspect
+closure_unreadable
+const BUILD_ID = "onshape-single-session-v34-login-inspect";
+  "release_id": "onshape-single-session-v34-login-inspect",
+source-commit=500be5cee8ec795041a38e631168339e34fc4698
+--- /var/lib/capability-fabric/releases/onshape-single-session-v35-profile-recovery
+closure_unreadable
+const BUILD_ID = "onshape-single-session-v35-profile-recovery";
+  "release_id": "onshape-single-session-v35-profile-recovery",
+source-commit=92b8bfa0dd2d206d3daf4ce7065e05cfc673abc5
+--- /var/lib/capability-fabric/releases/onshape-single-session-v36-fresh-session-recovery
+closure_unreadable
+const BUILD_ID = "onshape-single-session-v36-fresh-session-recovery";
+  "release_id": "onshape-single-session-v36-fresh-session-recovery",
+source-commit=400d4fc7f38c72ddfde3ddbea8160a15c4f968af
+--- /var/lib/capability-fabric/releases/onshape-single-session-v37-owner-scopes
+closure_unreadable
+const BUILD_ID = "onshape-single-session-v37-owner-scopes";
+  "release_id": "onshape-single-session-v37-owner-scopes",
+source-commit=978f30f4d758e8c37d8fd9977d748b0cf15e81f3
+--- /var/lib/capability-fabric/releases/onshape-single-session-v38-write-evidence
+closure_unreadable
+const BUILD_ID = "onshape-single-session-v38-write-evidence";
+  "release_id": "onshape-single-session-v38-write-evidence",
+source-commit=477efa326314404039dc2e1c2f7ac1ad4b142bcb
+--- /var/lib/capability-fabric/releases/onshape-single-session-v39-write-evidence-cold-nav
+closure_unreadable
+const BUILD_ID = "onshape-single-session-v39-write-evidence-cold-nav";
+  "release_id": "onshape-single-session-v39-write-evidence-cold-nav",
+source-commit=c7bedeed435b76259e69971ad6541f29f4718a7e
+--- /var/lib/capability-fabric/releases/onshape-single-session-v3-interactive-browser
+closure_unreadable
+  "release_id": "onshape-single-session-v3-interactive-browser",
+source-commit=a63e9b85455844b5afcf86de61056d4e58d58a14
+--- /var/lib/capability-fabric/releases/onshape-single-session-v40-write-evidence-fresh-page
+closure_unreadable
+const BUILD_ID = "onshape-single-session-v40-write-evidence-fresh-page";
+  "release_id": "onshape-single-session-v40-write-evidence-fresh-page",
+source-commit=c78923d153b3be6177122044726526bce1e34215
+--- /var/lib/capability-fabric/releases/onshape-single-session-v41-xsrf-single-variable
+closure_unreadable
+const BUILD_ID = "onshape-single-session-v41-xsrf-single-variable";
+  "release_id": "onshape-single-session-v41-xsrf-single-variable",
+source-commit=4c2d817114b401659cd033e864374f7436e20327
+--- /var/lib/capability-fabric/releases/onshape-single-session-v42-shared-request-surface
+closure_unreadable
+const BUILD_ID = "onshape-single-session-v42-shared-request-surface";
+  "release_id": "onshape-single-session-v42-shared-request-surface",
+source-commit=26ed98e6075614285ffe107ac7a1e81daab5f775
+--- /var/lib/capability-fabric/releases/onshape-single-session-v43-openapi-refresh-diff
+closure_unreadable
+const BUILD_ID = "onshape-single-session-v43-openapi-refresh-diff";
+  "release_id": "onshape-single-session-v43-openapi-refresh-diff",
+source-commit=03725edf8851d1ae0a97f46b4414de3b4fd15eea
+--- /var/lib/capability-fabric/releases/onshape-single-session-v44-full-openapi-transport
+closure_unreadable
+const BUILD_ID = "onshape-single-session-v44-full-openapi-transport";
+  "release_id": "onshape-single-session-v44-full-openapi-transport",
+source-commit=e245f1cac1cd7c0d60cd475f34aae9053e19a243
+--- /var/lib/capability-fabric/releases/onshape-single-session-v4-rollback-safe-desktop
+closure_unreadable
+  "release_id": "onshape-single-session-v4-rollback-safe-desktop",
+source-commit=e1a556cc2188c98138b51cd2a0a0f8ef78bc3db1
+--- /var/lib/capability-fabric/releases/onshape-single-session-v5-isolated-interactive-profile
+closure_unreadable
+  "release_id": "onshape-single-session-v5-isolated-interactive-profile",
+source-commit=6db70a552b2fba97afcd20c523bbd599a14a6347
+--- /var/lib/capability-fabric/releases/onshape-single-session-v6-readiness-ordered-desktop
+closure_unreadable
+  "release_id": "onshape-single-session-v6-readiness-ordered-desktop",
+source-commit=60041cb4e57aa80114793ce1c1fb85ea4138e5c7
+--- /var/lib/capability-fabric/releases/onshape-single-session-v7-direct-input-portal
+closure_unreadable
+  "release_id": "onshape-single-session-v7-direct-input-portal",
+source-commit=3b0d6ba695d997a4bba54ddb5cec36d1c2f3d9f2
+--- /var/lib/capability-fabric/releases/onshape-single-session-v8-actions-secret-bootstrap
+closure_unreadable
+  "release_id": "onshape-single-session-v8-actions-secret-bootstrap",
+source-commit=0b83254b6c722be39d57d967742f3bf6df0d366b
+--- /var/lib/capability-fabric/releases/onshape-single-session-v9-strong-auth-v10-elements
+closure_unreadable
+  "release_id": "onshape-single-session-v9-strong-auth-v10-elements",
+source-commit=43bc3181e9786a0f6a33e05e9623960c122207aa
+--- /var/lib/capability-fabric/releases/onshape-three-session-v45-pool
+closure_unreadable
+const BUILD_ID = "onshape-three-session-v45-pool";
+  "release_id": "onshape-three-session-v45-pool",
+source-commit=522e8de00344b9577545be6696eea660ea2573b8
+--- /var/lib/capability-fabric/releases/onshape-three-session-v46-fabric-shadow
+closure_unreadable
+const BUILD_ID = "onshape-three-session-v46-fabric-ingress";
+  "release_id": "onshape-three-session-v46-fabric-shadow",
+source-commit=1329bef5c575349434caf069d6184a1413a75671
+--- /var/lib/capability-fabric/releases/onshape-three-session-v46-fabric-shadow-r10-pointer-ui
+closure_unreadable
+const BUILD_ID = "onshape-three-session-v46-fabric-ingress-pointer-ui";
+  "release_id": "onshape-three-session-v46-fabric-shadow-r10-pointer-ui",
+source-commit=52c5643abfe6bc208d0f3edc36d076b0fbc00f9b
+--- /var/lib/capability-fabric/releases/onshape-three-session-v46-fabric-shadow-r11-ui-input-capability
+closure_unreadable
+const BUILD_ID = "onshape-three-session-v46-fabric-ui-input-capability";
+  "release_id": "onshape-three-session-v46-fabric-shadow-r11-ui-input-capability",
+source-commit=c1fea7d5a02e1d74e0a625467e38092ab3a245de
+--- /var/lib/capability-fabric/releases/onshape-three-session-v46-fabric-shadow-r5
+closure_unreadable
+const BUILD_ID = "onshape-three-session-v46-fabric-ingress";
+  "release_id": "onshape-three-session-v46-fabric-shadow-r5",
+source-commit=c450d00e822088146f65e617f544fa8daf5232ab
+--- /var/lib/capability-fabric/releases/onshape-three-session-v46-fabric-shadow-r6
+closure_unreadable
+const BUILD_ID = "onshape-three-session-v46-fabric-ingress";
+  "release_id": "onshape-three-session-v46-fabric-shadow-r6",
+source-commit=7009068eda94bd8c7258de6ff6c4762e2baa7803
+--- /var/lib/capability-fabric/releases/onshape-three-session-v46-fabric-shadow-r7-browser-open
+closure_unreadable
+const BUILD_ID = "onshape-three-session-v46-fabric-ingress-browser-open";
+  "release_id": "onshape-three-session-v46-fabric-shadow-r7-browser-open",
+source-commit=d22dc60e36ccbfe555e5e99537a957ef8a6b28e2
+--- /var/lib/capability-fabric/releases/onshape-three-session-v46-fabric-shadow-r8-browser-ui
+closure_unreadable
+const BUILD_ID = "onshape-three-session-v46-fabric-ingress-browser-ui";
+  "release_id": "onshape-three-session-v46-fabric-shadow-r8-browser-ui",
+source-commit=fc86ed9a50ea42c5567dd8a36ca2ac5cc661baec
+--- /var/lib/capability-fabric/releases/onshape-three-session-v46-fabric-shadow-r9-mouse-ui
+closure_unreadable
+const BUILD_ID = "onshape-three-session-v46-fabric-ingress-mouse-ui";
+  "release_id": "onshape-three-session-v46-fabric-shadow-r9-mouse-ui",
+source-commit=b1aceaefa62644ab54fd042ae1e4905b12e86655
+--- /var/lib/capability-fabric/releases/onshape-three-session-v47-fabric-shadow-r12-native-ui-capability
+closure_unreadable
+const BUILD_ID = "onshape-three-session-v47-fabric-native-ui-capability";
+  "release_id": "onshape-three-session-v47-fabric-shadow-r12-native-ui-capability",
+source-commit=586b86a0e44b8b8041eb4ddbfc13eb6259050939
+--- /var/lib/capability-fabric/releases/onshape-three-session-v47-fabric-shadow-r13-native-ui-capability
+closure_unreadable
+const BUILD_ID = "onshape-three-session-v47-fabric-native-ui-capability";
+  "release_id": "onshape-three-session-v47-fabric-shadow-r13-native-ui-capability",
+source-commit=96c92621953f6fd205a1fe6983a0e54d59a05aba
+--- /var/lib/capability-fabric/releases/onshape-three-session-v47-fabric-shadow-r14-native-ui-capability
+closure_unreadable
+const BUILD_ID = "onshape-three-session-v47-fabric-native-ui-capability";
+  "release_id": "onshape-three-session-v47-fabric-shadow-r14-native-ui-capability",
+source-commit=6ed527d1dedff593695c9ffd897bc03a380ff22d
+--- /var/lib/capability-fabric/releases/onshape-vps-fast-r12
+closure_build_id= onshape-vps-fast-r12
+const BUILD_ID = "onshape-vps-fast-r12";
+assert cfg["schema"]=="onshape.direct-release-closure.v1"
+  "release_id": "onshape-vps-fast-r12",
+source-commit=7ffe986d468e2a29ce422b20e7e262a89137d307
+--- /var/lib/capability-fabric/releases/onshape-vps-fast-r13
+closure_build_id= onshape-vps-fast-r13
+const BUILD_ID = "onshape-vps-fast-r13";
+assert cfg["schema"]=="onshape.direct-release-closure.v1"
+  "release_id": "onshape-vps-fast-r13",
+source-commit=a9fa994155292116a9c08d28da357ea2badbd4c4
+--- /var/lib/capability-fabric/releases/onshape-vps-fast-r14
+closure_build_id= onshape-vps-fast-r14
+const BUILD_ID = "onshape-vps-fast-r14";
+assert cfg["schema"]=="onshape.direct-release-closure.v1"
+  "release_id": "onshape-vps-fast-r14",
+source-commit=d8bd94dac2733971f251726d98eac00f39829c04
+--- /var/lib/capability-fabric/releases/onshape-vps-fast-r15
+closure_build_id= onshape-vps-fast-r15
+const BUILD_ID = "onshape-vps-fast-r15";
+assert cfg["schema"]=="onshape.direct-release-closure.v1"
+  "release_id": "onshape-vps-fast-r15",
+source-commit=f84890a49f2510f66a9f600c650311a2bf350a47
+--- /var/lib/capability-fabric/releases/onshape-vps-fast-r16
+closure_build_id= onshape-vps-fast-r16
+const BUILD_ID = "onshape-vps-fast-r16";
+assert cfg["schema"]=="onshape.direct-release-closure.v1"
+  "release_id": "onshape-vps-fast-r16",
+source-commit=df655aab6ac1456fc9cd7fba5ffe57eee0b2dee4
+--- /var/lib/capability-fabric/releases/onshape-vps-fast-r17
+closure_build_id= onshape-vps-fast-r17
+const BUILD_ID = "onshape-vps-fast-r17";
+assert cfg["schema"]=="onshape.direct-release-closure.v1"
+  "release_id": "onshape-vps-fast-r17",
+source-commit=3ed7180b1b30b54842b22d911e412aafd654f4c4
+--- /var/lib/capability-fabric/releases/onshape-vps-fast-r18
+closure_build_id= onshape-vps-fast-r18
+const BUILD_ID = "onshape-vps-fast-r18";
+assert cfg["schema"]=="onshape.direct-release-closure.v1"
+  "release_id": "onshape-vps-fast-r18",
+source-commit=04e79ba75268133a86825ecb2fc247fd76c3d274
+--- /var/lib/capability-fabric/releases/onshape-vps-fast-r19
+closure_build_id= onshape-vps-fast-r19
+const BUILD_ID = "onshape-vps-fast-r19";
+assert cfg["schema"]=="onshape.direct-release-closure.v1"
+  "release_id": "onshape-vps-fast-r19",
+source-commit=288c6d4c4100f0487ff30a7982dce3e572fcfe6f
+--- /var/lib/capability-fabric/releases/onshape-vps-fast-r20
+closure_build_id= onshape-vps-fast-r20
+const BUILD_ID = "onshape-vps-fast-r19";
+assert cfg["schema"]=="onshape.direct-release-closure.v1"
+  "release_id": "onshape-vps-fast-r20",
+source-commit=34bf129c44f2331e24fdf4bd81c552e4fd648c93
+--- /var/lib/capability-fabric/releases/onshape-vps-fast-r21
+closure_build_id= onshape-vps-fast-r21
+const BUILD_ID = (() => {
+assert cfg["schema"]=="onshape.direct-release-closure.v1"
+  "release_id": "onshape-vps-fast-r21",
+source-commit=9d9180dae2b102bff050edddc90b69c1d5879e7e
+--- /var/lib/capability-fabric/releases/onshape-vps-fast-r22
+closure_build_id= onshape-vps-fast-r22
+const BUILD_ID = (() => {
+assert cfg["schema"]=="onshape.direct-release-closure.v1"
+  "release_id": "onshape-vps-fast-r22",
+source-commit=c721017824f9f62d411dc13fe0277ed68b05fa98
+--- /var/lib/capability-fabric/releases/onshape-vps-fast-r23
+closure_build_id= onshape-vps-fast-r23
+const BUILD_ID = (() => {
+assert cfg["schema"]=="onshape.direct-release-closure.v1"
+  "release_id": "onshape-vps-fast-r23",
+source-commit=e793409d367772322165a3084afb690e56cf3333
+--- /var/lib/capability-fabric/releases/onshape-vps-fast-r24
+closure_build_id= onshape-vps-fast-r24
+const BUILD_ID = (() => {
+assert cfg["schema"]=="onshape.direct-release-closure.v1"
+  "release_id": "onshape-vps-fast-r24",
+source-commit=7e1f2e2a2a73a7eac4b90b2a6f614b8d7a463a78
+--- /var/lib/capability-fabric/releases/onshape-vps-fast-r25
+closure_build_id= onshape-vps-fast-r25
+const BUILD_ID = (() => {
+assert cfg["schema"]=="onshape.direct-release-closure.v1"
+  "release_id": "onshape-vps-fast-r25",
+source-commit=a1261468483ddbb7a91adea0a22e5dbd0059c496
+--- /var/lib/capability-fabric/releases/onshape-vps-fast-r26
+closure_build_id= onshape-vps-fast-r26
+const BUILD_ID = (() => {
+assert cfg["schema"]=="onshape.direct-release-closure.v1"
+  "release_id": "onshape-vps-fast-r26",
+source-commit=966e8954370dd8b5c9d8fe87dca8655e4c5dfbbb
+--- /var/lib/capability-fabric/releases/onshape-vps-fast-r27
+closure_build_id= onshape-vps-fast-r27
+const BUILD_ID = (() => {
+assert cfg["schema"]=="onshape.direct-release-closure.v1"
+  "release_id": "onshape-vps-fast-r27",
+source-commit=be92b0f614bbfcab8ef7f41a48543eced2f2d4d0
+--- /var/lib/capability-fabric/releases/onshape-vps-fast-r28
+closure_build_id= onshape-vps-fast-r28
+const BUILD_ID = (() => {
+assert cfg["schema"]=="onshape.direct-release-closure.v1"
+  "release_id": "onshape-vps-fast-r28",
+source-commit=b94a38ea8dc690d5c97e4a7ac024df555e28bd2a
+--- /var/lib/capability-fabric/releases/onshape-vps-fast-r29
+closure_build_id= onshape-vps-fast-r29
+const BUILD_ID = (() => {
+assert cfg["schema"]=="onshape.direct-release-closure.v1"
+  "release_id": "onshape-vps-fast-r29",
+source-commit=210d9a0b43178b957dc3be14b0c7ef67be0ce1e6
+--- /var/lib/capability-fabric/releases/onshape-vps-fast-r30
+closure_build_id= onshape-vps-fast-r30
+const BUILD_ID = (() => {
+assert cfg["schema"]=="onshape.direct-release-closure.v1"
+  "release_id": "onshape-vps-fast-r30",
+source-commit=6c3f3107d7b317d6789a0697b4f7ded2c0f3a2a6
+--- /var/lib/capability-fabric/releases/onshape-vps-hardened-production-r2
+closure_build_id= onshape-vps-hardened-r2
+const BUILD_ID = "onshape-vps-hardened-r2";
+  "release_id": "onshape-vps-hardened-production-r2",
+source-commit=ef5634b94fa7e04af1edfebfefa3f7957fce5035
+--- /var/lib/capability-fabric/releases/onshape-vps-hardened-production-r3
+closure_build_id= onshape-vps-hardened-r3
+const BUILD_ID = "onshape-vps-hardened-r3";
+  "release_id": "onshape-vps-hardened-production-r3",
+source-commit=23b64174c1c33e4048d6fe843af674559ab31ccb
+--- /var/lib/capability-fabric/releases/onshape-vps-hardened-production-r4
+closure_build_id= onshape-vps-hardened-r4
+const BUILD_ID = "onshape-vps-hardened-r4";
+  "release_id": "onshape-vps-hardened-production-r4",
+source-commit=0f5d0ea4692964e7cbb3de964f8c5b6ffaf62006
+--- /var/lib/capability-fabric/releases/onshape-vps-hardened-production-r5
+closure_build_id= onshape-vps-hardened-r5
+const BUILD_ID = "onshape-vps-hardened-r5";
+  "release_id": "onshape-vps-hardened-production-r5",
+source-commit=a05f6299a8e7c4ec0d801ae0de58684f8757cab2
+--- /var/lib/capability-fabric/releases/onshape-vps-hardened-production-r6
+closure_build_id= onshape-vps-hardened-r6
+const BUILD_ID = "onshape-vps-hardened-r6";
+  "release_id": "onshape-vps-hardened-production-r6",
+source-commit=082a9b872b0767e0dc459436dd95e60f31e6b6b1
+--- /var/lib/capability-fabric/releases/onshape-vps-hardened-production-r7
+closure_build_id= onshape-vps-hardened-r7
+const BUILD_ID = "onshape-vps-hardened-r6";
+  "release_id": "onshape-vps-hardened-production-r7",
+source-commit=3b73727408d370220556292fa611adcdec46fc76
+--- /var/lib/capability-fabric/releases/onshape-vps-hardened-production-r8
+closure_build_id= onshape-vps-hardened-r8
+const BUILD_ID = "onshape-vps-hardened-r8";
+  "release_id": "onshape-vps-hardened-production-r8",
+source-commit=849cef465d4938bde93b5ed0b1465eacb645604a
+--- /var/lib/capability-fabric/releases/onshape-vps-hardened-r10
+closure_build_id= onshape-vps-hardened-r10
+const BUILD_ID = "onshape-vps-hardened-r10";
+assert cfg["production_guard_required"] is True
+  "release_id": "onshape-vps-hardened-r10",
+source-commit=ea03ad26a30d42162dcea443b9aca5182fcc1802
+--- /var/lib/capability-fabric/releases/onshape-vps-hardened-r10.failed-50c7a75a
+closure_build_id= onshape-vps-hardened-r10
+const BUILD_ID = "onshape-vps-hardened-r10";
+assert cfg["production_guard_required"] is True
+  "release_id": "onshape-vps-hardened-r10",
+source-commit=51a6076cb5a6bcb3abfc77904749f4c5fb02a714
+--- /var/lib/capability-fabric/releases/onshape-vps-hardened-r9
+closure_build_id= onshape-vps-hardened-r9
+const BUILD_ID = "onshape-vps-hardened-r9";
+assert cfg["production_guard_required"] is True
+  "release_id": "onshape-vps-hardened-r9",
+source-commit=0ff4e0a7ee3e8d15e2a080713466cc8163e76db7
+--- /var/lib/capability-fabric/releases/onshape-vps-hardened-rollback-r1
+closure_build_id= onshape-vps-hardened-r1
+const BUILD_ID = "onshape-vps-hardened-r1";
+  "release_id": "onshape-vps-hardened-rollback-r1",
+source-commit=ceabff2701d89624dec3ce2b1bc206dad5530603
+== containers
+capability-fabric-onshape-gateway | Up 36 seconds (healthy) | created 2026-10-01 19:41:54 +0000 UTC | project=capability-fabric | wd=/var/lib/capability-fabric/releases/onshape-vps-fast-r30 | cfg=/var/lib/capability-fabric/releases/onshape-vps-fast-r30/compose.yaml
+capability-fabric-onshape-server | Up 46 seconds (healthy) | created 2026-10-01 19:41:53 +0000 UTC | project=capability-fabric | wd=/var/lib/capability-fabric/releases/onshape-vps-fast-r30 | cfg=/var/lib/capability-fabric/releases/onshape-vps-fast-r30/compose.yaml
+capability-fabric-pcg-core | Up 5 hours (healthy) | created 2026-10-01 14:17:20 +0000 UTC | project=capability-fabric-pcg | wd=/var/lib/capability-fabric/pcg/releases/pcg-web-stage6-created-handle-and-provider-fresh-list-r70 | cfg=/var/lib/capability-fabric/pcg/releases/pcg-web-stage6-created-handle-and-provider-fresh-list-r70/compose.yaml
+capability-fabric-pcg-telegram | Up 5 hours (healthy) | created 2026-10-01 14:17:20 +0000 UTC | project=capability-fabric-pcg | wd=/var/lib/capability-fabric/pcg/releases/pcg-web-stage6-created-handle-and-provider-fresh-list-r70 | cfg=/var/lib/capability-fabric/pcg/releases/pcg-web-stage6-created-handle-and-provider-fresh-list-r70/compose.yaml
+capability-fabric-pcg-web | Up 5 hours (healthy) | created 2026-10-01 14:17:19 +0000 UTC | project=capability-fabric-pcg | wd=/var/lib/capability-fabric/pcg/releases/pcg-web-stage6-created-handle-and-provider-fresh-list-r70 | cfg=/var/lib/capability-fabric/pcg/releases/pcg-web-stage6-created-handle-and-provider-fresh-list-r70/compose.yaml
+capability-fabric-onshape-phase0-fabric | Up 5 days (healthy) | created 2026-09-26 19:18:12 +0000 UTC | project=capability-fabric-onshape-phase0 | wd=/var/lib/capability-fabric/onshape-research-phase0/releases/d9354b6bb26b10dd198aab2a7417c746ae90de66/server-deploy/research-phase0 | cfg=/var/lib/capability-fabric/onshape-research-phase0/releases/d9354b6bb26b10dd198aab2a7417c746ae90de66/server-deploy/research-phase0/compose.yaml
+capability-fabric-onshape-phase0-research | Up 5 days (healthy) | created 2026-09-26 19:18:12 +0000 UTC | project=capability-fabric-onshape-phase0 | wd=/var/lib/capability-fabric/onshape-research-phase0/releases/d9354b6bb26b10dd198aab2a7417c746ae90de66/server-deploy/research-phase0 | cfg=/var/lib/capability-fabric/onshape-research-phase0/releases/d9354b6bb26b10dd198aab2a7417c746ae90de66/server-deploy/research-phase0/compose.yaml
+== onshape container detail
+--- capability-fabric-onshape-server
+StartedAt=2026-10-01T19:42:04.217062025Z Running=true Restarts=0
+/var/lib/capability-fabric/onshape/agent -> /agent-state
+/var/lib/capability-fabric/onshape/openapi -> /openapi
+/var/lib/capability-fabric/onshape/browser-profile -> /profile
+/var/lib/capability-fabric/releases/onshape-vps-fast-r30 -> /release
+/etc/capability-fabric/secrets/onshape -> /run/onshape-secrets
+/var/lib/capability-fabric/pcg/run/ingress -> /run/pcg
+/etc/capability-fabric/secrets/mcp-token -> /run/secrets/mcp-token
+
+--- capability-fabric-onshape-gateway
+StartedAt=2026-10-01T19:42:14.811671871Z Running=true Restarts=0
+/opt/capability-fabric/current/gateway.js -> /app/gateway.js
+/etc/capability-fabric/secrets/mcp-token -> /run/secrets/mcp-token
+
+== live code identity inside container
+const BUILD_ID = (() => {
+const BUILD_ID = (() => {
+2
+== listeners
+LISTEN IPV4:8787 users:(("MainThread",pid=2555396,fd=18))
+LISTEN IPV4:8788 users:(("MainThread",pid=2555011,fd=19))
+== systemd unit
+enabled
+active
+ExecStart=/bin/sh -c '/usr/bin/docker inspect -f "{{.State.Running}}" capability-fabric-onshape-server 2>/dev/null | /usr/bin/grep -qx true || /usr/bin/docker start capability-fabric-onshape-server'
+ExecStop=/usr/bin/docker stop -t 15 capability-fabric-onshape-server
+== END
