@@ -107,7 +107,18 @@ jobs:
           git config user.email "pcg-web-control@users.noreply.github.com"
           git add "$out"
           git -c user.name="pcg-web-control" -c user.email="pcg-web-control@users.noreply.github.com" commit -m "pcg-web conformance report ${REQUEST_ID}"
-          git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:main"
+          # A long run can finish after main has moved on. A report that exists
+          # but cannot be pushed is the same as no report, so rebase and retry
+          # instead of losing the only evidence of the run.
+          remote="https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          pushed=no
+          for attempt in 1 2 3 4 5; do
+            if git push "$remote" "HEAD:main"; then pushed=yes; break; fi
+            git fetch "$remote" main
+            git rebase FETCH_HEAD || { git rebase --abort || true; sleep 5; continue; }
+            sleep 3
+          done
+          [[ "$pushed" == yes ]]
 
       - name: Fetch Telegram Web screenshot from VPS
         if: steps.request.outputs.phase == 'screenshot' || steps.request.outputs.phase == 'refresh-screenshot' || steps.request.outputs.phase == 'mytelegram-screenshot'
