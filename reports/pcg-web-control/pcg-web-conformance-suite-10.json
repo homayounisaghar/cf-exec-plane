@@ -1,0 +1,289 @@
+{
+ "report_present": true,
+ "report": {
+  "conformance": [
+   {
+    "step": "catalog",
+    "operation": "semantic.list",
+    "state": "ACHIEVED",
+    "catalog_size": 18,
+    "verdict": "PASS"
+   },
+   {
+    "step": "session",
+    "operation": "communication.session.status",
+    "state": "ACHIEVED",
+    "error_code": null,
+    "verdict": "PASS",
+    "ms": 46,
+    "runtime_facts": {
+     "provider_model_healthy": true,
+     "provider_transport_healthy": true,
+     "connection_state": "READY",
+     "transport_healthy": true,
+     "transport_ms": 38
+    }
+   },
+   {
+    "step": "conversations",
+    "operation": "communication.conversation.list",
+    "state": "ACHIEVED",
+    "error_code": null,
+    "verdict": "PASS",
+    "ms": 91
+   },
+   {
+    "step": "sweep",
+    "conversation": "self",
+    "removed": 8,
+    "failed": 0,
+    "verdict": "PASS"
+   },
+   {
+    "step": "stage:target_check",
+    "operation": "material.target.check",
+    "state": "ANSWERED",
+    "ms": 67,
+    "error_code": null,
+    "verdict": "PASS"
+   },
+   {
+    "step": "stage:send_dispatch",
+    "operation": "material.send_text.dispatch",
+    "state": "ANSWERED",
+    "ms": 15144,
+    "error_code": null,
+    "verdict": "PASS"
+   },
+   {
+    "step": "stage:probe_landed",
+    "state": "ACHIEVED",
+    "verdict": "PASS"
+   },
+   {
+    "step": "send",
+    "operation": "communication.message.send",
+    "state": "IN_DOUBT",
+    "error_code": "WEB_PROVIDER_EVALUATE_TIMEOUT",
+    "verdict": "FAIL",
+    "ms": 46654
+   },
+   {
+    "step": "messages_read",
+    "operation": "communication.message.list",
+    "state": "ACHIEVED",
+    "error_code": null,
+    "verdict": "PASS",
+    "ms": 1682,
+    "canary_located": true
+   },
+   {
+    "step": "fetch",
+    "operation": "communication.message.fetch",
+    "state": "ACHIEVED",
+    "error_code": null,
+    "verdict": "PASS",
+    "ms": 10
+   },
+   {
+    "step": "react",
+    "operation": "communication.message.react",
+    "state": "IN_DOUBT",
+    "error_code": "WEBK_REACTION_IN_DOUBT",
+    "verdict": "FAIL",
+    "ms": 142
+   },
+   {
+    "step": "unreact",
+    "operation": "communication.message.react",
+    "state": "IN_DOUBT",
+    "error_code": "WEBK_REACTION_IN_DOUBT",
+    "verdict": "FAIL",
+    "ms": 150
+   },
+   {
+    "step": "reply",
+    "operation": "communication.message.reply",
+    "state": "UNKNOWN",
+    "error_code": "MESSAGE_DELIVERY_UNCONFIRMED",
+    "verdict": "FAIL",
+    "ms": 39116
+   },
+   {
+    "step": "edit",
+    "operation": "communication.message.edit",
+    "state": "ACHIEVED",
+    "error_code": null,
+    "verdict": "PASS",
+    "ms": 118
+   },
+   {
+    "step": "relay",
+    "operation": "communication.message.relay",
+    "state": "FAILED",
+    "error_code": "WEB_RELAY_SOURCE_COPY_FORBIDDEN",
+    "verdict": "FAIL",
+    "ms": 122
+   },
+   {
+    "step": "open_media",
+    "operation": "communication.message.open_media",
+    "state": "FAILED",
+    "error_code": "WEBK_OPEN_MEDIA_TYPE_UNSUPPORTED",
+    "verdict": "EXPECTED_REFUSAL",
+    "ms": 7
+   },
+   {
+    "step": "download",
+    "operation": "communication.attachment.download",
+    "state": "FAILED",
+    "error_code": "INVALID_ATTACHMENT_HANDLE",
+    "verdict": "EXPECTED_REFUSAL",
+    "ms": 14
+   },
+   {
+    "step": "search",
+    "operation": "communication.conversation.search",
+    "state": "ACHIEVED",
+    "error_code": null,
+    "verdict": "PASS",
+    "ms": 3489
+   },
+   {
+    "step": "mark_read_without_message",
+    "operation": "communication.conversation.mark_read",
+    "state": "ACHIEVED",
+    "error_code": null,
+    "verdict": "PASS",
+    "ms": 136
+   },
+   {
+    "step": "mark_read",
+    "operation": "communication.conversation.mark_read",
+    "state": "ACHIEVED",
+    "error_code": null,
+    "verdict": "PASS",
+    "ms": 62
+   },
+   {
+    "step": "topics",
+    "operation": "communication.topic.list",
+    "state": "FAILED",
+    "error_code": "WEBK_TOPIC_TARGET_NOT_SUPPORTED",
+    "verdict": "EXPECTED_REFUSAL",
+    "ms": 8
+   },
+   {
+    "step": "pin_set",
+    "operation": "communication.conversation.pin.set",
+    "state": "ACHIEVED",
+    "error_code": null,
+    "verdict": "PASS",
+    "ms": 50,
+    "original_pinned": true
+   },
+   {
+    "step": "pin_restore",
+    "operation": "communication.conversation.pin.set",
+    "state": "ACHIEVED",
+    "error_code": null,
+    "verdict": "PASS",
+    "ms": 58
+   },
+   {
+    "step": "contact_pair",
+    "operation": "communication.conversation.search",
+    "found": 2,
+    "verdict": "PASS"
+   },
+   {
+    "step": "sweep",
+    "conversation": "contact",
+    "removed": 3,
+    "failed": 0,
+    "verdict": "PASS"
+   },
+   {
+    "step": "sweep",
+    "conversation": "contact",
+    "removed": 0,
+    "failed": 0,
+    "verdict": "PASS"
+   },
+   {
+    "step": "contact_send",
+    "operation": "communication.message.send",
+    "state": "ACHIEVED",
+    "error_code": null,
+    "verdict": "PASS",
+    "ms": 15433
+   },
+   {
+    "step": "contact_read",
+    "operation": "communication.message.list",
+    "state": "ACHIEVED",
+    "error_code": null,
+    "verdict": "PASS",
+    "ms": 71,
+    "canary_located": false
+   },
+   {
+    "step": "cleanup_delete",
+    "operation": "communication.message.delete",
+    "state": "FAILED",
+    "error_code": "WEB_DELETE_TARGET_NOT_AVAILABLE",
+    "verdict": "FAIL",
+    "ms": 8008
+   },
+   {
+    "step": "cleanup_delete",
+    "operation": "communication.message.delete",
+    "state": "FAILED",
+    "error_code": "WEB_DELETE_TARGET_NOT_AVAILABLE",
+    "verdict": "FAIL",
+    "ms": 8007
+   },
+   {
+    "step": "cleanup_delete",
+    "operation": "communication.message.delete",
+    "state": "FAILED",
+    "error_code": "WEB_DELETE_TARGET_NOT_AVAILABLE",
+    "verdict": "FAIL",
+    "ms": 8009
+   },
+   {
+    "step": "session_after",
+    "operation": "communication.session.status",
+    "state": "ACHIEVED",
+    "error_code": null,
+    "verdict": "PASS",
+    "ms": 69,
+    "runtime_facts": {
+     "provider_transport_healthy": true,
+     "transport_healthy": true,
+     "transport_ms": 62
+    }
+   },
+   {
+    "step": "gaps",
+    "operation": "diagnostics.capability_gap.list",
+    "state": "ACHIEVED",
+    "error_code": null,
+    "verdict": "PASS",
+    "ms": 0
+   },
+   {
+    "step": "coverage",
+    "uncovered_operations": [
+     "communication.message.forward-native"
+    ]
+   },
+   {
+    "step": "summary",
+    "checks": 34,
+    "failures": 8
+   }
+  ]
+ },
+ "tokens": []
+}
