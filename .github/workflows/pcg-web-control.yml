@@ -70,11 +70,16 @@ jobs:
           done < <(getent ahosts "$VPS_HOST" 2>/dev/null | awk '{print $1}' | sort -u)
 
       - name: Execute bounded Telegram Web control
+        id: control
         if: steps.request.outputs.phase != 'semantic-conformance-suite'
+        continue-on-error: true
         env:
           CF_PCG_WEB_CONTROL_MODE: ${{ steps.request.outputs.phase }}
           CF_PCG_WEB_CONTROL_CIPHERTEXT: ${{ steps.request.outputs.ciphertext }}
-        run: bash server-bootstrap/runner/remote-bundle-exec.sh server-bootstrap/45-pcg-web-control.sh
+        run: |
+          set -o pipefail
+          bash server-bootstrap/runner/remote-bundle-exec.sh server-bootstrap/45-pcg-web-control.sh 2>&1 | tee "${RUNNER_TEMP}/suite.log"
+          echo "control_exit=$?" >> "$GITHUB_OUTPUT"
 
       - name: Execute conformance suite and capture its own report
         id: suite
@@ -86,16 +91,16 @@ jobs:
           set -o pipefail
           bash server-bootstrap/runner/remote-bundle-exec.sh server-bootstrap/45-pcg-web-control.sh 2>&1 | tee "${RUNNER_TEMP}/suite.log"
 
-      - name: Publish conformance report
-        if: always() && steps.request.outputs.phase == 'semantic-conformance-suite'
+      - name: Publish control report
+        if: always()
         env:
           REQUEST_ID: ${{ steps.request.outputs.request_id }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          mkdir -p reports/pcg-web-conformance
-          out="reports/pcg-web-conformance/${REQUEST_ID}.json"
-          printf %s aW1wb3J0IGpzb24sIHN5cwpzcmMsIGRzdCA9IHN5cy5hcmd2WzFdLCBzeXMuYXJndlsyXQp0cnk6CiAgICB0ZXh0ID0gb3BlbihzcmMsIGVuY29kaW5nPSJ1dGYtOCIsIGVycm9ycz0icmVwbGFjZSIpLnJlYWQoKQpleGNlcHQgT1NFcnJvcjoKICAgIHRleHQgPSAiIgpiZWdpbiwgZW5kID0gIi0tLUNPTkZPUk1BTkNFLUJFR0lOLS0tIiwgIi0tLUNPTkZPUk1BTkNFLUVORC0tLSIKYm9keSA9ICIiCmlmIGJlZ2luIGluIHRleHQ6CiAgICBib2R5ID0gdGV4dC5zcGxpdChiZWdpbiwgMSlbMV0uc3BsaXQoZW5kLCAxKVswXS5zdHJpcCgpCnBheWxvYWQgPSB7InJlcG9ydF9wcmVzZW50IjogYm9vbChib2R5KX0KaWYgYm9keToKICAgIHRyeToKICAgICAgICBwYXlsb2FkWyJyZXBvcnQiXSA9IGpzb24ubG9hZHMoYm9keVtib2R5LmluZGV4KCJ7Iik6Ym9keS5yaW5kZXgoIn0iKSArIDFdKQogICAgZXhjZXB0IEV4Y2VwdGlvbjoKICAgICAgICBwYXlsb2FkWyJyZXBvcnRfcGFyc2VfZXJyb3IiXSA9IFRydWUKICAgICAgICBwYXlsb2FkWyJyZXBvcnRfcmF3X2FzY2lpIl0gPSBib2R5LmVuY29kZSgiYXNjaWkiLCAicmVwbGFjZSIpLmRlY29kZSgiYXNjaWkiKVs6MjAwMDBdCmpzb24uZHVtcChwYXlsb2FkLCBvcGVuKGRzdCwgInciLCBlbmNvZGluZz0idXRmLTgiKSwgZW5zdXJlX2FzY2lpPVRydWUsIGluZGVudD0xKQo= | base64 -d > "${RUNNER_TEMP}/publish.py"
+          mkdir -p reports/pcg-web-control
+          out="reports/pcg-web-control/${REQUEST_ID}.json"
+          printf %s aW1wb3J0IGpzb24sIHJlLCBzeXMKc3JjLCBkc3QgPSBzeXMuYXJndlsxXSwgc3lzLmFyZ3ZbMl0KdHJ5OgogICAgdGV4dCA9IG9wZW4oc3JjLCBlbmNvZGluZz0idXRmLTgiLCBlcnJvcnM9InJlcGxhY2UiKS5yZWFkKCkKZXhjZXB0IE9TRXJyb3I6CiAgICB0ZXh0ID0gIiIKYmVnaW4sIGVuZCA9ICItLS1DT05GT1JNQU5DRS1CRUdJTi0tLSIsICItLS1DT05GT1JNQU5DRS1FTkQtLS0iCmJvZHkgPSAiIgppZiBiZWdpbiBpbiB0ZXh0OgogICAgYm9keSA9IHRleHQuc3BsaXQoYmVnaW4sIDEpWzFdLnNwbGl0KGVuZCwgMSlbMF0uc3RyaXAoKQpwYXlsb2FkID0geyJyZXBvcnRfcHJlc2VudCI6IGJvb2woYm9keSl9CmlmIGJvZHk6CiAgICB0cnk6CiAgICAgICAgcGF5bG9hZFsicmVwb3J0Il0gPSBqc29uLmxvYWRzKGJvZHlbYm9keS5pbmRleCgieyIpOmJvZHkucmluZGV4KCJ9IikgKyAxXSkKICAgIGV4Y2VwdCBFeGNlcHRpb246CiAgICAgICAgcGF5bG9hZFsicmVwb3J0X3BhcnNlX2Vycm9yIl0gPSBUcnVlCiAgICAgICAgcGF5bG9hZFsicmVwb3J0X3Jhd19hc2NpaSJdID0gYm9keS5lbmNvZGUoImFzY2lpIiwgInJlcGxhY2UiKS5kZWNvZGUoImFzY2lpIilbOjIwMDAwXQojIE9ubHkgbWFjaGluZSB0b2tlbnMgb2YgdGhlIGZvcm0gTkFNRT12YWx1ZSBhcmUgcHVibGlzaGVkLiBGcmVlLWZvcm0gcmVtb3RlCiMgb3V0cHV0IGlzIG5ldmVyIHJlcHVibGlzaGVkLCBzbyB0aGUgZW5kcG9pbnQgY2FuIG5ldmVyIGxlYWsgdGhyb3VnaCBoZXJlLgp0b2tlbiA9IHJlLmNvbXBpbGUociJeW0EtWl1bQS1aMC05X10qPVtBLVphLXowLTlfLjorLy1dezAsMTIwfSQiKQp0b2tlbnMgPSBbbGluZS5zdHJpcCgpIGZvciBsaW5lIGluIHRleHQuc3BsaXRsaW5lcygpIGlmIHRva2VuLm1hdGNoKGxpbmUuc3RyaXAoKSldCnBheWxvYWRbInRva2VucyJdID0gdG9rZW5zWy00MDpdCmpzb24uZHVtcChwYXlsb2FkLCBvcGVuKGRzdCwgInciLCBlbmNvZGluZz0idXRmLTgiKSwgZW5zdXJlX2FzY2lpPVRydWUsIGluZGVudD0xKQo= | base64 -d > "${RUNNER_TEMP}/publish.py"
           python3 "${RUNNER_TEMP}/publish.py" "${RUNNER_TEMP}/suite.log" "$out"
           rm -f "${RUNNER_TEMP}/suite.log"
           git config user.name "pcg-web-control"
@@ -142,3 +147,9 @@ jobs:
       - name: Remove local screenshot copy
         if: always() && (steps.request.outputs.phase == 'screenshot' || steps.request.outputs.phase == 'refresh-screenshot' || steps.request.outputs.phase == 'mytelegram-screenshot')
         run: rm -f "${RUNNER_TEMP}/telegram-web-ui.png"
+
+      - name: Surface control failure after publishing
+        if: always() && steps.control.outcome == 'failure'
+        run: |
+          echo "control phase failed; see published report" >&2
+          exit 1
