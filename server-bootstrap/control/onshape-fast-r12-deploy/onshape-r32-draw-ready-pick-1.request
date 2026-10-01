@@ -1,0 +1,4 @@
+request_id=onshape-r32-draw-ready-pick-1
+candidate_commit=ff60ea9082826fbb4c650d10387d47d53f9b212c
+expected_sequence=96
+expected_release=onshape-vps-fast-r32
