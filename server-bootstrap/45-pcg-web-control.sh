@@ -2403,6 +2403,34 @@ try:
     report.append({"step": "ingress:send_landed", "state": "ACHIEVED" if im else "FAILED",
                    "verdict": "PASS" if im else "FAIL"})
 
+    gaps = invoke("diagnostics.capability_gap.list", {"limit": 60})
+    entries = []
+    for node in walk(gaps):
+        if isinstance(node, dict) and node.get("operation") and (node.get("code") or node.get("error_code")):
+            entries.append({
+                "surface": node.get("surface"),
+                "operation": node.get("operation"),
+                "code": node.get("code") or node.get("error_code"),
+                "count": node.get("count"),
+            })
+    report.append({"step": "gap_ledger", "entries": entries[:30], "verdict": "PASS"})
+
+    # The connector keeps its own ledger on the host; a failure that never
+    # reaches the runtime can only be seen there.
+    import glob
+    connector_files = glob.glob("/var/lib/capability-fabric/**/connector-capability-gaps.json", recursive=True)
+    connector_summary = []
+    for path in connector_files[:3]:
+        try:
+            raw = json.load(open(path, encoding="utf-8"))
+        except Exception:
+            continue
+        for node in walk(raw):
+            if isinstance(node, dict) and node.get("operation") and node.get("code"):
+                connector_summary.append({"operation": node.get("operation"), "code": node.get("code"), "count": node.get("count")})
+    report.append({"step": "connector_ledger", "files": len(connector_files),
+                   "entries": connector_summary[:30], "verdict": "PASS"})
+
     record("gaps", "diagnostics.capability_gap.list", invoke("diagnostics.capability_gap.list", {"limit": 30}))
 
     covered = {e.get("operation") for e in report}
