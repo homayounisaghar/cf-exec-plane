@@ -44,12 +44,10 @@ jobs:
           candidate_commit="$(awk -F= '$1=="candidate_commit"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
           expected_sequence="$(awk -F= '$1=="expected_sequence"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
           expected_release="$(awk -F= '$1=="expected_release"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
-          qualification_run="$(awk -F= '$1=="qualification_run"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
           [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 13
           [[ "$candidate_commit" =~ ^[0-9a-f]{40}$ ]] || exit 14
           [[ "$expected_sequence" =~ ^[0-9]+$ ]] || exit 15
           [[ "$expected_release" =~ ^[A-Za-z0-9_.-]{8,120}$ ]] || exit 16
-          [[ "$qualification_run" =~ ^[0-9]+$ ]] || exit 17
           snapshot="qualification/onshape-fast-r12/$candidate_commit"
           [[ -d "$snapshot" ]] || exit 18
           {
@@ -57,7 +55,6 @@ jobs:
             echo "CANDIDATE_COMMIT=$candidate_commit"
             echo "EXPECTED_SEQUENCE=$expected_sequence"
             echo "EXPECTED_RELEASE=$expected_release"
-            echo "QUALIFICATION_RUN=$qualification_run"
           } >> "$GITHUB_ENV"
 
       - name: Revalidate public release snapshot
@@ -81,6 +78,40 @@ jobs:
               assert p.is_file(), rel
               assert hashlib.sha256(p.read_bytes()).hexdigest()==h, rel
           PY
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Syntax and unit qualification
+        shell: bash
+        run: |
+          set -euo pipefail
+          for f in browser.js core.js server.js gateway.js onshape-agent.js; do
+            node --check "$SNAPSHOT/$f"
+          done
+          node --check "$SNAPSHOT/onshape-request.cjs"
+          node --test "$SNAPSHOT/onshape-agent.test.mjs"
+
+      - name: Reject retired architecture
+        shell: bash
+        run: |
+          set -euo pipefail
+          runtime_files=(
+            "$SNAPSHOT/onshape-agent.js"
+            "$SNAPSHOT/server.js"
+            "$SNAPSHOT/core.js"
+            "$SNAPSHOT/browser.js"
+            "$SNAPSHOT/compose.yaml"
+            "$SNAPSHOT/release-closure.json"
+          )
+          if grep -Ein 'Session Bridge|productionGuard|mutationBudget|PolicyBoundKernel|fabricSidecar|onshape_vps_sidecar|onshape-session:production|Android rollback' "${runtime_files[@]}"; then
+            echo "retired architecture reference found" >&2
+            exit 20
+          fi
+          ! grep -q 'fabric_sidecar:' "$SNAPSHOT/compose.yaml"
+          ! grep -q 'CF_FABRIC_REQUIRE_PRODUCTION_AUTHORITY' "$SNAPSHOT/compose.yaml"
+          ! grep -q 'CF_ONSHAPE_RUNTIME_CONTROL_FILE' "$SNAPSHOT/compose.yaml"
 
       - name: Prepare SSH
         shell: bash
