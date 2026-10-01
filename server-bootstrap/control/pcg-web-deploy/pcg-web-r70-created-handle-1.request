@@ -1,0 +1,4 @@
+request_id=pcg-web-r70-created-handle-1
+candidate_commit=18cc6c9825c6662740368b6a746b24efc65196b9
+expected_sequence=70
+expected_release=pcg-web-stage6-created-handle-and-provider-fresh-list-r70
