@@ -1,0 +1,497 @@
+{
+ "report_present": true,
+ "report": {
+  "conformance": [
+   {
+    "step": "catalog",
+    "operation": "semantic.list",
+    "state": "ACHIEVED",
+    "catalog_size": 18,
+    "verdict": "PASS"
+   },
+   {
+    "step": "session",
+    "operation": "communication.session.status",
+    "state": "ACHIEVED",
+    "error_code": null,
+    "verdict": "PASS",
+    "ms": 486,
+    "runtime_facts": {
+     "provider_model_healthy": true,
+     "provider_transport_healthy": true,
+     "connection_state": "READY",
+     "transport_healthy": true,
+     "transport_ms": 478
+    }
+   },
+   {
+    "step": "conversations",
+    "operation": "communication.conversation.list",
+    "state": "ACHIEVED",
+    "error_code": null,
+    "verdict": "PASS",
+    "ms": 393
+   },
+   {
+    "step": "sweep",
+    "conversation": "self",
+    "removed": 0,
+    "failed": 0,
+    "verdict": "PASS"
+   },
+   {
+    "step": "stage:target_check",
+    "operation": "material.target.check",
+    "state": "ANSWERED",
+    "ms": 64,
+    "error_code": null,
+    "verdict": "PASS"
+   },
+   {
+    "step": "stage:send_dispatch",
+    "operation": "material.send_text.dispatch",
+    "state": "ANSWERED",
+    "ms": 120,
+    "error_code": null,
+    "verdict": "PASS"
+   },
+   {
+    "step": "stage:probe_landed",
+    "state": "ACHIEVED",
+    "verdict": "PASS"
+   },
+   {
+    "step": "send",
+    "operation": "communication.message.send",
+    "state": "ACHIEVED",
+    "error_code": null,
+    "verdict": "PASS",
+    "ms": 174
+   },
+   {
+    "step": "messages_read",
+    "operation": "communication.message.list",
+    "state": "ACHIEVED",
+    "error_code": null,
+    "verdict": "PASS",
+    "ms": 25,
+    "canary_located": true
+   },
+   {
+    "step": "fetch",
+    "operation": "communication.message.fetch",
+    "state": "ACHIEVED",
+    "error_code": null,
+    "verdict": "PASS",
+    "ms": 11
+   },
+   {
+    "step": "react",
+    "operation": "communication.message.react",
+    "state": "IN_DOUBT",
+    "error_code": "WEBK_REACTION_IN_DOUBT",
+    "verdict": "SELF_CHAT_EXCEPTION",
+    "ms": 168
+   },
+   {
+    "step": "unreact",
+    "operation": "communication.message.react",
+    "state": "IN_DOUBT",
+    "error_code": "WEBK_REACTION_IN_DOUBT",
+    "verdict": "SELF_CHAT_EXCEPTION",
+    "ms": 159
+   },
+   {
+    "step": "reply",
+    "operation": "communication.message.reply",
+    "state": "UNKNOWN",
+    "error_code": "MESSAGE_DELIVERY_UNCONFIRMED",
+    "verdict": "SELF_CHAT_EXCEPTION",
+    "ms": 9286
+   },
+   {
+    "step": "edit",
+    "operation": "communication.message.edit",
+    "state": "ACHIEVED",
+    "error_code": null,
+    "verdict": "PASS",
+    "ms": 136
+   },
+   {
+    "step": "relay",
+    "operation": "communication.message.relay",
+    "state": "FAILED",
+    "error_code": "WEB_RELAY_SOURCE_COPY_FORBIDDEN",
+    "verdict": "SELF_CHAT_EXCEPTION",
+    "ms": 139
+   },
+   {
+    "step": "open_media",
+    "operation": "communication.message.open_media",
+    "state": "FAILED",
+    "error_code": "WEBK_OPEN_MEDIA_TYPE_UNSUPPORTED",
+    "verdict": "EXPECTED_REFUSAL",
+    "ms": 8
+   },
+   {
+    "step": "download",
+    "operation": "communication.attachment.download",
+    "state": "FAILED",
+    "error_code": "INVALID_ATTACHMENT_HANDLE",
+    "verdict": "EXPECTED_REFUSAL",
+    "ms": 15
+   },
+   {
+    "step": "search",
+    "operation": "communication.conversation.search",
+    "state": "ACHIEVED",
+    "error_code": null,
+    "verdict": "PASS",
+    "ms": 3473
+   },
+   {
+    "step": "mark_read_without_message",
+    "operation": "communication.conversation.mark_read",
+    "state": "ACHIEVED",
+    "error_code": null,
+    "verdict": "PASS",
+    "ms": 130
+   },
+   {
+    "step": "mark_read",
+    "operation": "communication.conversation.mark_read",
+    "state": "ACHIEVED",
+    "error_code": null,
+    "verdict": "PASS",
+    "ms": 110
+   },
+   {
+    "step": "topics",
+    "operation": "communication.topic.list",
+    "state": "FAILED",
+    "error_code": "WEBK_TOPIC_TARGET_NOT_SUPPORTED",
+    "verdict": "EXPECTED_REFUSAL",
+    "ms": 10
+   },
+   {
+    "step": "pin_set",
+    "operation": "communication.conversation.pin.set",
+    "state": "ACHIEVED",
+    "error_code": null,
+    "verdict": "PASS",
+    "ms": 54,
+    "original_pinned": true
+   },
+   {
+    "step": "pin_restore",
+    "operation": "communication.conversation.pin.set",
+    "state": "ACHIEVED",
+    "error_code": null,
+    "verdict": "PASS",
+    "ms": 70
+   },
+   {
+    "step": "contact_pair",
+    "operation": "communication.conversation.search",
+    "found": 2,
+    "verdict": "PASS"
+   },
+   {
+    "step": "sweep",
+    "conversation": "contact",
+    "removed": 1,
+    "failed": 0,
+    "verdict": "PASS"
+   },
+   {
+    "step": "sweep",
+    "conversation": "contact",
+    "removed": 0,
+    "failed": 0,
+    "verdict": "PASS"
+   },
+   {
+    "step": "contact_send",
+    "operation": "communication.message.send",
+    "state": "ACHIEVED",
+    "error_code": null,
+    "verdict": "PASS",
+    "ms": 3195
+   },
+   {
+    "step": "contact_read",
+    "operation": "communication.message.list",
+    "state": "ACHIEVED",
+    "error_code": null,
+    "verdict": "PASS",
+    "ms": 24,
+    "canary_located": true,
+    "resolved_by": "newest"
+   },
+   {
+    "step": "contact_handle_proof",
+    "resolved_by": "newest",
+    "verdict": "FAIL"
+   },
+   {
+    "step": "contact_react",
+    "operation": "communication.message.react",
+    "state": "IN_DOUBT",
+    "error_code": "WEBK_REACTION_NOT_CONFIRMED",
+    "verdict": "FAIL",
+    "ms": 275
+   },
+   {
+    "step": "contact_unreact",
+    "operation": "communication.message.react",
+    "state": "ACHIEVED",
+    "error_code": null,
+    "verdict": "PASS",
+    "ms": 272
+   },
+   {
+    "step": "contact_forward",
+    "operation": "communication.message.forward-native",
+    "state": "UNKNOWN",
+    "error_code": "MESSAGE_DELIVERY_UNCONFIRMED",
+    "verdict": "FAIL",
+    "ms": 9268
+   },
+   {
+    "step": "contact_forward_readback",
+    "located_in_target": false,
+    "resolved_by": null,
+    "verdict": "FAIL"
+   },
+   {
+    "step": "cleanup_delete",
+    "operation": "communication.message.delete",
+    "state": "ACHIEVED",
+    "error_code": null,
+    "verdict": "PASS",
+    "ms": 275
+   },
+   {
+    "step": "cleanup_delete",
+    "operation": "communication.message.delete",
+    "state": "ACHIEVED",
+    "error_code": null,
+    "verdict": "PASS",
+    "ms": 467
+   },
+   {
+    "step": "cleanup_delete",
+    "operation": "communication.message.delete",
+    "state": "ACHIEVED",
+    "error_code": null,
+    "verdict": "PASS",
+    "ms": 235
+   },
+   {
+    "step": "session_after",
+    "operation": "communication.session.status",
+    "state": "ACHIEVED",
+    "error_code": null,
+    "verdict": "PASS",
+    "ms": 48,
+    "runtime_facts": {
+     "provider_transport_healthy": true,
+     "transport_healthy": true,
+     "transport_ms": 41
+    }
+   },
+   {
+    "step": "ingress:socket",
+    "present": true,
+    "verdict": "PASS"
+   },
+   {
+    "step": "ingress:health",
+    "operation": "health",
+    "state": "ok",
+    "error_code": null,
+    "verdict": "FAIL",
+    "ms": 48
+   },
+   {
+    "step": "ingress:catalog",
+    "state": "ACHIEVED",
+    "verdict": "PASS",
+    "error_code": null
+   },
+   {
+    "step": "ingress:messages",
+    "operation": "communication.message.list",
+    "state": "ACHIEVED",
+    "error_code": null,
+    "verdict": "PASS",
+    "ms": 48
+   },
+   {
+    "step": "ingress:send",
+    "operation": "communication.message.send",
+    "state": "ACHIEVED",
+    "error_code": null,
+    "verdict": "PASS",
+    "ms": 48
+   },
+   {
+    "step": "ingress:send_landed",
+    "state": "ACHIEVED",
+    "verdict": "PASS"
+   },
+   {
+    "step": "gap_ledger",
+    "entries": [
+     {
+      "surface": "semantic",
+      "operation": "communication.message.list",
+      "code": "INVALID_CONVERSATION_HANDLE",
+      "count": null
+     },
+     {
+      "surface": "semantic",
+      "operation": "communication.message.delete",
+      "code": "IRREVERSIBLE_CONFIRMATION_REQUIRED",
+      "count": null
+     },
+     {
+      "surface": "semantic",
+      "operation": "communication.message.react",
+      "code": "WEBK_REACTION_IN_DOUBT",
+      "count": null
+     },
+     {
+      "surface": "semantic",
+      "operation": "communication.message.react",
+      "code": "INVALID_REACTION_TARGET",
+      "count": null
+     },
+     {
+      "surface": "semantic",
+      "operation": "communication.message.react",
+      "code": "WEBK_REACTION_NOT_CONFIRMED",
+      "count": null
+     },
+     {
+      "surface": "semantic",
+      "operation": "communication.message.send",
+      "code": "WEB_PROVIDER_EVALUATE_TIMEOUT",
+      "count": null
+     },
+     {
+      "surface": "semantic",
+      "operation": "communication.message.reply",
+      "code": "MESSAGE_DELIVERY_UNCONFIRMED",
+      "count": null
+     },
+     {
+      "surface": "ingress",
+      "operation": "communication.conversation.get",
+      "code": "INGRESS_OPERATION_FORBIDDEN",
+      "count": null
+     },
+     {
+      "surface": "semantic",
+      "operation": "communication.message.react",
+      "code": "WEBK_REACTION_MESSAGE_ID_INVALID",
+      "count": null
+     },
+     {
+      "surface": "semantic",
+      "operation": "communication.message.send",
+      "code": "MESSAGE_DELIVERY_UNCONFIRMED",
+      "count": null
+     },
+     {
+      "surface": "semantic",
+      "operation": "communication.message.delete",
+      "code": "DELETION_SCOPE_UNSUPPORTED",
+      "count": null
+     },
+     {
+      "surface": "semantic",
+      "operation": "communication.message.forward-native",
+      "code": "PROVIDER_REJECTED_MESSAGE",
+      "count": null
+     },
+     {
+      "surface": "semantic",
+      "operation": "communication.message.forward-native",
+      "code": "SOURCE_CONVERSATION_HANDLE_REQUIRED",
+      "count": null
+     },
+     {
+      "surface": "semantic",
+      "operation": "communication.message.forward-native",
+      "code": "CONVERSATION_HANDLE_REQUIRED",
+      "count": null
+     },
+     {
+      "surface": "semantic",
+      "operation": "communication.message.delete",
+      "code": "CONVERSATION_HANDLE_REQUIRED",
+      "count": null
+     },
+     {
+      "surface": "semantic",
+      "operation": "communication.message.edit",
+      "code": "CONVERSATION_HANDLE_REQUIRED",
+      "count": null
+     },
+     {
+      "surface": "semantic",
+      "operation": "communication.message.fetch",
+      "code": "INVALID_CONVERSATION_HANDLE",
+      "count": null
+     },
+     {
+      "surface": "semantic",
+      "operation": "communication.message.delete",
+      "code": "WEB_DELETE_TARGET_NOT_DELETABLE",
+      "count": null
+     },
+     {
+      "surface": "semantic",
+      "operation": "communication.message.react",
+      "code": "WEBK_REACTION_EPHEMERAL_UNSUPPORTED",
+      "count": null
+     }
+    ],
+    "verdict": "PASS"
+   },
+   {
+    "step": "connector_ledger",
+    "files": 0,
+    "entries": [],
+    "verdict": "PASS"
+   },
+   {
+    "step": "gaps",
+    "operation": "diagnostics.capability_gap.list",
+    "state": "ACHIEVED",
+    "error_code": null,
+    "verdict": "PASS",
+    "ms": 1
+   },
+   {
+    "step": "coverage",
+    "uncovered_operations": []
+   },
+   {
+    "step": "summary",
+    "checks": 47,
+    "failures": 5
+   },
+   {
+    "step": "cleanup_delete",
+    "operation": "communication.message.delete",
+    "state": "ACHIEVED",
+    "error_code": null,
+    "verdict": "PASS",
+    "ms": 198
+   }
+  ]
+ },
+ "tokens": []
+}
