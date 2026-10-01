@@ -2356,18 +2356,35 @@ try:
             m2, listed2 = newest(a)
             resolved_by = "newest" if m2 else None
         record("contact_read", "communication.message.list", listed2, extra={"canary_located": bool(m2), "resolved_by": resolved_by})
-        if m2 and resolved_by in ("text", "text_retry", "send_result"):
-            created.append((a, m2, "FOR_EVERYONE"))
+        # A contact chat does not list message bodies, so ownership is proven
+        # by fetching the candidate and comparing the body we just sent. Only a
+        # proven handle may ever be deleted.
+        if m2 and resolved_by == "newest":
+            probe = invoke("communication.message.fetch", {"conversation_handle": a, "message_handle": m2})
+            if tok2 in json.dumps(probe, ensure_ascii=True):
+                resolved_by = "fetch_proof"
+        report.append({"step": "contact_handle_proof", "resolved_by": resolved_by,
+                       "verdict": "PASS" if resolved_by in ("text", "text_retry", "send_result", "fetch_proof") else "FAIL"})
+        proven = resolved_by in ("text", "text_retry", "send_result", "fetch_proof")
+        if m2:
+            if proven:
+                created.append((a, m2, "FOR_EVERYONE"))
             record("contact_react", "communication.message.react", invoke("communication.message.react", {"conversation_handle": a, "message_handle": m2, "emoji": "\u2764\ufe0f"}))
             record("contact_unreact", "communication.message.react", invoke("communication.message.react", {"conversation_handle": a, "message_handle": m2, "remove": True}))
             record("contact_forward", "communication.message.forward-native", invoke("communication.message.forward-native", {"source_conversation_handle": a, "source_message_handle": m2, "conversation_handle": b}))
             m3, _ = locate(b, tok2)
-            # Only a body match proves the message is ours. A newest-message
-            # guess must never be fed to cleanup: deleting someone else's
-            # message, even only on our side, is not ours to do.
+            target_proof = "text" if m3 else None
+            if not m3:
+                m3, _ = newest(b)
+                if m3:
+                    probe3 = invoke("communication.message.fetch", {"conversation_handle": b, "message_handle": m3})
+                    target_proof = "fetch_proof" if tok2 in json.dumps(probe3, ensure_ascii=True) else None
+                    if target_proof is None:
+                        m3 = None
             if m3:
                 created.append((b, m3, "FOR_EVERYONE"))
-            report.append({"step": "contact_forward_readback", "located_in_target": bool(m3), "verdict": "PASS" if m3 else "FAIL"})
+            report.append({"step": "contact_forward_readback", "located_in_target": bool(m3),
+                           "resolved_by": target_proof, "verdict": "PASS" if m3 else "FAIL"})
 
     cleanup()
     created = []
