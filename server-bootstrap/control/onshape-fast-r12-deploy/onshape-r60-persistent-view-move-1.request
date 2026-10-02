@@ -1,0 +1,4 @@
+request_id=onshape-r60-persistent-view-move-1
+candidate_commit=45eb9f9b7c5b960d56698dbca91369b7212cff3f
+expected_sequence=123
+expected_release=onshape-vps-fast-r60
