@@ -803,6 +803,12 @@ if [[ "$mode" == prepare ]]; then
 fi
 
 if [[ "$mode" == status ]]; then
+  # Runtime identity comes from the release mounted into the running container,
+  # not from a historical symlink. The symlink is maintained by deploy as a
+  # convenience pointer, but it is not allowed to override service readback.
+  live_release="$(docker inspect -f '{{range .Mounts}}{{if eq .Destination "/release"}}{{.Source}}{{end}}{{end}}' "$cid")"
+  [[ -n "$live_release" && -s "$live_release/manifest.json" ]] || { echo "PCG_WEB_LIVE_RELEASE=unreadable" >&2; exit 22; }
+  release="$live_release"
   python3 - "$release/manifest.json" <<'PY'
 import json,sys
 m=json.load(open(sys.argv[1],encoding='utf-8'))
