@@ -1,0 +1,194 @@
+name: Persian Keyboard Android v1.47 Secret-Free Build
+
+on:
+  push:
+    branches:
+      - persian-keyboard-v147-exec
+    paths:
+      - 'snapshots/persian-voice-keyboard/v147/**'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout execution snapshot
+        uses: actions/checkout@v6
+        with:
+          path: exec
+
+      - name: Checkout exact Persian keyboard source
+        uses: actions/checkout@v6
+        with:
+          repository: homayounisaghar/Monitoring-V1
+          ref: e6b338dada01a7c42c4436efc543f889d0ae7708
+          path: source
+
+      - name: Install v1.47 candidate patch
+        run: |
+          set -euo pipefail
+          cp exec/snapshots/persian-voice-keyboard/v147/apply_v147_connection_caret_resilience_patch.py \
+             source/android/persian-keyboard-v19/tools/
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Use preinstalled Android SDK
+        shell: bash
+        run: |
+          set -eu
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          test -x "$SDKMANAGER"
+          "$SDKMANAGER" --version
+          set +o pipefail
+          yes | "$SDKMANAGER" --licenses >/dev/null
+          set -o pipefail
+
+      - name: Install Android API 35
+        shell: bash
+        run: |
+          set -eu
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          "$SDKMANAGER" "platforms;android-35" "build-tools;35.0.0" "platform-tools"
+
+      - name: Set up Gradle 8.9
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          gradle-version: '8.9'
+
+      - name: Apply v1.8 through v1.47 behavior
+        working-directory: source/android/persian-keyboard-v19
+        run: |
+          set -euo pipefail
+          python3 tools/apply_v18_keyboard_patch.py
+          python3 tools/apply_v19_layout_floating_patch.py
+          python3 tools/apply_v110_true_floating_patch.py
+          python3 tools/apply_v111_movable_full_keyboard_patch.py
+          python3 tools/apply_v112_vertical_drag_compact_floating_patch.py
+          python3 tools/apply_v113_narrow_floating_patch.py
+          python3 tools/apply_v114_preserve_floating_on_manual_key_patch.py
+          python3 tools/apply_v115_clear_field_button_patch.py
+          python3 tools/apply_v116_copy_button_patch.py
+          python3 tools/apply_v117_copy_icon_mic_emoji_patch.py
+          python3 tools/apply_v118_caps_lock_patch.py
+          python3 tools/apply_v119_persistent_speech_recovery_patch.py
+          python3 tools/apply_v1191_recovery_retry_race_patch.py
+          python3 tools/apply_v120_long_press_mic_send_patch.py
+          python3 tools/apply_v121_raw_enter_send_hotfix_patch.py
+          python3 tools/apply_v122_accessibility_send_button_patch.py
+          python3 tools/apply_v123_accessibility_diag_geo_send_patch.py
+          python3 tools/apply_v124_composer_scoped_send_patch.py
+          python3 tools/apply_v125_recovery_cursor_stability_patch.py
+          python3 tools/apply_v126_live_partial_tail_patch.py
+          python3 tools/apply_v127_manual_stop_semantics_patch.py
+          python3 tools/apply_v128_restart_tolerant_lifecycle_patch.py
+          python3 tools/apply_v129_selection_callback_ownership_patch.py
+          python3 tools/apply_v130_confirmed_external_selection_patch.py
+          python3 tools/apply_v131_user_interaction_attribution_patch.py
+          python3 tools/apply_v132_correlated_user_touch_patch.py
+          python3 tools/apply_v133_live_sync_and_fast_keys_patch.py
+          python3 tools/apply_v134_boundary_owned_voice_patch.py
+          python3 tools/apply_v1350_selection_decoupling_prepatch.py
+          python3 tools/apply_v135_stability_architecture_patch.py
+          python3 tools/apply_v1351_socket_epoch_hardening.py
+          python3 tools/apply_v1352_preserve_clear_toolbar.py
+          python3 tools/apply_v136_follow_voice_viewport_patch.py
+          python3 tools/apply_v137_ime_hide_zwnj_caret_rebase_patch.py
+          python3 tools/apply_v138_active_session_touch_order_rebase_patch.py
+          python3 tools/apply_v139_direct_selection_and_host_send_stop_patch.py
+          python3 tools/apply_v140_true_caret_cutover_and_composer_clear_stop_patch.py
+          python3 tools/apply_v141_diagnostic_event_trace_patch.py
+          python3 tools/apply_v1411_accessibility_event_subscription_fix.py
+          python3 tools/apply_v1412_accessibility_probe_package_fix.py
+          python3 tools/apply_v1420_auth_view_compatibility_prepatch.py
+          python3 tools/apply_v142_resilient_broker_mic_preemption_base_layer_patch.py
+          python3 tools/apply_v1421_restore_broker_helpers_patch.py
+          python3 tools/apply_v143_numpad_shortcuts_patch.py
+          python3 tools/apply_v144_cursor_newline_touch_hardening_patch.py
+          python3 tools/apply_v145_end_minus_one_publisher_recovery_patch.py
+          python3 tools/apply_v146_host_retained_tail_recovery_patch.py
+          python3 tools/apply_v147_connection_caret_resilience_patch.py
+
+      - name: Verify v1.47 invariants
+        working-directory: source/android/persian-keyboard-v19
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          service=Path('app/src/main/java/com/najme/perplexityprobe/PersianKeyboardService.java').read_text()
+          manifest=Path('app/src/main/AndroidManifest.xml').read_text()
+          gradle=Path('app/build.gradle').read_text()
+          text='\n'.join([service,manifest,gradle])
+          required=[
+            'android.permission.ACCESS_NETWORK_STATE',
+            'private boolean perplexityRouteReady()',
+            'TRANSPORT_VPN',
+            'private void armSpeechKeepalive(long runId)',
+            '{\\"type\\":\\"keepalive\\"}',
+            'V147 MIC_SUSPEND_KEEP_SOCKET',
+            'V147 MIC_RESUME_SAME_SOCKET',
+            'V147 TRANSPORT_RECOVERY_DEFER_MIC',
+            'private boolean healTransientVoiceCaretLag(',
+            'lag>4',
+            'V147 CARET_LAG_HEAL',
+            'V147 WHOLE_FIELD_STALE_TAIL_DELETE',
+            'V147 WHOLE_FIELD_CANONICALIZE',
+            'diagCurrentEditor("V147 PUB_PAUSE region-null");',
+            'versionCode 57',
+            "versionName '1.47'",
+          ]
+          for needle in required:
+            assert needle in text, needle
+          forbidden=[
+            'auth.reload();',
+            'recreateCredentialWebView("credential callback timeout")',
+            'recreateCredentialWebView("warm credential timeout")',
+            'diagCurrentEditor("V146 PUB_PAUSE region-null");',
+            'versionCode 56',
+            "versionName '1.46'",
+          ]
+          for needle in forbidden:
+            assert needle not in text, needle
+          print('v1.47 invariants OK')
+          PY
+
+      - name: Build Android v1.47 unsigned release APK
+        run: gradle -p source/android/persian-keyboard-v19 --no-daemon assembleRelease --stacktrace
+
+      - name: Prepare and verify v1.47 signing kit
+        shell: bash
+        run: |
+          set -euo pipefail
+          RAW='source/android/persian-keyboard-v19/app/build/outputs/apk/release/app-release-unsigned.apk'
+          ALIGNED='Persian-keyboard-Android-v1.47-unsigned-aligned.apk'
+          test -f "$RAW"
+          "$ANDROID_HOME/build-tools/35.0.0/zipalign" -f 4 "$RAW" "$ALIGNED"
+          "$ANDROID_HOME/build-tools/35.0.0/zipalign" -c 4 "$ALIGNED"
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$ALIGNED" | grep "package: name='com.najme.perplexityprobe'"
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$ALIGNED" | grep "versionCode='57' versionName='1.47'"
+          mkdir -p signing-kit
+          cp "$ALIGNED" signing-kit/
+          cp "$ANDROID_HOME/build-tools/35.0.0/lib/apksigner.jar" signing-kit/
+          sha256sum "$ALIGNED" > signing-kit/SHA256SUMS.txt
+          printf '%s\n' \
+            'canonical-source=homayounisaghar/Monitoring-V1@e6b338dada01a7c42c4436efc543f889d0ae7708' \
+            "execution-snapshot=${GITHUB_SHA}" \
+            'package=com.najme.perplexityprobe' \
+            'versionCode=57' \
+            'versionName=1.47' \
+            'expected-v2-signer-sha256=07e3541cceb30a7bf789f39c90ccc08fd92b433c7665672e7ab84eb5af86e231' \
+            > signing-kit/BUILD-METADATA.txt
+
+      - name: Upload v1.47 signing kit
+        uses: actions/upload-artifact@v4
+        with:
+          name: Persian-keyboard-Android-v1.47-signing-kit
+          path: signing-kit/
+          retention-days: 30
+          if-no-files-found: error
