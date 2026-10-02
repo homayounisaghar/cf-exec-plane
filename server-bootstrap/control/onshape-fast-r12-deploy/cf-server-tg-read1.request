@@ -1,0 +1,4 @@
+request_id=cf-server-tg-read1
+candidate_commit=4e0a5506b8c127c78fc5e544b6a1fd2a81c75af9
+expected_sequence=144
+expected_release=onshape-vps-fast-r78-tg-read1
