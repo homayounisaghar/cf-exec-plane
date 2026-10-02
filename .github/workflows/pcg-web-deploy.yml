@@ -158,6 +158,12 @@ jobs:
 
           if docker compose -p "$project" -f "$release/compose.yaml" up -d --remove-orphans --no-build --force-recreate \
             && timeout 240 env CF_RELEASE_DIR="$release" CF_COMPOSE_PROJECT="$project" bash "$release/health.sh"; then
+            active=/opt/capability-fabric/channels/pcg/current
+            install -d -m 0755 "$(dirname "$active")"
+            active_tmp="${active}.tmp-$"
+            rm -f "$active_tmp"
+            ln -s "$release" "$active_tmp"
+            mv -Tf "$active_tmp" "$active"
             echo "PCG_DEPLOY=success"
             echo "PCG_RELEASE=$EXPECTED_RELEASE"
             echo "PCG_SEQUENCE=$EXPECTED_SEQUENCE"
