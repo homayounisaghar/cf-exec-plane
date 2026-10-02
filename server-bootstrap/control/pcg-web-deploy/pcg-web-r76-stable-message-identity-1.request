@@ -1,0 +1,4 @@
+request_id=pcg-web-r76-stable-message-identity-1
+candidate_commit=6366ba2ef028c49354bc582e55db34e7d7e78b82
+expected_sequence=76
+expected_release=pcg-web-stage6-stable-message-identity-r76
