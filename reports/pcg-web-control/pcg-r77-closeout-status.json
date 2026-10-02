@@ -1,0 +1,10 @@
+{
+ "report_present": false,
+ "tokens": [
+  "PCG_WEB_ACTIVE_SEQUENCE=77",
+  "PCG_WEB_ACTIVE_RELEASE=pcg-web-stage6-forward-self-proof-r77",
+  "PCG_WEB_ACTIVE_SOURCE_COMMIT=57588a0ef46c349d263fb5cf9a3b6d88abc08cb5",
+  "PCG_WEB_RELEASE_SEND_SHA256=c83c4ee379a3f7ac57a818f4865f9f8d89774a18afde9ee638a6539ded54eca1",
+  "PCG_WEB_CONTAINER_SEND_SHA256=c83c4ee379a3f7ac57a818f4865f9f8d89774a18afde9ee638a6539ded54eca1"
+ ]
+}
