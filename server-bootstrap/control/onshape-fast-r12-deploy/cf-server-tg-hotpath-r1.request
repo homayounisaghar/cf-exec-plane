@@ -1,0 +1,4 @@
+request_id=cf-server-tg-hotpath-r1
+candidate_commit=b930604e4e664130f2354d18ff8d3f8657d5fb8b
+expected_sequence=140
+expected_release=onshape-vps-fast-r76-tg-hotpath1
