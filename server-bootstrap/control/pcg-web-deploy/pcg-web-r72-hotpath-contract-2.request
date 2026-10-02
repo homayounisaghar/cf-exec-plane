@@ -1,0 +1,4 @@
+request_id=pcg-web-r72-hotpath-contract-2
+candidate_commit=5b2228bcbe898bf88f0980e7ef2ddb9dedc49ed9
+expected_sequence=72
+expected_release=pcg-web-stage6-hotpath-contract-r72
