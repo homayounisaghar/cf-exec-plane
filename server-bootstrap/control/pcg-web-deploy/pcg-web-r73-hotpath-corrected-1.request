@@ -1,0 +1,4 @@
+request_id=pcg-web-r73-hotpath-corrected-1
+candidate_commit=08439be37f39b30a81b6eb17f9614458732c288d
+expected_sequence=73
+expected_release=pcg-web-stage6-hotpath-corrected-r73
