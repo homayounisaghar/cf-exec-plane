@@ -1,0 +1,4 @@
+request_id=pcg-web-r77-forward-self-proof-1
+candidate_commit=57588a0ef46c349d263fb5cf9a3b6d88abc08cb5
+expected_sequence=77
+expected_release=pcg-web-stage6-forward-self-proof-r77
