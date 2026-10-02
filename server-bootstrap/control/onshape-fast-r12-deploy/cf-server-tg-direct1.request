@@ -1,0 +1,4 @@
+request_id=cf-server-tg-direct1
+candidate_commit=bfed2b30db42d1662ccb7e548f828d6b2fb600ed
+expected_sequence=142
+expected_release=onshape-vps-fast-r77-tg-direct1
