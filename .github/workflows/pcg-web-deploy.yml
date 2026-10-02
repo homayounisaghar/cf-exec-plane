@@ -123,7 +123,26 @@ jobs:
 
           case "$project" in capability-fabric|capability-fabric-onshape) echo "PCG_REFUSES_ONSHAPE_PROJECT" >&2; exit 32 ;; esac
 
-          incoming="$releases/.incoming-${EXPECTED_RELEASE}-$$"
+          # Deploy requests can be queued and complete out of order. Never let
+          # an older immutable request roll the live PCG runtime backwards.
+          if [[ -n "$old" && -s "$old/manifest.json" ]]; then
+            read -r live_sequence live_release < <(python3 - "$old/manifest.json" <<'PY'
+import json,sys
+m=json.load(open(sys.argv[1],encoding='utf-8'))
+print(int(m.get('sequence',0)), m.get('release_id','UNKNOWN'))
+PY
+)
+            if (( EXPECTED_SEQUENCE < live_sequence )); then
+              echo "PCG_DEPLOY_STALE_SEQUENCE live=$live_sequence requested=$EXPECTED_SEQUENCE" >&2
+              exit 33
+            fi
+            if (( EXPECTED_SEQUENCE == live_sequence )) && [[ "$EXPECTED_RELEASE" != "$live_release" ]]; then
+              echo "PCG_DEPLOY_SEQUENCE_COLLISION live=$live_release requested=$EXPECTED_RELEASE" >&2
+              exit 34
+            fi
+          fi
+
+          incoming="$releases/.incoming-${EXPECTED_RELEASE}-$"
           release="$releases/$EXPECTED_RELEASE"
           install -d -m 0750 -o root -g root "$releases"
           rm -rf "$incoming"
