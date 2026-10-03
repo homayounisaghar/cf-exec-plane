@@ -1,0 +1,16 @@
+{
+  "purpose": "Fast sharded broad rerun of the hardened constrained intent-IR architecture",
+  "canonical_source_repository": "homayounisaghar/capability-fabric",
+  "canonical_source_ref": "experiment/onshape-fast-router-groq-v03",
+  "canonical_source_commit": "d7af6ff3897d6c56e6046f9e58423d46f1b5fd6e",
+  "model": "openai/gpt-oss-20b",
+  "broad_cases": 120,
+  "shards": 4,
+  "cases_per_shard": 30,
+  "case_delay_seconds": 8.2,
+  "initial_stagger_seconds": 2,
+  "target_aggregate_request_rate_per_minute": "~28-29",
+  "contains_secrets": false,
+  "runtime_secret_name": "GROQ_API_KEY",
+  "public_snapshot_date": "2026-10-03"
+}
