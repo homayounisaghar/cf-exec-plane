@@ -1,0 +1,4 @@
+request_id=pcg-web-r93-lazy-whisper-asr
+candidate_commit=5405d68ba5f60cbf4557afdd0f3a61bc3a115f83
+expected_sequence=93
+expected_release=pcg-web-stage6-media-asr-r93-lazy-whisper
