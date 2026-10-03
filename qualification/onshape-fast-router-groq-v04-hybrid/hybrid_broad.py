@@ -102,6 +102,8 @@ def reflex_ir(case):
     hints=b.lexical_hints(text,ctx)
 
     # Deterministic non-execution lanes.
+    if b.has_any(t,["ایزومتریک","isometric"]):
+        return {"decision":"ask","intent":None,"slots":{}}
     if family=="design":
         return {"decision":"think","intent":None,"slots":{}}
     if family in {"unsupported","unknown"}:
@@ -116,6 +118,12 @@ def reflex_ir(case):
         return {"decision":"ask","intent":None,"slots":{}}
     if "plane" in t and b.has_any(t,["right","left","top","front"]) and "اسمش" not in t:
         return {"decision":"ask","intent":None,"slots":{}}
+
+    # Strong named-Fillet shorthand is an existing radius edit even when the
+    # family card selector leaves multiple feature-edit choices open.
+    if family=="feature_edit" and hints.get("feature") and str(hints["feature"]).lower().startswith("fillet") and hints.get("quantity") and not b.has_any(t,["جدید","خالی","بساز","delete","پاک کن","حذف کن","اسم","rename","خاموش","روشن"]):
+        return {"decision":"act","intent":"feature_parameter",
+                "slots":{"feature":hints["feature"],"parameter":"radius","value":hints["quantity"]}}
 
     if len(cards)!=1:
         return None
@@ -136,6 +144,8 @@ def reflex_ir(case):
             direction=hints["camera_direction"]
         elif b.has_any(t,["سمت راست","به راست","rotate right"]): direction="right"
         elif b.has_any(t,["سمت چپ","به چپ"]): direction="left"
+        elif "راست" in t: direction="right"
+        elif "چپ" in t: direction="left"
         elif b.has_any(t,["بالا"," up"]): direction="up"
         elif b.has_any(t,["پایین"," down"]): direction="down"
         if not direction and ctx.get("last_move"):
@@ -261,7 +271,7 @@ def reflex_ir(case):
             return {"decision":"ask","intent":None,"slots":{}}
         prop=None
         value=None
-        if b.has_any(t,["رنگ","color"]):
+        if b.has_any(t,["رنگ","color","قرمز","آبی","ابي","سبز"]):
             prop="color"
             cmap={"قرمز":"red","آبی":"blue","ابي":"blue","سبز":"green"}
             for k,v in cmap.items():
