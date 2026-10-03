@@ -1,0 +1,4 @@
+request_id=pcg-web-r108-large-attachment-redownload
+candidate_commit=1ad5d9ce209f84cc0886f944a603c62ca913917b
+expected_sequence=108
+expected_release=pcg-web-stage6-large-attachment-redownload-r108
