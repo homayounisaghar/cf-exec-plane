@@ -1,0 +1,5 @@
+request_id=v04-hybrid-r3-20261003-final
+candidate_commit=72b7b92e8d14ec56abc102b6995bc6934e4bb7f7
+model=openai/gpt-oss-20b
+broad_cases=120
+purpose=final-fast-broad-hybrid-validation-after-semantic-guard-fixes
