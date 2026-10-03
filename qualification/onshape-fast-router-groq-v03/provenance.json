@@ -1,0 +1,23 @@
+{
+  "purpose": "Constrained human-semantic intent IR benchmark with deterministic normalization, capability narrowing, compiler and safety guards",
+  "canonical_source_repository": "homayounisaghar/capability-fabric",
+  "canonical_source_ref": "experiment/onshape-fast-router-groq-v03",
+  "canonical_source_commit": "2e9433726c32a63b7579291439fe2cf8f94a0faa",
+  "source_files": {
+    "benchmark": {
+      "path": "experiments/onshape_fast_router_groq_v03/benchmark.py",
+      "blob_sha": "50e3a0886e7f5acb1a93a44f10cfaad97fca50a0"
+    },
+    "corpus": {
+      "path": "experiments/onshape_fast_router_groq_v03/corpus_v02.py",
+      "blob_sha": "f3c4eedbb848299ab6a80ca2f626a4ed2532f35d"
+    }
+  },
+  "model": "openai/gpt-oss-20b",
+  "base_cases": 120,
+  "red_team_cases": 32,
+  "stability_repeats": 12,
+  "contains_secrets": false,
+  "runtime_secret_name": "GROQ_API_KEY",
+  "date": "2026-10-03"
+}
