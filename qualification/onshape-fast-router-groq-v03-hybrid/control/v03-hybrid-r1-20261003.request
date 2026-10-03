@@ -1,0 +1,4 @@
+request_id=v03-hybrid-r1-20261003
+candidate_commit=683c1577f45241c2294cd933308ce1f3f3875244
+base_cases=120
+purpose=qualify-deterministic-first-router-before-20b-fallback
