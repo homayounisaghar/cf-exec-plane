@@ -1,0 +1,4 @@
+request_id=pcg-web-r107-mark-read-count-safe
+candidate_commit=9ae7d69b7b6c2aeeb10111ec00a78ca7b4672448
+expected_sequence=107
+expected_release=pcg-web-stage6-mark-read-count-safe-r107
