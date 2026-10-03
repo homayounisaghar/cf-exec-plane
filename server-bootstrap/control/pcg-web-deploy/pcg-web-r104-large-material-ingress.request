@@ -1,0 +1,4 @@
+request_id=pcg-web-r104-large-material-ingress
+candidate_commit=402924ce8da91a21f93e0bdf3111d614a0f75ee2
+expected_sequence=104
+expected_release=pcg-web-stage6-large-material-ingress-r104
