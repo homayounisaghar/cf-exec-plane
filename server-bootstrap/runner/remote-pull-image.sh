@@ -5,6 +5,7 @@ umask 077
 image_ref="${1:?usage: remote-pull-image.sh <ghcr digest ref>}"
 case "$image_ref" in
   ghcr.io/homayounisaghar/pcg-tdlib-python@sha256:*) ;;
+  ghcr.io/homayounisaghar/pcg-asr-faster-whisper@sha256:*) ;;
   *) echo "unsupported image reference" >&2; exit 2 ;;
 esac
 digest="${image_ref##*@}"
