@@ -1,7 +1,8 @@
 from __future__ import annotations
 import json, os, re, statistics, time, urllib.error, urllib.request
 
-MODELS = [m for m in os.environ.get("GROQ_MODELS","openai/gpt-oss-20b,openai/gpt-oss-120b").split(",") if m]\nCASE_DELAY = float(os.environ.get("CASE_DELAY","8.2"))
+MODELS = [m for m in os.environ.get("GROQ_MODELS","openai/gpt-oss-20b,openai/gpt-oss-120b").split(",") if m]
+CASE_DELAY = float(os.environ.get("CASE_DELAY","8.2"))
 ENDPOINT = "https://api.groq.com/openai/v1/chat/completions"
 
 OPS = [
