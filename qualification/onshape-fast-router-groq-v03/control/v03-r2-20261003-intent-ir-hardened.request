@@ -1,0 +1,7 @@
+request_id=v03-r2-20261003-intent-ir-hardened
+candidate_commit=41384a15f182ff53039f47b9dbcd312ebf3e4afc
+model=openai/gpt-oss-20b
+base_cases=120
+red_team_cases=32
+stability_repeats=12
+purpose=rerun-hardened-constrained-intent-ir-with-preserved-evidence
