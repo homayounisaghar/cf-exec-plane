@@ -1,0 +1,6 @@
+request_id=v03-batched-r1-20261003
+candidate_commit=3ccd299dcdf86ec6c7737b7e31839bd187ad8b18
+model=openai/gpt-oss-20b
+cases=120
+batch_size=12
+purpose=token-efficient-broad-v03-benchmark
