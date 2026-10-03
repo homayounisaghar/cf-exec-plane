@@ -1,7 +1,7 @@
 request_id=v03-r1-20261003-intent-ir
-candidate_commit=5c198ab8aa7b20349f4a2af20cad98d4c520181a
+candidate_commit=33205e54e67a437dd7d392797a2a6892c800d8a5
 model=openai/gpt-oss-20b
 base_cases=120
 red_team_cases=32
 stability_repeats=12
-purpose=test-constrained-human-semantic-intent-ir-with-compiler-and-guards
+purpose=test-constrained-intent-ir-deterministic-compiler-and-safety-guard
