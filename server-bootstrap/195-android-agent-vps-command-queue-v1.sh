@@ -190,7 +190,7 @@ def queue(after,limit):
     items=[]
     for seq,rid,expires,raw in rows:
         if expires < now: continue
-        items.append({"seq":seq,"request_id":rid,"envelope":json.loads(raw)})
+        items.append({"seq":seq,"envelope":json.loads(raw)})
     return {"schema":"personal-android-agent.command-queue.v1","commands":items}
 
 def status(request_id):
