@@ -94,7 +94,8 @@ def classify_family(text, ctx):
         return "camera"
 
     named_feature = bool(re.search(r"\b(fillet|extrude|draft|sketch)\s*\d+\b", t, re.I) or re.search(r"(فیلت|اکسترود)\s*\d+", t))
-    if named_feature or has_any(t, ["شعاع","فیچر","feature","خاموش","روشنش","روشن کن","suppres","اولین فیچر","آخرین فیچر"]):
+    context_feature_edit = bool(ctx.get("last_feature") and has_any(t, ["فیلت","fillet","شعاع","خاموش","روشن","suppres"]))
+    if named_feature or context_feature_edit or has_any(t, ["شعاع","فیچر","feature","خاموش","روشنش","روشن کن","suppres","اولین فیچر","آخرین فیچر"]):
         return "feature_edit"
 
     explicit_new_edge = has_any(t, ["جدید","خالی","new","empty","بساز"]) and has_any(t, ["پخ","چمفر","chamfer","فیلت","fillet"])
@@ -261,7 +262,7 @@ def call_model(key, case):
         ],
         "reasoning_effort":"low",
         "temperature":0,
-        "max_completion_tokens":110,
+        "max_completion_tokens":200,
         "response_format":{"type":"json_object"},
     }
     req = urllib.request.Request(
@@ -435,6 +436,8 @@ def compile_ir(case, raw):
             if has_any(t,["zoom","زوم"]): action="zoom"
             elif has_any(t,["pan","پن ","نما رو","صفحه رو"]): action="pan"
             else: action="orbit"
+        if action=="zoom" and not direction and has_any(t,["zoom","زوم"]):
+            direction="out" if has_any(t,["out","اوت","بیرون"]) else "in"
         if direction not in {"left","right","up","down","clockwise","counterclockwise","in","out"}:
             lm=ctx.get("last_move")
             if t in {"بیشتر","کمی بچرخون"} and lm:
@@ -472,10 +475,13 @@ def compile_ir(case, raw):
 
     if intent=="inspect":
         what=str(get_slot(slots,"what","mode") or "").lower()
-        if what not in {"selection","state","collaboration"}:
-            if has_any(t,["انتخاب","selection"]): what="selection"
-            elif has_any(t,["سشن","session","کسایی","کسانی"]): what="collaboration"
-            else: what="state"
+        # Explicit human wording is stronger than a model-proposed inspect subtype.
+        if has_any(t,["سشن","session","کسایی","کسانی","collaborator"]):
+            what="collaboration"
+        elif has_any(t,["انتخاب","selection","چی انتخاب"]):
+            what="selection"
+        elif what not in {"selection","state","collaboration"}:
+            what="state"
         return accept("viewer.inspect",{"mode":what},ir)
 
     if intent=="follow":
@@ -515,6 +521,16 @@ def compile_ir(case, raw):
         if not feature or not parameter or value is None:
             return reject("feature-parameter-missing",ir)
         args={"feature_name":feature,"parameter":str(parameter)}
+        if str(parameter).strip().lower() in {"flip direction","flip","reverse direction"}:
+            explicit_bool=None
+            if has_any(t,["روشن"," on","=on","true"]): explicit_bool=True
+            elif has_any(t,["خاموش"," off","=off","false"]): explicit_bool=False
+            if explicit_bool is None:
+                explicit_bool=as_bool(value)
+            if explicit_bool is None:
+                return reject("boolean-parameter-value",ir)
+            args["value"]=explicit_bool
+            return accept("feature.parameter.set",args,ir)
         q=normalize_quantity(value)
         if isinstance(q,str) and (q.endswith(" mm") or q.endswith(" deg")):
             args["amount"]=q
@@ -588,7 +604,14 @@ def compile_ir(case, raw):
             return reject("plane-reference-needs-provider-shape",ir)
         args={"feature_type":"plane"}
         name=get_slot(slots,"name")
+        if not name:
+            m=re.search(r"(?:اسمش|اسمش را|name(?:d)?|called)\s+(.+)$", norm_text(case["text"]), re.I)
+            if m:
+                name=m.group(1).strip()
         if name: args["name"]=name
+        # If the user explicitly requested a name, omission is not allowed.
+        if has_any(t,["اسمش","named","called"]) and not name:
+            return reject("plane-name-missing",ir)
         return accept("feature.add",args,ir)
 
     if intent=="add_pattern":
