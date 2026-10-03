@@ -1,0 +1,159 @@
+name: PCG ASR Image
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'server-bootstrap/control/pcg-asr-image-requests/*.request'
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: personal-server-pcg-asr-image
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build-publish:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+
+      - id: request
+        name: Validate immutable ASR image request
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || { echo "request commit must add exactly one file" >&2; exit 10; }
+          IFS=$'\t' read -r status request_path <<<"${changes[0]}"
+          [[ "$status" == A ]] || exit 11
+          [[ "$request_path" == server-bootstrap/control/pcg-asr-image-requests/*.request ]] || exit 12
+          request_id="$(awk -F= '$1=="request_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          phase="$(awk -F= '$1=="phase"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          source_commit="$(awk -F= '$1=="source_commit"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          faster_whisper_version="$(awk -F= '$1=="faster_whisper_version"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          model_repo="$(awk -F= '$1=="model_repo"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          model_label="$(awk -F= '$1=="model_label"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          runtime_sha256="$(awk -F= '$1=="runtime_sha256"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          dockerfile_sha256="$(awk -F= '$1=="dockerfile_sha256"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+
+          [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 13
+          [[ "$phase" == "pcg-asr-image" ]] || exit 14
+          [[ "$source_commit" =~ ^[0-9a-f]{40}$ ]] || exit 15
+          [[ "$faster_whisper_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || exit 16
+          [[ "$model_repo" =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]] || exit 17
+          [[ "$model_label" =~ ^[a-z0-9][a-z0-9_.-]{1,31}$ ]] || exit 18
+          [[ "$runtime_sha256" =~ ^[0-9a-f]{64}$ ]] || exit 19
+          [[ "$dockerfile_sha256" =~ ^[0-9a-f]{64}$ ]] || exit 20
+
+          actual_runtime="$(sha256sum pcg-runtime/asr/pcg_asr_runtime.py | awk '{print $1}')"
+          actual_dockerfile="$(sha256sum pcg-runtime/asr/Dockerfile | awk '{print $1}')"
+          [[ "$actual_runtime" == "$runtime_sha256" ]] || { echo "runtime provenance mismatch" >&2; exit 21; }
+          [[ "$actual_dockerfile" == "$dockerfile_sha256" ]] || { echo "dockerfile provenance mismatch" >&2; exit 22; }
+
+          {
+            echo "request_id=$request_id"
+            echo "source_commit=$source_commit"
+            echo "faster_whisper_version=$faster_whisper_version"
+            echo "model_repo=$model_repo"
+            echo "model_label=$model_label"
+          } >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - id: meta
+        name: Resolve immutable image tag
+        env:
+          SOURCE_COMMIT: ${{ steps.request.outputs.source_commit }}
+          MODEL_LABEL: ${{ steps.request.outputs.model_label }}
+        run: |
+          set -euo pipefail
+          short="${SOURCE_COMMIT:0:12}"
+          tag="ghcr.io/homayounisaghar/pcg-asr-faster-whisper:${MODEL_LABEL}-${short}"
+          echo "image_tag=$tag" >> "$GITHUB_OUTPUT"
+
+      - id: build
+        name: Build and publish self-hosted ASR image
+        uses: docker/build-push-action@v6
+        with:
+          context: pcg-runtime/asr
+          file: pcg-runtime/asr/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.image_tag }}
+          build-args: |
+            FASTER_WHISPER_VERSION=${{ steps.request.outputs.faster_whisper_version }}
+            MODEL_REPO=${{ steps.request.outputs.model_repo }}
+          cache-from: type=gha,scope=pcg-asr-${{ steps.request.outputs.model_label }}
+          cache-to: type=gha,mode=max,scope=pcg-asr-${{ steps.request.outputs.model_label }}
+
+      - name: Smoke exact digest offline
+        env:
+          IMAGE_TAG: ${{ steps.meta.outputs.image_tag }}
+          IMAGE_DIGEST: ${{ steps.build.outputs.digest }}
+        run: |
+          set -euo pipefail
+          [[ "$IMAGE_DIGEST" =~ ^sha256:[0-9a-f]{64}$ ]]
+          image_ref="${IMAGE_TAG%%:*}@$IMAGE_DIGEST"
+          docker pull "$image_ref" >/dev/null
+          docker run --rm --network none --entrypoint python "$image_ref" -c '
+          import json
+          from faster_whisper import WhisperModel
+          meta=json.load(open("/opt/pcg/model-meta.json"))
+          WhisperModel("/models/model",device="cpu",compute_type="int8",cpu_threads=1,num_workers=1,local_files_only=True)
+          assert len(meta["model_revision"]) >= 40
+          assert len(meta["model_tree_sha256"]) == 64
+          print("PCG_ASR_OFFLINE_MODEL_LOAD=pass")
+          print("PCG_ASR_MODEL_REVISION="+meta["model_revision"])
+          print("PCG_ASR_MODEL_TREE_SHA256="+meta["model_tree_sha256"])
+          '
+
+      - name: Verify anonymous digest-pinned pull on VPS
+        env:
+          IMAGE_TAG: ${{ steps.meta.outputs.image_tag }}
+          IMAGE_DIGEST: ${{ steps.build.outputs.digest }}
+        run: |
+          set -euo pipefail
+          image_ref="${IMAGE_TAG%%:*}@$IMAGE_DIGEST"
+          bash server-bootstrap/runner/remote-pull-image.sh "$image_ref"
+
+      - name: Emit immutable ASR image evidence
+        env:
+          IMAGE_TAG: ${{ steps.meta.outputs.image_tag }}
+          IMAGE_DIGEST: ${{ steps.build.outputs.digest }}
+          SOURCE_COMMIT: ${{ steps.request.outputs.source_commit }}
+          MODEL_REPO: ${{ steps.request.outputs.model_repo }}
+          FASTER_WHISPER_VERSION: ${{ steps.request.outputs.faster_whisper_version }}
+        run: |
+          set -euo pipefail
+          [[ "$IMAGE_DIGEST" =~ ^sha256:[0-9a-f]{64}$ ]]
+          image_ref="${IMAGE_TAG%%:*}@$IMAGE_DIGEST"
+          echo "PCG_ASR_SOURCE_COMMIT=$SOURCE_COMMIT"
+          echo "PCG_ASR_MODEL_REPO=$MODEL_REPO"
+          echo "PCG_ASR_FASTER_WHISPER_VERSION=$FASTER_WHISPER_VERSION"
+          echo "PCG_ASR_IMAGE_REF=$image_ref"
+          echo "PCG_ASR_IMAGE_DIGEST=$IMAGE_DIGEST"
+          echo "PCG_ASR_IMAGE=pass"
