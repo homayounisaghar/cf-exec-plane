@@ -1,0 +1,4 @@
+request_id=pcg-web-r80-replies-media-1
+candidate_commit=8dfd0f45a10c489cdcbfd6faadeae7e6470f1728
+expected_sequence=80
+expected_release=pcg-web-stage6-replies-media-r80
