@@ -1,0 +1,6 @@
+request_id=v04-hybrid-r1-20261003
+candidate_commit=50dcb5b29cc8c4c37c71ef526e6bbd6779aa8332
+model=openai/gpt-oss-20b
+broad_cases=120
+architecture=deterministic-reflex-plus-compact-batched-20b-fallback
+purpose=finish-broad-test-fast-under-provider-token-budget
