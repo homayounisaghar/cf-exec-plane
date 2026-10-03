@@ -1,0 +1,3 @@
+request_id=r5-20261003-groq-fast-router-v2-parallel
+candidate_commit=9d43e6c7a9cfecd7594fd13fced65cd936ac552d
+purpose=run-parallel-compact-protocol-benchmark-20b-120b-fixed
