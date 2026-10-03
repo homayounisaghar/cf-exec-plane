@@ -10,6 +10,7 @@ import threading
 import time
 from pathlib import Path
 
+import av
 from faster_whisper import WhisperModel
 
 SOCKET_PATH = os.environ.get("PCG_ASR_SOCKET", "/run/pcg/asr.sock")
@@ -35,6 +36,9 @@ MODEL_REVISION = str(MODEL_META.get("model_revision") or "unknown")
 MODEL_TREE_SHA256 = str(MODEL_META.get("model_tree_sha256") or "unknown")
 ENGINE_ID = "faster-whisper"
 ENGINE_VERSION = str(MODEL_META.get("faster_whisper_version") or "unknown")
+DECODER_ID = "pyav"
+DECODER_VERSION = str(av.__version__)
+JOB_SCHEMA = 2
 
 _jobs = {}
 _jobs_lock = threading.RLock()
@@ -83,6 +87,9 @@ def public_job(job, cache_hit=False):
         "inference_ms": job.get("inference_ms"),
         "engine_id": ENGINE_ID,
         "engine_version": ENGINE_VERSION,
+        "decoder_id": DECODER_ID,
+        "decoder_version": DECODER_VERSION,
+        "job_schema": JOB_SCHEMA,
         "model_id": MODEL_ID,
         "model_revision": MODEL_REVISION,
         "model_tree_sha256": MODEL_TREE_SHA256,
@@ -138,6 +145,9 @@ def job_key(source_sha256, language):
         "source_sha256": source_sha256,
         "engine_id": ENGINE_ID,
         "engine_version": ENGINE_VERSION,
+        "decoder_id": DECODER_ID,
+        "decoder_version": DECODER_VERSION,
+        "job_schema": JOB_SCHEMA,
         "model_revision": MODEL_REVISION,
         "model_tree_sha256": MODEL_TREE_SHA256,
         "language": language,
@@ -307,6 +317,9 @@ def health():
             "state": "READY",
             "engine_id": ENGINE_ID,
             "engine_version": ENGINE_VERSION,
+            "decoder_id": DECODER_ID,
+            "decoder_version": DECODER_VERSION,
+            "job_schema": JOB_SCHEMA,
             "model_id": MODEL_ID,
             "model_revision": MODEL_REVISION,
             "model_tree_sha256": MODEL_TREE_SHA256,

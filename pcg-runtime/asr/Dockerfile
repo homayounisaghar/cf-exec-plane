@@ -54,9 +54,36 @@ Path("/opt/pcg/model-meta.json").write_text(json.dumps(meta, sort_keys=True) + "
 PY
 
 RUN python - <<'PY'
+import math
+import os
+import struct
+import tempfile
+import wave
+
+import av
 from faster_whisper import WhisperModel
-WhisperModel("/models/model", device="cpu", compute_type="int8", cpu_threads=1, num_workers=1, local_files_only=True)
+
+assert int(av.__version__.split(".", 1)[0]) < 19, av.__version__
+model = WhisperModel("/models/model", device="cpu", compute_type="int8", cpu_threads=1, num_workers=1, local_files_only=True)
+fd, wav_path = tempfile.mkstemp(suffix=".wav")
+os.close(fd)
+try:
+    with wave.open(wav_path, "wb") as wf:
+        wf.setnchannels(1)
+        wf.setsampwidth(2)
+        wf.setframerate(16000)
+        frames = bytearray()
+        for i in range(16000):
+            sample = int(8000 * math.sin(2 * math.pi * 440 * i / 16000))
+            frames += struct.pack("<h", sample)
+        wf.writeframes(bytes(frames))
+    segments, _ = model.transcribe(wav_path, beam_size=1, vad_filter=False)
+    list(segments)
+finally:
+    os.unlink(wav_path)
 print("ASR_MODEL_LOAD=pass")
+print("ASR_AUDIO_DECODE=pass")
+print("ASR_PYAV_VERSION=" + av.__version__)
 PY
 
 RUN chmod 0555 /opt/pcg/pcg_asr_runtime.py \
