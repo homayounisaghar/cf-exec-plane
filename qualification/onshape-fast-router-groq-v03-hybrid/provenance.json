@@ -1,0 +1,13 @@
+{
+  "purpose": "Broad 120-case deterministic-first reflex qualification for hardened v03 architecture",
+  "note": "No provider calls. Measures which routine commands can be resolved before the 20B fallback.",
+  "canonical_source_repository": "homayounisaghar/capability-fabric",
+  "canonical_source_ref": "experiment/onshape-fast-router-groq-v03",
+  "canonical_source_commit": "33ce59386adfd1f237ed54813c1122d3b99015d0",
+  "benchmark_blob_sha": "ed11086b105071699ed787764b18045e13514281",
+  "corpus_blob_sha": "f3c4eedbb848299ab6a80ca2f626a4ed2532f35d",
+  "hybrid_blob_sha": "8f6c62d4dada93751ecae854675fab4627c4dd7f",
+  "base_cases": 120,
+  "contains_secrets": false,
+  "public_snapshot_date": "2026-10-03"
+}

@@ -1,0 +1,49 @@
+name: Onshape V03 Hybrid Reflex Broad Proof
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - qualification/onshape-fast-router-groq-v03-hybrid/control/*.request
+
+permissions:
+  contents: read
+
+concurrency:
+  group: onshape-fast-router-groq-v03-hybrid
+  cancel-in-progress: true
+
+jobs:
+  qualify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Syntax gate
+        run: |
+          python -m py_compile qualification/onshape-fast-router-groq-v03-hybrid/benchmark.py
+          python -m py_compile qualification/onshape-fast-router-groq-v03-hybrid/corpus_v02.py
+          python -m py_compile qualification/onshape-fast-router-groq-v03-hybrid/hybrid_reflex_broad.py
+
+      - name: Run deterministic-first broad proof
+        run: |
+          cd qualification/onshape-fast-router-groq-v03-hybrid
+          python hybrid_reflex_broad.py
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v03-hybrid-reflex-${{ github.run_id }}
+          path: |
+            qualification/onshape-fast-router-groq-v03-hybrid/hybrid_reflex_summary.json
+            qualification/onshape-fast-router-groq-v03-hybrid/hybrid_reflex_rows.json
+          if-no-files-found: warn
+          retention-days: 14
