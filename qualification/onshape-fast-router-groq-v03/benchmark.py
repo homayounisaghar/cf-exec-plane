@@ -119,6 +119,54 @@ def classify_family(text, ctx):
         return "part"
     return "unknown"
 
+def select_cards(text, ctx, family):
+    """Deterministically narrow the semantic choice when wording is explicit.
+
+    This is intentionally lexical/high-confidence only. It does not resolve geometry
+    or invent targets; it just prevents unrelated semantic operations from competing.
+    """
+    t=low(text)
+    if family=="camera":
+        if has_any(t,["فیت","fit"]): return ["fit"]
+        if has_any(t,["top view","از بالا"]): return ["top_view"]
+        if has_any(t,["انتخاب رو پاک","انتخاب را پاک","selection رو خالی","selection را خالی","clear selection"]):
+            return ["clear_selection"]
+        return ["camera_move"]
+    if family=="inspect":
+        if has_any(t,["فالو","follow","نفر دوم"]): return ["follow"]
+        if has_any(t,["پاک","خالی","clear"]): return ["clear_selection"]
+        return ["inspect"]
+    if family=="feature_edit":
+        if has_any(t,["پاک کن","حذف کن","delete"]): return ["feature_delete"]
+        if has_any(t,["اسم","rename"]) and not has_any(t,["document","داکیومنت"]): return ["feature_rename"]
+        # An explicit parameter phrase beats generic on/off language.
+        if has_any(t,["شعاع","radius","depth","عمق","angle","زاویه","flip direction"]):
+            return ["feature_parameter"]
+        if has_any(t,["خاموش","روشن","suppress","unsuppress"]): return ["feature_suppressed"]
+        return ["feature_parameter","feature_suppressed","feature_rename","feature_delete"]
+    if family=="edge":
+        if has_any(t,["جدید","خالی","new","empty","بساز"]): return ["add_edge_feature"]
+        # Named/context feature edits must not compete with creation-from-selection.
+        if re.search(r"\b(fillet|extrude|draft|sketch)\s*\d+\b",t,re.I) or re.search(r"(فیلت|اکسترود)\s*\d+",t) or "شعاع" in t:
+            return ["feature_parameter"]
+        return ["edge_on_selection"]
+    if family=="part":
+        if has_any(t,["پاک کن","حذف کن","delete"]): return ["part_delete"]
+        if has_any(t,["مخفی","قایم","hide","نشون","نشان","show"]): return ["part_visibility"]
+        return ["part_property"]
+    if family=="feature_add":
+        if has_any(t,["pattern","الگو"]): return ["add_pattern"]
+        if has_any(t,["plane","صفحه مرجع"]): return ["add_plane"]
+        if has_any(t,["پخ","چمفر","chamfer","فیلت","fillet","فیلِت"]): return ["add_edge_feature"]
+        return []
+    if family=="order_doc":
+        if "rollback" in t: return ["rollback"]
+        if "part studio" in t: return ["create_part_studio"]
+        if has_any(t,["داکیومنت","document"]): return ["rename_document"]
+        if has_any(t,["قبل از","بعد از"]): return ["feature_reorder"]
+        return FAMILY_CARDS["order_doc"]
+    return FAMILY_CARDS.get(family,[])
+
 def lexical_hints(text, ctx):
     t = low(text)
     hints = {}
@@ -191,7 +239,7 @@ def extract_quantity(t):
 def prompt_for(case):
     family = classify_family(case["text"], case.get("ctx",{}))
     hints = lexical_hints(case["text"], case.get("ctx",{}))
-    cards = FAMILY_CARDS.get(family, [])
+    cards = select_cards(case["text"], case.get("ctx",{}), family)
     card_text = "\n".join(f"- {name}: {CARDS[name]}" for name in cards)
     if not cards:
         card_text = "- no executable capability card applies; choose ask or think."
@@ -278,6 +326,8 @@ def call_with_retry(key, case):
                 wait=max(wait,float(last["retry_after"])+0.5)
             except Exception:
                 pass
+        # Never let one provider backoff consume the whole qualification run.
+        wait=min(wait,30.0)
         time.sleep(wait)
     return last
 
@@ -348,7 +398,7 @@ def compile_ir(case, raw):
         }
 
     family=classify_family(case["text"],case.get("ctx",{}))
-    cards=FAMILY_CARDS.get(family,[])
+    cards=select_cards(case["text"],case.get("ctx",{}),family)
     intent=ir["intent"]
     slots=ir["slots"]
     hints=lexical_hints(case["text"],case.get("ctx",{}))
@@ -715,13 +765,24 @@ red("unsuppress_context","دوباره روشنش کن",edo("feature.patch",{"fe
 red("design_light","این براکت رو سبک‌تر کن ولی ضعیف نشه",ethink())
 red("design_premium","این کاور رو پریمیوم‌تر طراحی کن",ethink())
 
-assert len(RED) == 32, len(RED)
+# Architecture-regression cases discovered by the first v03 pass.
+red("flip_direction_on","flip direction رو برای Extrude 1 روشن کن",edo("feature.parameter.set",{"feature_name":"Extrude 1","parameter":"flip direction","value":True}))
+red("flip_direction_off","flip direction رو برای Extrude 1 خاموش کن",edo("feature.parameter.set",{"feature_name":"Extrude 1","parameter":"flip direction","value":False}))
+red("rename_doc_fa","اسم داکیومنت رو بذار housing test",edo("documented.updateDocumentAttributes",{"new_name":"housing test"}))
+red("rename_doc_en","rename document to pump test",edo("documented.updateDocumentAttributes",{"new_name":"pump test"}))
+red("plane_named","یه plane جدید بساز اسمش Datum B",edo("feature.add",{"feature_type":"plane","name":"Datum B"}))
+red("inspect_collab","ببین چه کسایی توی این سشن هستن",edo("viewer.inspect",{"mode":"collaboration"}))
+red("pattern_part","روی Part 1 یه pattern خطی 4 تایی با فاصله 8 میلی بساز",edo("feature.add",{"feature_type":"linearPattern","part_name":"Part 1","copies":4,"distance":"8 mm"}))
+red("reorder_named","Fillet 1 رو قبل از Extrude 3 ببر",edo("feature.reorder",{"source_feature":"Fillet 1","target_feature":"Extrude 3","placement":"before"}))
+
+assert len(RED) == 40, len(RED)
 
 ALL_CASES = list(BASE_CASES) + RED
 
 STABILITY_IDS = [
     "orbit_right_small","fillet_2","radius_named","rename_part","pattern_5","design_lighter",
     "red_pakh_1","red_edit_fillet_3","red_rotate_right","red_delete_all","red_hide_context","red_unsuppress_context",
+    "red_flip_direction_on","red_rename_doc_fa","red_pattern_part","red_reorder_named",
 ]
 
 def pct(values,p):
@@ -809,7 +870,10 @@ def main():
             "outcome":row["outcome"],"latency_ms":round(row.get("latency_ms",0),1),
             "reason":row["post"].get("reason"),
             "error":row.get("error"),
-        },ensure_ascii=False))
+        },ensure_ascii=False), flush=True)
+        # Incremental checkpoint: preserve every completed expensive model call.
+        with open(os.path.join(outdir,"rows.json"),"w",encoding="utf-8") as f:
+            json.dump(rows,f,ensure_ascii=False,indent=2)
         if i != len(ALL_CASES):
             time.sleep(CASE_DELAY)
 
