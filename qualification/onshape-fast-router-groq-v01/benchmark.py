@@ -12,38 +12,43 @@ OPS = [
     "documented.updateDocumentAttributes", "documented.updateWVEPMetadata",
 ]
 
-SYSTEM = """You are the fast intent compiler for a personal Onshape operator.
-Convert one short human command into a tiny executable recipe.
-Do not solve open-ended design problems. Do not invent capabilities.
-Use only the listed operations. If a routine command is missing a required
-referent or value, return clarify. If it asks for design judgment or open-ended
-redesign, return design. Use supplied context for words such as this, it, same,
-again, more, and back. Output must follow the schema exactly.
+SYSTEM = """You are a fast intent compiler for a personal Onshape operator.
+Convert one short human command into exactly one routine executable recipe, or
+say that clarification/design reasoning is needed. Do not invent capabilities.
 
-Available operations:
-- view.move(action=orbit|pan|zoom, direction=left|right|up|down|clockwise|counterclockwise|in|out, intensity optional)
-- view.fit(action=fit|fit_selection)
-- view.standard(view=top)
-- viewer.selection.clear
-- feature.from_selection(feature_type=fillet|chamfer, amount)
-- feature.parameter.set(feature, parameter, amount/value)
-- feature.patch(feature, suppressed or new_name)
-- feature.delete(feature or position=last|first)
-- feature.add(feature_type=plane|linearPattern|fillet|chamfer, target/copies/distance/amount as needed)
-- feature.reorder(source_feature, target_feature, placement=before|after)
-- part.visibility(part, visible)
-- metadata.property.set(part optional, property, value)
-- rollback.set(before_feature|after_feature|position)
-- documented.createPartStudio(new_name)
-- documented.updateDocumentAttributes(new_name)
-- documented.updateWVEPMetadata(part, property, value)
+Return JSON only with exactly these top-level keys:
+{"route":"execute|clarify|design","op":"operation-or-null","args":{},"question":"string-or-null"}
+
+For execute: op must be exactly one listed operation and args must contain only
+the parameters needed by that operation. Never add a second operation.
+For clarify/design: op must be null and args must be {}.
+Preserve explicit engineering units in values: "2 mm", "20 mm", etc.
+Use supplied context for this/it/same/again/more/back.
+
+Available operations and argument names:
+- view.move: action=orbit|pan|zoom, direction=left|right|up|down|clockwise|counterclockwise|in|out, intensity optional
+- view.fit: action=fit|fit_selection
+- view.standard: view=top
+- viewer.selection.clear: no args
+- feature.from_selection: feature_type=fillet|chamfer, amount
+- feature.parameter.set: feature_name, parameter, amount or value
+- feature.patch: feature_name, suppressed or new_name
+- feature.delete: feature_name or position=last|first
+- feature.add: feature_type=plane|linearPattern|fillet|chamfer, plus part_name/copies/distance/amount/target as needed
+- feature.reorder: source_feature, target_feature, placement=before|after
+- part.visibility: part_name, visible
+- metadata.property.set: part_name optional, property, value
+- rollback.set: before_feature or after_feature or position
+- documented.createPartStudio: new_name
+- documented.updateDocumentAttributes: new_name
+- documented.updateWVEPMetadata: part_name, property, value
 
 Rules:
 - Existing Viewer selection is a first-class target; never re-pick it.
-- For "more" repeat the last camera direction with moderately larger intensity.
-- For "a little back" use the opposite direction with smaller intensity.
-- Routine operations should execute without explanation.
-- Open-ended aesthetic or engineering design requests are design, not execute.
+- "more" repeats the last camera direction with moderately larger intensity.
+- "a little back" reverses the last camera direction with smaller intensity.
+- If a routine mutation is missing a required referent or value, clarify.
+- Open-ended aesthetic or engineering design requests are design.
 """
 
 STEP_PROPERTIES = {
@@ -171,12 +176,43 @@ def grammar(case):
     if "دوباره نشونش بده" in t and c.get("last_part"): return ex({"op":"part.visibility","part_name":c["last_part"],"visible":True})
     return {"route":"clarify","steps":[],"question":"unparsed"}
 
+def _norm_scalar(v):
+    if isinstance(v, str):
+        s=v.strip()
+        m=re.fullmatch(r"([+-]?\\d+(?:[.,]\\d+)?)\\s*mm", s, re.I)
+        if m:
+            return m.group(1).replace(",", ".")+" mm"
+        return s
+    return v
+
 def subset_match(gold, got):
     if isinstance(gold, dict):
         return isinstance(got, dict) and all(k in got and subset_match(v, got[k]) for k,v in gold.items())
     if isinstance(gold, list):
         return isinstance(got, list) and len(got)>=len(gold) and all(subset_match(v, got[i]) for i,v in enumerate(gold))
-    return gold == got
+    return _norm_scalar(gold) == _norm_scalar(got)
+
+def _expand_compact(raw):
+    if not isinstance(raw, dict):
+        raise ValueError("output is not an object")
+    if set(raw) != {"route","op","args","question"}:
+        raise ValueError("top-level keys must be route, op, args, question")
+    route=raw.get("route")
+    op=raw.get("op")
+    args=raw.get("args")
+    if route not in {"execute","clarify","design"}:
+        raise ValueError("invalid route")
+    if not isinstance(args, dict):
+        raise ValueError("args is not an object")
+    if route == "execute":
+        if op not in OPS:
+            raise ValueError("invalid operation")
+        step={"op":op}
+        step.update(args)
+        return {"route":route,"steps":[step],"question":raw.get("question")}
+    if op is not None or args:
+        raise ValueError("non-execute route must not carry an operation")
+    return {"route":route,"steps":[],"question":raw.get("question")}
 
 def call_groq(key, model, case):
     body = {
@@ -187,13 +223,13 @@ def call_groq(key, model, case):
         ],
         "reasoning_effort":"low",
         "temperature":0,
-        "max_completion_tokens":700,
-        "response_format":{"type":"json_schema","json_schema":{"name":"onshape_recipe","strict":True,"schema":SCHEMA}},
+        "max_completion_tokens":220,
+        "response_format":{"type":"json_object"},
     }
     req = urllib.request.Request(
         ENDPOINT,
         data=json.dumps(body,ensure_ascii=False).encode("utf-8"),
-        headers={"Authorization":"Bearer "+key,"Content-Type":"application/json","User-Agent":"cf-exec-plane-onshape-router-benchmark/1.0"},
+        headers={"Authorization":"Bearer "+key,"Content-Type":"application/json","User-Agent":"cf-exec-plane-onshape-router-benchmark/2.0"},
         method="POST",
     )
     t0=time.perf_counter()
@@ -202,10 +238,11 @@ def call_groq(key, model, case):
             raw=resp.read().decode("utf-8")
             ms=(time.perf_counter()-t0)*1000
             data=json.loads(raw)
-            out=json.loads(data["choices"][0]["message"]["content"])
+            raw_out=json.loads(data["choices"][0]["message"]["content"])
+            out=_expand_compact(raw_out)
             usage=data.get("usage",{})
             headers={k.lower():v for k,v in resp.headers.items() if k.lower().startswith("x-ratelimit") or k.lower()=="retry-after"}
-            return {"ok":True,"latency_ms":ms,"output":out,"usage":usage,"headers":headers}
+            return {"ok":True,"latency_ms":ms,"output":out,"raw_output":raw_out,"usage":usage,"headers":headers}
     except urllib.error.HTTPError as e:
         ms=(time.perf_counter()-t0)*1000
         txt=e.read().decode("utf-8","replace")
