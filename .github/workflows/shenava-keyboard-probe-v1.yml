@@ -1,0 +1,135 @@
+name: Shenava Keyboard Probe v1
+
+on:
+  push:
+    branches: [shenava-keyboard-probe-v1]
+    paths:
+      - 'snapshots/shenava-keyboard-probe/v1/**'
+      - '.github/workflows/shenava-keyboard-probe-v1.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: bash
+        working-directory: snapshots/shenava-keyboard-probe/v1
+
+    steps:
+      - name: Checkout exact commit
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Use preinstalled Android SDK
+        run: |
+          set -eu
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          test -x "$SDKMANAGER"
+          "$SDKMANAGER" --version
+          set +o pipefail
+          yes | "$SDKMANAGER" --licenses >/dev/null
+          set -o pipefail
+          "$SDKMANAGER" 'platforms;android-35' 'build-tools;35.0.0' 'platform-tools'
+
+      - name: Download pinned sherpa-onnx Android AAR
+        run: |
+          set -euo pipefail
+          mkdir -p app/libs
+          curl -fL --retry 5 --retry-delay 2 \
+            'https://github.com/k2-fsa/sherpa-onnx/releases/download/v1.13.8/sherpa-onnx-1.13.8.aar' \
+            -o app/libs/sherpa-onnx-1.13.8.aar
+          echo '633c24321e06b1fe79feafa03ea16cbc0f8a286641e2da3559bac91bdb13bd96  app/libs/sherpa-onnx-1.13.8.aar' | sha256sum -c -
+
+      - name: Download Shenava Rizeh streaming INT8 model
+        run: |
+          set -euo pipefail
+          MODEL_REPO='mah92/sherpa-onnx-nemo-ctc-fa-shenava-rizeh-v1.0-streaming-int8-2026-06-26'
+          mkdir -p app/src/main/assets/shenava
+          curl -fL --retry 5 --retry-delay 2 \
+            "https://huggingface.co/${MODEL_REPO}/resolve/main/model.int8.onnx?download=true" \
+            -o app/src/main/assets/shenava/model.int8.onnx
+          curl -fL --retry 5 --retry-delay 2 \
+            "https://huggingface.co/${MODEL_REPO}/resolve/main/tokens.txt?download=true" \
+            -o app/src/main/assets/shenava/tokens.txt
+          test "$(stat -c%s app/src/main/assets/shenava/model.int8.onnx)" -gt 10000000
+          test "$(stat -c%s app/src/main/assets/shenava/tokens.txt)" -gt 1000
+          sha256sum app/src/main/assets/shenava/model.int8.onnx app/src/main/assets/shenava/tokens.txt | tee MODEL-SHA256SUMS.txt
+
+      - name: Verify probe invariants
+        run: |
+          set -euo pipefail
+          grep -q "applicationId 'com.najme.shenavatest'" app/build.gradle
+          grep -q "versionCode 1" app/build.gradle
+          grep -q "versionName '0.1.0'" app/build.gradle
+          grep -q 'android.permission.RECORD_AUDIO' app/src/main/AndroidManifest.xml
+          if grep -q 'android.permission.INTERNET' app/src/main/AndroidManifest.xml; then
+            echo 'INTERNET permission must not be present' >&2
+            exit 1
+          fi
+          grep -q 'setComposingText' app/src/main/java/com/najme/shenavatest/ShenavaImeService.java
+          grep -q 'setNeMoCtc' app/src/main/java/com/najme/shenavatest/ShenavaImeService.java
+          grep -q 'setEnableEndpoint(false)' app/src/main/java/com/najme/shenavatest/ShenavaImeService.java
+
+      - name: Install Gradle 8.9
+        run: |
+          set -euo pipefail
+          curl -fL --retry 5 'https://services.gradle.org/distributions/gradle-8.9-bin.zip' -o /tmp/gradle.zip
+          unzip -q /tmp/gradle.zip -d /tmp
+          /tmp/gradle-8.9/bin/gradle --version
+
+      - name: Build unsigned release APK
+        run: |
+          set -euo pipefail
+          /tmp/gradle-8.9/bin/gradle --no-daemon :app:assembleRelease
+
+      - name: Prepare and verify signing kit
+        run: |
+          set -euo pipefail
+          APK='app/build/outputs/apk/release/app-release-unsigned.apk'
+          test -f "$APK"
+          ZIPALIGN="$ANDROID_HOME/build-tools/35.0.0/zipalign"
+          AAPT="$ANDROID_HOME/build-tools/35.0.0/aapt"
+          APKSIGNER_JAR="$ANDROID_HOME/build-tools/35.0.0/lib/apksigner.jar"
+          test -x "$ZIPALIGN"
+          test -x "$AAPT"
+          test -f "$APKSIGNER_JAR"
+          mkdir -p kit
+          "$ZIPALIGN" -f -p 4 "$APK" kit/Shenava-keyboard-probe-v0.1.0-unsigned-aligned.apk
+          "$ZIPALIGN" -c -v 4 kit/Shenava-keyboard-probe-v0.1.0-unsigned-aligned.apk
+          BADGING="$($AAPT dump badging kit/Shenava-keyboard-probe-v0.1.0-unsigned-aligned.apk | head -n 1)"
+          echo "$BADGING"
+          echo "$BADGING" | grep -q "name='com.najme.shenavatest'"
+          echo "$BADGING" | grep -q "versionCode='1'"
+          echo "$BADGING" | grep -q "versionName='0.1.0'"
+          cp "$APKSIGNER_JAR" kit/apksigner.jar
+          cp MODEL-SHA256SUMS.txt kit/MODEL-SHA256SUMS.txt
+          sha256sum kit/Shenava-keyboard-probe-v0.1.0-unsigned-aligned.apk > kit/SHA256SUMS.txt
+          cat > kit/BUILD-METADATA.txt <<EOF
+          package=com.najme.shenavatest
+          versionCode=1
+          versionName=0.1.0
+          source_repo=homayounisaghar/cf-exec-plane
+          source_ref=shenava-keyboard-probe-v1
+          source_commit=${GITHUB_SHA}
+          sherpa_onnx=1.13.8
+          model=Shenava-Rizeh-v1.0-streaming-int8
+          network_permission=absent
+          abi=arm64-v8a
+          EOF
+          cat kit/BUILD-METADATA.txt
+          cat kit/SHA256SUMS.txt
+
+      - name: Upload signing kit
+        uses: actions/upload-artifact@v4
+        with:
+          name: Shenava-keyboard-probe-v0.1.0-signing-kit
+          path: snapshots/shenava-keyboard-probe/v1/kit/*
+          if-no-files-found: error
+          retention-days: 30
