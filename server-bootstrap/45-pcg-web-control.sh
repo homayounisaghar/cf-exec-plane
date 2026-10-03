@@ -4,7 +4,7 @@ umask 077
 
 [[ "$(id -u)" -eq 0 ]] || { echo "must run as uid 0" >&2; exit 1; }
 mode="${CF_PCG_WEB_CONTROL_MODE:-}"
-case "$mode" in prepare|status|ingress-diagnostic|semantic-status|semantic-conversations|semantic-conversations-protected|semantic-conversations-canary|semantic-conversation-structure-canary|semantic-conversation-pin-pair|material-heart-reply-to-contact|semantic-saved-native-forward-to-contact|semantic-contact-photo-forward-to-contact|semantic-forward-state-diagnostic|semantic-topic-canary|semantic-search-canary|semantic-messages-protected|semantic-messages-canary|semantic-retrieval-hardening-canary|semantic-mark-read-canary|semantic-open-media-canary|semantic-download-canary|semantic-composer-canary|material-send-canary|material-reply-canary|material-attachment-send-canary|material-attachment-reply-canary|material-edit-canary|material-delete-canary|material-delete-for-everyone-canary|material-forward-canary|material-relay-canary|semantic-reaction-canary|semantic-conformance-suite|material-text-limit-canary|material-attachment-hardening-canary|material-large-file-transport-canary|material-photo-album-canary|phone|code|password|cleanup|screenshot|refresh-screenshot|mytelegram-start|mytelegram-capture-code|mytelegram-signin|mytelegram-create-app|mytelegram-screenshot) ;; *) echo "invalid mode" >&2; exit 2 ;; esac
+case "$mode" in prepare|status|ingress-diagnostic|semantic-status|semantic-conversations|semantic-conversations-protected|semantic-conversations-canary|semantic-conversation-structure-canary|semantic-conversation-pin-pair|material-heart-reply-to-contact|semantic-saved-native-forward-to-contact|semantic-contact-photo-forward-to-contact|semantic-forward-state-diagnostic|semantic-topic-canary|semantic-search-canary|semantic-messages-protected|semantic-messages-canary|semantic-retrieval-hardening-canary|semantic-mark-read-canary|semantic-open-media-canary|semantic-download-canary|semantic-composer-canary|material-send-canary|material-reply-canary|material-attachment-send-canary|material-attachment-reply-canary|material-edit-canary|material-delete-canary|material-delete-for-everyone-canary|material-forward-canary|material-relay-canary|semantic-reaction-canary|semantic-conformance-suite|material-text-limit-canary|material-attachment-hardening-canary|material-large-file-transport-canary|material-large-file-ingress-canary|material-photo-album-canary|phone|code|password|cleanup|screenshot|refresh-screenshot|mytelegram-start|mytelegram-capture-code|mytelegram-signin|mytelegram-create-app|mytelegram-screenshot) ;; *) echo "invalid mode" >&2; exit 2 ;; esac
 
 run_root=/var/lib/capability-fabric/pcg/run
 socket="$run_root/web.sock"
@@ -1633,6 +1633,207 @@ finally:
     state.close()
 PY
   printf 'PCG_WEB_PHOTO_ALBUM_CANARY=pass\n'
+  exit 0
+fi
+
+if [[ "$mode" == material-large-file-ingress-canary ]]; then
+  token_file=/etc/capability-fabric/secrets/mcp-token
+  [[ -s "$token_file" ]] || { echo "PCG_LARGE_FILE_INGRESS_TOKEN=missing" >&2; exit 61; }
+  [[ -S "$run_root/ingress/material-upload.sock" ]] || { echo "PCG_LARGE_FILE_INGRESS_SOCKET=missing" >&2; exit 61; }
+
+  python3 - "$token_file" <<'PY'
+import hashlib
+import http.client
+import json
+import sys
+import time
+import uuid
+
+token = open(sys.argv[1], encoding="utf-8").read().strip()
+if not token:
+    raise SystemExit("empty MCP token")
+
+HOST = "127.0.0.1"
+PORT = 8788
+CHUNK_BYTES = 16 * 1024 * 1024
+
+def decode_mcp_response(status, headers, body):
+    if status != 200:
+        raise RuntimeError(f"MCP_HTTP_{status}")
+    ctype = headers.get("content-type", "")
+    if "text/event-stream" in ctype:
+        envelopes = []
+        for raw in body.decode("utf-8", "replace").splitlines():
+            if not raw.startswith("data:"):
+                continue
+            payload = raw[5:].strip()
+            if not payload:
+                continue
+            envelopes.append(json.loads(payload))
+        if not envelopes:
+            raise RuntimeError("MCP_SSE_EMPTY")
+        envelope = envelopes[-1]
+    else:
+        envelope = json.loads(body.decode("utf-8"))
+    if envelope.get("error"):
+        raise RuntimeError("MCP_JSONRPC_ERROR")
+    result = envelope.get("result")
+    if not isinstance(result, dict):
+        raise RuntimeError("MCP_RESULT_INVALID")
+    if result.get("isError"):
+        raise RuntimeError("MCP_TOOL_ERROR")
+    structured = result.get("structuredContent")
+    if isinstance(structured, dict):
+        return structured
+    for item in result.get("content") or []:
+        if isinstance(item, dict) and item.get("type") == "text":
+            text = item.get("text")
+            if isinstance(text, str):
+                try:
+                    value = json.loads(text)
+                except Exception:
+                    continue
+                if isinstance(value, dict):
+                    return value
+    raise RuntimeError("MCP_TOOL_PAYLOAD_MISSING")
+
+def mcp_call(name, arguments, timeout=420):
+    body = json.dumps({
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "tools/call",
+        "params": {"name": name, "arguments": arguments},
+    }, separators=(",", ":")).encode("utf-8")
+    conn = http.client.HTTPConnection(HOST, PORT, timeout=timeout)
+    try:
+        conn.request("POST", f"/mcp/{token}", body=body, headers={
+            "content-type": "application/json",
+            "accept": "application/json, text/event-stream",
+            "content-length": str(len(body)),
+        })
+        resp = conn.getresponse()
+        data = resp.read()
+        headers = {k.lower(): v for k, v in resp.getheaders()}
+        return decode_mcp_response(resp.status, headers, data)
+    finally:
+        conn.close()
+
+def put_chunk(upload_id, offset, chunk):
+    conn = http.client.HTTPConnection(HOST, PORT, timeout=180)
+    try:
+        conn.request("PUT", f"/mcp/upload/{upload_id}", body=chunk, headers={
+            "upload-offset": str(offset),
+            "content-type": "application/octet-stream",
+            "content-length": str(len(chunk)),
+        })
+        resp = conn.getresponse()
+        data = resp.read()
+        if resp.status not in (200, 201):
+            raise RuntimeError(f"UPLOAD_HTTP_{resp.status}")
+        value = json.loads(data.decode("utf-8"))
+        if value.get("offset") != offset + len(chunk):
+            raise RuntimeError("UPLOAD_OFFSET_RESPONSE_MISMATCH")
+        return value
+    finally:
+        conn.close()
+
+def wait_provider_readback(filename, size_bytes, attempts=12):
+    last = None
+    for _ in range(attempts):
+        listed = mcp_call("telegram_message_list", {
+            "conversation": "Saved Messages",
+            "limit": 20,
+        }, timeout=90)
+        last = listed
+        for message in listed.get("messages") or []:
+            for attachment in message.get("attachments") or []:
+                if attachment.get("filename") == filename and attachment.get("size_bytes") == size_bytes:
+                    return message.get("handle")
+        time.sleep(5)
+    raise RuntimeError("PROVIDER_ATTACHMENT_READBACK_NOT_FOUND")
+
+def run_case(size_mib):
+    size_bytes = size_mib * 1024 * 1024
+    if size_bytes % CHUNK_BYTES:
+        raise RuntimeError("CANARY_SIZE_NOT_CHUNK_ALIGNED")
+    byte_value = (size_mib * 17) % 251
+    chunk = bytes([byte_value]) * CHUNK_BYTES
+    hasher = hashlib.sha256()
+    for _ in range(size_bytes // CHUNK_BYTES):
+        hasher.update(chunk)
+    expected_sha = hasher.hexdigest()
+    tag = uuid.uuid4().hex[:10]
+    filename = f"pcg-large-ingress-{size_mib}mib-{tag}.bin"
+    caption = f"pcg-large-ingress-{size_mib}mib-{tag}"
+    upload_id = None
+    send_started = False
+    try:
+        created = mcp_call("telegram_file_upload", {
+            "action": "create",
+            "filename": filename,
+            "media_type": "application/octet-stream",
+            "size_bytes": size_bytes,
+            "sha256_hex": expected_sha,
+        })
+        upload_id = created.get("upload_id")
+        if not isinstance(upload_id, str) or len(upload_id) != 64:
+            raise RuntimeError("UPLOAD_CREATE_ID_INVALID")
+        if created.get("max_chunk_bytes") != CHUNK_BYTES:
+            raise RuntimeError("UPLOAD_CHUNK_CONTRACT_MISMATCH")
+
+        first = put_chunk(upload_id, 0, chunk)
+        if first.get("complete") is True:
+            raise RuntimeError("UPLOAD_PREMATURE_COMPLETE")
+        status = mcp_call("telegram_file_upload", {"action": "status", "upload_id": upload_id})
+        if status.get("offset") != CHUNK_BYTES or status.get("complete") is True:
+            raise RuntimeError("UPLOAD_RESUME_BOUNDARY_NOT_PROVEN")
+        print(f"PCG_LARGE_{size_mib}MIB_RESUME=pass")
+
+        offset = CHUNK_BYTES
+        while offset < size_bytes:
+            put_chunk(upload_id, offset, chunk)
+            offset += CHUNK_BYTES
+
+        status = mcp_call("telegram_file_upload", {"action": "status", "upload_id": upload_id})
+        if status.get("offset") != size_bytes or status.get("complete") is not True:
+            raise RuntimeError("UPLOAD_FINAL_SIZE_INVALID")
+        if status.get("sha256_hex") != expected_sha:
+            raise RuntimeError("UPLOAD_FINAL_DIGEST_INVALID")
+        print(f"PCG_LARGE_{size_mib}MIB_UPLOAD=pass")
+        print(f"PCG_LARGE_{size_mib}MIB_SIZE={size_bytes}")
+        print(f"PCG_LARGE_{size_mib}MIB_SHA256={expected_sha}")
+
+        send_started = True
+        sent = mcp_call("telegram_file_send", {
+            "upload_id": upload_id,
+            "target": "Saved Messages",
+            "caption": caption,
+        }, timeout=420)
+        if sent.get("state") != "ACHIEVED":
+            print(f"PCG_LARGE_{size_mib}MIB_SEND_STATE={sent.get('state','UNKNOWN')}")
+            raise RuntimeError("PROVIDER_SEND_NOT_ACHIEVED")
+
+        handle = wait_provider_readback(filename, size_bytes)
+        if not isinstance(handle, str) or not handle.startswith("tgmsg:"):
+            raise RuntimeError("PROVIDER_MESSAGE_HANDLE_INVALID")
+        print(f"PCG_LARGE_{size_mib}MIB_SEND=pass")
+        print(f"PCG_LARGE_{size_mib}MIB_PROVIDER_READBACK=pass")
+        print(f"PCG_LARGE_{size_mib}MIB_MESSAGE_HANDLE={handle}")
+    finally:
+        if upload_id is not None:
+            try:
+                deleted = mcp_call("telegram_file_upload", {"action": "delete", "upload_id": upload_id}, timeout=90)
+                if deleted.get("deleted") is True:
+                    print(f"PCG_LARGE_{size_mib}MIB_STAGING_CLEANUP=pass")
+            except Exception:
+                if not send_started:
+                    print(f"PCG_LARGE_{size_mib}MIB_STAGING_CLEANUP=failed")
+
+for mib in (128, 256):
+    run_case(mib)
+
+print("PCG_LARGE_FILE_INGRESS_CANARY=pass")
+PY
   exit 0
 fi
 
