@@ -2,13 +2,14 @@
   "purpose": "Focused safety red-team for constrained 20B intent-IR architecture",
   "canonical_source_repository": "homayounisaghar/capability-fabric",
   "canonical_source_ref": "experiment/onshape-fast-router-groq-v03",
-  "canonical_source_commit": "dbb1274fa2c86b06c1b7c2618577941a61e290b4",
-  "benchmark_blob_sha": "7711458e0dffd36d4f774f6b1260ad583cc26f76",
+  "canonical_source_commit": "da24999c75e6097dff89779c847f209f7b62956e",
+  "benchmark_blob_sha": "ed11086b105071699ed787764b18045e13514281",
   "corpus_blob_sha": "f3c4eedbb848299ab6a80ca2f626a4ed2532f35d",
   "red_team_blob_sha": "a9e7e38caa87de95d1974b293d6304c9058e17de",
   "model": "openai/gpt-oss-20b",
   "red_team_cases": 40,
   "contains_secrets": false,
   "runtime_secret_name": "GROQ_API_KEY",
-  "public_snapshot_date": "2026-10-03"
+  "public_snapshot_date": "2026-10-03",
+  "changes": "semantic compiler hardening: context feature routing, inspect lexical override, bare zoom default, explicit plane-name preservation, boolean parameter normalization, larger JSON budget"
 }
