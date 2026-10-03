@@ -1,0 +1,46 @@
+name: Onshape Fast Router V03 Hybrid Reflex
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - qualification/onshape-fast-router-groq-v03-reflex/control/*.request
+
+permissions:
+  contents: read
+
+concurrency:
+  group: onshape-fast-router-groq-v03-reflex
+  cancel-in-progress: true
+
+jobs:
+  qualify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Syntax gate
+        run: |
+          python -m py_compile qualification/onshape-fast-router-groq-v03-broad/benchmark.py
+          python -m py_compile qualification/onshape-fast-router-groq-v03-broad/corpus_v02.py
+          python -m py_compile qualification/onshape-fast-router-groq-v03-broad/hybrid_reflex.py
+
+      - name: Run reflex coverage
+        env:
+          OUT_DIR: artifacts/onshape-fast-router-groq-v03-reflex
+        run: python qualification/onshape-fast-router-groq-v03-broad/hybrid_reflex.py
+
+      - name: Upload evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: v03-hybrid-reflex-${{ github.run_id }}
+          path: artifacts/onshape-fast-router-groq-v03-reflex/
+          if-no-files-found: error
+          retention-days: 14
