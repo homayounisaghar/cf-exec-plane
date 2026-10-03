@@ -1,0 +1,4 @@
+request_id=pcg-web-r112-local-asr-pyav18
+candidate_commit=4c789b7386ad81b72e04eb6324ffef099efc28d7
+expected_sequence=112
+expected_release=pcg-web-stage6-local-asr-pyav18-r112
