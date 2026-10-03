@@ -29,7 +29,7 @@ def named_features(text):
     return out
 
 def phrase_after(text, markers):
-    raw=b.norm_text(text).strip()
+    raw=str(text).strip()
     low=raw.lower()
     best=None
     for marker in markers:
@@ -39,6 +39,22 @@ def phrase_after(text, markers):
             if val:
                 best=val
     return best
+
+def part_value(text, hints, ctx):
+    part=hints.get("part") or ctx.get("last_part")
+    if part:
+        return part
+    raw=b.norm_text(text)
+    # Human-readable named parts such as Cap in "رنگ Cap..." or "پارت Cap...".
+    patterns=[
+        r"(?:رنگ|color|description|پارت)\s+([A-Za-z][A-Za-z0-9_-]*)",
+        r"\b(?:hide|show)\s+([A-Za-z][A-Za-z0-9_-]*)\b",
+    ]
+    for pat in patterns:
+        m=re.search(pat,raw,re.I)
+        if m:
+            return m.group(1)
+    return None
 
 def count_value(t):
     m=re.search(r"\b(\d+)\s*(?:تایی|بار|copies?|x)\b",t,re.I)
@@ -71,6 +87,9 @@ def deterministic_ir(case):
     family=b.classify_family(text,ctx)
     cards=b.select_cards(text,ctx,family)
     hints=b.lexical_hints(text,ctx)
+
+    if b.has_any(t,["ایزومتریک","isometric","front view","right view","left view","bottom view"]):
+        return ask(), "unsupported-standard-view"
 
     if family=="design":
         return think(), "design-gate"
@@ -183,7 +202,7 @@ def deterministic_ir(case):
 
     if family=="part":
         intent=cards[0] if len(cards)==1 else None
-        part=hints.get("part") or ctx.get("last_part")
+        part=part_value(text,hints,ctx)
         if intent=="part_delete":
             return act("part_delete",{"part":part} if part else {}), "reflex"
         if intent=="part_visibility":
@@ -191,7 +210,7 @@ def deterministic_ir(case):
         if intent=="part_property" or intent is None:
             slots={}
             if part: slots["part"]=part
-            if b.has_any(t,["رنگ","color"]):
+            if b.has_any(t,["رنگ","color","قرمز","آبی","ابي","سبز","red","blue","green"]):
                 slots["property"]="color"
                 v=color_value(t)
                 if v: slots["value"]=v
