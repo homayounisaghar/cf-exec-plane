@@ -1,0 +1,5 @@
+request_id=v04-hybrid-r2-20261003
+candidate_commit=dba5c825414386fa74587101e3b80d0f3d465183
+model=openai/gpt-oss-20b
+broad_cases=120
+purpose=rerun-token-efficient-v04-hybrid-after-syntax-repair
