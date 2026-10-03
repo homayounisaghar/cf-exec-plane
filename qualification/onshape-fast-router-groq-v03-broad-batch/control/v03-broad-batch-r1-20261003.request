@@ -1,0 +1,7 @@
+request_id=v03-broad-batch-r1-20261003
+candidate_commit=e9ff4768b7366ae1b8464ac7877f8ffd1605fddf
+model=openai/gpt-oss-20b
+broad_cases=120
+batch_size=4
+shards=4
+purpose=quota-efficient-broad-rerun-hardened-intent-ir
