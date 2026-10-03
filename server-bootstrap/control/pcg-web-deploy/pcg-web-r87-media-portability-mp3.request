@@ -1,0 +1,4 @@
+request_id=pcg-web-r87-media-portability-mp3
+candidate_commit=b64551b1c4cf4c08a60854c9874ffd5216f46c78
+expected_sequence=87
+expected_release=pcg-web-stage6-media-portability-r87-mp3
