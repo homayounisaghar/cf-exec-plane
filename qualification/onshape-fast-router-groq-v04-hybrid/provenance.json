@@ -3,13 +3,14 @@
   "architecture": "deterministic high-confidence reflex -> compact batched GPT-OSS 20B fallback -> deterministic compiler/guards",
   "canonical_source_repository": "homayounisaghar/capability-fabric",
   "canonical_source_ref": "experiment/onshape-fast-router-groq-v04-hybrid",
-  "canonical_source_commit": "7d82906bf0d8044aadac3b17324fd95ba5224b1a",
+  "canonical_source_commit": "69af9e740b7253fec7cebd5d6f7d2d2a1e243b67",
   "benchmark_blob_sha": "ed11086b105071699ed787764b18045e13514281",
   "corpus_blob_sha": "f3c4eedbb848299ab6a80ca2f626a4ed2532f35d",
-  "hybrid_blob_sha": "a552624db1588967653214ec80c8941f312f06f7",
+  "hybrid_blob_sha": "247072ac745bfe558deb6391e193c732776bf53e",
   "model": "openai/gpt-oss-20b",
   "broad_cases": 120,
   "contains_secrets": false,
   "runtime_secret_name": "GROQ_API_KEY",
-  "public_snapshot_date": "2026-10-03"
+  "public_snapshot_date": "2026-10-03",
+  "changes": "syntax repair before first executable v04 run"
 }
