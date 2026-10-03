@@ -1,0 +1,4 @@
+request_id=pcg-web-r105-direct-big-upload
+candidate_commit=20366c15fdae56792439b1ebbe68487eeda2f6d0
+expected_sequence=105
+expected_release=pcg-web-stage6-direct-big-upload-r105
