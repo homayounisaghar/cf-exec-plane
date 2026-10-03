@@ -3,14 +3,14 @@
   "architecture": "deterministic high-confidence reflex -> compact batched GPT-OSS 20B fallback -> deterministic compiler/guards",
   "canonical_source_repository": "homayounisaghar/capability-fabric",
   "canonical_source_ref": "experiment/onshape-fast-router-groq-v04-hybrid",
-  "canonical_source_commit": "69af9e740b7253fec7cebd5d6f7d2d2a1e243b67",
-  "benchmark_blob_sha": "ed11086b105071699ed787764b18045e13514281",
+  "canonical_source_commit": "888054e66bc6005689eb9138141b856660390d23",
+  "benchmark_blob_sha": "4bb59bec987990139280c003f96fbdc3b4afee33",
   "corpus_blob_sha": "f3c4eedbb848299ab6a80ca2f626a4ed2532f35d",
-  "hybrid_blob_sha": "247072ac745bfe558deb6391e193c732776bf53e",
+  "hybrid_blob_sha": "e5e8e08ec11700893fb1113554239967fc1e7df3",
   "model": "openai/gpt-oss-20b",
   "broad_cases": 120,
   "contains_secrets": false,
   "runtime_secret_name": "GROQ_API_KEY",
   "public_snapshot_date": "2026-10-03",
-  "changes": "syntax repair before first executable v04 run"
+  "changes": "Persian spoken-decimal parser, generic parameter-name guard, normalized scorer, isometric hard gate, named-Fillet reflex, bare pan direction, explicit color reflex"
 }
