@@ -1729,7 +1729,14 @@ def put_chunk(upload_id, offset, chunk):
         resp = conn.getresponse()
         data = resp.read()
         if resp.status not in (200, 201):
-            raise RuntimeError(f"UPLOAD_HTTP_{resp.status}")
+            code = "UNKNOWN"
+            try:
+                parsed_error = json.loads(data.decode("utf-8"))
+                if isinstance(parsed_error, dict) and isinstance(parsed_error.get("error"), str):
+                    code = parsed_error["error"]
+            except Exception:
+                pass
+            raise RuntimeError(f"UPLOAD_HTTP_{resp.status}_{code}")
         value = json.loads(data.decode("utf-8"))
         if value.get("offset") != offset + len(chunk):
             raise RuntimeError("UPLOAD_OFFSET_RESPONSE_MISMATCH")
@@ -1830,7 +1837,12 @@ def run_case(size_mib):
                     print(f"PCG_LARGE_{size_mib}MIB_STAGING_CLEANUP=failed")
 
 for mib in (128, 256):
-    run_case(mib)
+    try:
+        run_case(mib)
+    except Exception as exc:
+        code = str(exc).replace(" ", "_").replace("=", "_")[:100]
+        print(f"PCG_LARGE_{mib}MIB_ERROR={code}")
+        raise
 
 print("PCG_LARGE_FILE_INGRESS_CANARY=pass")
 PY
