@@ -1,0 +1,4 @@
+request_id=v03-hybrid-r2-20261003
+candidate_commit=d48c7a2313d53b8616d51a9a8e64c042f5b288cb
+base_cases=120
+purpose=verify-closed-hybrid-reflex-broad-misses
