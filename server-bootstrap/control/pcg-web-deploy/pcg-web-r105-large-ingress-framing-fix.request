@@ -1,0 +1,4 @@
+request_id=pcg-web-r105-large-ingress-framing-fix
+candidate_commit=c1a879eae93524d2295c79a92fd5449e39013da9
+expected_sequence=105
+expected_release=pcg-web-stage6-large-material-ingress-r105-framing-fix
