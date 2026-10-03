@@ -1,0 +1,8 @@
+request_id=pcg-asr-small-fw120-1735de-pull2
+phase=pcg-asr-image
+source_commit=1735de7e5b582ba653e68e620d12c805762ef673
+faster_whisper_version=1.2.0
+model_repo=Systran/faster-whisper-small
+model_label=small
+runtime_sha256=8c083b48745518601014288506f113b65032b7adc149c4d4157d9a92f366f633
+dockerfile_sha256=94c460b804796f4b4a302303c56eb787a18d816e29a9c295ce4d224c84f2e7c2
