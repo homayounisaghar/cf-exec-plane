@@ -1,0 +1,14 @@
+{
+  "purpose": "Expanded Persian/mixed Onshape fast intent-router benchmark, 20B only",
+  "canonical_source_repository": "homayounisaghar/capability-fabric",
+  "canonical_source_ref": "experiment/onshape-fast-router-groq-v02",
+  "canonical_source_commit": "c8126b1a53f76660bc7afdb75fb3cf5bc83bb86f",
+  "source_path": "experiments/onshape_fast_router_groq_v02/benchmark.py",
+  "source_blob_sha": "0c4829a2fc001d0ea4881e99b4d2cb1c68faa6a4",
+  "public_snapshot_date": "2026-10-03",
+  "model": "openai/gpt-oss-20b",
+  "unique_cases": 120,
+  "stability_repeats": 12,
+  "contains_secrets": false,
+  "runtime_secret_name": "GROQ_API_KEY"
+}
