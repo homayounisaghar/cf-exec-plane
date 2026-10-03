@@ -1,0 +1,6 @@
+request_id=v02-r1-20261003-20b-expanded
+candidate_commit=eec232b86a79e25bbff6a04cf103b8380900e1af
+model=openai/gpt-oss-20b
+unique_cases=120
+stability_repeats=12
+purpose=expanded-simplified-persian-onshape-fast-router-benchmark
