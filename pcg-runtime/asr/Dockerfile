@@ -13,7 +13,7 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --no-cache-dir "faster-whisper==$FASTER_WHISPER_VERSION"
+RUN pip install --no-cache-dir "faster-whisper==$FASTER_WHISPER_VERSION" "requests==2.32.3"
 
 WORKDIR /opt/pcg
 COPY pcg_asr_runtime.py /opt/pcg/pcg_asr_runtime.py
