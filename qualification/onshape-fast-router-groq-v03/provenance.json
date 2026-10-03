@@ -2,15 +2,15 @@
   "purpose": "Constrained human-semantic intent IR + deterministic compiler/guard benchmark",
   "canonical_source_repository": "homayounisaghar/capability-fabric",
   "canonical_source_ref": "experiment/onshape-fast-router-groq-v03",
-  "canonical_source_commit": "7392451efcb6fe180fc4c25b5fcc754225852c93",
-  "benchmark_blob_sha": "a7be440f1fa667ee25a0fc06077ded52c43d8712",
+  "canonical_source_commit": "43ab1ac4336bdb2f8408f4783e85fb06e452caf7",
+  "benchmark_blob_sha": "7711458e0dffd36d4f774f6b1260ad583cc26f76",
   "corpus_blob_sha": "f3c4eedbb848299ab6a80ca2f626a4ed2532f35d",
   "model": "openai/gpt-oss-20b",
   "base_cases": 120,
-  "red_team_cases": 32,
-  "stability_repeats": 12,
+  "red_team_cases": 40,
+  "stability_repeats": 16,
   "contains_secrets": false,
   "runtime_secret_name": "GROQ_API_KEY",
   "public_snapshot_date": "2026-10-03",
-  "changes": "classifier precedence fixes, relative-radius normalization, summary bug fix, raw rows persisted before summarization, API error surfaced"
+  "changes": "high-confidence per-command card narrowing; classifier precedence fixes; relative-radius normalization; retry wait capped; incremental row checkpoints; summary bug fix; API errors surfaced"
 }
