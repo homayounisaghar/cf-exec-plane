@@ -85,20 +85,31 @@ def classify_family(text, ctx):
         return "design"
     if has_any(t, ["public","شرکت onshape","company","share","pdf","export","mate"]):
         return "unsupported"
+
+    # Route by the strongest semantic cue first. Entity names such as "Fillet 1"
+    # and "Part 1" must not steal reorder/pattern/document commands.
+    if has_any(t, ["rollback","قبل از","بعد از","part studio","داکیومنت","document","rename document"]):
+        return "order_doc"
     if has_any(t, ["زوم","zoom","بچرخ","rotate","ساعتگرد","پادساعتگرد","pan","پن ","نما رو","صفحه رو","فیت","fit","top view","از بالا"]) or ctx.get("interaction_mode") == "camera":
         return "camera"
-    if has_any(t, ["انتخاب","selection","ویور","viewer","سشن","session","فالو","follow","نفر دوم","چی انتخاب"]):
-        return "inspect"
-    if has_any(t, ["پخ","چمفر","chamfer","فیلت","fillet","شعاع"]):
-        return "edge"
-    if has_any(t, ["extrude","draft","فیچر","feature","خاموش","روشنش","روشن کن","suppres","اولین فیچر","آخرین فیچر"]):
+
+    named_feature = bool(re.search(r"\b(fillet|extrude|draft|sketch)\s*\d+\b", t, re.I) or re.search(r"(فیلت|اکسترود)\s*\d+", t))
+    if named_feature or has_any(t, ["شعاع","فیچر","feature","خاموش","روشنش","روشن کن","suppres","اولین فیچر","آخرین فیچر"]):
         return "feature_edit"
+
+    explicit_new_edge = has_any(t, ["جدید","خالی","new","empty","بساز"]) and has_any(t, ["پخ","چمفر","chamfer","فیلت","fillet"])
+    if explicit_new_edge or has_any(t, ["pattern","الگو","plane","صفحه مرجع","mirror","سوراخ","hole"]):
+        return "feature_add"
+
+    if has_any(t, ["پخ","چمفر","chamfer","فیلت","fillet","فیلِت"]):
+        return "edge"
+
+    if has_any(t, ["فالو","follow","ویور","viewer","سشن","session","نفر دوم","چی انتخاب","چی انتخابه","انتخاب رو پاک","انتخاب را پاک","selection رو","selection را"]):
+        return "inspect"
+
     if has_any(t, ["part ","پارت","cap","bracket","متریال","material","رنگ","color","description","مخفی","قایم","نشونش","نشانش"]):
         return "part"
-    if has_any(t, ["pattern","الگو","plane","صفحه مرجع","mirror","extrude","سوراخ","hole"]):
-        return "feature_add"
-    if has_any(t, ["rollback","قبل از","بعد از","part studio","داکیومنت","document","اسم document","rename document"]):
-        return "order_doc"
+
     # Short context follow-ups get the family of their grounded context.
     if ctx.get("last_move"):
         return "camera"
@@ -438,12 +449,21 @@ def compile_ir(case, raw):
         feature=hints.get("feature") or get_slot(slots,"feature") or ctx.get("last_feature")
         parameter=get_slot(slots,"parameter")
         value=hints.get("quantity") or get_slot(slots,"value","amount")
+
+        # Named/context fillet + an engineering quantity is a radius edit.
+        if feature and str(feature).lower().startswith("fillet") and not parameter:
+            parameter="radius"
+
+        # Deterministically resolve simple relative radius language from grounded context.
+        if feature and parameter=="radius" and ("بیشتر" in t or "کمتر" in t):
+            current=(ctx.get("feature_parameters") or {}).get("radius")
+            delta=hints.get("quantity") or value
+            cm=parse_mm(current); dm=parse_mm(delta)
+            if cm is not None and dm is not None:
+                value=f"{cm + (dm if 'بیشتر' in t else -dm):g} mm"
+
         if not feature or not parameter or value is None:
-            # High-confidence shorthand: named/context Fillet with explicit quantity means radius.
-            if feature and (hints.get("edge_kind")=="fillet" or str(feature).lower().startswith("fillet")) and (hints.get("quantity") or value):
-                parameter="radius"; value=hints.get("quantity") or value
-            else:
-                return reject("feature-parameter-missing",ir)
+            return reject("feature-parameter-missing",ir)
         args={"feature_name":feature,"parameter":str(parameter)}
         q=normalize_quantity(value)
         if isinstance(q,str) and (q.endswith(" mm") or q.endswith(" deg")):
@@ -591,6 +611,14 @@ def normalize_quantity(v):
     if m: return m.group(1).replace(",",".")+" deg"
     return str(v).strip()
 
+def parse_mm(v):
+    q=normalize_quantity(v)
+    if isinstance(q,str):
+        m=re.fullmatch(r"([+-]?\d+(?:\.\d+)?) mm",q)
+        if m:
+            return float(m.group(1))
+    return None
+
 def norm_scalar(v):
     if isinstance(v,str):
         return normalize_quantity(v).lower() if isinstance(normalize_quantity(v),str) else normalize_quantity(v)
@@ -704,8 +732,8 @@ def pct(values,p):
 def summarize(rows,stability):
     good=[r for r in rows if r.get("ok")]
     lats=[r["latency_ms"] for r in good]
-    base=[r for r in rows if r["category"]!="red_team"]
-    redrows=[r for r in rows if r["category"]=="red_team"]
+    base=[r for r in rows if r["case"]["category"]!="red_team"]
+    redrows=[r for r in rows if r["case"]["category"]=="red_team"]
     expected_do=[r for r in rows if "do" in expected_route(r["case"])]
     accepted_do=[r for r in expected_do if r["post"]["accepted"]]
     correct_do=[r for r in expected_do if r["outcome"]=="correct"]
@@ -780,9 +808,15 @@ def main():
             "i":i,"n":len(ALL_CASES),"id":case["id"],"family":row.get("family"),
             "outcome":row["outcome"],"latency_ms":round(row.get("latency_ms",0),1),
             "reason":row["post"].get("reason"),
+            "error":row.get("error"),
         },ensure_ascii=False))
         if i != len(ALL_CASES):
             time.sleep(CASE_DELAY)
+
+    # Persist the expensive model-call evidence before post-processing so a
+    # scoring bug can never discard the raw run again.
+    with open(os.path.join(outdir,"rows.json"),"w",encoding="utf-8") as f:
+        json.dump(rows,f,ensure_ascii=False,indent=2)
 
     stability=[]
     for sid in STABILITY_IDS:
