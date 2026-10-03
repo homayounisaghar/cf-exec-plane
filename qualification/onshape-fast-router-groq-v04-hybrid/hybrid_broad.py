@@ -375,7 +375,7 @@ def call_batch(key,cases):
     system=(
         'Interpret each independent Persian/mixed Onshape command. '
         'For each item choose d="a" act, "q" ask, or "t" think. '
-        'If d="a", i MUST be one of that item\\'s allowed codes in a, and s contains only needed slots. '
+        "If d=\"a\", i MUST be one of that item's allowed codes in a, and s contains only needed slots. "
         'h is authoritative. Missing target/value => q. Open-ended design => t. '
         'Never invent geometry. Return JSON only: {"r":[{"id":"...","d":"a|q|t","i":"code-or-null","s":{}}]}. '
         'Meanings: '+json.dumps(meanings,ensure_ascii=False,separators=(",",":"))
