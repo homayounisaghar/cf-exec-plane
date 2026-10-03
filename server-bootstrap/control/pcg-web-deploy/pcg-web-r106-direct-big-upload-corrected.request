@@ -1,0 +1,4 @@
+request_id=pcg-web-r106-direct-big-upload-corrected
+candidate_commit=e3aec2c5f216e2761ac062cb8038e3b0a7d4ec60
+expected_sequence=106
+expected_release=pcg-web-stage6-direct-big-upload-r106
