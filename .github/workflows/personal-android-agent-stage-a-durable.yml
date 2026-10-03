@@ -1,0 +1,202 @@
+name: Personal Android Agent Durable Stage A
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'android-agent/control/stage-a-durable/*.request'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: personal-android-agent-stage-a-durable
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CF_REPO_READ_TOKEN: ${{ secrets.CF_REPO_READ_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: true
+
+      - id: req
+        name: Validate immutable request
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || exit 10
+          IFS=$'\t' read -r status path <<<"${changes[0]}"
+          [[ "$status" == A ]] || exit 11
+          [[ "$path" == android-agent/control/stage-a-durable/*.request ]] || exit 12
+          request_id="$(awk -F= '$1=="request_id"{print $2}' "$path" | tail -n1 | tr -d '[:space:]')"
+          candidate_commit="$(awk -F= '$1=="candidate_commit"{print $2}' "$path" | tail -n1 | tr -d '[:space:]')"
+          [[ "$request_id" == "$(basename "$path" .request)" ]] || exit 13
+          [[ "$candidate_commit" =~ ^[0-9a-f]{40}$ ]] || exit 14
+          echo "request_id=$request_id" >> "$GITHUB_OUTPUT"
+          echo "candidate_commit=$candidate_commit" >> "$GITHUB_OUTPUT"
+
+      - name: Fetch exact private candidate
+        env:
+          CANDIDATE_COMMIT: ${{ steps.req.outputs.candidate_commit }}
+        run: |
+          set -euo pipefail
+          : "${CF_REPO_READ_TOKEN:?missing private repository read token}"
+          work="$RUNNER_TEMP/paa-private"
+          rm -rf "$work"; mkdir -m 700 "$work"; git init "$work" >/dev/null
+          askpass="$RUNNER_TEMP/paa-askpass"
+          cat > "$askpass" <<'ASKPASS'
+          #!/usr/bin/env bash
+          case "${1:-}" in
+            *Username*) printf '%s\n' 'x-access-token' ;;
+            *Password*) printf '%s\n' "$CF_REPO_READ_TOKEN" ;;
+            *) exit 1 ;;
+          esac
+          ASKPASS
+          chmod 700 "$askpass"
+          GIT_ASKPASS="$askpass" GIT_TERMINAL_PROMPT=0 git -C "$work" fetch --quiet --depth=1 \
+            https://github.com/homayounisaghar/capability-fabric.git "$CANDIDATE_COMMIT"
+          [[ "$(git -C "$work" rev-parse FETCH_HEAD)" == "$CANDIDATE_COMMIT" ]]
+          git -C "$work" checkout --quiet --detach FETCH_HEAD
+          rm -f "$askpass"; unset CF_REPO_READ_TOKEN
+          echo "PRIVATE_WORKTREE=$work" >> "$GITHUB_ENV"
+
+      - id: contract
+        name: Read portable contract
+        run: |
+          set -euo pipefail
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json,re,os
+          from pathlib import Path
+          p=Path(os.environ["PRIVATE_WORKTREE"])/"android/standard-apps/personal-android-agent/ci/portable-ci-contract.json"
+          c=json.loads(p.read_text())
+          a=c["application"]; s=c["expectedSigner"]
+          assert a["packageId"]=="com.homayounisaghar.androidagent"
+          assert isinstance(a["versionCode"],int) and a["versionCode"]>=25
+          assert re.fullmatch(r"0\.1\.0-alpha[0-9]+",a["versionName"])
+          assert s["alias"]=="personal_android_agent_line3"
+          assert re.fullmatch(r"[0-9a-f]{64}",s["certificateSha256"])
+          print("package_id="+a["packageId"])
+          print("version_code="+str(a["versionCode"]))
+          print("version_name="+a["versionName"])
+          print("signer_alias="+s["alias"])
+          print("signer_sha256="+s["certificateSha256"])
+          PY
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+
+      - name: Install fixed Android SDK packages
+        run: |
+          set -euo pipefail
+          : "${ANDROID_HOME:?}"
+          sdkmanager="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          set +o pipefail; yes | "$sdkmanager" --licenses >/dev/null 2>&1 || true; set -o pipefail
+          "$sdkmanager" "platforms;android-35" "build-tools;35.0.0" "platform-tools"
+
+      - id: build
+        name: Unit test and assemble unsigned release
+        continue-on-error: true
+        run: |
+          set +e
+          project="$PRIVATE_WORKTREE/android/standard-apps/personal-android-agent"
+          cd "$project"
+          printf 'sdk.dir=%s\n' "$ANDROID_HOME" > local.properties
+          gradle --no-daemon :app:testReleaseUnitTest :app:assembleRelease --stacktrace >"$RUNNER_TEMP/build.log" 2>&1
+          rc=$?
+          echo "rc=$rc" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Publish durable build receipt
+        env:
+          REQUEST_ID: ${{ steps.req.outputs.request_id }}
+          CANDIDATE_COMMIT: ${{ steps.req.outputs.candidate_commit }}
+          PACKAGE_ID: ${{ steps.contract.outputs.package_id }}
+          VERSION_CODE: ${{ steps.contract.outputs.version_code }}
+          VERSION_NAME: ${{ steps.contract.outputs.version_name }}
+          SIGNER_ALIAS: ${{ steps.contract.outputs.signer_alias }}
+          SIGNER_SHA: ${{ steps.contract.outputs.signer_sha256 }}
+          BUILD_RC: ${{ steps.build.outputs.rc }}
+        run: |
+          set -euo pipefail
+          out="$RUNNER_TEMP/durable-output"
+          rm -rf "$out"; mkdir -p "$out"
+          project="$PRIVATE_WORKTREE/android/standard-apps/personal-android-agent"
+          apk="$project/app/build/outputs/apk/release/app-release-unsigned.apk"
+          status=FAILED
+          unsigned_sha=''
+          if [[ "$BUILD_RC" == 0 && -s "$apk" ]]; then
+            status=SUCCESS
+            cp "$apk" "$out/personal-android-agent-release-unsigned.apk"
+            unsigned_sha="$(sha256sum "$apk" | awk '{print $1}')"
+            "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$apk" | head -n1 > "$out/badging.txt"
+            grep -q "package: name='$PACKAGE_ID'" "$out/badging.txt"
+            grep -q "versionCode='$VERSION_CODE'" "$out/badging.txt"
+            grep -q "versionName='$VERSION_NAME'" "$out/badging.txt"
+            if "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify "$apk" >/dev/null 2>&1; then
+              echo "unsigned APK unexpectedly verifies as signed" >&2; exit 30
+            fi
+          fi
+          tail -c 60000 "$RUNNER_TEMP/build.log" > "$out/build-tail.log" || true
+          python3 - <<'PY'
+          import json,os
+          from pathlib import Path
+          out=Path(os.environ["RUNNER_TEMP"])/"durable-output"
+          manifest={
+            "schema":"capability-fabric.android-standard-app-output.v1",
+            "requestId":os.environ["REQUEST_ID"],
+            "projectId":"personal-android-agent",
+            "checkoutRef":os.environ["CANDIDATE_COMMIT"],
+            "application":{"packageId":os.environ["PACKAGE_ID"],"versionName":os.environ["VERSION_NAME"],"versionCode":int(os.environ["VERSION_CODE"])},
+            "expectedSigner":{"alias":os.environ["SIGNER_ALIAS"],"certificateSha256":os.environ["SIGNER_SHA"]},
+            "result":"SUCCESS" if os.environ["BUILD_RC"]=="0" else "FAILED",
+            "artifact":{"file":"personal-android-agent-release-unsigned.apk","sha256":os.environ.get("unsigned_sha",""),"installable":False}
+          }
+          # sha is filled by shell-owned sidecar file below to avoid env quoting.
+          sha_file=out/"unsigned.sha"
+          if sha_file.exists(): manifest["artifact"]["sha256"]=sha_file.read_text().strip()
+          (out/"BUILD_MANIFEST.json").write_text(json.dumps(manifest,indent=2)+"\n")
+          PY
+          if [[ -n "$unsigned_sha" ]]; then
+            printf '%s\n' "$unsigned_sha" > "$out/unsigned.sha"
+            python3 - "$out/BUILD_MANIFEST.json" "$unsigned_sha" <<'PY'
+          import json,sys
+          p=sys.argv[1]; o=json.load(open(p)); o["artifact"]["sha256"]=sys.argv[2]
+          open(p,"w").write(json.dumps(o,indent=2)+"\n")
+          PY
+          fi
+          python3 - "$out/EXECUTION_RECEIPT.json" <<'PY'
+          import json,os,sys
+          o={"schema":"capability-fabric.android-standard-app-receipt.v1",
+             "requestId":os.environ["REQUEST_ID"],"projectId":"personal-android-agent",
+             "checkoutRef":os.environ["CANDIDATE_COMMIT"],
+             "operation":"unit-test-and-build-signing-kit",
+             "result":"SUCCESS" if os.environ["BUILD_RC"]=="0" else "FAILED"}
+          open(sys.argv[1],"w").write(json.dumps(o,indent=2)+"\n")
+          PY
+
+          dest="android-agent/builds/$REQUEST_ID"
+          git fetch origin main
+          git reset --hard origin/main
+          rm -rf "$dest"; mkdir -p "$dest"; cp -a "$out"/. "$dest"/
+          git config user.name github-actions
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add "$dest"
+          git commit -m "Publish durable PAA Stage A receipt $REQUEST_ID"
+          git push origin HEAD:main
+          [[ "$status" == SUCCESS ]]
