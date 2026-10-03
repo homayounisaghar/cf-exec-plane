@@ -1,0 +1,9 @@
+request_id=v03-r4-20261003-intent-ir-full-window
+candidate_commit=e2479e3efd63e10572a0ca0f8084e79f1c9e20b4
+model=openai/gpt-oss-20b
+base_cases=120
+red_team_cases=32
+stability_repeats=12
+case_delay_seconds=8.2
+timeout_minutes=60
+purpose=complete-hardened-intent-ir-benchmark-with-rate-limit-safe-window
