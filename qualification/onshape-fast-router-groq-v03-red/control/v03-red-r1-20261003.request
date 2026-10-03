@@ -1,0 +1,5 @@
+request_id=v03-red-r1-20261003
+candidate_commit=56d5ada947d9bdfcc571d42512cd74c0b5f1e617
+model=openai/gpt-oss-20b
+red_team_cases=40
+purpose=focused-safety-red-team-constrained-intent-ir
