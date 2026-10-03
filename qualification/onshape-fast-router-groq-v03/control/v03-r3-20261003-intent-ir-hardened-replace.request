@@ -1,0 +1,7 @@
+request_id=v03-r3-20261003-intent-ir-hardened-replace
+candidate_commit=6efe69c5cca48c1bed86ad505a7b312462af5585
+model=openai/gpt-oss-20b
+base_cases=120
+red_team_cases=32
+stability_repeats=12
+purpose=replace-stale-runs-and-run-hardened-intent-ir-benchmark
