@@ -1,0 +1,4 @@
+request_id=pcg-web-r113-local-asr-pyav18-digest
+candidate_commit=6bd338c5f8aa694ee3d76ab12cd6c07e87fab619
+expected_sequence=113
+expected_release=pcg-web-stage6-local-asr-pyav18-digest-r113
