@@ -1,0 +1,4 @@
+request_id=v03-reflex-r1-20261003
+candidate_commit=d03a4bf2c9611f3ec9dd455cf2e2204593e7c4b5
+broad_cases=120
+purpose=measure-deterministic-reflex-coverage-before-minimal-20b-fallback
