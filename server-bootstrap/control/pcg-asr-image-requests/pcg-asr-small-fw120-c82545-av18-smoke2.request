@@ -1,0 +1,8 @@
+request_id=pcg-asr-small-fw120-c82545-av18-smoke2
+phase=pcg-asr-image
+source_commit=c825451f72d03df790535bbeca42eb22c7e69838
+faster_whisper_version=1.2.0
+model_repo=Systran/faster-whisper-small
+model_label=small
+runtime_sha256=c77f0e11a17324c551d5a2d3502c460755b237546d7e2fc24c7cadec76163040
+dockerfile_sha256=32a8b1b0e59b91c45fa91e0664d39bb6d699c354ed43da4af8f7fe16780b84eb
