@@ -73,9 +73,11 @@ jobs:
             echo 'INTERNET permission must not be present' >&2
             exit 1
           fi
-          grep -q 'setComposingText' app/src/main/java/com/najme/shenavatest/ShenavaImeService.java
-          grep -q 'setNeMoCtc' app/src/main/java/com/najme/shenavatest/ShenavaImeService.java
-          grep -q 'setEnableEndpoint(false)' app/src/main/java/com/najme/shenavatest/ShenavaImeService.java
+          SOURCE='app/src/main/java/com/najme/shenavatest/ShenavaImeService.kt'
+          grep -q 'setComposingText' "$SOURCE"
+          grep -q 'neMoCtc = OnlineNeMoCtcModelConfig' "$SOURCE"
+          grep -q 'enableEndpoint = false' "$SOURCE"
+          grep -q 'OnlineRecognizer(assetManager = assets' "$SOURCE"
 
       - name: Install Gradle 8.9
         run: |
