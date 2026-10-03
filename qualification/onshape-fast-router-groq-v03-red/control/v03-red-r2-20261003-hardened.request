@@ -1,0 +1,5 @@
+request_id=v03-red-r2-20261003-hardened
+candidate_commit=3383566db0ede6e70e82777a07ccca946282cbad
+model=openai/gpt-oss-20b
+red_team_cases=40
+purpose=verify-hardened-semantic-compiler-on-dangerous-misses
