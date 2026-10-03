@@ -12,7 +12,7 @@ import benchmark as b
 
 ENDPOINT=b.ENDPOINT
 MODEL=b.MODEL
-BATCH_SIZE=int(os.environ.get("BATCH_SIZE","12"))
+BATCH_SIZE=int(os.environ.get("BATCH_SIZE","30"))
 OUT_DIR=os.environ.get("OUT_DIR","artifacts/onshape-fast-router-groq-v03-batched")
 MAX_ATTEMPTS=int(os.environ.get("MAX_ATTEMPTS","8"))
 
@@ -54,7 +54,7 @@ def call_batch(key,cases):
         ],
         "reasoning_effort":"low",
         "temperature":0,
-        "max_completion_tokens":1600,
+        "max_completion_tokens":1000,
         "response_format":{"type":"json_object"},
     }
     payload=json.dumps(body,ensure_ascii=False).encode("utf-8")
