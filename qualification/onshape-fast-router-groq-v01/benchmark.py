@@ -193,7 +193,7 @@ def call_groq(key, model, case):
     req = urllib.request.Request(
         ENDPOINT,
         data=json.dumps(body,ensure_ascii=False).encode("utf-8"),
-        headers={"Authorization":"Bearer "+key,"Content-Type":"application/json"},
+        headers={"Authorization":"Bearer "+key,"Content-Type":"application/json","User-Agent":"cf-exec-plane-onshape-router-benchmark/1.0"},
         method="POST",
     )
     t0=time.perf_counter()
