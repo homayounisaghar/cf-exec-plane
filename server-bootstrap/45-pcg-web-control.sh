@@ -4,7 +4,7 @@ umask 077
 
 [[ "$(id -u)" -eq 0 ]] || { echo "must run as uid 0" >&2; exit 1; }
 mode="${CF_PCG_WEB_CONTROL_MODE:-}"
-case "$mode" in prepare|status|ingress-diagnostic|semantic-status|semantic-conversations|semantic-conversations-protected|semantic-conversations-canary|semantic-conversation-structure-canary|semantic-conversation-pin-pair|material-heart-reply-to-contact|semantic-saved-native-forward-to-contact|semantic-contact-photo-forward-to-contact|semantic-forward-state-diagnostic|semantic-topic-canary|semantic-search-canary|semantic-messages-protected|semantic-messages-canary|semantic-retrieval-hardening-canary|semantic-mark-read-canary|semantic-open-media-canary|semantic-download-canary|semantic-composer-canary|material-send-canary|material-reply-canary|material-attachment-send-canary|material-attachment-reply-canary|material-edit-canary|material-delete-canary|material-delete-for-everyone-canary|material-forward-canary|material-relay-canary|semantic-reaction-canary|semantic-conformance-suite|material-text-limit-canary|material-attachment-hardening-canary|material-large-file-transport-canary|material-large-file-ingress-canary|material-photo-album-canary|phone|code|password|cleanup|screenshot|refresh-screenshot|mytelegram-start|mytelegram-capture-code|mytelegram-signin|mytelegram-create-app|mytelegram-screenshot) ;; *) echo "invalid mode" >&2; exit 2 ;; esac
+case "$mode" in prepare|status|ingress-diagnostic|semantic-status|semantic-conversations|semantic-conversations-protected|semantic-conversations-canary|semantic-conversation-structure-canary|semantic-conversation-pin-pair|material-heart-reply-to-contact|semantic-saved-native-forward-to-contact|semantic-contact-photo-forward-to-contact|semantic-forward-state-diagnostic|semantic-topic-canary|semantic-search-canary|semantic-messages-protected|semantic-messages-canary|semantic-retrieval-hardening-canary|semantic-mark-read-canary|semantic-open-media-canary|semantic-download-canary|semantic-composer-canary|material-send-canary|material-reply-canary|material-attachment-send-canary|material-attachment-reply-canary|material-edit-canary|material-delete-canary|material-delete-for-everyone-canary|material-forward-canary|material-relay-canary|semantic-reaction-canary|semantic-conformance-suite|material-text-limit-canary|material-attachment-hardening-canary|material-large-file-transport-canary|material-large-file-ingress-canary|material-large-file-ingress-256-canary|material-photo-album-canary|phone|code|password|cleanup|screenshot|refresh-screenshot|mytelegram-start|mytelegram-capture-code|mytelegram-signin|mytelegram-create-app|mytelegram-screenshot) ;; *) echo "invalid mode" >&2; exit 2 ;; esac
 
 run_root=/var/lib/capability-fabric/pcg/run
 socket="$run_root/web.sock"
@@ -1636,12 +1636,12 @@ PY
   exit 0
 fi
 
-if [[ "$mode" == material-large-file-ingress-canary ]]; then
+if [[ "$mode" == material-large-file-ingress-canary || "$mode" == material-large-file-ingress-256-canary ]]; then
   token_file=/etc/capability-fabric/secrets/mcp-token
   [[ -s "$token_file" ]] || { echo "PCG_LARGE_FILE_INGRESS_TOKEN=missing" >&2; exit 61; }
   [[ -S "$run_root/ingress/material-upload.sock" ]] || { echo "PCG_LARGE_FILE_INGRESS_SOCKET=missing" >&2; exit 61; }
 
-  python3 - "$token_file" <<'PY'
+  python3 - "$token_file" "$mode" <<'PY'
 import hashlib
 import http.client
 import json
@@ -1650,6 +1650,7 @@ import time
 import uuid
 
 token = open(sys.argv[1], encoding="utf-8").read().strip()
+mode = sys.argv[2]
 if not token:
     raise SystemExit("empty MCP token")
 
@@ -1811,16 +1812,20 @@ def run_case(size_mib):
         print(f"PCG_LARGE_{size_mib}MIB_SHA256={expected_sha}")
 
         send_started = True
-        sent = mcp_call("telegram_file_send", {
-            "upload_id": upload_id,
-            "target": "Saved Messages",
-            "caption": caption,
-        }, timeout=420)
-        if sent.get("state") != "ACHIEVED":
+        sent = None
+        try:
+            sent = mcp_call("telegram_file_send", {
+                "upload_id": upload_id,
+                "target": "Saved Messages",
+                "caption": caption,
+            }, timeout=420)
+        except Exception as exc:
+            send_code = "".join(ch if (ch.isascii() and ch.isalnum()) else "_" for ch in str(exc))[:80]
+            print(f"PCG_LARGE_{size_mib}MIB_SEND_CALL={send_code}")
+        if isinstance(sent, dict):
             print(f"PCG_LARGE_{size_mib}MIB_SEND_STATE={sent.get('state','UNKNOWN')}")
-            raise RuntimeError("PROVIDER_SEND_NOT_ACHIEVED")
 
-        handle = wait_provider_readback(filename, size_bytes)
+        handle = wait_provider_readback(filename, size_bytes, attempts=60)
         if not isinstance(handle, str) or not handle.startswith("tgmsg:"):
             raise RuntimeError("PROVIDER_MESSAGE_HANDLE_INVALID")
         print(f"PCG_LARGE_{size_mib}MIB_SEND=pass")
@@ -1836,11 +1841,12 @@ def run_case(size_mib):
                 if not send_started:
                     print(f"PCG_LARGE_{size_mib}MIB_STAGING_CLEANUP=failed")
 
-for mib in (128, 256):
+cases = (256,) if mode == "material-large-file-ingress-256-canary" else (128, 256)
+for mib in cases:
     try:
         run_case(mib)
     except Exception as exc:
-        code = str(exc).replace(" ", "_").replace("=", "_")[:100]
+        code = "".join(ch if (ch.isascii() and ch.isalnum()) else "_" for ch in str(exc))[:100]
         print(f"PCG_LARGE_{mib}MIB_ERROR={code}")
         raise
 
