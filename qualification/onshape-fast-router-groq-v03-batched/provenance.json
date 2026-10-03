@@ -1,0 +1,15 @@
+{
+  "purpose": "Token-efficient family-batched broad v03 benchmark",
+  "canonical_source_repository": "homayounisaghar/capability-fabric",
+  "canonical_source_ref": "experiment/onshape-fast-router-groq-v03",
+  "canonical_source_commit": "c08ad6043c3f87b526f80bf54b98c4a3a2caa4bf",
+  "benchmark_blob_sha": "ed11086b105071699ed787764b18045e13514281",
+  "corpus_blob_sha": "f3c4eedbb848299ab6a80ca2f626a4ed2532f35d",
+  "batched_runner_blob_sha": "a070d989c28fb52e26d06556a0fe8c1900e9c81c",
+  "model": "openai/gpt-oss-20b",
+  "cases": 120,
+  "batch_size": 12,
+  "contains_secrets": false,
+  "runtime_secret_name": "GROQ_API_KEY",
+  "public_snapshot_date": "2026-10-03"
+}

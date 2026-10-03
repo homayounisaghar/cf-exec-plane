@@ -1,0 +1,55 @@
+name: Onshape Fast Router Groq V03 Broad Batched
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - qualification/onshape-fast-router-groq-v03-batched/control/*.request
+
+permissions:
+  contents: read
+
+concurrency:
+  group: onshape-fast-router-groq-v03-batched
+  cancel-in-progress: true
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Syntax gate
+        run: |
+          python -m py_compile qualification/onshape-fast-router-groq-v03-batched/benchmark.py
+          python -m py_compile qualification/onshape-fast-router-groq-v03-batched/corpus_v02.py
+          python -m py_compile qualification/onshape-fast-router-groq-v03-batched/batched_broad.py
+
+      - name: Require Groq credential
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: test -n "$GROQ_API_KEY"
+
+      - name: Run batched broad benchmark
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          BATCH_SIZE: '12'
+          MAX_ATTEMPTS: '8'
+          OUT_DIR: artifacts/onshape-fast-router-groq-v03-batched
+        run: python qualification/onshape-fast-router-groq-v03-batched/batched_broad.py
+
+      - name: Upload benchmark evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v03-batched-broad-${{ github.run_id }}
+          path: artifacts/onshape-fast-router-groq-v03-batched/
+          if-no-files-found: warn
+          retention-days: 14
