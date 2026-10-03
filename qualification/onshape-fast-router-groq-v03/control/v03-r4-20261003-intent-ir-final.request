@@ -1,0 +1,8 @@
+request_id=v03-r4-20261003-intent-ir-final
+candidate_commit=c61ced5478f43f48e0139f54a225da6c11573a6d
+model=openai/gpt-oss-20b
+base_cases=120
+red_team_cases=40
+stability_repeats=16
+case_delay_seconds=8.2
+purpose=final-hardened-constrained-intent-ir-architecture-benchmark
