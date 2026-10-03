@@ -34,7 +34,13 @@ def main():
         by_id[row["case"]["id"]] = row
     rows = [by_id[c["id"]] for c in b.BASE_CASES if c["id"] in by_id]
 
-    lats = [r["latency_ms"] for r in rows if r.get("ok")]
+    single_lats = [r["latency_ms"] for r in rows if r.get("ok") and "latency_ms" in r]
+    batch_files = sorted(glob.glob(os.path.join(ROOT, "**", "shard-*-batches.json"), recursive=True))
+    batch_stats = []
+    for path in batch_files:
+        with open(path, encoding="utf-8") as f:
+            batch_stats.extend(json.load(f))
+    batch_lats = [x["batch_latency_ms"] for x in batch_stats if x.get("ok") and x.get("batch_latency_ms") is not None]
     expected_do = [r for r in rows if "do" in b.expected_route(r["case"])]
     categories = {}
     for cat in sorted({r["case"]["category"] for r in rows}):
@@ -72,10 +78,14 @@ def main():
         "routine_auto_accept_rate": sum(r["post"]["accepted"] for r in expected_do) / len(expected_do) if expected_do else 0,
         "routine_correct": sum(r["outcome"] == "correct" for r in expected_do),
         "routine_correct_rate": sum(r["outcome"] == "correct" for r in expected_do) / len(expected_do) if expected_do else 0,
-        "p50_ms": statistics.median(lats) if lats else None,
-        "p95_ms": pct(lats, .95),
-        "p99_ms": pct(lats, .99),
-        "mean_ms": statistics.mean(lats) if lats else None,
+        "batch_calls": len(batch_stats),
+        "batch_api_success": sum(bool(x.get("ok")) for x in batch_stats),
+        "batch_p50_ms": statistics.median(batch_lats) if batch_lats else None,
+        "batch_p95_ms": pct(batch_lats, .95),
+        "batch_p99_ms": pct(batch_lats, .99),
+        "batch_mean_ms": statistics.mean(batch_lats) if batch_lats else None,
+        "single_fallbacks": sum(r.get("inference_mode") == "single_fallback" for r in rows),
+        "single_fallback_p50_ms": statistics.median(single_lats) if single_lats else None,
         "outcomes": outcomes,
         "categories": categories,
         "missing_ids": [c["id"] for c in b.BASE_CASES if c["id"] not in by_id],
