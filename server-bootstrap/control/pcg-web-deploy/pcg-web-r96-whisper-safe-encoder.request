@@ -1,0 +1,4 @@
+request_id=pcg-web-r96-whisper-safe-encoder
+candidate_commit=bba5c17426796aa0f743456385a78a30d6af50b9
+expected_sequence=96
+expected_release=pcg-web-stage6-media-asr-r96-whisper-safe-encoder
