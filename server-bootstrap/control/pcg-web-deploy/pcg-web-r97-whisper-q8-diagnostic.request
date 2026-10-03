@@ -1,0 +1,4 @@
+request_id=pcg-web-r97-whisper-q8-diagnostic
+candidate_commit=7f0a3cfb14263c1f07c44286f04d6042955413ef
+expected_sequence=97
+expected_release=pcg-web-stage6-media-asr-r97-whisper-q8-diagnostic
