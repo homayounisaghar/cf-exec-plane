@@ -10,13 +10,21 @@ permissions:
   contents: read
 
 concurrency:
-  group: onshape-fast-router-groq-v01
+  group: onshape-fast-router-groq-v02-parallel-${{ github.run_id }}
   cancel-in-progress: false
 
 jobs:
   benchmark:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - slug: 20b
+            model: openai/gpt-oss-20b
+          - slug: 120b
+            model: openai/gpt-oss-120b
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
@@ -41,6 +49,8 @@ jobs:
       - name: Run benchmark
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GROQ_MODELS: ${{ matrix.model }}
+          CASE_DELAY: '5.5'
           OUT_DIR: artifacts/onshape-fast-router-groq
         run: python qualification/onshape-fast-router-groq-v01/benchmark.py
 
@@ -48,7 +58,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: onshape-fast-router-groq-${{ github.run_id }}
+          name: onshape-fast-router-groq-${{ matrix.slug }}-${{ github.run_id }}
           path: artifacts/onshape-fast-router-groq/
           if-no-files-found: warn
           retention-days: 14
