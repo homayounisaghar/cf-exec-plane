@@ -1,0 +1,34 @@
+{
+ "schema": "capability-fabric.deploy.v1",
+ "sequence": 97,
+ "release_id": "pcg-web-stage6-owner-audio-r97-ogg-opus-ingress",
+ "compose_file": "compose.yaml",
+ "health_file": "health.sh",
+ "health_timeout_seconds": 180,
+ "files": {
+  "compose.yaml": "2fdc1d85e16c2e089056e834e5f9619e3349499f1cc47bc8a65a386ea80831ff",
+  "health.sh": "d122754e227b9df7ce2f8a5d0c0a55e8d0a1b3af947d40f75cae61f48b7e9546",
+  "pcg_core_stub.py": "2456952dcd43d974386958c2361c626e57a9653931be1381d9524a571b1953a3",
+  "pcg_telegram_provisioning_runtime.py": "40337a8a6101111d1680676b8675d710bc6390e3af76b64ee5b9bbb64d76c41f",
+  "pcg_web_browser.mjs": "c3907a2c853191bd9f705f40f32b9906fc5bc67dda8ccece0623c4fbc345c4ea",
+  "pcg_web_identity.mjs": "3edac6cb6a5c405fcfb2d57b671a2f98c2a419d071f40a7d1de70a590a142aa9",
+  "pcg_web_primitives.mjs": "fd4d3c2b813f6f1cd432ab8177eae9b78986aef9f0241f5adb43cba6bd79ffc1",
+  "pcg_web_selectors.mjs": "d0c86b9f43ade028732f2fcf037c6b2f01f76d2f365c5ba778cee6ccda398922",
+  "pcg_web_semantic_ops.mjs": "8b420fecd958c09e4f0ba53486ff6168c7b2881f9dfe3eeeb52400795d465dc7",
+  "pcg_web_package.json": "0523d28def8e3b92f05f0a534b662c04a6be3b7e010b0492e7442d63b1cf1539",
+  "pcg_web_webk_bridge.mjs": "b388369e15f359f6452330176d69be49843d8cc55a83be584000131c1293c136",
+  "pcg_web_file_broker.mjs": "eea58848190011f2fb97a275ced85c4ab302c49dbe9e431d7b8ba246dbea3619",
+  "pcg_web_composer.mjs": "ff9a4e557a3d66a44c96c4dc8d79c5c19c875f94c04c79df5ed4ca82cc968260",
+  "pcg_web_send.mjs": "52e9f0e234d44666874f88a53c523e77eadc450240a9916b4c0850fa490a375d",
+  "pcg_web_structure.mjs": "c5688013ea0ee1c09cf2dd8a108deebf08f07ef3c52f2d9595ba6dfa7ff047bf",
+  "pcg_web_gap_ledger.mjs": "0e1f3e1650685f8ae3d6e624f377c225758af9f3d27cb937867748db0d0b2c41",
+  "pcg_web_provider_model.mjs": "11ffc91aab5f5f88738ad70bb79e5f45a0eb1b587dd6d78af63b6e24ee40be38",
+  "pcg_web_audio.mjs": "3d603d555db3c5e312e14b25203b8173ce91b15d8feeab04e755cc53a1b9b2ef",
+  "pcg_web_asr.mjs": "abcf1fe94a78feb4dc4dd9eb503a25c16c3da5596a734e0edd3afb72745a06bd"
+ },
+ "images": [
+  "ghcr.io/homayounisaghar/pcg-tdlib-python@sha256:eccb8b5e73ac504aafd8a8b316e2fda951bd7cb23280cccf99c5e6206c4826e4",
+  "mcr.microsoft.com/playwright:v1.62.1-resolute@sha256:aebd85bce8056dcdc2269853fd94ea432b6a201da4f0ef125b509489ecd52ddb",
+  "python:3.12-slim-bookworm@sha256:392307d22300de8b5986851a12d9176dfc0fc073e65bf6523ebd7dcbeb23564e"
+ ]
+}
