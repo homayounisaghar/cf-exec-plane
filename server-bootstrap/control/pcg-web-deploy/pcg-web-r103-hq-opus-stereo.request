@@ -1,0 +1,4 @@
+request_id=pcg-web-r103-hq-opus-stereo
+candidate_commit=926876c00b45d19a953d866760812987774f78bc
+expected_sequence=103
+expected_release=pcg-web-stage6-owner-audio-r103-hq-opus-stereo
