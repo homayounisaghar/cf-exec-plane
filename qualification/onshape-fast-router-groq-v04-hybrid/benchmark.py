@@ -222,11 +222,30 @@ NUMBER_WORDS = {
     "یک": 1, "يه": 1, "یه": 1,
     "دو": 2, "سه": 3, "چهار": 4, "پنج": 5, "شش": 6, "هفت": 7, "هشت": 8, "نه": 9, "ده": 10,
 }
+PERSIAN_TENS = {"بیست":20,"سی":30,"چهل":40,"پنجاه":50,"شصت":60,"هفتاد":70,"هشتاد":80,"نود":90}
+
+def parse_persian_integer_phrase(s):
+    s=norm_text(s).strip()
+    if s in NUMBER_WORDS and NUMBER_WORDS[s] == int(NUMBER_WORDS[s]):
+        return int(NUMBER_WORDS[s])
+    if s in PERSIAN_TENS:
+        return PERSIAN_TENS[s]
+    parts=[x.strip() for x in s.split(" و ") if x.strip()]
+    if len(parts)==2 and parts[0] in PERSIAN_TENS and parts[1] in NUMBER_WORDS:
+        return PERSIAN_TENS[parts[0]] + int(NUMBER_WORDS[parts[1]])
+    return None
 
 def extract_quantity(t):
     m = re.search(r"([+-]?\d+(?:[.,]\d+)?)\s*(?:mm|میلی(?:متر)?|میل)\b", t, re.I)
     if m:
         return m.group(1).replace(",", ".") + " mm"
+    # Spoken decimal, e.g. "یک و بیست و پنج صدم میلی" => 1.25 mm.
+    m = re.search(r"(یک|یه|يه|دو|سه|چهار|پنج|شش|هفت|هشت|نه|ده)\s+و\s+(.+?)\s+صدم\s+(?:میلی(?:متر)?|میل)\b", t)
+    if m:
+        whole=parse_persian_integer_phrase(m.group(1))
+        frac=parse_persian_integer_phrase(m.group(2))
+        if whole is not None and frac is not None and 0 <= frac < 100:
+            return f"{whole + frac/100:g} mm"
     if "نیم میل" in t or "نیم میلی" in t:
         return "0.5 mm"
     for word, n in NUMBER_WORDS.items():
@@ -520,6 +539,10 @@ def compile_ir(case, raw):
 
         if not feature or not parameter or value is None:
             return reject("feature-parameter-missing",ir)
+        # Prototype stand-in for exact live feature-schema validation: generic labels
+        # such as "amount"/"quantity"/"value" are never admitted as feature parameters.
+        if str(parameter).strip().lower() in {"amount","quantity","value"}:
+            return reject("feature-parameter-not-admitted",ir)
         args={"feature_name":feature,"parameter":str(parameter)}
         if str(parameter).strip().lower() in {"flip direction","flip","reverse direction"}:
             explicit_bool=None
@@ -694,7 +717,8 @@ def parse_mm(v):
 
 def norm_scalar(v):
     if isinstance(v,str):
-        return normalize_quantity(v).lower() if isinstance(normalize_quantity(v),str) else normalize_quantity(v)
+        q=normalize_quantity(v)
+        return norm_text(q).lower() if isinstance(q,str) else q
     return v
 
 def subset_match(expected, got):
