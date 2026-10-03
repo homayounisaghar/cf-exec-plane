@@ -1,0 +1,54 @@
+name: Onshape Fast Router Groq Benchmark
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - qualification/onshape-fast-router-groq-v01/control/*.request
+
+permissions:
+  contents: read
+
+concurrency:
+  group: onshape-fast-router-groq-v01
+  cancel-in-progress: false
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Syntax gate
+        run: python -m py_compile qualification/onshape-fast-router-groq-v01/benchmark.py
+
+      - name: Require Groq credential
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: |
+          test -n "$GROQ_API_KEY" || {
+            echo "::error::GROQ_API_KEY repository secret is missing"
+            exit 2
+          }
+
+      - name: Run benchmark
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          OUT_DIR: artifacts/onshape-fast-router-groq
+        run: python qualification/onshape-fast-router-groq-v01/benchmark.py
+
+      - name: Upload benchmark evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: onshape-fast-router-groq-${{ github.run_id }}
+          path: artifacts/onshape-fast-router-groq/
+          if-no-files-found: warn
+          retention-days: 14

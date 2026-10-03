@@ -1,0 +1,11 @@
+{
+  "purpose": "Groq Persian Onshape command-to-recipe benchmark",
+  "canonical_source_repository": "homayounisaghar/capability-fabric",
+  "canonical_source_ref": "experiment/onshape-fast-router-groq-v01",
+  "canonical_source_commit": "e4aa5cb9e960181183b7805c1410fa8f4c9d0aff",
+  "source_path": "experiments/onshape_fast_router_groq/benchmark.py",
+  "source_blob_sha": "d68fd41c3d7455490a508791a5f5a4de2abe6f16",
+  "copied_to_public_execution_plane": "2026-10-03",
+  "contains_secrets": false,
+  "runtime_secret_name": "GROQ_API_KEY"
+}
