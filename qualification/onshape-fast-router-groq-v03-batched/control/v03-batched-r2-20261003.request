@@ -1,0 +1,6 @@
+request_id=v03-batched-r2-20261003
+model=openai/gpt-oss-20b
+cases=120
+batch_size=30
+max_completion_tokens=1000
+purpose=low-overhead-family-batched-broad-v03-benchmark
