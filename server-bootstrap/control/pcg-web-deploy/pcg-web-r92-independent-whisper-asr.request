@@ -1,0 +1,4 @@
+request_id=pcg-web-r92-independent-whisper-asr
+candidate_commit=729013299c7060a383ca9da076a1ceca9cfd623c
+expected_sequence=92
+expected_release=pcg-web-stage6-media-asr-r92-independent-whisper
