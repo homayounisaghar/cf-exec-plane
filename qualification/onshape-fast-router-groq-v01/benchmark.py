@@ -1,7 +1,7 @@
 from __future__ import annotations
 import json, os, re, statistics, time, urllib.error, urllib.request
 
-MODELS = ["openai/gpt-oss-20b", "openai/gpt-oss-120b"]
+MODELS = [m for m in os.environ.get("GROQ_MODELS","openai/gpt-oss-20b,openai/gpt-oss-120b").split(",") if m]\nCASE_DELAY = float(os.environ.get("CASE_DELAY","8.2"))
 ENDPOINT = "https://api.groq.com/openai/v1/chat/completions"
 
 OPS = [
@@ -299,7 +299,7 @@ def main():
             r["correct"]=bool(r.get("ok") and subset_match(case["gold"],r.get("output")))
             rows.append(r)
             print(json.dumps({"model":model,"id":case["id"],"ok":r.get("ok"),"correct":r["correct"],"latency_ms":round(r["latency_ms"],1)},ensure_ascii=False))
-            if idx != len(CASES)-1: time.sleep(8.2)
+            if idx != len(CASES)-1: time.sleep(CASE_DELAY)
         s=summarize(rows); s["warmup"]=warm
         allsum["models"][model]=s
         with open(os.path.join(outdir,model.split("/")[-1]+".json"),"w",encoding="utf-8") as f:
