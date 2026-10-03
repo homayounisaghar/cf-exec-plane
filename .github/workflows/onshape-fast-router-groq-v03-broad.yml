@@ -1,0 +1,95 @@
+name: Onshape Fast Router Groq V03 Broad Sharded
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - qualification/onshape-fast-router-groq-v03-broad/control/*.request
+
+permissions:
+  contents: read
+
+concurrency:
+  group: onshape-fast-router-groq-v03-broad
+  cancel-in-progress: true
+
+jobs:
+  shard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        shard: [0, 1]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Syntax gate
+        run: |
+          python -m py_compile qualification/onshape-fast-router-groq-v03-broad/benchmark.py
+          python -m py_compile qualification/onshape-fast-router-groq-v03-broad/corpus_v02.py
+          python -m py_compile qualification/onshape-fast-router-groq-v03-broad/broad_shard.py
+
+      - name: Require Groq credential
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: test -n "$GROQ_API_KEY"
+
+      - name: Run shard
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          SHARD_INDEX: ${{ matrix.shard }}
+          SHARD_COUNT: '2'
+          CASE_DELAY: '6.0'
+          OUT_DIR: artifacts/onshape-fast-router-groq-v03-broad/shard-${{ matrix.shard }}
+        run: python qualification/onshape-fast-router-groq-v03-broad/broad_shard.py
+
+      - name: Upload shard evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v03-broad-shard-${{ matrix.shard }}-${{ github.run_id }}
+          path: artifacts/onshape-fast-router-groq-v03-broad/shard-${{ matrix.shard }}/
+          if-no-files-found: warn
+          retention-days: 14
+
+  aggregate:
+    needs: shard
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: v03-broad-shard-*-${{ github.run_id }}
+          path: downloaded
+          merge-multiple: false
+
+      - name: Aggregate
+        env:
+          RESULT_ROOT: downloaded
+        run: python qualification/onshape-fast-router-groq-v03-broad/aggregate_broad.py
+
+      - name: Upload aggregate
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v03-broad-aggregate-${{ github.run_id }}
+          path: aggregate/
+          if-no-files-found: warn
+          retention-days: 14
