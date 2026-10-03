@@ -1,0 +1,8 @@
+request_id=v03-broad-sharded-r1-20261003
+candidate_commit=ce34c72efe4eabb6767791011ad4b6899865aa80
+model=openai/gpt-oss-20b
+broad_cases=120
+shards=4
+cases_per_shard=30
+case_delay_seconds=8.2
+purpose=fast-sharded-broad-rerun-hardened-intent-ir
