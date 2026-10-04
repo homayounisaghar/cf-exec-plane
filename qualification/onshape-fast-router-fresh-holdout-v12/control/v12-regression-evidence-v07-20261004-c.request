@@ -1,0 +1,9 @@
+{
+  "request_id": "onshape-fast-router-v12-regression-evidence-v07-20261004-c",
+  "source_repo": "homayounisaghar/capability-fabric",
+  "source_ref": "work/onshape-fast-router-evidence-v07",
+  "source_head": "92d717c047b73bca67ca5d1a46ded7072289bfca",
+  "frozen_holdout_commit": "712b58063bec518301cf8458363d7c8a0e87b07c",
+  "purpose": "regression-only after typed selection mutation split",
+  "production_effects": false
+}
