@@ -1,0 +1,4 @@
+request_id=pcg-web-r118-asr-medium
+candidate_commit=a371687ee2d40e2a11fe6fd6145f30ba7d149bb4
+expected_sequence=118
+expected_release=pcg-web-stage6-asr-medium-r118
