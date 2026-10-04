@@ -6,31 +6,28 @@
   "model_intent_cases": 7,
   "model_batch_calls": 1,
   "model_batch_retries": 0,
-  "exact_correct": 90,
-  "exact_accuracy": 0.9,
+  "exact_correct": 99,
+  "exact_accuracy": 0.99,
   "wrong_material_accepted": 0,
   "wrong_material_ids": [],
-  "false_execute": 2,
+  "false_execute": 1,
   "false_execute_ids": [
-    "v12_i09",
-    "v12_e10"
+    "v12_i09"
   ],
-  "wrong_reversible_accepted": 6,
-  "conservative_escalations": 2,
+  "wrong_reversible_accepted": 0,
+  "conservative_escalations": 0,
   "route_mismatch": 0,
   "api_failures": 0,
   "routine_expected_do": 69,
-  "routine_auto_accepted": 67,
-  "routine_correct": 61,
+  "routine_auto_accepted": 69,
+  "routine_correct": 69,
   "provider_prompt_tokens": 2409,
   "provider_completion_tokens": 321,
-  "model_batch_p50_ms": 788.3546260000003,
-  "model_batch_p95_ms": 788.3546260000003,
-  "wall_seconds": 0.8279334469999995,
+  "model_batch_p50_ms": 728.1527029999993,
+  "model_batch_p95_ms": 728.1527029999993,
+  "wall_seconds": 0.7682642030000011,
   "outcomes": {
-    "correct": 90,
-    "conservative_escalation": 2,
-    "wrong_reversible_accepted": 6,
-    "false_execute": 2
+    "correct": 99,
+    "false_execute": 1
   }
 }

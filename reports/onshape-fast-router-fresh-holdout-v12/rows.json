@@ -91,7 +91,7 @@
       "d": "a",
       "i": "camera_move"
     },
-    "model_latency_ms": 788.3546260000003,
+    "model_latency_ms": 728.1527029999993,
     "outcome": "correct"
   },
   {
@@ -1159,7 +1159,7 @@
       "property_value": null,
       "name_value": null,
       "payloads": [],
-      "inspect_target": "selection",
+      "inspect_target": null,
       "parameter_hint": null,
       "boolean_value": null,
       "follow_candidate_index": null,
@@ -1188,18 +1188,21 @@
       "action_cues": []
     },
     "post": {
-      "accepted": false,
-      "reason": "effect-evidence-unconsumed",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
+        "route": "do",
+        "op": "view.fit",
+        "args": {
+          "action": "fit_selection"
+        }
       },
-      "unconsumed_evidence": [
-        "sem:inspect_target"
-      ]
+      "provenance": {
+        "target": "text+verified-selection-context"
+      },
+      "consumed_evidence_count": 1
     },
-    "outcome": "conservative_escalation"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -1303,7 +1306,7 @@
     },
     "source": "evidence_reflex",
     "decision": "act",
-    "intent": "inspect",
+    "intent": "clear_selection",
     "evidence": {
       "text": "selection رو کامل خالی کن",
       "quantities": [],
@@ -1326,7 +1329,7 @@
       "property_value": null,
       "name_value": null,
       "payloads": [],
-      "inspect_target": "selection",
+      "inspect_target": null,
       "parameter_hint": null,
       "boolean_value": null,
       "follow_candidate_index": null,
@@ -1349,7 +1352,7 @@
       "fit_selection": false,
       "fit_target": null,
       "top_view": false,
-      "clear_selection": false,
+      "clear_selection": true,
       "edge_kind": null,
       "multi_action": false,
       "action_cues": []
@@ -1359,17 +1362,13 @@
       "reason": "ok",
       "compiled": {
         "route": "do",
-        "op": "viewer.inspect",
-        "args": {
-          "mode": "selection"
-        }
+        "op": "viewer.selection.clear",
+        "args": {}
       },
-      "provenance": {
-        "mode": "semantic-evidence"
-      },
-      "consumed_evidence_count": 1
+      "provenance": {},
+      "consumed_evidence_count": 0
     },
-    "outcome": "wrong_reversible_accepted"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -1452,7 +1451,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 788.3546260000003,
+    "model_latency_ms": 728.1527029999993,
     "outcome": "correct"
   },
   {
@@ -1534,7 +1533,7 @@
       "d": "a",
       "i": "fit"
     },
-    "model_latency_ms": 788.3546260000003,
+    "model_latency_ms": 728.1527029999993,
     "outcome": "correct"
   },
   {
@@ -1585,7 +1584,7 @@
       "property_value": null,
       "name_value": null,
       "payloads": [],
-      "inspect_target": "selection",
+      "inspect_target": null,
       "parameter_hint": null,
       "boolean_value": null,
       "follow_candidate_index": null,
@@ -1614,18 +1613,21 @@
       "action_cues": []
     },
     "post": {
-      "accepted": false,
-      "reason": "effect-evidence-unconsumed",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
+        "route": "do",
+        "op": "view.fit",
+        "args": {
+          "action": "fit_selection"
+        }
       },
-      "unconsumed_evidence": [
-        "sem:inspect_target"
-      ]
+      "provenance": {
+        "target": "text+verified-selection-context"
+      },
+      "consumed_evidence_count": 1
     },
-    "outcome": "conservative_escalation"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -2468,7 +2470,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 788.3546260000003,
+    "model_latency_ms": 728.1527029999993,
     "outcome": "correct"
   },
   {
@@ -2616,7 +2618,7 @@
     },
     "source": "evidence_reflex",
     "decision": "act",
-    "intent": "inspect",
+    "intent": "edge_on_selection",
     "evidence": {
       "text": "این انتخاب رو پنجاه و پنج صدم میل پخ کن",
       "quantities": [
@@ -2660,7 +2662,7 @@
       "property_value": null,
       "name_value": null,
       "payloads": [],
-      "inspect_target": "selection",
+      "inspect_target": null,
       "parameter_hint": null,
       "boolean_value": null,
       "follow_candidate_index": null,
@@ -2695,17 +2697,20 @@
       "reason": "ok",
       "compiled": {
         "route": "do",
-        "op": "viewer.inspect",
+        "op": "feature.from_selection",
         "args": {
-          "mode": "selection"
+          "feature_type": "chamfer",
+          "amount": "0.55 mm"
         }
       },
       "provenance": {
-        "mode": "semantic-evidence"
+        "kind": "text",
+        "amount": "q1",
+        "selection": "verified-context"
       },
-      "consumed_evidence_count": 1
+      "consumed_evidence_count": 0
     },
-    "outcome": "wrong_reversible_accepted"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -2860,7 +2865,7 @@
     },
     "source": "evidence_reflex",
     "decision": "act",
-    "intent": "inspect",
+    "intent": "edge_on_selection",
     "evidence": {
       "text": "پخ یک ممیز شش میل روی همین انتخاب",
       "quantities": [
@@ -2906,7 +2911,7 @@
       "property_value": null,
       "name_value": null,
       "payloads": [],
-      "inspect_target": "selection",
+      "inspect_target": null,
       "parameter_hint": null,
       "boolean_value": null,
       "follow_candidate_index": null,
@@ -2941,17 +2946,20 @@
       "reason": "ok",
       "compiled": {
         "route": "do",
-        "op": "viewer.inspect",
+        "op": "feature.from_selection",
         "args": {
-          "mode": "selection"
+          "feature_type": "chamfer",
+          "amount": "1.6 mm"
         }
       },
       "provenance": {
-        "mode": "semantic-evidence"
+        "kind": "text",
+        "amount": "q1",
+        "selection": "verified-context"
       },
-      "consumed_evidence_count": 1
+      "consumed_evidence_count": 0
     },
-    "outcome": "wrong_reversible_accepted"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -3098,7 +3106,7 @@
     },
     "source": "evidence_reflex",
     "decision": "act",
-    "intent": "inspect",
+    "intent": "edge_on_selection",
     "evidence": {
       "text": "پخ شش دهم روی انتخاب فعلی",
       "quantities": [
@@ -3143,7 +3151,7 @@
       "property_value": null,
       "name_value": null,
       "payloads": [],
-      "inspect_target": "selection",
+      "inspect_target": null,
       "parameter_hint": null,
       "boolean_value": null,
       "follow_candidate_index": null,
@@ -3178,17 +3186,20 @@
       "reason": "ok",
       "compiled": {
         "route": "do",
-        "op": "viewer.inspect",
+        "op": "feature.from_selection",
         "args": {
-          "mode": "selection"
+          "feature_type": "chamfer",
+          "amount": "0.6 mm"
         }
       },
       "provenance": {
-        "mode": "semantic-evidence"
+        "kind": "text",
+        "amount": "q1",
+        "selection": "verified-context"
       },
-      "consumed_evidence_count": 1
+      "consumed_evidence_count": 0
     },
-    "outcome": "wrong_reversible_accepted"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -3540,7 +3551,7 @@
     },
     "source": "evidence_reflex",
     "decision": "act",
-    "intent": "inspect",
+    "intent": "edge_on_selection",
     "evidence": {
       "text": "روی انتخاب فعلی پخ بزن",
       "quantities": [],
@@ -3566,7 +3577,7 @@
       "property_value": null,
       "name_value": null,
       "payloads": [],
-      "inspect_target": "selection",
+      "inspect_target": null,
       "parameter_hint": null,
       "boolean_value": null,
       "follow_candidate_index": null,
@@ -3597,21 +3608,15 @@
       ]
     },
     "post": {
-      "accepted": true,
-      "reason": "ok",
+      "accepted": false,
+      "reason": "edge-amount-ambiguous",
       "compiled": {
-        "route": "do",
-        "op": "viewer.inspect",
-        "args": {
-          "mode": "selection"
-        }
-      },
-      "provenance": {
-        "mode": "semantic-evidence"
-      },
-      "consumed_evidence_count": 1
+        "route": "ask",
+        "op": null,
+        "args": {}
+      }
     },
-    "outcome": "false_execute"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -3741,7 +3746,7 @@
     },
     "source": "evidence_reflex",
     "decision": "act",
-    "intent": "inspect",
+    "intent": "add_edge_feature",
     "evidence": {
       "text": "یه chamfer جدید شش دهم میل بدون انتخاب بساز",
       "quantities": [
@@ -3783,7 +3788,7 @@
       "property_value": null,
       "name_value": null,
       "payloads": [],
-      "inspect_target": "selection",
+      "inspect_target": null,
       "parameter_hint": null,
       "boolean_value": null,
       "follow_candidate_index": null,
@@ -3818,17 +3823,19 @@
       "reason": "ok",
       "compiled": {
         "route": "do",
-        "op": "viewer.inspect",
+        "op": "feature.add",
         "args": {
-          "mode": "selection"
+          "feature_type": "chamfer",
+          "amount": "0.6 mm"
         }
       },
       "provenance": {
-        "mode": "semantic-evidence"
+        "kind": "text",
+        "amount": "q1"
       },
-      "consumed_evidence_count": 1
+      "consumed_evidence_count": 0
     },
-    "outcome": "wrong_reversible_accepted"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -4266,7 +4273,7 @@
     },
     "source": "evidence_reflex",
     "decision": "act",
-    "intent": "inspect",
+    "intent": "edge_on_selection",
     "evidence": {
       "text": "پخ دو ممیز پنج میل روی انتخاب",
       "quantities": [
@@ -4312,7 +4319,7 @@
       "property_value": null,
       "name_value": null,
       "payloads": [],
-      "inspect_target": "selection",
+      "inspect_target": null,
       "parameter_hint": null,
       "boolean_value": null,
       "follow_candidate_index": null,
@@ -4347,17 +4354,20 @@
       "reason": "ok",
       "compiled": {
         "route": "do",
-        "op": "viewer.inspect",
+        "op": "feature.from_selection",
         "args": {
-          "mode": "selection"
+          "feature_type": "chamfer",
+          "amount": "2.5 mm"
         }
       },
       "provenance": {
-        "mode": "semantic-evidence"
+        "kind": "text",
+        "amount": "q1",
+        "selection": "verified-context"
       },
-      "consumed_evidence_count": 1
+      "consumed_evidence_count": 0
     },
-    "outcome": "wrong_reversible_accepted"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -8404,7 +8414,7 @@
       "d": "a",
       "i": "add_pattern"
     },
-    "model_latency_ms": 788.3546260000003,
+    "model_latency_ms": 728.1527029999993,
     "outcome": "correct"
   },
   {
@@ -9479,7 +9489,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 788.3546260000003,
+    "model_latency_ms": 728.1527029999993,
     "outcome": "correct"
   },
   {
@@ -9561,7 +9571,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 788.3546260000003,
+    "model_latency_ms": 728.1527029999993,
     "outcome": "correct"
   },
   {
