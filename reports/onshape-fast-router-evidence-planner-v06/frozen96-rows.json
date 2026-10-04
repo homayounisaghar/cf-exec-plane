@@ -619,19 +619,25 @@
       ]
     },
     "source": "reflex",
-    "outcome": "conservative_escalation",
+    "outcome": "correct",
     "latency_ms": 0.0,
     "model_error": null,
     "post": {
-      "accepted": false,
-      "reason": "camera-evidence-missing",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
+        "route": "do",
+        "op": "view.move",
+        "args": {
+          "action": "pan",
+          "direction": "up"
+        }
       },
       "intent": "camera_move",
-      "provenance": {},
+      "provenance": {
+        "action": "text_or_context:a1",
+        "direction": "text_or_context:v1"
+      },
       "model_used": false
     },
     "evidence": {
@@ -641,6 +647,12 @@
           "id": "a1",
           "kind": "action",
           "value": "pan",
+          "source": "text_or_context"
+        },
+        {
+          "id": "v1",
+          "kind": "direction",
+          "value": "up",
           "source": "text_or_context"
         }
       ],
@@ -1360,7 +1372,7 @@
     },
     "source": "model",
     "outcome": "correct",
-    "latency_ms": 777.9227199999923,
+    "latency_ms": 680.5966100000021,
     "model_error": null,
     "post": {
       "accepted": false,
@@ -1401,17 +1413,17 @@
     },
     "source": "model",
     "outcome": "correct",
-    "latency_ms": 777.9227199999923,
+    "latency_ms": 680.5966100000021,
     "model_error": null,
     "post": {
       "accepted": false,
-      "reason": "new-edge-not-explicit",
+      "reason": "model-ask",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       },
-      "intent": "add_edge_feature",
+      "intent": null,
       "provenance": {},
       "model_used": true
     },
@@ -1450,7 +1462,7 @@
       ]
     },
     "source": "reflex",
-    "outcome": "wrong_material_accepted",
+    "outcome": "correct",
     "latency_ms": 0.0,
     "model_error": null,
     "post": {
@@ -1458,18 +1470,17 @@
       "reason": "ok",
       "compiled": {
         "route": "do",
-        "op": "feature.parameter.set",
+        "op": "feature.from_selection",
         "args": {
-          "feature_name": "Fillet 2",
-          "parameter": "radius",
+          "feature_type": "fillet",
           "amount": "2 mm"
         }
       },
-      "intent": "feature_parameter",
+      "intent": "edge_on_selection",
       "provenance": {
-        "feature_name": "text:f1",
-        "parameter": "text:param-semantics",
-        "amount": "text:q1"
+        "feature_type": "text:edge-kind",
+        "amount": "text:q1",
+        "selection": "context:selection"
       },
       "model_used": false
     },
@@ -1484,16 +1495,6 @@
           "surface": "دو میل"
         },
         {
-          "id": "f1",
-          "kind": "feature",
-          "value": "Fillet 2",
-          "source": "text",
-          "surface": "فیلت دو",
-          "meta": {
-            "pos": 21
-          }
-        },
-        {
           "id": "k1",
           "kind": "count",
           "value": 2,
@@ -1501,7 +1502,9 @@
         }
       ],
       "relative": null,
-      "action_signature": [],
+      "action_signature": [
+        "edge:fillet"
+      ],
       "multi_action": false,
       "design": false,
       "unsupported": false,
@@ -2017,7 +2020,7 @@
     },
     "source": "model",
     "outcome": "correct",
-    "latency_ms": 777.9227199999923,
+    "latency_ms": 680.5966100000021,
     "model_error": null,
     "post": {
       "accepted": false,
@@ -2365,27 +2368,19 @@
       ]
     },
     "source": "model",
-    "outcome": "correct",
-    "latency_ms": 777.9227199999923,
+    "outcome": "conservative_escalation",
+    "latency_ms": 680.5966100000021,
     "model_error": null,
     "post": {
-      "accepted": true,
-      "reason": "ok",
+      "accepted": false,
+      "reason": "feature-parameter-ambiguous",
       "compiled": {
-        "route": "do",
-        "op": "feature.parameter.set",
-        "args": {
-          "feature_name": "Extrude 4",
-          "parameter": "depth",
-          "amount": "18 mm"
-        }
+        "route": "ask",
+        "op": null,
+        "args": {}
       },
       "intent": "feature_parameter",
-      "provenance": {
-        "feature_name": "text:f1",
-        "parameter": "text:param-semantics",
-        "amount": "text:q1"
-      },
+      "provenance": {},
       "model_used": true
     },
     "evidence": {
@@ -2870,31 +2865,28 @@
       ]
     },
     "source": "reflex",
-    "outcome": "conservative_escalation",
+    "outcome": "correct",
     "latency_ms": 0.0,
     "model_error": null,
     "post": {
-      "accepted": false,
-      "reason": "camera-evidence-missing",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
+        "route": "do",
+        "op": "feature.delete",
+        "args": {
+          "position": "last"
+        }
       },
-      "intent": "camera_move",
-      "provenance": {},
+      "intent": "feature_delete",
+      "provenance": {
+        "position": "text:last"
+      },
       "model_used": false
     },
     "evidence": {
       "text": "آخرین فیچرو بنداز دور",
-      "items": [
-        {
-          "id": "a1",
-          "kind": "action",
-          "value": "orbit",
-          "source": "text_or_context"
-        }
-      ],
+      "items": [],
       "relative": null,
       "action_signature": [],
       "multi_action": false,
@@ -4133,7 +4125,7 @@
     },
     "source": "model",
     "outcome": "correct",
-    "latency_ms": 777.9227199999923,
+    "latency_ms": 680.5966100000021,
     "model_error": null,
     "post": {
       "accepted": false,
@@ -4745,6 +4737,16 @@
           }
         },
         {
+          "id": "p1",
+          "kind": "part",
+          "value": "rollback",
+          "source": "text",
+          "surface": "rollback",
+          "meta": {
+            "pos": 0
+          }
+        },
+        {
           "id": "r1",
           "kind": "relation",
           "value": "before",
@@ -4803,7 +4805,18 @@
     },
     "evidence": {
       "text": "rollback رو تا آخر بکش",
-      "items": [],
+      "items": [
+        {
+          "id": "p1",
+          "kind": "part",
+          "value": "rollback",
+          "source": "text",
+          "surface": "rollback",
+          "meta": {
+            "pos": 0
+          }
+        }
+      ],
       "relative": null,
       "action_signature": [],
       "multi_action": false,
@@ -4850,7 +4863,18 @@
     },
     "evidence": {
       "text": "rollback رو اول کار بذار",
-      "items": [],
+      "items": [
+        {
+          "id": "p1",
+          "kind": "part",
+          "value": "rollback",
+          "source": "text",
+          "surface": "rollback",
+          "meta": {
+            "pos": 0
+          }
+        }
+      ],
       "relative": null,
       "action_signature": [],
       "multi_action": false,
@@ -5284,11 +5308,11 @@
     },
     "source": "model",
     "outcome": "correct",
-    "latency_ms": 777.9227199999923,
-    "model_error": null,
+    "latency_ms": 680.5966100000021,
+    "model_error": "model-result-missing",
     "post": {
       "accepted": false,
-      "reason": "model-ask",
+      "reason": "model-result-missing",
       "compiled": {
         "route": "ask",
         "op": null,
@@ -5296,7 +5320,7 @@
       },
       "intent": null,
       "provenance": {},
-      "model_used": true
+      "model_used": false
     },
     "evidence": {
       "text": "اون یکی رو پاک کن",
@@ -5323,7 +5347,7 @@
     },
     "source": "model",
     "outcome": "correct",
-    "latency_ms": 777.9227199999923,
+    "latency_ms": 680.5966100000021,
     "model_error": "model-result-missing",
     "post": {
       "accepted": false,
@@ -5362,7 +5386,7 @@
     },
     "source": "model",
     "outcome": "correct",
-    "latency_ms": 777.9227199999923,
+    "latency_ms": 680.5966100000021,
     "model_error": "model-result-missing",
     "post": {
       "accepted": false,

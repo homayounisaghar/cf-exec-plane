@@ -664,19 +664,25 @@
       ]
     },
     "source": "reflex",
-    "outcome": "conservative_escalation",
+    "outcome": "correct",
     "latency_ms": 0.0,
     "model_error": null,
     "post": {
-      "accepted": false,
-      "reason": "camera-evidence-missing",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
+        "route": "do",
+        "op": "view.move",
+        "args": {
+          "action": "pan",
+          "direction": "down"
+        }
       },
       "intent": "camera_move",
-      "provenance": {},
+      "provenance": {
+        "action": "text_or_context:a1",
+        "direction": "text_or_context:v1"
+      },
       "model_used": false
     },
     "evidence": {
@@ -686,6 +692,12 @@
           "id": "a1",
           "kind": "action",
           "value": "pan",
+          "source": "text_or_context"
+        },
+        {
+          "id": "v1",
+          "kind": "direction",
+          "value": "down",
           "source": "text_or_context"
         }
       ],
@@ -1321,19 +1333,25 @@
       ]
     },
     "source": "reflex",
-    "outcome": "conservative_escalation",
+    "outcome": "correct",
     "latency_ms": 0.0,
     "model_error": null,
     "post": {
-      "accepted": false,
-      "reason": "camera-evidence-missing",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
+        "route": "do",
+        "op": "view.move",
+        "args": {
+          "action": "orbit",
+          "direction": "right"
+        }
       },
       "intent": "camera_move",
-      "provenance": {},
+      "provenance": {
+        "action": "text_or_context:a1",
+        "direction": "text_or_context:v1"
+      },
       "model_used": false
     },
     "evidence": {
@@ -1343,6 +1361,12 @@
           "id": "a1",
           "kind": "action",
           "value": "orbit",
+          "source": "text_or_context"
+        },
+        {
+          "id": "v1",
+          "kind": "direction",
+          "value": "right",
           "source": "text_or_context"
         }
       ],
@@ -1448,6 +1472,16 @@
     "evidence": {
       "text": "front view رو نشون بده",
       "items": [
+        {
+          "id": "p1",
+          "kind": "part",
+          "value": "view",
+          "source": "text",
+          "surface": "view",
+          "meta": {
+            "pos": 6
+          }
+        },
         {
           "id": "s1",
           "kind": "state",
@@ -1758,7 +1792,7 @@
     },
     "source": "model",
     "outcome": "correct",
-    "latency_ms": 1082.9252690000003,
+    "latency_ms": 795.3806469999982,
     "model_error": null,
     "post": {
       "accepted": false,
@@ -1799,17 +1833,17 @@
     },
     "source": "model",
     "outcome": "correct",
-    "latency_ms": 1082.9252690000003,
+    "latency_ms": 795.3806469999982,
     "model_error": null,
     "post": {
       "accepted": false,
-      "reason": "model-ask",
+      "reason": "edge-evidence-missing",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       },
-      "intent": null,
+      "intent": "edge_on_selection",
       "provenance": {},
       "model_used": true
     },
@@ -1856,7 +1890,18 @@
     },
     "evidence": {
       "text": "selection رو خالی کن",
-      "items": [],
+      "items": [
+        {
+          "id": "p1",
+          "kind": "part",
+          "value": "selection",
+          "source": "text",
+          "surface": "selection",
+          "meta": {
+            "pos": 0
+          }
+        }
+      ],
       "relative": null,
       "action_signature": [],
       "multi_action": false,
@@ -2564,7 +2609,7 @@
       ]
     },
     "source": "reflex",
-    "outcome": "wrong_material_accepted",
+    "outcome": "correct",
     "latency_ms": 0.0,
     "model_error": null,
     "post": {
@@ -2572,18 +2617,17 @@
       "reason": "ok",
       "compiled": {
         "route": "do",
-        "op": "feature.parameter.set",
+        "op": "feature.from_selection",
         "args": {
-          "feature_name": "Fillet 10",
-          "parameter": "radius",
+          "feature_type": "fillet",
           "amount": "10 mm"
         }
       },
-      "intent": "feature_parameter",
+      "intent": "edge_on_selection",
       "provenance": {
-        "feature_name": "text:f1",
-        "parameter": "text:param-semantics",
-        "amount": "text:q1"
+        "feature_type": "text:edge-kind",
+        "amount": "text:q1",
+        "selection": "context:selection"
       },
       "model_used": false
     },
@@ -2596,20 +2640,12 @@
           "value": "10 mm",
           "source": "text",
           "surface": "ده میلی"
-        },
-        {
-          "id": "f1",
-          "kind": "feature",
-          "value": "Fillet 10",
-          "source": "text",
-          "surface": "فیلت ده",
-          "meta": {
-            "pos": 18
-          }
         }
       ],
       "relative": null,
-      "action_signature": [],
+      "action_signature": [
+        "edge:fillet"
+      ],
       "multi_action": false,
       "design": false,
       "unsupported": false,
@@ -3192,21 +3228,25 @@
         }
       ]
     },
-    "source": "model",
-    "outcome": "conservative_escalation",
-    "latency_ms": 1082.9252690000003,
+    "source": "reflex",
+    "outcome": "correct",
+    "latency_ms": 0.0,
     "model_error": null,
     "post": {
-      "accepted": false,
-      "reason": "model-ask",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
+        "route": "do",
+        "op": "feature.delete",
+        "args": {
+          "position": "last"
+        }
       },
-      "intent": null,
-      "provenance": {},
-      "model_used": true
+      "intent": "feature_delete",
+      "provenance": {
+        "position": "text:last"
+      },
+      "model_used": false
     },
     "evidence": {
       "text": "آخرین فیچر رو پاک کن",
@@ -3235,21 +3275,25 @@
         }
       ]
     },
-    "source": "model",
-    "outcome": "conservative_escalation",
-    "latency_ms": 1082.9252690000003,
+    "source": "reflex",
+    "outcome": "correct",
+    "latency_ms": 0.0,
     "model_error": null,
     "post": {
-      "accepted": false,
-      "reason": "model-ask",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
+        "route": "do",
+        "op": "feature.delete",
+        "args": {
+          "position": "first"
+        }
       },
-      "intent": null,
-      "provenance": {},
-      "model_used": true
+      "intent": "feature_delete",
+      "provenance": {
+        "position": "text:first"
+      },
+      "model_used": false
     },
     "evidence": {
       "text": "اولین فیچر رو حذف کن",
@@ -3545,7 +3589,7 @@
       ]
     },
     "source": "reflex",
-    "outcome": "wrong_material_accepted",
+    "outcome": "correct",
     "latency_ms": 0.0,
     "model_error": null,
     "post": {
@@ -3553,16 +3597,18 @@
       "reason": "ok",
       "compiled": {
         "route": "do",
-        "op": "feature.patch",
+        "op": "feature.parameter.set",
         "args": {
           "feature_name": "Extrude 1",
-          "suppressed": false
+          "parameter": "flip direction",
+          "value": true
         }
       },
-      "intent": "feature_suppressed",
+      "intent": "feature_parameter",
       "provenance": {
         "feature_name": "text:f1",
-        "suppressed": "text:s1"
+        "parameter": "text:param-semantics",
+        "value": "text:boolean"
       },
       "model_used": false
     },
@@ -3577,6 +3623,16 @@
           "surface": "Extrude 1",
           "meta": {
             "pos": 23
+          }
+        },
+        {
+          "id": "p1",
+          "kind": "part",
+          "value": "direction",
+          "source": "text",
+          "surface": "direction",
+          "meta": {
+            "pos": 5
           }
         },
         {
@@ -3681,7 +3737,7 @@
     },
     "source": "model",
     "outcome": "correct",
-    "latency_ms": 1082.9252690000003,
+    "latency_ms": 795.3806469999982,
     "model_error": null,
     "post": {
       "accepted": false,
@@ -3719,27 +3775,19 @@
       ]
     },
     "source": "model",
-    "outcome": "false_execute",
-    "latency_ms": 1082.9252690000003,
+    "outcome": "correct",
+    "latency_ms": 795.3806469999982,
     "model_error": null,
     "post": {
-      "accepted": true,
-      "reason": "ok",
+      "accepted": false,
+      "reason": "feature-parameter-ambiguous",
       "compiled": {
-        "route": "do",
-        "op": "feature.parameter.set",
-        "args": {
-          "feature_name": "Extrude 2",
-          "parameter": "depth",
-          "amount": "5 mm"
-        }
+        "route": "ask",
+        "op": null,
+        "args": {}
       },
       "intent": "feature_parameter",
-      "provenance": {
-        "feature_name": "text:f1",
-        "parameter": "text:param-semantics",
-        "amount": "text:q1"
-      },
+      "provenance": {},
       "model_used": true
     },
     "evidence": {
@@ -3992,21 +4040,27 @@
         }
       ]
     },
-    "source": "model",
-    "outcome": "conservative_escalation",
-    "latency_ms": 1082.9252690000003,
+    "source": "reflex",
+    "outcome": "correct",
+    "latency_ms": 0.0,
     "model_error": null,
     "post": {
-      "accepted": false,
-      "reason": "model-ask",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
+        "route": "do",
+        "op": "part.visibility",
+        "args": {
+          "part_name": "Part 2",
+          "visible": true
+        }
       },
-      "intent": null,
-      "provenance": {},
-      "model_used": true
+      "intent": "part_visibility",
+      "provenance": {
+        "part_name": "context:p1",
+        "visible": "text:s1"
+      },
+      "model_used": false
     },
     "evidence": {
       "text": "دوباره نشونش بده",
@@ -4017,10 +4071,21 @@
           "value": "Part 2",
           "source": "context",
           "surface": "last_part"
+        },
+        {
+          "id": "s1",
+          "kind": "state",
+          "value": {
+            "kind": "visible",
+            "value": true
+          },
+          "source": "text"
         }
       ],
       "relative": null,
-      "action_signature": [],
+      "action_signature": [
+        "part:visibility"
+      ],
       "multi_action": false,
       "design": false,
       "unsupported": false,
@@ -4342,19 +4407,27 @@
       ]
     },
     "source": "reflex",
-    "outcome": "conservative_escalation",
+    "outcome": "correct",
     "latency_ms": 0.0,
     "model_error": null,
     "post": {
-      "accepted": false,
-      "reason": "part-property-target-missing",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
+        "route": "do",
+        "op": "documented.updateWVEPMetadata",
+        "args": {
+          "part_name": "Part 2",
+          "property": "name",
+          "value": "cap"
+        }
       },
       "intent": "part_property",
-      "provenance": {},
+      "provenance": {
+        "part_name": "text:p1",
+        "property": "text:property-semantics",
+        "value": "text:n1"
+      },
       "model_used": false
     },
     "evidence": {
@@ -4368,16 +4441,6 @@
           "surface": "Part 2",
           "meta": {
             "pos": 4
-          }
-        },
-        {
-          "id": "p2",
-          "kind": "part",
-          "value": "Cap",
-          "source": "text",
-          "surface": "cap",
-          "meta": {
-            "pos": 24
           }
         },
         {
@@ -4423,19 +4486,27 @@
       ]
     },
     "source": "reflex",
-    "outcome": "conservative_escalation",
+    "outcome": "correct",
     "latency_ms": 0.0,
     "model_error": null,
     "post": {
-      "accepted": false,
-      "reason": "part-property-target-missing",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
+        "route": "do",
+        "op": "documented.updateWVEPMetadata",
+        "args": {
+          "part_name": "Part 4",
+          "property": "name",
+          "value": "bracket"
+        }
       },
       "intent": "part_property",
-      "provenance": {},
+      "provenance": {
+        "part_name": "text:p1",
+        "property": "text:property-semantics",
+        "value": "text:n1"
+      },
       "model_used": false
     },
     "evidence": {
@@ -4449,16 +4520,6 @@
           "surface": "Part 4",
           "meta": {
             "pos": 7
-          }
-        },
-        {
-          "id": "p2",
-          "kind": "part",
-          "value": "Bracket",
-          "source": "text",
-          "surface": "bracket",
-          "meta": {
-            "pos": 17
           }
         },
         {
@@ -4638,7 +4699,7 @@
     },
     "source": "model",
     "outcome": "correct",
-    "latency_ms": 1082.9252690000003,
+    "latency_ms": 795.3806469999982,
     "model_error": null,
     "post": {
       "accepted": false,
@@ -5317,7 +5378,14 @@
     },
     "evidence": {
       "text": "یه plane روی Right بساز",
-      "items": [],
+      "items": [
+        {
+          "id": "v1",
+          "kind": "direction",
+          "value": "right",
+          "source": "text_or_context"
+        }
+      ],
       "relative": null,
       "action_signature": [],
       "multi_action": false,
@@ -5366,6 +5434,12 @@
           "meta": {
             "pos": 0
           }
+        },
+        {
+          "id": "v1",
+          "kind": "direction",
+          "value": "right",
+          "source": "text_or_context"
         }
       ],
       "relative": null,
@@ -5390,7 +5464,7 @@
     },
     "source": "model",
     "outcome": "correct",
-    "latency_ms": 1082.9252690000003,
+    "latency_ms": 795.3806469999982,
     "model_error": null,
     "post": {
       "accepted": false,
@@ -5775,6 +5849,16 @@
           }
         },
         {
+          "id": "p1",
+          "kind": "part",
+          "value": "rollback",
+          "source": "text",
+          "surface": "rollback",
+          "meta": {
+            "pos": 0
+          }
+        },
+        {
           "id": "r1",
           "kind": "relation",
           "value": "before",
@@ -5840,6 +5924,16 @@
           }
         },
         {
+          "id": "p1",
+          "kind": "part",
+          "value": "rollback",
+          "source": "text",
+          "surface": "rollback",
+          "meta": {
+            "pos": 0
+          }
+        },
+        {
           "id": "r1",
           "kind": "relation",
           "value": "after",
@@ -5892,7 +5986,18 @@
     },
     "evidence": {
       "text": "rollback رو ببر آخر",
-      "items": [],
+      "items": [
+        {
+          "id": "p1",
+          "kind": "part",
+          "value": "rollback",
+          "source": "text",
+          "surface": "rollback",
+          "meta": {
+            "pos": 0
+          }
+        }
+      ],
       "relative": null,
       "action_signature": [],
       "multi_action": false,
@@ -5939,7 +6044,18 @@
     },
     "evidence": {
       "text": "rollback رو ببر اول",
-      "items": [],
+      "items": [
+        {
+          "id": "p1",
+          "kind": "part",
+          "value": "rollback",
+          "source": "text",
+          "surface": "rollback",
+          "meta": {
+            "pos": 0
+          }
+        }
+      ],
       "relative": null,
       "action_signature": [],
       "multi_action": false,
@@ -6041,16 +6157,6 @@
     "evidence": {
       "text": "new Part Studio called bracket experiments",
       "items": [
-        {
-          "id": "p1",
-          "kind": "part",
-          "value": "Bracket",
-          "source": "text",
-          "surface": "bracket",
-          "meta": {
-            "pos": 23
-          }
-        },
         {
           "id": "n1",
           "kind": "name",
@@ -6540,7 +6646,7 @@
     },
     "source": "model",
     "outcome": "correct",
-    "latency_ms": 1082.9252690000003,
+    "latency_ms": 795.3806469999982,
     "model_error": null,
     "post": {
       "accepted": false,
@@ -6579,17 +6685,17 @@
     },
     "source": "model",
     "outcome": "correct",
-    "latency_ms": 1082.9252690000003,
+    "latency_ms": 795.3806469999982,
     "model_error": null,
     "post": {
       "accepted": false,
-      "reason": "model-ask",
+      "reason": "visibility-evidence-missing",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       },
-      "intent": null,
+      "intent": "part_visibility",
       "provenance": {},
       "model_used": true
     },
@@ -6671,7 +6777,7 @@
     },
     "source": "model",
     "outcome": "correct",
-    "latency_ms": 1082.9252690000003,
+    "latency_ms": 795.3806469999982,
     "model_error": null,
     "post": {
       "accepted": false,
@@ -6710,7 +6816,7 @@
     },
     "source": "model",
     "outcome": "correct",
-    "latency_ms": 284.2728259999916,
+    "latency_ms": 795.3806469999982,
     "model_error": null,
     "post": {
       "accepted": false,
@@ -6939,7 +7045,18 @@
     },
     "evidence": {
       "text": "اسم شرکت Onshape رو عوض کن",
-      "items": [],
+      "items": [
+        {
+          "id": "p1",
+          "kind": "part",
+          "value": "Onshape",
+          "source": "text",
+          "surface": "Onshape",
+          "meta": {
+            "pos": 9
+          }
+        }
+      ],
       "relative": null,
       "action_signature": [],
       "multi_action": false,
@@ -6962,7 +7079,7 @@
     },
     "source": "model",
     "outcome": "correct",
-    "latency_ms": 284.2728259999916,
+    "latency_ms": 795.3806469999982,
     "model_error": null,
     "post": {
       "accepted": false,

@@ -1,14 +1,8 @@
 {
   "properties": 19,
-  "passed": 18,
-  "failed": [
-    {
-      "name": "design_3_reasoning",
-      "ok": false,
-      "detail": null
-    }
-  ],
-  "all_passed": false,
+  "passed": 19,
+  "failed": [],
+  "all_passed": true,
   "details": [
     {
       "name": "number_2_5_equivalence",
@@ -92,7 +86,7 @@
     },
     {
       "name": "design_3_reasoning",
-      "ok": false,
+      "ok": true,
       "detail": null
     },
     {

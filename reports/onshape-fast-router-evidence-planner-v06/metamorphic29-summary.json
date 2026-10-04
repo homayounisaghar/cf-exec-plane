@@ -2,11 +2,11 @@
   "architecture": "typed evidence -> high-confidence reflex -> intent-only 20B fallback -> provenance compiler -> residue guard",
   "model": "openai/gpt-oss-20b",
   "cases": 29,
-  "exact_correct": 28,
-  "exact_accuracy": 0.9655172413793104,
-  "reflex_cases": 28,
-  "reflex_correct": 28,
-  "model_fallback_cases": 1,
+  "exact_correct": 29,
+  "exact_accuracy": 1.0,
+  "reflex_cases": 29,
+  "reflex_correct": 29,
+  "model_fallback_cases": 0,
   "model_fallback_correct": 0,
   "wrong_material_accepted": 0,
   "wrong_material_ids": [],
@@ -16,21 +16,18 @@
   "wrong_reversible_ids": [],
   "conservative_escalations": 0,
   "conservative_ids": [],
-  "route_mismatch": 1,
-  "route_mismatch_ids": [
-    "meta_design_03"
-  ],
+  "route_mismatch": 0,
+  "route_mismatch_ids": [],
   "provenance_violations": 0,
   "multi_action_blocked": 2,
-  "model_batch_calls": 1,
-  "model_batch_p50_ms": 254.97623300000782,
-  "model_batch_p95_ms": 254.97623300000782,
-  "provider_prompt_tokens": 485,
-  "provider_completion_tokens": 36,
+  "model_batch_calls": 0,
+  "model_batch_p50_ms": null,
+  "model_batch_p95_ms": null,
+  "provider_prompt_tokens": 0,
+  "provider_completion_tokens": 0,
   "outcomes": {
-    "correct": 28,
-    "route_mismatch": 1
+    "correct": 29
   },
   "suite": "metamorphic29",
-  "wall_seconds": 0.2776064389999817
+  "wall_seconds": 0.013895828999999082
 }

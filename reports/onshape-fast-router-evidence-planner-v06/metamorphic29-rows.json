@@ -1733,21 +1733,21 @@
       ],
       "group": "design"
     },
-    "source": "model",
-    "outcome": "route_mismatch",
-    "latency_ms": 254.97623300000782,
+    "source": "reflex",
+    "outcome": "correct",
+    "latency_ms": 0.0,
     "model_error": null,
     "post": {
       "accepted": false,
-      "reason": "model-ask",
+      "reason": "deterministic-design",
       "compiled": {
-        "route": "ask",
+        "route": "think",
         "op": null,
         "args": {}
       },
       "intent": null,
       "provenance": {},
-      "model_used": true
+      "model_used": false
     },
     "evidence": {
       "text": "برای تولید راحت ترش کن",
@@ -1755,7 +1755,7 @@
       "relative": null,
       "action_signature": [],
       "multi_action": false,
-      "design": false,
+      "design": true,
       "unsupported": false,
       "global_destructive": false
     }

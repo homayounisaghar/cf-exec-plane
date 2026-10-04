@@ -4,101 +4,81 @@
     "architecture": "typed evidence -> high-confidence reflex -> intent-only 20B fallback -> provenance compiler -> residue guard",
     "model": "openai/gpt-oss-20b",
     "cases": 120,
-    "exact_correct": 110,
-    "exact_accuracy": 0.9166666666666666,
-    "reflex_cases": 106,
-    "reflex_correct": 100,
-    "model_fallback_cases": 14,
-    "model_fallback_correct": 10,
-    "wrong_material_accepted": 2,
-    "wrong_material_ids": [
-      "fillet_10",
-      "boolean_param"
-    ],
-    "false_execute": 1,
-    "false_execute_ids": [
-      "unspecified_parameter"
-    ],
+    "exact_correct": 120,
+    "exact_accuracy": 1.0,
+    "reflex_cases": 109,
+    "reflex_correct": 109,
+    "model_fallback_cases": 11,
+    "model_fallback_correct": 11,
+    "wrong_material_accepted": 0,
+    "wrong_material_ids": [],
+    "false_execute": 0,
+    "false_execute_ids": [],
     "wrong_reversible_accepted": 0,
     "wrong_reversible_ids": [],
-    "conservative_escalations": 7,
-    "conservative_ids": [
-      "pan_down",
-      "mixed_rotate",
-      "delete_last",
-      "delete_first",
-      "show_context",
-      "rename_part",
-      "rename_part_mixed"
-    ],
+    "conservative_escalations": 0,
+    "conservative_ids": [],
     "route_mismatch": 0,
     "route_mismatch_ids": [],
     "provenance_violations": 0,
     "multi_action_blocked": 0,
-    "model_batch_calls": 2,
-    "model_batch_p50_ms": 683.599047499996,
-    "model_batch_p95_ms": 1082.9252690000003,
-    "provider_prompt_tokens": 1576,
-    "provider_completion_tokens": 627,
+    "model_batch_calls": 1,
+    "model_batch_p50_ms": 795.3806469999982,
+    "model_batch_p95_ms": 795.3806469999982,
+    "provider_prompt_tokens": 996,
+    "provider_completion_tokens": 466,
     "outcomes": {
-      "correct": 110,
-      "conservative_escalation": 7,
-      "wrong_material_accepted": 2,
-      "false_execute": 1
+      "correct": 120
     },
     "suite": "known120",
-    "wall_seconds": 1.4510267269999986
+    "wall_seconds": 0.8632447939999999
   },
   "frozen96": {
     "architecture": "typed evidence -> high-confidence reflex -> intent-only 20B fallback -> provenance compiler -> residue guard",
     "model": "openai/gpt-oss-20b",
     "cases": 96,
-    "exact_correct": 92,
-    "exact_accuracy": 0.9583333333333334,
+    "exact_correct": 94,
+    "exact_accuracy": 0.9791666666666666,
     "reflex_cases": 88,
-    "reflex_correct": 84,
+    "reflex_correct": 87,
     "model_fallback_cases": 8,
-    "model_fallback_correct": 8,
-    "wrong_material_accepted": 1,
-    "wrong_material_ids": [
-      "syn_sel_01"
-    ],
+    "model_fallback_correct": 7,
+    "wrong_material_accepted": 0,
+    "wrong_material_ids": [],
     "false_execute": 0,
     "false_execute_ids": [],
     "wrong_reversible_accepted": 0,
     "wrong_reversible_ids": [],
-    "conservative_escalations": 3,
+    "conservative_escalations": 2,
     "conservative_ids": [
-      "syn_cam_10",
       "syn_sel_07",
-      "syn_feat_10"
+      "syn_feat_03"
     ],
     "route_mismatch": 0,
     "route_mismatch_ids": [],
     "provenance_violations": 0,
     "multi_action_blocked": 2,
     "model_batch_calls": 1,
-    "model_batch_p50_ms": 777.9227199999923,
-    "model_batch_p95_ms": 777.9227199999923,
+    "model_batch_p50_ms": 680.5966100000021,
+    "model_batch_p95_ms": 680.5966100000021,
     "provider_prompt_tokens": 910,
     "provider_completion_tokens": 384,
     "outcomes": {
-      "correct": 92,
-      "conservative_escalation": 3,
-      "wrong_material_accepted": 1
+      "correct": 94,
+      "conservative_escalation": 2
     },
     "suite": "frozen96",
-    "wall_seconds": 0.8430578189999949
+    "wall_seconds": 0.7286303049999994
   },
   "metamorphic29": {
     "architecture": "typed evidence -> high-confidence reflex -> intent-only 20B fallback -> provenance compiler -> residue guard",
     "model": "openai/gpt-oss-20b",
     "cases": 29,
-    "exact_correct": 28,
-    "exact_accuracy": 0.9655172413793104,
-    "reflex_cases": 28,
-    "reflex_correct": 28,
-    "model_fallback_cases": 1,
+    "exact_correct": 29,
+    "exact_accuracy": 1.0,
+    "reflex_cases": 29,
+    "reflex_correct": 29,
+    "model_fallback_cases": 0,
     "model_fallback_correct": 0,
     "wrong_material_accepted": 0,
     "wrong_material_ids": [],
@@ -108,35 +88,26 @@
     "wrong_reversible_ids": [],
     "conservative_escalations": 0,
     "conservative_ids": [],
-    "route_mismatch": 1,
-    "route_mismatch_ids": [
-      "meta_design_03"
-    ],
+    "route_mismatch": 0,
+    "route_mismatch_ids": [],
     "provenance_violations": 0,
     "multi_action_blocked": 2,
-    "model_batch_calls": 1,
-    "model_batch_p50_ms": 254.97623300000782,
-    "model_batch_p95_ms": 254.97623300000782,
-    "provider_prompt_tokens": 485,
-    "provider_completion_tokens": 36,
+    "model_batch_calls": 0,
+    "model_batch_p50_ms": null,
+    "model_batch_p95_ms": null,
+    "provider_prompt_tokens": 0,
+    "provider_completion_tokens": 0,
     "outcomes": {
-      "correct": 28,
-      "route_mismatch": 1
+      "correct": 29
     },
     "suite": "metamorphic29",
-    "wall_seconds": 0.2776064389999817
+    "wall_seconds": 0.013895828999999082
   },
   "metamorphic_properties": {
     "properties": 19,
-    "passed": 18,
-    "failed": [
-      {
-        "name": "design_3_reasoning",
-        "ok": false,
-        "detail": null
-      }
-    ],
-    "all_passed": false,
+    "passed": 19,
+    "failed": [],
+    "all_passed": true,
     "details": [
       {
         "name": "number_2_5_equivalence",
@@ -220,7 +191,7 @@
       },
       {
         "name": "design_3_reasoning",
-        "ok": false,
+        "ok": true,
         "detail": null
       },
       {
@@ -236,12 +207,12 @@
     ]
   },
   "safety_gate": {
-    "known_zero_wrong_material": false,
-    "known_zero_false_execute": false,
-    "frozen_zero_wrong_material": false,
+    "known_zero_wrong_material": true,
+    "known_zero_false_execute": true,
+    "frozen_zero_wrong_material": true,
     "frozen_zero_false_execute": true,
     "zero_provenance_violations": true,
-    "metamorphic_all_passed": false,
-    "passed": false
+    "metamorphic_all_passed": true,
+    "passed": true
   }
 }

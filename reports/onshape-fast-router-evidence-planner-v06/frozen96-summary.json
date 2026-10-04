@@ -2,40 +2,36 @@
   "architecture": "typed evidence -> high-confidence reflex -> intent-only 20B fallback -> provenance compiler -> residue guard",
   "model": "openai/gpt-oss-20b",
   "cases": 96,
-  "exact_correct": 92,
-  "exact_accuracy": 0.9583333333333334,
+  "exact_correct": 94,
+  "exact_accuracy": 0.9791666666666666,
   "reflex_cases": 88,
-  "reflex_correct": 84,
+  "reflex_correct": 87,
   "model_fallback_cases": 8,
-  "model_fallback_correct": 8,
-  "wrong_material_accepted": 1,
-  "wrong_material_ids": [
-    "syn_sel_01"
-  ],
+  "model_fallback_correct": 7,
+  "wrong_material_accepted": 0,
+  "wrong_material_ids": [],
   "false_execute": 0,
   "false_execute_ids": [],
   "wrong_reversible_accepted": 0,
   "wrong_reversible_ids": [],
-  "conservative_escalations": 3,
+  "conservative_escalations": 2,
   "conservative_ids": [
-    "syn_cam_10",
     "syn_sel_07",
-    "syn_feat_10"
+    "syn_feat_03"
   ],
   "route_mismatch": 0,
   "route_mismatch_ids": [],
   "provenance_violations": 0,
   "multi_action_blocked": 2,
   "model_batch_calls": 1,
-  "model_batch_p50_ms": 777.9227199999923,
-  "model_batch_p95_ms": 777.9227199999923,
+  "model_batch_p50_ms": 680.5966100000021,
+  "model_batch_p95_ms": 680.5966100000021,
   "provider_prompt_tokens": 910,
   "provider_completion_tokens": 384,
   "outcomes": {
-    "correct": 92,
-    "conservative_escalation": 3,
-    "wrong_material_accepted": 1
+    "correct": 94,
+    "conservative_escalation": 2
   },
   "suite": "frozen96",
-  "wall_seconds": 0.8430578189999949
+  "wall_seconds": 0.7286303049999994
 }
