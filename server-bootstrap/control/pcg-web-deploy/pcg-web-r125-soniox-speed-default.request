@@ -1,0 +1,4 @@
+request_id=pcg-web-r125-soniox-speed-default
+candidate_commit=32b8dedd05dff79393c564cc6ad527509af1218a
+expected_sequence=125
+expected_release=pcg-web-stage6-soniox-speed-default-r125
