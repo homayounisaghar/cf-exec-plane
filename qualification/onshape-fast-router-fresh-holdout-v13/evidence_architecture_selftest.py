@@ -69,6 +69,35 @@ def main():
     assert_eq(c,{"route":"ask","op":None,"args":{}},"selection-mutation-fails-closed")
     checks.append("selection-mutation-vs-inspect")
 
+    c,ev=compiled("الان تو دستم چیه؟")
+    assert_eq(c,{"route":"do","op":"viewer.inspect","args":{"mode":"selection"}},"selection-inspect-paraphrase")
+    checks.append("selection-inspect-paraphrase")
+
+    c,ev=compiled("Draft 5 رو دوازده درجه کن")
+    assert_eq(c,{"route":"do","op":"feature.parameter.set","args":{"feature_name":"Draft 5","parameter":"angle","amount":"12 deg"}},"draft-type-unit-inference")
+    checks.append("draft-type-unit-inference")
+
+    c,ev=compiled("depth Fillet 6 رو سه میل کن")
+    assert_eq(c,{"route":"ask","op":None,"args":{}},"explicit-parameter-precedence")
+    checks.append("explicit-parameter-precedence")
+
+    c,ev=compiled("Bracket دوباره دیده بشه")
+    assert_eq(c,{"route":"do","op":"part.visibility","args":{"part_name":"Bracket","visible":True}},"grounded-positive-visibility")
+    checks.append("grounded-positive-visibility")
+
+    c,ev=compiled("material Part 8 رو Titanium بذار")
+    assert_eq(ev.get("unsupported"),False,"material-not-mate")
+    assert_eq(c,{"route":"do","op":"metadata.property.set","args":{"part_name":"Part 8","property":"material","value":"Titanium"}},"material-token-boundary")
+    checks.append("material-token-boundary")
+
+    c,ev=compiled("سبکش کن ولی سفتی قطعه کم نشه")
+    assert_eq(c,{"route":"think","op":None,"args":{}},"weight-design-escalation")
+    checks.append("weight-design-escalation")
+
+    c,ev=compiled("درخت feature رو مرتب و خلوت کن")
+    assert_eq(c,{"route":"think","op":None,"args":{}},"mixed-feature-tree-design")
+    checks.append("mixed-feature-tree-design")
+
     for text,want in [
         ("یه ذره خلاف عقربه ها بچرخون",("view.move",{"action":"orbit","direction":"counterclockwise"})),
         ("یه قدم ازش دور شو",("view.move",{"action":"zoom","direction":"out"})),
