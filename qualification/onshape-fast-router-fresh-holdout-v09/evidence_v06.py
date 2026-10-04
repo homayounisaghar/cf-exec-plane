@@ -426,12 +426,15 @@ def extract_property_value(text, ctx):
     m=re.search(r"\b(?:color\s*=?\s*)(red|blue|green|black|white|yellow|gray|grey)\b",t,re.I)
     if m: return ("color","gray" if m.group(1).lower()=="grey" else m.group(1).lower())
     if has_any(t,["متریال","material"]):
+        aliases={"فولاد":"Steel","آلومینیوم":"Aluminum","الومینیوم":"Aluminum"}
+        for k,v in aliases.items():
+            if k in t:
+                return ("material",v)
         for pat in [r"(?:متریال|material).*?(?:رو|را|=|to)\s+(.+?)(?:\s+(?:بذار|بگذار|کن))?$", r"(?:متریالش رو)\s+(.+?)\s+کن$"]:
             m=re.search(pat,norm_text(text),re.I)
             if m:
                 v=m.group(1).strip()
                 if v:
-                    aliases={"فولاد":"Steel","آلومینیوم":"Aluminum","الومینیوم":"Aluminum"}
                     return ("material",aliases.get(low(v),v))
     if "description" in t:
         m=re.search(r"description.*?(?:بذار|بگذار|=|to)\s+(.+)$",norm_text(text),re.I)
@@ -462,9 +465,9 @@ def extract_evidence(text, ctx=None):
     visibility=None
     if re.search(r"(?:نشون|نشان)\s+نده",cue_t) or "نشون نده" in cue_t or "نشان نده" in cue_t:
         visibility=False
-    elif has_any(cue_t,["مخفی","قایم","hide","نشونش نده","نشانش نده"]):
+    elif has_any(cue_t,["مخفی","قایم","hide","نشونش نده","نشانش نده","از جلوی چشم بردار","دیده نشه","دیده نشود"]):
         visibility=False
-    elif has_any(cue_t,["نشون بده","نشان بده","نشونش بده","نشانش بده","show","دوباره بیار","برگردونش توی نما"]):
+    elif has_any(cue_t,["نشون بده","نشان بده","نشونش بده","نشانش بده","show","دوباره بیار","برگردونش توی نما","برگردون تو نما","برگردون توی نما"]):
         visibility=True
 
     suppressed=None
@@ -486,35 +489,41 @@ def extract_evidence(text, ctx=None):
         "سبک تر","سبک‌تر","وزنشو کم","وزنش رو کم","سفت بمونه","استحکام","قوی تر","قوی‌تر",
         "تزریق پلاستیک","طراحی بهتر","طراحی رو درست","اضافی",
         "مقاومتش کم نشه","مقاومت کم نشه","قالب گیری","قالب‌گیری","به دردنخور",
-        "محکم تر","محکم‌تر","وزن قطعه","ضعیف نشه","تولید انبوه","غیرضروری"
+        "محکم تر","محکم‌تر","وزن قطعه","ضعیف نشه","تولید انبوه","غیرضروری",
+        "تزریق","منطقی تر","منطقی‌تر","درخت فیچر","مرتبش کن","تمیزتر بشه","تمیزتر شه",
+        "جمع و جورتر","بهتر دربیار","بهترش کن"
     ])
     unsupported = has_any(cue_t,["public","share","pdf","export","step","mate","company","شرکت onshape"])
 
     camera_action=None; camera_direction=None; camera_inverse=False
-    if has_any(cue_t,["زوم","zoom"]): camera_action="zoom"
-    elif has_any(cue_t,["پن ","pan","نما رو","صفحه رو","هل بده"]): camera_action="pan"
-    elif has_any(cue_t,["بچرخ","rotate","ساعتگرد","پادساعتگرد","clockwise","counterclockwise","ربع دور"]): camera_action="orbit"
-    if "پادساعتگرد" in cue_t or re.search(r"\bcounterclockwise\b",cue_t): camera_direction="counterclockwise"
-    elif "ساعتگرد" in cue_t or re.search(r"\bclockwise\b",cue_t): camera_direction="clockwise"
+    if has_any(cue_t,["زوم","zoom","نزدیک تر شو","نزدیک‌تر شو","دورتر شو","دور تر شو"]): camera_action="zoom"
+    elif has_any(cue_t,["پن ","pan","نما رو","صفحه رو","هل بده"]) or (has_any(cue_t,["بکش بالا","بکش پایین"]) and has_any(cue_t,["نما","صفحه"])):
+        camera_action="pan"
+    elif has_any(cue_t,["بچرخ","rotate","ساعتگرد","پادساعتگرد","clockwise","counterclockwise","ربع دور","عقربه"]): camera_action="orbit"
+    if "پادساعتگرد" in cue_t or re.search(r"\bcounterclockwise\b",cue_t) or has_any(cue_t,["برعکس عقربه","خلاف جهت عقربه"]): camera_direction="counterclockwise"
+    elif "ساعتگرد" in cue_t or re.search(r"\bclockwise\b",cue_t) or has_any(cue_t,["در جهت عقربه","با عقربه"]): camera_direction="clockwise"
     elif has_any(cue_t,["سمت راست","به راست","طرف راست","راست بچرخ","هل بده راست"]): camera_direction="right"
     elif has_any(cue_t,["سمت چپ","به چپ","طرف چپ","چپ بچرخ","هل بده چپ"]): camera_direction="left"
-    elif has_any(cue_t,["ببر بالا","پن کن بالا","بالا بچرخ"]): camera_direction="up"
-    elif has_any(cue_t,["ببر پایین","پن کن پایین","پایین بچرخ"]): camera_direction="down"
+    elif has_any(cue_t,["ببر بالا","پن کن بالا","بالا بچرخ","بکش بالا"]): camera_direction="up"
+    elif has_any(cue_t,["ببر پایین","پن کن پایین","پایین بچرخ","بکش پایین"]): camera_direction="down"
     elif camera_action and re.search(r"\b(right|راست)\b",cue_t): camera_direction="right"
     elif camera_action and re.search(r"\b(left|چپ)\b",cue_t): camera_direction="left"
     elif camera_action and re.search(r"\b(up|بالا)\b",cue_t): camera_direction="up"
     elif camera_action and re.search(r"\b(down|پایین)\b",cue_t): camera_direction="down"
     if has_any(cue_t,["زیادی شد","برش گردون","برگرد","عقب تر","عقب‌تر"]):
         camera_inverse=True
+    if camera_action=="zoom" and camera_direction is None:
+        if has_any(cue_t,["نزدیک تر شو","نزدیک‌تر شو"]): camera_direction="in"
+        elif has_any(cue_t,["دورتر شو","دور تر شو"]): camera_direction="out"
 
     fit_all = has_any(cue_t,["فیت","fit","تو کادر جا","توی کادر جا","کل مدل تو کادر"])
     fit_selection = fit_all and has_any(cue_t,["انتخاب","همین انتخاب","selection"])
     top_view = has_any(cue_t,["از بالا","top view","نمای بالا"])
-    clear_selection = has_any(cue_t,["انتخاب رو پاک","انتخاب را پاک","selection رو پاک","selection را پاک","selection رو خالی","selection را خالی","انتخابارو ول کن","انتخاب ها رو ول کن"])
+    clear_selection = has_any(cue_t,["انتخاب رو پاک","انتخاب را پاک","selection رو پاک","selection را پاک","selection رو خالی","selection را خالی","selection فعلی رو صفر","انتخابارو ول کن","انتخاب ها رو ول کن"])
 
     edge_kind=None
     if has_any(cue_t,["پخ","چمفر","chamfer"]): edge_kind="chamfer"
-    elif has_any(cue_t,["فیلت","fillet","فیلِت"]): edge_kind="fillet"
+    elif has_any(cue_t,["فیلت","fillet","فیلِت","گرد کن"]): edge_kind="fillet"
 
     # In the owner's CAD shorthand, a bare fractional edge size is millimetres.
     # Keep this bounded to explicit fractional forms so "فیلت دو" can never become 2 mm.
@@ -619,9 +628,9 @@ def direct_intent(case, ev):
     if ev["clear_selection"]: return ("act","clear_selection")
     if ev["fit_all"]: return ("act","fit")
     if ev["top_view"]: return ("act","top_view")
-    if has_any(t,["چی انتخاب","چی انتخابه","چی انتخاب شده","چی سلکت","سلکت شده"]): return ("act","inspect")
-    if has_any(t,["وضعیت ویور","viewer state"]) or ("وضعیت" in t and "viewer" in t): return ("act","inspect")
-    if has_any(t,["سشن","session","چند نفر تو","کسایی تو","کسانی تو"]): return ("act","inspect")
+    if has_any(t,["چی انتخاب","چی انتخابه","چی انتخاب شده","چی سلکت","سلکت شده","چی دستمه","چی گرفتم"]): return ("act","inspect")
+    if has_any(t,["وضعیت ویور","viewer state","وضعیت صفحه"]) or ("وضعیت" in t and "viewer" in t): return ("act","inspect")
+    if has_any(t,["سشن","session","چند نفر تو","کسایی تو","کسانی تو","کیا الان وصلن","چند نفریم","وصلن"]): return ("act","inspect")
     if has_any(t,["فالو","follow","دنبال کن"]): return ("act","follow")
 
     if "flip direction" in t and choose_feature(ev):
@@ -629,6 +638,8 @@ def direct_intent(case, ev):
     if has_any(t,["اسم","rename"]) and choose_feature(ev):
         return ("act","feature_rename")
     if has_any(t,["آخرین فیچر","اولین فیچر","فیچرو","فیچر رو"]) and has_any(t,["پاک","حذف","بنداز دور"]):
+        return ("act","feature_delete")
+    if "آخرین" in t and has_any(t,["از فیچرها","درخت فیچر"]) and has_any(t,["پاک","حذف"]):
         return ("act","feature_delete")
     if choose_feature(ev) and has_any(t,["پاک کن","حذف کن","بنداز دور"]):
         return ("act","feature_delete")
@@ -697,6 +708,9 @@ def compile_intent(case, decision, intent, ev):
     if decision=="ask" or not intent:
         return reject("clarification")
 
+    if intent not in INTENTS and intent!="fit_selection":
+        return reject("intent-not-allowed")
+
     if intent in MATERIAL_INTENTS and ev["multi_action"]:
         return reject("semantic-residue-multi-action")
 
@@ -727,6 +741,11 @@ def compile_intent(case, decision, intent, ev):
         if q: args["angle_degrees"]=q["value"]
         return accept("view.move",args,{"direction":"text/context","magnitude":q["id"] if q else None})
 
+    if intent=="fit_selection":
+        if ev["selection_count"]<=0:
+            return reject("fit-selection-ungrounded")
+        return accept("view.fit",{"action":"fit_selection"},{"target":"verified-selection-context"})
+
     if intent=="fit":
         target="selection" if ev["fit_selection"] else "all"
         if target=="selection" and ev["selection_count"]<=0:
@@ -737,14 +756,14 @@ def compile_intent(case, decision, intent, ev):
     if intent=="clear_selection": return accept("viewer.selection.clear",{},{})
 
     if intent=="inspect":
-        if has_any(t,["سشن","session","چند نفر","کسایی","کسانی"]): mode="collaboration"
-        elif has_any(t,["انتخاب","selection","چی انتخاب","سلکت","select"]): mode="selection"
+        if has_any(t,["سشن","session","چند نفر","کسایی","کسانی","کیا","وصلن","چند نفریم"]): mode="collaboration"
+        elif has_any(t,["انتخاب","selection","چی انتخاب","سلکت","select","چی دستمه","چی گرفتم"]): mode="selection"
         else: mode="state"
         return accept("viewer.inspect",{"mode":mode},{"mode":"text"})
 
     if intent=="follow":
         cc=ev.get("collaborator_count")
-        idx=2 if has_any(t,["نفر دوم","second"]) else None
+        idx=2 if has_any(t,["نفر دوم","دومی","دوم رو","second"]) else None
         if cc and cc>=3 and idx is None: return reject("follow-ambiguous")
         return accept("view.follow",{} if idx is None else {"candidate_index":idx},{"candidate":"text/context"})
 
@@ -829,6 +848,10 @@ def compile_intent(case, decision, intent, ev):
                       {"part":"text/context","property":"text","value":"text-span"})
 
     if intent=="add_plane":
+        if not has_any(t,["plane","صفحه مرجع"]):
+            return reject("plane-not-explicit")
+        if not has_any(t,["بساز","ایجاد","create","جدید","خالی"]):
+            return reject("plane-create-not-explicit")
         if has_any(t,["right","left","top","front"]) and not ev.get("name_value"):
             return reject("plane-reference-needs-provider-shape")
         args={"feature_type":"plane"}
