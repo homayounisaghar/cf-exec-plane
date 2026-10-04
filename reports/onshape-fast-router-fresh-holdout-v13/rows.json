@@ -1474,7 +1474,7 @@
         }
       ]
     },
-    "source": "model_intent",
+    "source": "evidence_reflex",
     "decision": "act",
     "intent": "inspect",
     "evidence": {
@@ -1499,7 +1499,7 @@
       "property_value": null,
       "name_value": null,
       "payloads": [],
-      "inspect_target": null,
+      "inspect_target": "selection",
       "selection_action": null,
       "parameter_hint": null,
       "boolean_value": null,
@@ -1530,21 +1530,21 @@
       "action_cues": []
     },
     "post": {
-      "accepted": false,
-      "reason": "inspect-target-ungrounded",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
-      }
+        "route": "do",
+        "op": "viewer.inspect",
+        "args": {
+          "mode": "selection"
+        }
+      },
+      "provenance": {
+        "mode": "semantic-evidence"
+      },
+      "consumed_evidence_count": 1
     },
-    "model_choice": {
-      "id": "v13_i01",
-      "d": "a",
-      "i": "inspect"
-    },
-    "model_latency_ms": 900.8381710000037,
-    "outcome": "conservative_escalation"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -4443,7 +4443,7 @@
         "value": "q1",
         "parameter": "text/type"
       },
-      "consumed_evidence_count": 0
+      "consumed_evidence_count": 1
     },
     "outcome": "correct"
   },
@@ -4564,7 +4564,7 @@
         "value": "q1",
         "parameter": "text/type"
       },
-      "consumed_evidence_count": 0
+      "consumed_evidence_count": 1
     },
     "outcome": "correct"
   },
@@ -4692,8 +4692,8 @@
       ]
     },
     "source": "evidence_reflex",
-    "decision": "ask",
-    "intent": null,
+    "decision": "act",
+    "intent": "feature_parameter",
     "evidence": {
       "text": "Draft 5 رو دوازده درجه کن",
       "quantities": [
@@ -4774,15 +4774,25 @@
       "action_cues": []
     },
     "post": {
-      "accepted": false,
-      "reason": "clarification",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
-      }
+        "route": "do",
+        "op": "feature.parameter.set",
+        "args": {
+          "feature_name": "Draft 5",
+          "parameter": "angle",
+          "amount": "12 deg"
+        }
+      },
+      "provenance": {
+        "feature": "text/context",
+        "value": "q1",
+        "parameter": "text/type"
+      },
+      "consumed_evidence_count": 0
     },
-    "outcome": "conservative_escalation"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -5089,25 +5099,15 @@
       "action_cues": []
     },
     "post": {
-      "accepted": true,
-      "reason": "ok",
+      "accepted": false,
+      "reason": "feature-parameter-incompatible",
       "compiled": {
-        "route": "do",
-        "op": "feature.parameter.set",
-        "args": {
-          "feature_name": "Fillet 6",
-          "parameter": "radius",
-          "amount": "3 mm"
-        }
-      },
-      "provenance": {
-        "feature": "text/context",
-        "value": "q1",
-        "parameter": "text/type"
-      },
-      "consumed_evidence_count": 0
+        "route": "ask",
+        "op": null,
+        "args": {}
+      }
     },
-    "outcome": "false_execute"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -6148,7 +6148,7 @@
         "feature": "text/context",
         "value": "text"
       },
-      "consumed_evidence_count": 0
+      "consumed_evidence_count": 1
     },
     "outcome": "correct"
   },
@@ -6454,7 +6454,7 @@
         }
       ]
     },
-    "source": "model_intent",
+    "source": "evidence_reflex",
     "decision": "act",
     "intent": "part_visibility",
     "evidence": {
@@ -6480,7 +6480,7 @@
       "feature_parameters": {},
       "last_action": null,
       "collaborator_count": null,
-      "visibility": null,
+      "visibility": true,
       "suppressed": null,
       "relation": null,
       "relative": null,
@@ -6516,24 +6516,28 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [
+        "hide_show"
+      ]
     },
     "post": {
-      "accepted": false,
-      "reason": "visibility-ungrounded",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
-      }
+        "route": "do",
+        "op": "part.visibility",
+        "args": {
+          "part_name": "Bracket",
+          "visible": true
+        }
+      },
+      "provenance": {
+        "part": "text/context",
+        "state": "text-negation-aware"
+      },
+      "consumed_evidence_count": 1
     },
-    "model_choice": {
-      "id": "v13_p03",
-      "d": "a",
-      "i": "part_visibility"
-    },
-    "model_latency_ms": 900.8381710000037,
-    "outcome": "conservative_escalation"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -6911,8 +6915,8 @@
       ]
     },
     "source": "evidence_reflex",
-    "decision": "ask",
-    "intent": null,
+    "decision": "act",
+    "intent": "part_property",
     "evidence": {
       "text": "material Part 2 رو Steel بذار",
       "quantities": [],
@@ -6975,7 +6979,7 @@
       "copy_count": null,
       "cue_text": "material part 2 رو       بذار",
       "design": false,
-      "unsupported": true,
+      "unsupported": false,
       "camera_action": null,
       "camera_direction": null,
       "camera_inverse": false,
@@ -6989,15 +6993,25 @@
       "action_cues": []
     },
     "post": {
-      "accepted": false,
-      "reason": "clarification",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
-      }
+        "route": "do",
+        "op": "metadata.property.set",
+        "args": {
+          "part_name": "Part 2",
+          "property": "material",
+          "value": "Steel"
+        }
+      },
+      "provenance": {
+        "part": "text/context",
+        "property": "text",
+        "value": "text-span"
+      },
+      "consumed_evidence_count": 1
     },
-    "outcome": "conservative_escalation"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -7741,8 +7755,8 @@
       ]
     },
     "source": "evidence_reflex",
-    "decision": "ask",
-    "intent": null,
+    "decision": "act",
+    "intent": "part_property",
     "evidence": {
       "text": "material Part 8 رو Titanium بذار",
       "quantities": [],
@@ -7805,7 +7819,7 @@
       "copy_count": null,
       "cue_text": "material part 8 رو          بذار",
       "design": false,
-      "unsupported": true,
+      "unsupported": false,
       "camera_action": null,
       "camera_direction": null,
       "camera_inverse": false,
@@ -7819,15 +7833,25 @@
       "action_cues": []
     },
     "post": {
-      "accepted": false,
-      "reason": "clarification",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
-      }
+        "route": "do",
+        "op": "metadata.property.set",
+        "args": {
+          "part_name": "Part 8",
+          "property": "material",
+          "value": "Titanium"
+        }
+      },
+      "provenance": {
+        "part": "text/context",
+        "property": "text",
+        "value": "text-span"
+      },
+      "consumed_evidence_count": 1
     },
-    "outcome": "conservative_escalation"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -8688,7 +8712,7 @@
       "d": "a",
       "i": "add_pattern"
     },
-    "model_latency_ms": 900.8381710000037,
+    "model_latency_ms": 530.1035679999977,
     "outcome": "correct"
   },
   {
@@ -9123,7 +9147,7 @@
       "d": "a",
       "i": "create_part_studio"
     },
-    "model_latency_ms": 900.8381710000037,
+    "model_latency_ms": 530.1035679999977,
     "outcome": "correct"
   },
   {
@@ -9242,8 +9266,8 @@
         }
       ]
     },
-    "source": "model_intent",
-    "decision": "ask",
+    "source": "evidence_reflex",
+    "decision": "think",
     "intent": null,
     "evidence": {
       "text": "سبکش کن ولی سفتی قطعه کم نشه",
@@ -9283,7 +9307,7 @@
       "edge_new_explicit": false,
       "copy_count": null,
       "cue_text": "سبکش کن ولی سفتی قطعه کم نشه",
-      "design": false,
+      "design": true,
       "unsupported": false,
       "camera_action": null,
       "camera_direction": null,
@@ -9299,20 +9323,14 @@
     },
     "post": {
       "accepted": false,
-      "reason": "clarification",
+      "reason": "design-escalation",
       "compiled": {
-        "route": "ask",
+        "route": "think",
         "op": null,
         "args": {}
       }
     },
-    "model_choice": {
-      "id": "v13_x01",
-      "d": "q",
-      "i": null
-    },
-    "model_latency_ms": 900.8381710000037,
-    "outcome": "route_mismatch"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -9404,8 +9422,8 @@
         }
       ]
     },
-    "source": "model_intent",
-    "decision": "ask",
+    "source": "evidence_reflex",
+    "decision": "think",
     "intent": null,
     "evidence": {
       "text": "درخت feature رو مرتب و خلوت کن",
@@ -9445,7 +9463,7 @@
       "edge_new_explicit": false,
       "copy_count": null,
       "cue_text": "درخت feature رو مرتب و خلوت کن",
-      "design": false,
+      "design": true,
       "unsupported": false,
       "camera_action": null,
       "camera_direction": null,
@@ -9461,19 +9479,14 @@
     },
     "post": {
       "accepted": false,
-      "reason": "clarification",
+      "reason": "design-escalation",
       "compiled": {
-        "route": "ask",
+        "route": "think",
         "op": null,
         "args": {}
       }
     },
-    "model_choice": {
-      "d": "q",
-      "i": null
-    },
-    "model_latency_ms": 900.8381710000037,
-    "outcome": "route_mismatch"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -9710,10 +9723,11 @@
       }
     },
     "model_choice": {
+      "id": "v13_x06",
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 900.8381710000037,
+    "model_latency_ms": 530.1035679999977,
     "outcome": "correct"
   },
   {
