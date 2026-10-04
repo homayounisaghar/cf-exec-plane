@@ -6,14 +6,12 @@
   "model_intent_cases": 7,
   "model_batch_calls": 1,
   "model_batch_retries": 0,
-  "exact_correct": 99,
-  "exact_accuracy": 0.99,
+  "exact_correct": 100,
+  "exact_accuracy": 1.0,
   "wrong_material_accepted": 0,
   "wrong_material_ids": [],
-  "false_execute": 1,
-  "false_execute_ids": [
-    "v12_i09"
-  ],
+  "false_execute": 0,
+  "false_execute_ids": [],
   "wrong_reversible_accepted": 0,
   "conservative_escalations": 0,
   "route_mismatch": 0,
@@ -21,13 +19,12 @@
   "routine_expected_do": 69,
   "routine_auto_accepted": 69,
   "routine_correct": 69,
-  "provider_prompt_tokens": 2409,
-  "provider_completion_tokens": 321,
-  "model_batch_p50_ms": 728.1527029999993,
-  "model_batch_p95_ms": 728.1527029999993,
-  "wall_seconds": 0.7682642030000011,
+  "provider_prompt_tokens": 2479,
+  "provider_completion_tokens": 385,
+  "model_batch_p50_ms": 779.015373,
+  "model_batch_p95_ms": 779.015373,
+  "wall_seconds": 0.8214050670000006,
   "outcomes": {
-    "correct": 99,
-    "false_execute": 1
+    "correct": 100
   }
 }
