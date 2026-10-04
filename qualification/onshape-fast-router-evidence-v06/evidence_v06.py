@@ -91,6 +91,10 @@ def parse_spoken_number(s):
     if m:
         a=parse_int_words(m.group(1))
         return None if a is None else a+0.5
+    m=re.fullmatch(r"(.+?) و (.+?) صدم",s)
+    if m:
+        a=parse_int_words(m.group(1)); b=parse_int_words(m.group(2))
+        return None if a is None or b is None else a+b/100.0
     m=re.fullmatch(r"(.+?) دهم",s)
     if m:
         a=parse_int_words(m.group(1))
@@ -99,10 +103,6 @@ def parse_spoken_number(s):
     if m:
         a=parse_int_words(m.group(1))
         return None if a is None else a/100.0
-    m=re.fullmatch(r"(.+?) و (.+?) صدم",s)
-    if m:
-        a=parse_int_words(m.group(1)); b=parse_int_words(m.group(2))
-        return None if a is None or b is None else a+b/100.0
     return float(parse_int_words(s)) if parse_int_words(s) is not None else None
 
 NUMBER_PHRASE = r"(?:[+-]?\d+(?:[.,]\d+)?|نیم|ربع|(?:یک|یه|دو|سه|چهار|پنج|شش|هفت|هشت|نه|ده|یازده|دوازده|سیزده|چهارده|پانزده|شانزده|هفده|هجده|نوزده|بیست|سی|چهل|پنجاه|شصت|هفتاد|هشتاد|نود)(?: و (?:نیم|(?:یک|یه|دو|سه|چهار|پنج|شش|هفت|هشت|نه|ده|یازده|دوازده|سیزده|چهارده|پانزده|شانزده|هفده|هجده|نوزده|بیست|سی|چهل|پنجاه|شصت|هفتاد|هشتاد|نود)(?: دهم| صدم)?))?)"
@@ -111,9 +111,10 @@ def extract_quantities(text):
     t=low(text)
     out=[]
     seen=set()
+    spoken = r"(?:[+-]?\d+(?:[.,]\d+)?|[آ-ی]+(?:\s+و\s+[آ-ی]+){0,3})"
     patterns=[
-        (rf"({NUMBER_PHRASE})\s*(?:میلی(?:متر)?|میل|mm)\b","mm",1.0),
-        (rf"({NUMBER_PHRASE})\s*(?:درجه|deg)\b","deg",1.0),
+        (rf"({spoken})\s*(?:میلی(?:متر)?|میل|mm)\b","mm",1.0),
+        (rf"({spoken})\s*(?:درجه|deg)\b","deg",1.0),
     ]
     for pat,unit,scale in patterns:
         for m in re.finditer(pat,t,re.I):
@@ -143,6 +144,9 @@ def extract_named_features(text):
     for m in re.finditer(r"\b(Fillet|Extrude|Draft|Sketch)\s*(\d+)\b",t,re.I):
         out.append({"id":f"f{len(out)+1}","name":m.group(1).title()+" "+m.group(2),"span":[m.start(),m.end()]})
     for m in re.finditer(r"(فیلت|اکسترود)\s*("+NUMBER_PHRASE+r")",t,re.I):
+        suffix=t[m.end():].lstrip()
+        if re.match(r"(?:میلی(?:متر)?|میل|mm)\b",suffix,re.I):
+            continue
         n=parse_spoken_number(m.group(2))
         if n is not None and float(n).is_integer():
             name=("Fillet" if m.group(1)=="فیلت" else "Extrude")+" "+str(int(n))
@@ -176,12 +180,14 @@ def extract_parts(text):
 def extract_name_value(text):
     s=norm_text(text)
     patterns=[
-        r"(?:به اسم|اسمش)\s+(.+)$",
         r"(?:اسم(?:ش)?\s+(?:بشه|بشود))\s+(.+)$",
+        r"(?:اسم\s+این\s+داکیومنت\s+(?:بشه|بشود))\s+(.+)$",
+        r"(?:به اسم|اسمش)\s+(.+)$",
+        r"\bcalled\s+(.+)$",
         r"(?:اسم\s+.+?\s+رو\s+بذار)\s+(.+)$",
         r"(?:عوض کن به)\s+(.+)$",
-        r"\brename\s+.+?\s+to\s+(.+)$",
         r"\brename\s+document\s+to\s+(.+)$",
+        r"\brename\s+.+?\s+to\s+(.+)$",
         r"(?:داکیومنت(?:و| رو)?\s+rename\s+کن\s+به)\s+(.+)$",
     ]
     for pat in patterns:
@@ -203,7 +209,9 @@ def extract_property_value(text, ctx):
             m=re.search(pat,norm_text(text),re.I)
             if m:
                 v=m.group(1).strip()
-                if v: return ("material",v)
+                if v:
+                    aliases={"فولاد":"Steel","آلومینیوم":"Aluminum","الومینیوم":"Aluminum"}
+                    return ("material",aliases.get(low(v),v))
     if "description" in t:
         m=re.search(r"description.*?(?:بذار|بگذار|=|to)\s+(.+)$",norm_text(text),re.I)
         if m: return ("description",m.group(1).strip())
@@ -231,10 +239,12 @@ def extract_evidence(text, ctx=None):
     suppressed=None
     if has_any(t,["خاموش","suppress"]): suppressed=True
     if has_any(t,["دوباره روشن","روشنش کن","روشن کن","unsuppress"]): suppressed=False
+    if ctx.get("last_action")=="suppress" and has_any(t,["برش گردون","برگردونش","دوباره بیارش"]):
+        suppressed=False
 
     relation=None
-    if has_any(t,["قبل از","بالای","بالا ی"]): relation="before"
-    elif has_any(t,["بعد از","زیر"]): relation="after"
+    if has_any(t,["قبل از","قبل ","بالای","بالا ی"]): relation="before"
+    elif has_any(t,["بعد از","بعد ","زیر"]): relation="after"
 
     relative=None
     if has_any(t,["زیادش کن","بیشترش کن","بیشتر کن","یه میل بیشتر","یک میل بیشتر"]): relative="add"
@@ -250,17 +260,21 @@ def extract_evidence(text, ctx=None):
     camera_action=None; camera_direction=None; camera_inverse=False
     if has_any(t,["زوم","zoom"]): camera_action="zoom"
     elif has_any(t,["پن ","pan","نما رو","صفحه رو","هل بده"]): camera_action="pan"
-    elif has_any(t,["بچرخ","rotate","ساعتگرد","پادساعتگرد","دور"]): camera_action="orbit"
+    elif has_any(t,["بچرخ","rotate","ساعتگرد","پادساعتگرد","ربع دور"]): camera_action="orbit"
     if "پادساعتگرد" in t: camera_direction="counterclockwise"
     elif "ساعتگرد" in t: camera_direction="clockwise"
     elif has_any(t,["سمت راست","به راست","طرف راست","راست بچرخ","هل بده راست"]): camera_direction="right"
     elif has_any(t,["سمت چپ","به چپ","طرف چپ","چپ بچرخ","هل بده چپ"]): camera_direction="left"
     elif has_any(t,["ببر بالا","پن کن بالا","بالا بچرخ"]): camera_direction="up"
     elif has_any(t,["ببر پایین","پن کن پایین","پایین بچرخ"]): camera_direction="down"
+    elif camera_action and re.search(r"\b(right|راست)\b",t): camera_direction="right"
+    elif camera_action and re.search(r"\b(left|چپ)\b",t): camera_direction="left"
+    elif camera_action and re.search(r"\b(up|بالا)\b",t): camera_direction="up"
+    elif camera_action and re.search(r"\b(down|پایین)\b",t): camera_direction="down"
     if has_any(t,["زیادی شد","برش گردون","برگرد","عقب تر","عقب‌تر"]):
         camera_inverse=True
 
-    fit_all = has_any(t,["فیت کن","fit","تو کادر جا","توی کادر جا","کل مدل تو کادر"])
+    fit_all = has_any(t,["فیت","fit","تو کادر جا","توی کادر جا","کل مدل تو کادر"])
     fit_selection = fit_all and has_any(t,["انتخاب","همین انتخاب","selection"])
     top_view = has_any(t,["از بالا","top view"])
     clear_selection = has_any(t,["انتخاب رو پاک","انتخاب را پاک","selection رو خالی","selection را خالی","انتخابارو ول کن","انتخاب ها رو ول کن"])
@@ -272,8 +286,10 @@ def extract_evidence(text, ctx=None):
     action_cues=[]
     def cue(name, cond):
         if cond: action_cues.append(name)
-    cue("fillet", has_any(t,["فیلت","fillet","فیلِت"]))
-    cue("chamfer", has_any(t,["پخ","چمفر","chamfer"]))
+    named_feature_context = bool(fs) and (relation is not None or has_any(t,["اسم","rename","پاک","حذف","بنداز دور"]))
+    edge_effect_context = (ctx.get("selection_count",0)>0 or has_any(t,["لبه","انتخاب","selected"]) or has_any(t,["جدید","خالی","بدون انتخاب"]))
+    cue("fillet", has_any(t,["فیلت","fillet","فیلِت"]) and edge_effect_context and not named_feature_context)
+    cue("chamfer", has_any(t,["پخ","چمفر","chamfer"]) and edge_effect_context and not named_feature_context)
     cue("hide_show", visibility is not None)
     cue("color", prop=="color")
     cue("rename", prop=="name" or (has_any(t,["اسم","rename"]) and extract_name_value(text)))
@@ -360,35 +376,35 @@ def direct_intent(case, ev):
     if has_any(t,["سشن","session","چند نفر تو","کسایی تو","کسانی تو"]): return ("act","inspect")
     if has_any(t,["فالو","follow"]): return ("act","follow")
 
-    # Camera direct lane, including contextual correction.
-    if ev["camera_action"] or (ev["last_move"] and has_any(t,["بیشتر","برگرد","زیادی شد","عقب تر","عقب‌تر","همون طرف"])):
-        return ("act","camera_move")
-
-    if ev["edge_kind"]:
-        explicit_new=has_any(t,["جدید","خالی","بدون انتخاب","فعلا بدون","فعلاً بدون","بساز"])
-        if explicit_new: return ("act","add_edge_feature")
-        # Named feature + quantity defaults to existing parameter edit.
-        if choose_feature(ev) and first_quantity(ev):
-            return ("act","feature_parameter")
-        return ("act","edge_on_selection")
-
-    if ev["suppressed"] is not None and choose_feature(ev):
-        return ("act","feature_suppressed")
+    if "flip direction" in t and choose_feature(ev):
+        return ("act","feature_parameter")
     if has_any(t,["اسم","rename"]) and choose_feature(ev):
         return ("act","feature_rename")
-    if has_any(t,["آخرین فیچر","اولین فیچر","فیچر"]) and has_any(t,["پاک","حذف","بنداز دور"]):
+    if has_any(t,["آخرین فیچر","اولین فیچر","فیچرو","فیچر رو"]) and has_any(t,["پاک","حذف","بنداز دور"]):
         return ("act","feature_delete")
     if choose_feature(ev) and has_any(t,["پاک کن","حذف کن","بنداز دور"]):
         return ("act","feature_delete")
     if choose_part(ev) and has_any(t,["پاک کن","حذف کن"]) and not choose_feature(ev):
         return ("act","part_delete")
+    if "rollback" in t: return ("act","rollback")
+    if ev["relation"] and (len(ev["features"])>=2 or (ctx.get("last_feature") and len(ev["features"])>=1)):
+        return ("act","feature_reorder")
 
+    if ev["suppressed"] is not None and choose_feature(ev):
+        return ("act","feature_suppressed")
     if ev["visibility"] is not None and choose_part(ev): return ("act","part_visibility")
     if ev["property"] and choose_part(ev): return ("act","part_property")
 
-    if ev["relation"] and (len(ev["features"])>=2 or (ctx.get("last_feature") and len(ev["features"])>=1)):
-        return ("act","feature_reorder")
-    if "rollback" in t: return ("act","rollback")
+    if ev["edge_kind"]:
+        explicit_new=has_any(t,["جدید","خالی","بدون انتخاب","فعلا بدون","فعلاً بدون","بساز"])
+        if explicit_new: return ("act","add_edge_feature")
+        if choose_feature(ev) and first_quantity(ev) and not (ctx.get("selection_count",0)>0 or has_any(t,["لبه","انتخاب","selected"])):
+            return ("act","feature_parameter")
+        return ("act","edge_on_selection")
+
+    # Camera direct lane, including contextual correction.
+    if ev["camera_action"] or (ev["last_move"] and has_any(t,["بیشتر","برگرد","زیادی شد","عقب تر","عقب‌تر","همون طرف"])):
+        return ("act","camera_move")
     if has_any(t,["part studio","پارت استودیو"]) and has_any(t,["بساز","جدید","new"]): return ("act","create_part_studio")
     if has_any(t,["داکیومنت","document"]) and has_any(t,["اسم","rename","بشه","بذار"]): return ("act","rename_document")
 
@@ -432,7 +448,7 @@ def compile_intent(case, decision, intent, ev):
             direction=lm.get("direction")
         if action=="zoom" and not direction:
             if has_any(t,["اوت","out","بیرون","عقب"]): direction="out"
-            elif has_any(t,["داخل","in","زومشو","زوم کن"]): direction="in"
+            elif has_any(t,["داخل","in","زومشو","زوم کن"]) or t.strip() in {"زوم","zoom"}: direction="in"
         if not action:
             action="orbit"
         allowed={"orbit":{"left","right","up","down","clockwise","counterclockwise"},
@@ -478,8 +494,8 @@ def compile_intent(case, decision, intent, ev):
         feature=choose_feature(ev)
         if not feature: return reject("feature-ungrounded")
         if str(feature).lower().startswith("fillet"): parameter="radius"
-        elif has_any(t,["عمق","depth"]) or str(feature).lower().startswith("extrude"): parameter="depth"
-        elif has_any(t,["زاویه","angle"]) or str(feature).lower().startswith("draft"): parameter="angle"
+        elif has_any(t,["عمق","depth"]): parameter="depth"
+        elif has_any(t,["زاویه","angle"]): parameter="angle"
         elif "flip direction" in t: parameter="flip direction"
         else: return reject("feature-parameter-ungrounded")
 
@@ -553,6 +569,8 @@ def compile_intent(case, decision, intent, ev):
         return accept("feature.add",args,{"name":"text-span" if ev.get("name_value") else None})
 
     if intent=="add_pattern":
+        if not has_any(t,["pattern","الگو","تکرار"]):
+            return reject("pattern-not-explicit")
         part=choose_part(ev)
         qs=all_quantities(ev,"mm")
         copies=extract_copy_count(case["text"])
