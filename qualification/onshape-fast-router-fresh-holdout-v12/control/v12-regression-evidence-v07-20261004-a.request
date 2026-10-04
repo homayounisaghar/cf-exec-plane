@@ -1,0 +1,9 @@
+{
+  "request_id": "onshape-fast-router-v12-regression-evidence-v07-20261004-a",
+  "source_repo": "homayounisaghar/capability-fabric",
+  "source_ref": "work/onshape-fast-router-evidence-v07",
+  "source_head": "03c11135a4194b0a643adfc5d1d2899b03b6a20f",
+  "frozen_holdout_commit": "712b58063bec518301cf8458363d7c8a0e87b07c",
+  "purpose": "regression-only after typed evidence ledger and residue gate",
+  "production_effects": false
+}
