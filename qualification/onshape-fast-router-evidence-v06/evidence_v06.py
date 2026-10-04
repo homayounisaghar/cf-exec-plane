@@ -193,8 +193,9 @@ def extract_name_value(text):
     s=norm_text(text)
     patterns=[
         r"(?:اسم(?:ش)?\s+(?:بشه|بشود))\s+(.+)$",
-        r"(?:اسم\s+این\s+داکیومنت\s+(?:بشه|بشود))\s+(.+)$",
-        r"(?:به اسم|اسمش)\s+(.+)$",
+        r"(?:اسم\s+.+?\s+(?:بشه|بشود))\s+(.+)$",
+        r"(?:به اسم)\s+(.+)$",
+        r"اسمش\s+(?!رو\b|را\b)(.+)$",
         r"\bcalled\s+(.+)$",
         r"(?:اسم\s+.+?\s+رو\s+بذار)\s+(.+)$",
         r"(?:عوض کن به)\s+(.+)$",
@@ -206,6 +207,7 @@ def extract_name_value(text):
         m=re.search(pat,s,re.I)
         if m:
             v=m.group(1).strip(" ،,.;")
+            v=re.sub(r"\s+(?:بساز|کن)$","",v).strip()
             if v: return v
     return None
 
@@ -259,22 +261,23 @@ def extract_evidence(text, ctx=None):
     elif has_any(t,["بعد از","بعد ","زیر"]): relation="after"
 
     relative=None
-    if has_any(t,["زیادش کن","بیشترش کن","بیشتر کن","یه میل بیشتر","یک میل بیشتر"]): relative="add"
-    elif has_any(t,["کمترش کن","کم کن","یه میل کمتر","یک میل کمتر"]): relative="subtract"
+    if has_any(t,["زیادش کن","بیشترش کن","بیشتر کن","یه میل بیشتر","یک میل بیشتر"]) or re.search(r"\bبیشتر\s+کن\b",t): relative="add"
+    elif has_any(t,["کمترش کن","کم کن","یه میل کمتر","یک میل کمتر"]) or re.search(r"\bکمتر\s+کن\b",t): relative="subtract"
 
     design = has_any(t,[
         "خوشگل","پریمیوم","حرفه ای تر","حرفه‌ای‌تر","تولیدش راحت","تولید راحت",
         "سبک تر","سبک‌تر","وزنشو کم","وزنش رو کم","سفت بمونه","استحکام","قوی تر","قوی‌تر",
-        "تزریق پلاستیک","طراحی بهتر","طراحی رو درست","اضافی"
+        "تزریق پلاستیک","طراحی بهتر","طراحی رو درست","اضافی",
+        "مقاومتش کم نشه","مقاومت کم نشه","قالب گیری","قالب‌گیری","به دردنخور"
     ])
     unsupported = has_any(t,["public","share","pdf","export","step بگیر","mate","company","شرکت onshape"])
 
     camera_action=None; camera_direction=None; camera_inverse=False
     if has_any(t,["زوم","zoom"]): camera_action="zoom"
     elif has_any(t,["پن ","pan","نما رو","صفحه رو","هل بده"]): camera_action="pan"
-    elif has_any(t,["بچرخ","rotate","ساعتگرد","پادساعتگرد","ربع دور"]): camera_action="orbit"
-    if "پادساعتگرد" in t: camera_direction="counterclockwise"
-    elif "ساعتگرد" in t: camera_direction="clockwise"
+    elif has_any(t,["بچرخ","rotate","ساعتگرد","پادساعتگرد","clockwise","counterclockwise","ربع دور"]): camera_action="orbit"
+    if "پادساعتگرد" in t or re.search(r"\bcounterclockwise\b",t): camera_direction="counterclockwise"
+    elif "ساعتگرد" in t or re.search(r"\bclockwise\b",t): camera_direction="clockwise"
     elif has_any(t,["سمت راست","به راست","طرف راست","راست بچرخ","هل بده راست"]): camera_direction="right"
     elif has_any(t,["سمت چپ","به چپ","طرف چپ","چپ بچرخ","هل بده چپ"]): camera_direction="left"
     elif has_any(t,["ببر بالا","پن کن بالا","بالا بچرخ"]): camera_direction="up"
@@ -394,7 +397,7 @@ def direct_intent(case, ev):
     if ev["clear_selection"]: return ("act","clear_selection")
     if ev["fit_all"]: return ("act","fit")
     if ev["top_view"]: return ("act","top_view")
-    if has_any(t,["چی انتخاب","چی انتخابه","چی انتخاب شده"]): return ("act","inspect")
+    if has_any(t,["چی انتخاب","چی انتخابه","چی انتخاب شده","چی سلکت","سلکت شده"]): return ("act","inspect")
     if has_any(t,["وضعیت ویور","viewer state"]): return ("act","inspect")
     if has_any(t,["سشن","session","چند نفر تو","کسایی تو","کسانی تو"]): return ("act","inspect")
     if has_any(t,["فالو","follow"]): return ("act","follow")
@@ -426,7 +429,7 @@ def direct_intent(case, ev):
         return ("act","edge_on_selection")
 
     # Camera direct lane, including contextual correction.
-    if ev["camera_action"] or (ev["last_move"] and has_any(t,["بیشتر","برگرد","زیادی شد","عقب تر","عقب‌تر","همون طرف"])):
+    if ev["camera_action"] or (ev["last_move"] and has_any(t,["بیشتر","برگرد","برش گردون","برگردون","زیادی شد","عقب تر","عقب‌تر","همون طرف"])):
         return ("act","camera_move")
     if has_any(t,["part studio","پارت استودیو"]) and has_any(t,["بساز","جدید","new"]): return ("act","create_part_studio")
     if has_any(t,["داکیومنت","document"]) and has_any(t,["اسم","rename","بشه","بذار"]): return ("act","rename_document")
@@ -494,7 +497,7 @@ def compile_intent(case, decision, intent, ev):
 
     if intent=="inspect":
         if has_any(t,["سشن","session","چند نفر","کسایی","کسانی"]): mode="collaboration"
-        elif has_any(t,["انتخاب","selection","چی انتخاب"]): mode="selection"
+        elif has_any(t,["انتخاب","selection","چی انتخاب","سلکت","select"]): mode="selection"
         else: mode="state"
         return accept("viewer.inspect",{"mode":mode},{"mode":"text"})
 
@@ -523,8 +526,8 @@ def compile_intent(case, decision, intent, ev):
         else: return reject("feature-parameter-ungrounded")
 
         if parameter=="flip direction":
-            if has_any(t,["روشن","on","true"]): value=True
-            elif has_any(t,["خاموش","off","false"]): value=False
+            if has_any(t,["خاموش"]) or re.search(r"\b(?:off|false)\b",t): value=False
+            elif has_any(t,["روشن"]) or re.search(r"\b(?:on|true)\b",t): value=True
             else: return reject("boolean-value-ungrounded")
             return accept("feature.parameter.set",{"feature_name":feature,"parameter":parameter,"value":value},
                           {"feature":"text/context","value":"text"})
