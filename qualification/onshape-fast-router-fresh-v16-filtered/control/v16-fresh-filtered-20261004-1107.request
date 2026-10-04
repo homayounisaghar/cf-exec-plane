@@ -1,0 +1,12 @@
+{
+  "request_id": "v16-fresh-filtered-20261004-1107",
+  "source_repo": "homayounisaghar/capability-fabric",
+  "source_ref": "work/onshape-fast-router-v15-hardening",
+  "source_head": "53bb0e9005527a3e1d47b2b4019f84dced3edb02",
+  "router_blob": "16f90590d39d5baf8b753350003a0bfa4d71ab7e",
+  "selftest_blob": "ce9bb0e89b7667083caa533909181e8bb4191f23",
+  "generator_blob": "8930513e046a38c43c21218e40552920eeeeb0f3",
+  "candidate_cases": 10000,
+  "pre_score_scope_filter": true,
+  "production_effects": false
+}
