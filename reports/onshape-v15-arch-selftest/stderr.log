@@ -1,5 +1,5 @@
 Traceback (most recent call last):
-  File "/home/runner/work/cf-exec-plane/cf-exec-plane/qualification/onshape-fast-router-fresh-holdout-v12/evidence_architecture_selftest.py", line 362, in <module>
+  File "/home/runner/work/cf-exec-plane/cf-exec-plane/qualification/onshape-fast-router-fresh-holdout-v12/evidence_architecture_selftest.py", line 394, in <module>
     main()
     ~~~~^^
   File "/home/runner/work/cf-exec-plane/cf-exec-plane/qualification/onshape-fast-router-fresh-holdout-v12/evidence_architecture_selftest.py", line 286, in main
