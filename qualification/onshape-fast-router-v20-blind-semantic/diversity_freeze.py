@@ -120,8 +120,8 @@ def main():
       "first_attempt_pass_rate":(first.get("newly_accepted",0)/9800 if first else None),
       "regenerated_realizations":sum(r.get("newly_accepted",0) for r in reports[1:]),
       "unresolved_scenarios":9800-(reports[-1].get("total_accepted",0) if reports else 0),
-      "generator_model":os.environ.get("GENERATOR_MODEL","qwen/qwen3.6-27b"),
-      "judge_models":["openai/gpt-oss-20b","openai/gpt-oss-20b"],
+      "generator_model":os.environ.get("GENERATOR_MODEL","unknown"),
+      "judge_models":[os.environ.get("JUDGE_MODEL","unknown"),os.environ.get("JUDGE_MODEL","unknown")],
       "judge_b_key_preference":"GROQ_API_KEY_BACKUP if provisioned, else primary",
       "router_used_in_fidelity":False,
     }
