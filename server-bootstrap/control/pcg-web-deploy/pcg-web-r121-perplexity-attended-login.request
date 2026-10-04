@@ -1,0 +1,4 @@
+request_id=pcg-web-r121-perplexity-attended-login
+candidate_commit=2ee0d9387cb1174d40f03ac94942320eb9f277b3
+expected_sequence=121
+expected_release=pcg-web-stage6-perplexity-attended-login-r121
