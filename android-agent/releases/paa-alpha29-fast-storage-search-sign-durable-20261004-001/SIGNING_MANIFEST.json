@@ -1,0 +1,21 @@
+{
+  "schema": "personal-android-agent.signed-apk.v1",
+  "request_id": "paa-alpha29-fast-storage-search-sign-durable-20261004-001",
+  "candidate_commit": "845a409aae81d535adf3f9ea96875cce0f62573b",
+  "unsigned_sha256": "c0fcfe275027cb7b12b8bf6d7d300303342a62e26905bfa9de51d5c3c4ce74f8",
+  "signed_sha256": "7984ae124495b24ea77ca1a0342e8bd6017364a771ba05ad77c1a604f3d18cb6",
+  "package_id": "com.homayounisaghar.androidagent",
+  "version_code": 29,
+  "version_name": "0.1.0-alpha29",
+  "signer_alias": "personal_android_agent_line3",
+  "signer_certificate_sha256": "e5b102356f271078a3d03e982782c3776e3d9f301c1b24c0e7194f06e5a001fa",
+  "signature_schemes": [
+    "v1",
+    "v2",
+    "v3"
+  ],
+  "payload_identity": "verified-by-stage-a-digest",
+  "zip_integrity": "pass",
+  "alignment": "pass",
+  "result": "SUCCESS"
+}
