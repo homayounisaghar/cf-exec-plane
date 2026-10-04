@@ -107,23 +107,35 @@ def parse_spoken_number(s):
 
 NUMBER_PHRASE = r"(?:[+-]?\d+(?:[.,]\d+)?|نیم|ربع|(?:یک|یه|دو|سه|چهار|پنج|شش|هفت|هشت|نه|ده|یازده|دوازده|سیزده|چهارده|پانزده|شانزده|هفده|هجده|نوزده|بیست|سی|چهل|پنجاه|شصت|هفتاد|هشتاد|نود)(?: و (?:نیم|(?:یک|یه|دو|سه|چهار|پنج|شش|هفت|هشت|نه|ده|یازده|دوازده|سیزده|چهارده|پانزده|شانزده|هفده|هجده|نوزده|بیست|سی|چهل|پنجاه|شصت|هفتاد|هشتاد|نود)(?: دهم| صدم)?))?)"
 
+def _longest_spoken_number_before(t, unit_start):
+    prefix=t[:unit_start].rstrip()
+    toks=list(re.finditer(r"\S+",prefix))
+    # Longest suffix first; spoken engineering numbers here are intentionally bounded.
+    for k in range(min(7,len(toks)),0,-1):
+        start=toks[-k].start()
+        cand=prefix[start:].strip(" ،,")
+        n=parse_spoken_number(cand)
+        if n is not None:
+            return start,cand,n
+    return None
+
 def extract_quantities(text):
     t=low(text)
     out=[]
     seen=set()
-    spoken = r"(?:[+-]?\d+(?:[.,]\d+)?|[آ-ی]+(?:\s+و\s+[آ-ی]+){0,3})"
-    patterns=[
-        (rf"({spoken})\s*(?:میلی(?:متر)?|میل|mm)\b","mm",1.0),
-        (rf"({spoken})\s*(?:درجه|deg)\b","deg",1.0),
-    ]
-    for pat,unit,scale in patterns:
-        for m in re.finditer(pat,t,re.I):
-            n=parse_spoken_number(m.group(1))
-            if n is None: continue
-            key=(m.start(),m.end(),unit)
-            if key in seen: continue
-            seen.add(key)
-            out.append({"id":f"q{len(out)+1}","value":n*scale,"unit":unit,"text":m.group(0),"span":[m.start(),m.end()]})
+    unit_pat=re.compile(r"(?:میلی(?:متر)?|میل|mm|درجه|deg)\b",re.I)
+    for um in unit_pat.finditer(t):
+        parsed=_longest_spoken_number_before(t,um.start())
+        if not parsed:
+            continue
+        start,cand,n=parsed
+        raw_unit=um.group(0).lower()
+        unit="deg" if raw_unit in {"درجه","deg"} else "mm"
+        key=(start,um.end(),unit)
+        if key in seen: continue
+        seen.add(key)
+        out.append({"id":f"q{len(out)+1}","value":n,"unit":unit,
+                    "text":t[start:um.end()],"span":[start,um.end()]})
     # "ربع دور" is a camera magnitude = 90 degrees.
     for m in re.finditer(r"\bربع\s+دور\b",t):
         out.append({"id":f"q{len(out)+1}","value":90.0,"unit":"deg","text":m.group(0),"span":[m.start(),m.end()]})
@@ -283,6 +295,17 @@ def extract_evidence(text, ctx=None):
     if has_any(t,["پخ","چمفر","chamfer"]): edge_kind="chamfer"
     elif has_any(t,["فیلت","fillet","فیلِت"]): edge_kind="fillet"
 
+    # In the owner's CAD shorthand, a bare fractional edge size is millimetres.
+    # Keep this bounded to explicit fractional forms so "فیلت دو" can never become 2 mm.
+    if edge_kind and not qs:
+        frac_pat=r"(?:نیم|(?:یک|یه|دو|سه|چهار|پنج|شش|هفت|هشت|نه|ده|بیست|سی|چهل|پنجاه|شصت|هفتاد|هشتاد|نود)(?:\s+و\s+نیم|\s+(?:دهم|صدم)))"
+        for fm in re.finditer(frac_pat,t):
+            n=parse_spoken_number(fm.group(0))
+            if n is not None:
+                qs.append({"id":"q1","value":n,"unit":"mm","text":fm.group(0),
+                           "span":[fm.start(),fm.end()],"implicit_unit":True})
+                break
+
     action_cues=[]
     def cue(name, cond):
         if cond: action_cues.append(name)
@@ -294,7 +317,7 @@ def extract_evidence(text, ctx=None):
     cue("color", prop=="color")
     cue("rename", prop=="name" or (has_any(t,["اسم","rename"]) and extract_name_value(text)))
     cue("delete", has_any(t,["پاک کن","حذف کن","بنداز دور","حذفش کن"]))
-    cue("reorder", relation is not None and len(fs)>=1)
+    cue("reorder", relation is not None and len(fs)>=1 and "rollback" not in t)
     cue("rollback", "rollback" in t)
     cue("create_plane", has_any(t,["plane","صفحه مرجع"]) and has_any(t,["بساز","جدید","خالی"]))
     cue("pattern", has_any(t,["pattern","الگو","خطی تکرار"]))
