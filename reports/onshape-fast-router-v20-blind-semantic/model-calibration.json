@@ -1,368 +1,141 @@
 {
   "pass": false,
-  "stage": "direct_judge",
+  "stage": "generator_literals",
   "generator_model": "allam-2-7b",
   "judge_model": "openai/gpt-oss-20b",
-  "direct_a": [
+  "literal_failures": [
     {
       "id": "cal_hide",
-      "ok": true,
-      "reason": "ok",
-      "parsed": {
-        "scenario_id": "cal_hide",
-        "route": "do",
-        "op": "part.visibility",
-        "args": {
-          "part_name": "Part 12",
-          "visible": false
-        },
-        "flags": {
-          "ambiguous": false,
-          "conditional": false,
-          "multi_effect": false,
-          "invalid_quantity": false,
-          "negated_only": false
-        }
-      }
+      "text": "",
+      "missing": [
+        "Part 12"
+      ]
     },
     {
       "id": "cal_radius",
-      "ok": false,
-      "reason": "args",
-      "parsed": {
-        "scenario_id": "cal_radius",
-        "route": "do",
-        "op": "feature.parameter.set",
-        "args": {
-          "feature_name": "Fillet 7",
-          "parameter": "radius",
-          "amount": "N mm",
-          "value": "2"
-        },
-        "flags": {
-          "ambiguous": false,
-          "conditional": false,
-          "multi_effect": false,
-          "invalid_quantity": false,
-          "negated_only": false
-        }
-      }
+      "text": "",
+      "missing": [
+        "Fillet 7",
+        "2 mm"
+      ]
     },
     {
       "id": "cal_cond",
-      "ok": true,
-      "reason": "ok",
-      "parsed": {
-        "scenario_id": "cal_cond",
-        "route": "ask",
-        "op": null,
-        "args": {},
-        "flags": {
-          "ambiguous": false,
-          "conditional": true,
-          "multi_effect": false,
-          "invalid_quantity": false,
-          "negated_only": false
-        }
-      }
+      "text": "",
+      "missing": [
+        "Part 3"
+      ]
     },
     {
       "id": "cal_amb",
-      "ok": true,
-      "reason": "ok",
-      "parsed": {
-        "scenario_id": "cal_amb",
-        "route": "ask",
-        "op": null,
-        "args": {},
-        "flags": {
-          "ambiguous": true,
-          "conditional": false,
-          "multi_effect": false,
-          "invalid_quantity": false,
-          "negated_only": false
-        }
-      }
+      "text": "",
+      "missing": [
+        "Part 4",
+        "Part 7"
+      ]
     },
     {
       "id": "cal_inspect",
-      "ok": true,
-      "reason": "ok",
-      "parsed": {
-        "scenario_id": "cal_inspect",
-        "route": "do",
-        "op": "viewer.inspect",
-        "args": {
-          "mode": "selection"
-        },
-        "flags": {
-          "ambiguous": false,
-          "conditional": false,
-          "multi_effect": false,
-          "invalid_quantity": false,
-          "negated_only": false
-        }
-      }
+      "text": "",
+      "missing": []
     },
     {
       "id": "cal_suppress",
-      "ok": true,
-      "reason": "ok",
-      "parsed": {
-        "scenario_id": "cal_suppress",
-        "route": "do",
-        "op": "feature.patch",
-        "args": {
-          "feature_name": "Extrude 9",
-          "suppressed": true,
-          "new_name": null
-        },
-        "flags": {
-          "ambiguous": false,
-          "conditional": false,
-          "multi_effect": false,
-          "invalid_quantity": false,
-          "negated_only": false
-        }
-      }
+      "text": "",
+      "missing": [
+        "Extrude 9"
+      ]
     },
     {
       "id": "cal_part_delete",
-      "ok": true,
-      "reason": "ok",
-      "parsed": {
-        "scenario_id": "cal_part_delete",
-        "route": "do",
-        "op": "feature.delete_part",
-        "args": {
-          "part_name": "Part 15"
-        },
-        "flags": {
-          "ambiguous": false,
-          "conditional": false,
-          "multi_effect": false,
-          "invalid_quantity": false,
-          "negated_only": false
-        }
-      }
+      "text": "",
+      "missing": [
+        "Part 15"
+      ]
     },
     {
       "id": "cal_zoom_correct",
-      "ok": false,
-      "reason": "op",
-      "parsed": {
-        "scenario_id": "cal_zoom_correct",
-        "route": "do",
-        "op": "view.fit",
-        "args": {
-          "action": "zoomOut"
-        },
-        "flags": {
-          "ambiguous": false,
-          "conditional": false,
-          "multi_effect": false,
-          "invalid_quantity": false,
-          "negated_only": false
-        }
-      }
+      "text": "",
+      "missing": []
     }
   ],
-  "direct_b": [
-    {
-      "id": "cal_hide",
-      "ok": false,
-      "reason": "args",
-      "parsed": {
-        "scenario_id": "cal_hide",
-        "route": "do",
-        "op": "part.visibility",
-        "args": {
-          "part_name": "12",
-          "visible": false
-        },
-        "flags": {
-          "ambiguous": false,
-          "conditional": false,
-          "multi_effect": false,
-          "invalid_quantity": false,
-          "negated_only": false
-        }
-      }
-    },
-    {
-      "id": "cal_radius",
-      "ok": false,
-      "reason": "args",
-      "parsed": {
-        "scenario_id": "cal_radius",
-        "route": "do",
-        "op": "feature.parameter.set",
-        "args": {
-          "feature_name": "Fillet 7",
-          "parameter": "radius",
-          "amount": "N mm",
-          "value": "2"
-        },
-        "flags": {
-          "ambiguous": false,
-          "conditional": false,
-          "multi_effect": false,
-          "invalid_quantity": false,
-          "negated_only": false
-        }
-      }
-    },
-    {
-      "id": "cal_cond",
-      "ok": true,
-      "reason": "ok",
-      "parsed": {
-        "scenario_id": "cal_cond",
-        "route": "ask",
-        "op": null,
-        "args": {},
-        "flags": {
-          "ambiguous": false,
-          "conditional": true,
-          "multi_effect": false,
-          "invalid_quantity": false,
-          "negated_only": false
-        }
-      }
-    },
-    {
-      "id": "cal_amb",
-      "ok": true,
-      "reason": "ok",
-      "parsed": {
-        "scenario_id": "cal_amb",
-        "route": "ask",
-        "op": null,
-        "args": {},
-        "flags": {
-          "ambiguous": true,
-          "conditional": false,
-          "multi_effect": false,
-          "invalid_quantity": false,
-          "negated_only": false
-        }
-      }
-    },
-    {
-      "id": "cal_inspect",
-      "ok": true,
-      "reason": "ok",
-      "parsed": {
-        "scenario_id": "cal_inspect",
-        "route": "do",
-        "op": "viewer.inspect",
-        "args": {
-          "mode": "selection"
-        },
-        "flags": {
-          "ambiguous": false,
-          "conditional": false,
-          "multi_effect": false,
-          "invalid_quantity": false,
-          "negated_only": false
-        }
-      }
-    },
-    {
-      "id": "cal_suppress",
-      "ok": true,
-      "reason": "ok",
-      "parsed": {
-        "scenario_id": "cal_suppress",
-        "route": "do",
-        "op": "feature.patch",
-        "args": {
-          "feature_name": "Extrude 9",
-          "suppressed": true,
-          "new_name": null
-        },
-        "flags": {
-          "ambiguous": false,
-          "conditional": false,
-          "multi_effect": false,
-          "invalid_quantity": false,
-          "negated_only": false
-        }
-      }
-    },
-    {
-      "id": "cal_part_delete",
-      "ok": false,
-      "reason": "args",
-      "parsed": {
-        "scenario_id": "cal_part_delete",
-        "route": "do",
-        "op": "feature.delete_part",
-        "args": {
-          "part_name": "15"
-        },
-        "flags": {
-          "ambiguous": false,
-          "conditional": false,
-          "multi_effect": false,
-          "invalid_quantity": false,
-          "negated_only": false
-        }
-      }
-    },
-    {
-      "id": "cal_zoom_correct",
-      "ok": false,
-      "reason": "op",
-      "parsed": {
-        "scenario_id": "cal_zoom_correct",
-        "route": "do",
-        "op": "view.fit",
-        "args": {
-          "action": "zoom_out"
-        },
-        "flags": {
-          "ambiguous": false,
-          "conditional": false,
-          "multi_effect": false,
-          "invalid_quantity": false,
-          "negated_only": false
-        }
-      }
-    }
+  "generated": [
+    [
+      "cal_hide",
+      ""
+    ],
+    [
+      "cal_radius",
+      ""
+    ],
+    [
+      "cal_cond",
+      ""
+    ],
+    [
+      "cal_amb",
+      ""
+    ],
+    [
+      "cal_inspect",
+      ""
+    ],
+    [
+      "cal_suppress",
+      ""
+    ],
+    [
+      "cal_part_delete",
+      ""
+    ],
+    [
+      "cal_zoom_correct",
+      ""
+    ]
   ],
   "usage": [
     {
-      "completion_tokens": 856,
-      "prompt_tokens": 818,
-      "total_tokens": 1674,
+      "completion_tokens": 925,
+      "prompt_tokens": 1026,
+      "total_tokens": 1951,
       "completion_tokens_details": {
         "accepted_prediction_tokens": null,
         "audio_tokens": null,
-        "reasoning_tokens": 412,
+        "reasoning_tokens": 487,
         "rejected_prediction_tokens": null
       },
       "prompt_tokens_details": null,
-      "queue_time": 0.171531112,
-      "prompt_time": 0.041347514,
-      "completion_time": 0.996518215,
-      "total_time": 1.037865729
+      "queue_time": 0.222262756,
+      "prompt_time": 0.051397603,
+      "completion_time": 1.146290922,
+      "total_time": 1.197688525
     },
     {
-      "completion_tokens": 649,
-      "prompt_tokens": 829,
-      "total_tokens": 1478,
+      "completion_tokens": 737,
+      "prompt_tokens": 1037,
+      "total_tokens": 1774,
       "completion_tokens_details": {
         "accepted_prediction_tokens": null,
         "audio_tokens": null,
-        "reasoning_tokens": 209,
+        "reasoning_tokens": 299,
         "rejected_prediction_tokens": null
       },
       "prompt_tokens_details": null,
-      "queue_time": 0.048893194,
-      "prompt_time": 0.050438902,
-      "completion_time": 0.718410959,
-      "total_time": 0.768849861
+      "queue_time": 0.031850888,
+      "prompt_time": 0.06138176,
+      "completion_time": 0.838979665,
+      "total_time": 0.900361425
+    },
+    {
+      "completion_tokens": 500,
+      "prompt_tokens": 970,
+      "total_tokens": 1470,
+      "completion_tokens_details": null,
+      "prompt_tokens_details": null,
+      "queue_time": 0.191403467,
+      "prompt_time": 0.026496273,
+      "completion_time": 0.35827685,
+      "total_time": 0.384773123
     }
   ]
 }
