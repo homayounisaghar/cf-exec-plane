@@ -16,7 +16,7 @@ concurrency:
 jobs:
   qualify:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
         with:
@@ -73,9 +73,9 @@ jobs:
             cp "$input" "$sand/input.jsonl"
             (
               cd "$sand"
-              python generate_utterances.py --input input.jsonl --output generated.jsonl --attempt "$round" --batch-size 100
-              python judge_utterances.py --input generated.jsonl --output judge-a.jsonl --variant A --batch-size 100
-              python judge_utterances.py --input generated.jsonl --output judge-b.jsonl --variant B --batch-size 100
+              python generate_utterances.py --input input.jsonl --output generated.jsonl --attempt "$round" --batch-size 64
+              python judge_utterances.py --input generated.jsonl --output judge-a.jsonl --variant A --batch-size 64
+              python judge_utterances.py --input generated.jsonl --output judge-b.jsonl --variant B --batch-size 64
             )
             cp "$sand/generated.jsonl" "$ART/generated-round-$round.jsonl"
             cp "$sand/judge-a.jsonl" "$ART/judge-a-round-$round.jsonl"
