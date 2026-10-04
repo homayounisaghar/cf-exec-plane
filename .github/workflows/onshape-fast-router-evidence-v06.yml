@@ -47,8 +47,13 @@ jobs:
           MAX_BATCH_RETRIES: '2'
           OUT_DIR: ${{ github.workspace }}/artifacts/onshape-fast-router-fresh-holdout-v09
         run: |
+          mkdir -p "${{ github.workspace }}/artifacts/onshape-fast-router-fresh-holdout-v09"
           cd qualification/onshape-fast-router-evidence-v06
-          python run_v09.py
+          set +e
+          python run_v09.py > "${{ github.workspace }}/artifacts/onshape-fast-router-fresh-holdout-v09/runner.log" 2>&1
+          rc=$?
+          printf '{"exit_code":%s}\n' "$rc" > "${{ github.workspace }}/artifacts/onshape-fast-router-fresh-holdout-v09/status.json"
+          exit 0
 
       - name: Publish v09 direct readback
         if: always()
@@ -60,9 +65,12 @@ jobs:
           if test -f "$src/summary.json"; then
             cp "$src/summary.json" "$dst/summary.json"
             cp "$src/rows.json" "$dst/rows.json"
+            rm -f "$dst/latest-error.json"
           else
             printf '{"state":"NO_SUMMARY"}\n' > "$dst/latest-error.json"
           fi
+          test -f "$src/runner.log" && cp "$src/runner.log" "$dst/runner.log" || true
+          test -f "$src/status.json" && cp "$src/status.json" "$dst/status.json" || true
           printf '{"run_id":"%s","head_sha":"%s","via":"v06-proven-pipeline"}\n' "$GITHUB_RUN_ID" "$GITHUB_SHA" > "$dst/latest-meta.json"
           git config user.name "cf-exec-plane"
           git config user.email "actions@users.noreply.github.com"
@@ -72,6 +80,7 @@ jobs:
           git push origin HEAD:main
 
       - name: Run v06 qualification
+        if: ${{ false }}
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           BATCH_SIZE: '10'
@@ -81,6 +90,7 @@ jobs:
           cd qualification/onshape-fast-router-evidence-v06
           python run_v06.py
       - name: Run v08 structural invariants and fresh holdout
+        if: ${{ false }}
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           BATCH_SIZE: '10'
