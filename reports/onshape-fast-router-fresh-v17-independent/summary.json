@@ -4,20 +4,19 @@
   "cases": 9800,
   "deterministic_cases": 9800,
   "fallback_cases": 0,
-  "exact_correct": 9750,
-  "exact_accuracy": 0.9948979591836735,
-  "effect_correct": 9750,
-  "effect_accuracy": 0.9948979591836735,
-  "effect_errors": 50,
-  "severe_accepted_effect_errors": 50,
-  "wrong_material_accepted": 50,
+  "exact_correct": 9800,
+  "exact_accuracy": 1.0,
+  "effect_correct": 9800,
+  "effect_accuracy": 1.0,
+  "effect_errors": 0,
+  "severe_accepted_effect_errors": 0,
+  "wrong_material_accepted": 0,
   "false_execute": 0,
   "wrong_reversible_accepted": 0,
   "conservative_escalations": 0,
   "route_mismatch": 0,
   "outcomes": {
-    "correct": 9750,
-    "wrong_material_accepted": 50
+    "correct": 9800
   },
   "by_category": {
     "ambiguous_target_safe_ask": {
@@ -156,8 +155,7 @@
       "correct": 200
     },
     "suppress": {
-      "correct": 150,
-      "wrong_material_accepted": 50
+      "correct": 200
     },
     "top_view": {
       "correct": 200
@@ -169,98 +167,7 @@
       "correct": 200
     }
   },
-  "failure_reason_counts": {
-    "suppress": {
-      "ok": 50
-    }
-  },
-  "representative_failures": {
-    "suppress": [
-      {
-        "id": "v17_sup_0003",
-        "text": "اگه می‌تونی regeneration برای Extrude 6 فعلاً خاموش باشد",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.patch",
-            "args": {
-              "feature_name": "Extrude 6",
-              "suppressed": true
-            }
-          }
-        ],
-        "compiled": {
-          "route": "do",
-          "op": "feature.patch",
-          "args": {
-            "feature_name": "Extrude 6",
-            "suppressed": false
-          }
-        },
-        "outcome": "wrong_material_accepted",
-        "reason": "ok",
-        "action_families": [
-          "feature_suppression"
-        ],
-        "quantity_issues": []
-      },
-      {
-        "id": "v17_sup_0007",
-        "text": "برای من regeneration برای Extrude 10 فعلاً خاموش باشد",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.patch",
-            "args": {
-              "feature_name": "Extrude 10",
-              "suppressed": true
-            }
-          }
-        ],
-        "compiled": {
-          "route": "do",
-          "op": "feature.patch",
-          "args": {
-            "feature_name": "Extrude 10",
-            "suppressed": false
-          }
-        },
-        "outcome": "wrong_material_accepted",
-        "reason": "ok",
-        "action_families": [
-          "feature_suppression"
-        ],
-        "quantity_issues": []
-      },
-      {
-        "id": "v17_sup_0011",
-        "text": "حالا regeneration برای Extrude 14 فعلاً خاموش باشد؛ ممنون",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.patch",
-            "args": {
-              "feature_name": "Extrude 14",
-              "suppressed": true
-            }
-          }
-        ],
-        "compiled": {
-          "route": "do",
-          "op": "feature.patch",
-          "args": {
-            "feature_name": "Extrude 14",
-            "suppressed": false
-          }
-        },
-        "outcome": "wrong_material_accepted",
-        "reason": "ok",
-        "action_families": [
-          "feature_suppression"
-        ],
-        "quantity_issues": []
-      }
-    ]
-  },
-  "wall_seconds": 7.379874333999993
+  "failure_reason_counts": {},
+  "representative_failures": {},
+  "wall_seconds": 7.233015547000008
 }
