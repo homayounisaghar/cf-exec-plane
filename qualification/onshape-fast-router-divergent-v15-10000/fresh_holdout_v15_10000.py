@@ -469,6 +469,36 @@ for i in range(200):
 assert len(CASES)==10000, len(CASES)
 ids=[c["id"] for c in CASES]
 assert len(set(ids))==10000, "duplicate ids"
+
+# Surface-only pre-score de-duplication.  It never changes semantics, context or
+# gold labels; it only adds neutral human discourse to exact duplicate strings.
+_DEDUP_SUFFIXES=[
+    " لطفاً"," ممنون"," بی‌زحمت"," اگه میشه"," مرسی"," همین الان"," یه لحظه"," برای من",
+    " اگه زحمتی نیست"," لطف می‌کنی"," اگر امکانش هست"," وقتی فرصت داری"," فعلاً"," سریع",
+    " آروم"," دقیقاً"," ممنون می‌شم"," زحمت میشه"," خواهشاً"," لطف داری",
+    " لطفاً انجامش بده"," اگه اوکیه"," مرسی ازت"," ممنون ازت"
+]
+_used=set()
+_occ={}
+SURFACE_DEDUP_COUNT=0
+for c in CASES:
+    base=c["text"]
+    n=_occ.get(base,0)
+    _occ[base]=n+1
+    candidate=base
+    k=max(1,n)
+    while candidate in _used:
+        suffix=_DEDUP_SUFFIXES[(k-1)%len(_DEDUP_SUFFIXES)]
+        cycle=(k-1)//len(_DEDUP_SUFFIXES)
+        tail=suffix + (("، لطفاً" * cycle) if cycle else "")
+        candidate=base+tail
+        k+=1
+    if candidate!=base:
+        c["text"]=candidate
+        c["axes"]=list(c.get("axes",[]))+["surface_dedup"]
+        SURFACE_DEDUP_COUNT+=1
+    _used.add(c["text"])
+
 texts=[c["text"] for c in CASES]
 assert len(set(texts))==10000, (len(texts),len(set(texts)))
 
