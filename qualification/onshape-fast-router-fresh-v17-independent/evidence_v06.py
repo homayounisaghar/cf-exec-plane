@@ -816,6 +816,9 @@ def extract_evidence(text, ctx=None):
         )
         orbit_phrase=has_any(cue_t,["بچرخ","بچرخان","rotate","orbit","چرخش","rotation","گردش","قوس بده","ساعتگرد","پادساعتگرد","clockwise","counterclockwise","ربع دور","عقربه"]) or (
             has_any(cue_t,["دور مدل","دور قطعه","دور جسم"]) and has_any(cue_t,["چپ","راست","بالا","پایین","left","right","up","down"])
+        ) or (
+            re.search(r"\bcamera\b",cue_t,re.I) and has_any(cue_t,["ببر","move"]) and
+            has_any(cue_t,["چپ","راست","بالا","پایین","left","right","up","down"])
         )
         if explicit_pan or (view_translate and orbit_negated):
             camera_action="pan"
