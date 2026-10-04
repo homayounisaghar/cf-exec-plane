@@ -20,10 +20,10 @@
   "routine_auto_accepted": 69,
   "routine_correct": 69,
   "provider_prompt_tokens": 2479,
-  "provider_completion_tokens": 291,
-  "model_batch_p50_ms": 886.2966220000033,
-  "model_batch_p95_ms": 886.2966220000033,
-  "wall_seconds": 0.9289537969999984,
+  "provider_completion_tokens": 286,
+  "model_batch_p50_ms": 699.5463460000053,
+  "model_batch_p95_ms": 699.5463460000053,
+  "wall_seconds": 0.7436660480000086,
   "outcomes": {
     "correct": 100
   }
