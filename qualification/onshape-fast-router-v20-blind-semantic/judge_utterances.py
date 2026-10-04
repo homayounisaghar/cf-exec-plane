@@ -27,13 +27,18 @@ Routing contract:
   invalid quantity, or a negative-only instruction with no positive requested replacement.
 - route=think only for open-ended engineering/design judgment.
 - A correction like "do not X; instead Y" is one positive effect Y if unambiguous.
-- Preserve exact explicit names and values. Normalize ordinary numeric units to "N mm" or "N deg".
-- Part deletion -> feature.delete_part.
+- Preserve exact explicit names and values. "N mm" and "N deg" below describe a FORMAT, never output the literal letter N. If the utterance says 2 mm, output amount="2 mm".
+- Canonical numbered target names keep their type prefix exactly: "Part 12", "Fillet 7", "Extrude 9", "Draft 4". Never reduce them to "12", "7", etc.
+- view.move is the ONLY camera orbit/pan/zoom operation. Zoom out => op="view.move", args={"action":"zoom","direction":"out"}; zoom in is the same with direction="in".
+- view.fit is ONLY for fitting the whole model or current selection: args action="fit" or "fit_selection". Never use view.fit for ordinary zoom.
+- feature.parameter.set: radius/depth/angle use amount as the complete quantity string and omit value. Flip-direction boolean/enum uses value and omits amount.
+- Part deletion -> feature.delete_part with args={"part_name":"Part N"}.
 - Part rename -> documented.updateWVEPMetadata property=name.
 - Feature rename -> feature.patch new_name.
 - Part color/material/description -> metadata.property.set.
 - Inspection -> viewer.inspect mode=selection|state|collaboration.
 - Two-collaborator follow -> view.follow with no args; explicitly choosing collaborator 2 -> candidate_index=2.
+- Emit only arguments that are semantically required for the chosen operation. Do not fill unused optional keys with placeholders.
 
 Allowed operations and argument names:
 """ + json.dumps(OPS,ensure_ascii=False,separators=(",",":")) + """
