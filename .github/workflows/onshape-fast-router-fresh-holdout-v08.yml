@@ -37,6 +37,7 @@ jobs:
         run: test -n "$GROQ_API_KEY"
       - name: Run structural invariants
         run: |
+          mkdir -p "${{ github.workspace }}/artifacts/onshape-fast-router-fresh-holdout-v08"
           cd qualification/onshape-fast-router-fresh-holdout-v08
           python invariants_v08.py > "${{ github.workspace }}/artifacts/onshape-fast-router-fresh-holdout-v08/invariants.json"
 
