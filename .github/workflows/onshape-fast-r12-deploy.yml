@@ -200,6 +200,18 @@ jobs:
           docker compose -f "$release/compose.yaml" config >/dev/null
           docker compose -p "$project" -f "$release/compose.yaml" pull
 
+          if grep -Fq 'CF_RVC_WORKER_URL: http://127.0.0.1:8794' "$release/compose.yaml"; then
+            rvc_status="$(curl -fsS --max-time 5 http://127.0.0.1:8794/status 2>/dev/null || true)"
+            python3 - "$rvc_status" <<'PY'
+import json,sys
+o=json.loads(sys.argv[1])
+assert o.get("runtime_ready") is True
+assert o.get("rvc_commit")=="81eed5e8f68b6bed1789f682fe78cdd324495afc"
+assert o.get("concurrency_limit")==1
+PY
+            echo "RVC_WORKER_PREFLIGHT=pass"
+          fi
+
           old=''
           if [[ -L "$active" ]]; then old="$(readlink -f "$active")"; fi
 
