@@ -614,9 +614,14 @@ def extract_evidence(text, ctx=None):
     # from being hijacked into viewer.inspect.
     selection_inspect_cue = (
         has_any(cue_t,["چی انتخاب","چی انتخابه","چی انتخاب شده","چی سلکت","چی دستمه","چی گرفتم"]) or
-        bool(re.search(r"(?:چی|چه چیزی).*?(?:دست|گرفت|انتخاب|سلکت)",cue_t)) or
+        bool(re.search(r"(?:چی(?=\\s|$)|چه چیزی).*?(?:دست|گرفت|انتخاب|سلکت)",cue_t)) or
         bool(re.search(r"(?:انتخاب|selection|سلکت).*?(?:چیه|چی هست|چی شده)",cue_t))
     )
+    selection_action = None
+    if clear_selection:
+        selection_action = "clear"
+    elif has_any(cue_t,["انتخاب کن","انتخابش کن","select کن","سلکت کن"]):
+        selection_action = "select"
     state_cue = has_any(cue_t,["وضعیت ویور","viewer state","وضعیت صفحه"]) or ("وضعیت" in cue_t and "viewer" in cue_t)
     inspect_target = "collaboration" if collaboration_cue else ("selection" if selection_inspect_cue else ("state" if state_cue else None))
 
@@ -703,6 +708,7 @@ def extract_evidence(text, ctx=None):
         "name_value":name_value,
         "payloads":payloads,
         "inspect_target":inspect_target,
+        "selection_action":selection_action,
         "parameter_hint":parameter_hint,
         "boolean_value":boolean_value,
         "follow_candidate_index":follow_candidate_index,
@@ -781,6 +787,8 @@ def direct_intent(case, ev):
     if ev["multi_action"]: return ("ask",None)
 
     if ev["clear_selection"]: return ("act","clear_selection")
+    if ev.get("selection_action")=="select":
+        return ("ask",None)
     if ev["fit_selection"]: return ("act","fit_selection")
     if ev["fit_all"]: return ("act","fit")
     if ev["top_view"]: return ("act","top_view")
