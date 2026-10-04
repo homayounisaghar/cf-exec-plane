@@ -220,6 +220,9 @@ def status(request_id):
         if not isinstance(payload,dict):
             raise ValueError("receipt_payload")
         result["receipt"]=payload
+        cursor=payload.get("cursor")
+        if isinstance(cursor,int) and not isinstance(cursor,bool):
+            result["receipt_cursor_decimal"]=str(cursor)
     except HTTPError as e:
         if e.code!=404:
             result["receipt_lookup_error"]="http_"+str(e.code)
