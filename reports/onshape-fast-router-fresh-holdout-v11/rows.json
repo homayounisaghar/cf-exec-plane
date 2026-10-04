@@ -48,6 +48,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -121,6 +122,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -190,10 +192,11 @@
       "design": false,
       "unsupported": false,
       "camera_action": "orbit",
-      "camera_direction": null,
+      "camera_direction": "clockwise",
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -201,15 +204,22 @@
       "action_cues": []
     },
     "post": {
-      "accepted": false,
-      "reason": "camera-ungrounded",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
+        "route": "do",
+        "op": "view.move",
+        "args": {
+          "action": "orbit",
+          "direction": "clockwise"
+        }
+      },
+      "provenance": {
+        "direction": "text/context",
+        "magnitude": null
       }
     },
-    "outcome": "conservative_escalation"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -260,6 +270,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -352,6 +363,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -444,6 +456,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -518,6 +531,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -591,6 +605,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -664,6 +679,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -737,6 +753,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -810,6 +827,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -882,6 +900,7 @@
       "camera_inverse": false,
       "fit_all": true,
       "fit_selection": false,
+      "fit_target": "all",
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -899,7 +918,7 @@
         }
       },
       "provenance": {
-        "target": "text/context"
+        "target": "text"
       }
     },
     "outcome": "correct"
@@ -926,7 +945,7 @@
         }
       ]
     },
-    "source": "evidence_reflex",
+    "source": "model_intent",
     "decision": "act",
     "intent": "fit",
     "evidence": {
@@ -959,8 +978,9 @@
       "camera_action": null,
       "camera_direction": null,
       "camera_inverse": false,
-      "fit_all": true,
+      "fit_all": false,
       "fit_selection": true,
+      "fit_target": "selection",
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -978,9 +998,15 @@
         }
       },
       "provenance": {
-        "target": "text/context"
+        "target": "text+verified-selection-context"
       }
     },
+    "model_choice": {
+      "id": "v11_c13",
+      "d": "a",
+      "i": "fit"
+    },
+    "model_latency_ms": 630.6343760000033,
     "outcome": "correct"
   },
   {
@@ -1031,6 +1057,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": true,
       "clear_selection": false,
       "edge_kind": null,
@@ -1101,6 +1128,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": true,
       "edge_kind": null,
@@ -1132,8 +1160,8 @@
       ]
     },
     "source": "model_intent",
-    "decision": "ask",
-    "intent": null,
+    "decision": "act",
+    "intent": "top_view",
     "evidence": {
       "text": "نمای جلو رو بیار",
       "quantities": [],
@@ -1163,6 +1191,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -1171,7 +1200,7 @@
     },
     "post": {
       "accepted": false,
-      "reason": "clarification",
+      "reason": "standard-view-not-grounded",
       "compiled": {
         "route": "ask",
         "op": null,
@@ -1180,10 +1209,10 @@
     },
     "model_choice": {
       "id": "v11_c16",
-      "d": "q",
-      "i": null
+      "d": "a",
+      "i": "top_view"
     },
-    "model_latency_ms": 793.9741559999902,
+    "model_latency_ms": 630.6343760000033,
     "outcome": "correct"
   },
   {
@@ -1230,6 +1259,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -1269,8 +1299,8 @@
       ]
     },
     "source": "model_intent",
-    "decision": "act",
-    "intent": "fit",
+    "decision": "ask",
+    "intent": null,
     "evidence": {
       "text": "یه کاری کن فقط انتخابم تو کادر باشه",
       "quantities": [],
@@ -1302,6 +1332,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -1309,26 +1340,21 @@
       "action_cues": []
     },
     "post": {
-      "accepted": true,
-      "reason": "ok",
+      "accepted": false,
+      "reason": "clarification",
       "compiled": {
-        "route": "do",
-        "op": "view.fit",
-        "args": {
-          "action": "fit"
-        }
-      },
-      "provenance": {
-        "target": "text/context"
+        "route": "ask",
+        "op": null,
+        "args": {}
       }
     },
     "model_choice": {
       "id": "v11_c18",
-      "d": "a",
-      "i": "fit"
+      "d": "q",
+      "i": null
     },
-    "model_latency_ms": 793.9741559999902,
-    "outcome": "wrong_reversible_accepted"
+    "model_latency_ms": 630.6343760000033,
+    "outcome": "conservative_escalation"
   },
   {
     "case": {
@@ -1378,6 +1404,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -1448,6 +1475,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -1518,6 +1546,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -1588,6 +1617,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -1658,6 +1688,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -1728,6 +1759,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -1798,6 +1830,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -1866,6 +1899,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -1927,6 +1961,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -1947,7 +1982,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 793.9741559999902,
+    "model_latency_ms": 630.6343760000033,
     "outcome": "correct"
   },
   {
@@ -1994,6 +2029,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -2089,6 +2125,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": "fillet",
@@ -2193,6 +2230,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": "chamfer",
@@ -2306,6 +2344,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": "fillet",
@@ -2408,6 +2447,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": "chamfer",
@@ -2513,6 +2553,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": "fillet",
@@ -2616,6 +2657,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": "chamfer",
@@ -2718,6 +2760,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": "fillet",
@@ -2818,6 +2861,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": "fillet",
@@ -2909,6 +2953,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": "chamfer",
@@ -2979,6 +3024,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": "fillet",
@@ -3065,6 +3111,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": "fillet",
@@ -3159,6 +3206,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": "chamfer",
@@ -3273,6 +3321,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": "chamfer",
@@ -3345,6 +3394,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": "fillet",
@@ -3436,6 +3486,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -3513,6 +3564,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": "fillet",
@@ -3606,6 +3658,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": "chamfer",
@@ -3699,6 +3752,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": "chamfer",
@@ -3802,6 +3856,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": "fillet",
@@ -3905,6 +3960,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -4002,6 +4058,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -4096,6 +4153,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -4199,6 +4257,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": "fillet",
@@ -4302,6 +4361,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": "fillet",
@@ -4380,6 +4440,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -4455,6 +4516,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -4537,6 +4599,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -4613,6 +4676,7 @@
       "camera_inverse": true,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -4695,6 +4759,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": "fillet",
@@ -4778,6 +4843,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": "fillet",
@@ -4819,8 +4885,8 @@
       ]
     },
     "source": "evidence_reflex",
-    "decision": "think",
-    "intent": null,
+    "decision": "act",
+    "intent": "feature_delete",
     "evidence": {
       "text": "آخرین چیزی که توی درخت فیچر ساختیم رو پاک کن",
       "quantities": [],
@@ -4843,13 +4909,14 @@
       "property_value": null,
       "name_value": null,
       "cue_text": "آخرین چیزی که توی درخت فیچر ساختیم رو پاک کن",
-      "design": true,
+      "design": false,
       "unsupported": false,
       "camera_action": null,
       "camera_direction": null,
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -4859,15 +4926,20 @@
       ]
     },
     "post": {
-      "accepted": false,
-      "reason": "design-escalation",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "think",
-        "op": null,
-        "args": {}
+        "route": "do",
+        "op": "feature.delete",
+        "args": {
+          "position": "last"
+        }
+      },
+      "provenance": {
+        "position": "text"
       }
     },
-    "outcome": "conservative_escalation"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -4917,6 +4989,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -5000,6 +5073,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -5084,6 +5158,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -5179,6 +5254,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": "fillet",
@@ -5269,6 +5345,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -5276,24 +5353,15 @@
       "action_cues": []
     },
     "post": {
-      "accepted": true,
-      "reason": "ok",
+      "accepted": false,
+      "reason": "feature-parameter-incompatible",
       "compiled": {
-        "route": "do",
-        "op": "feature.parameter.set",
-        "args": {
-          "feature_name": "Extrude 4",
-          "parameter": "angle",
-          "amount": "5 deg"
-        }
-      },
-      "provenance": {
-        "feature": "text/context",
-        "value": "q1",
-        "parameter": "text/type"
+        "route": "ask",
+        "op": null,
+        "args": {}
       }
     },
-    "outcome": "false_execute"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -5353,6 +5421,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -5437,6 +5506,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -5515,6 +5585,7 @@
       "camera_inverse": true,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -5599,6 +5670,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -5684,6 +5756,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -5771,6 +5844,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -5858,6 +5932,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -5945,6 +6020,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -6030,6 +6106,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -6115,6 +6192,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -6198,6 +6276,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -6272,6 +6351,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -6349,6 +6429,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -6415,6 +6496,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -6480,6 +6562,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -6553,6 +6636,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -6623,6 +6707,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -6720,6 +6805,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -6827,6 +6913,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -6927,6 +7014,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -7011,6 +7099,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": "fillet",
@@ -7106,6 +7195,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -7191,6 +7281,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": "fillet",
@@ -7263,6 +7354,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -7335,6 +7427,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -7407,6 +7500,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -7475,6 +7569,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -7536,6 +7631,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -7597,6 +7693,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -7658,6 +7755,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -7719,6 +7817,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -7751,8 +7850,8 @@
       ]
     },
     "source": "model_intent",
-    "decision": "act",
-    "intent": "add_pattern",
+    "decision": "ask",
+    "intent": null,
     "evidence": {
       "text": "سه میلش کن",
       "quantities": [],
@@ -7782,6 +7881,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -7790,7 +7890,7 @@
     },
     "post": {
       "accepted": false,
-      "reason": "pattern-not-explicit",
+      "reason": "clarification",
       "compiled": {
         "route": "ask",
         "op": null,
@@ -7799,10 +7899,10 @@
     },
     "model_choice": {
       "id": "v11_x06",
-      "d": "a",
-      "i": "add_pattern"
+      "d": "q",
+      "i": null
     },
-    "model_latency_ms": 793.9741559999902,
+    "model_latency_ms": 630.6343760000033,
     "outcome": "correct"
   },
   {
@@ -7849,6 +7949,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -7869,7 +7970,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 793.9741559999902,
+    "model_latency_ms": 630.6343760000033,
     "outcome": "correct"
   },
   {
@@ -7916,6 +8017,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -7977,6 +8079,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -8038,6 +8141,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
+      "fit_target": null,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
