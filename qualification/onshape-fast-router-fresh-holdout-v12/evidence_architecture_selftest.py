@@ -358,6 +358,77 @@ def main():
     assert_eq(c,{"route":"do","op":"documented.updateWVEPMetadata","args":{"part_name":"Part 3","property":"name","value":"selection follow"}},"persian-name-synonym-part-rename")
     checks.append("persian-name-synonym-part-rename")
 
+    # V15 fallback-collapse invariants: routine apprentice work stays local.
+    for text,want in [
+        ("همه چی توی viewport جا بشه",{"route":"do","op":"view.fit","args":{"action":"fit"}}),
+        ("همین چیزهای انتخاب شده رو بزرگ کن تو صفحه",{"route":"do","op":"view.fit","args":{"action":"fit_selection"}}),
+    ]:
+        ctx={"selection_count":2,"selection_types":["edge","edge"]} if "انتخاب" in text else {}
+        c,_=compiled(text,ctx)
+        assert_eq(c,want,f"fit-local:{text}")
+        checks.append(f"fit-local:{text}")
+
+    c,_=compiled("feature Extrude 7 رو برگردون")
+    assert_eq(c,{"route":"do","op":"feature.patch","args":{"feature_name":"Extrude 7","suppressed":False}},"feature-restore-local")
+    checks.append("feature-restore-local")
+
+    c,ev=compiled("نام Fillet 5 رو بذار material steel corner 29")
+    assert_eq(ev.get("features"),[{"id":"f1","name":"Fillet 5","span":[4,12]}],"rename-material-literal-keeps-feature")
+    assert_eq(ev.get("property"),"name","rename-material-literal-role")
+    assert_eq(c,{"route":"do","op":"feature.patch","args":{"feature_name":"Fillet 5","new_name":"material steel corner 29"}},"rename-material-literal-local")
+    checks.append("rename-material-literal-local")
+
+    c,_=compiled("Part 12 name = top suppress archive 7")
+    assert_eq(c,{"route":"do","op":"documented.updateWVEPMetadata","args":{"part_name":"Part 12","property":"name","value":"top suppress archive 7"}},"part-name-equals-local")
+    checks.append("part-name-equals-local")
+
+    c,_=compiled("این part یعنی Part 45 رو بنداز دور")
+    assert_eq(c,{"route":"do","op":"feature.delete_part","args":{"part_name":"Part 45"}},"part-discard-local")
+    checks.append("part-discard-local")
+
+    for text,want in [
+        ("برگرد تا قبل Extrude 8",{"route":"do","op":"rollback.set","args":{"before_feature":"Extrude 8"}}),
+        ("برگرد تا بعد Extrude 9",{"route":"do","op":"rollback.set","args":{"after_feature":"Extrude 9"}}),
+    ]:
+        c,_=compiled(text)
+        assert_eq(c,want,f"persian-rollback:{text}")
+        checks.append(f"persian-rollback:{text}")
+
+    for text,want in [
+        ("create Part Studio called fit hide studio 50",{"route":"do","op":"documented.createPartStudio","args":{"new_name":"fit hide studio 50"}}),
+        ("پارت استودیو تازه با اسم alpha beta",{"route":"do","op":"documented.createPartStudio","args":{"new_name":"alpha beta"}}),
+        ("document name = top delete archive 12",{"route":"do","op":"documented.updateDocumentAttributes","args":{"new_name":"top delete archive 12"}}),
+    ]:
+        c,_=compiled(text)
+        assert_eq(c,want,f"document-local:{text}")
+        checks.append(f"document-local:{text}")
+
+    for text in ["باز هم همون جهت","همون حرکت رو ادامه بده"]:
+        c,_=compiled(text,{"last_move":{"action":"orbit","direction":"left"}})
+        assert_eq(c,{"route":"do","op":"view.move","args":{"action":"orbit","direction":"left"}},f"context-camera-local:{text}")
+        checks.append(f"context-camera-local:{text}")
+
+    for text in ["این خط رو tangent کن","یه center rectangle اینجا بکش","از این sketch extrude symmetric بساز",
+                 "از Sketch 8 یک extrude تا سطح بعدی بساز"]:
+        c,_=compiled(text)
+        assert_eq(c,{"route":"ask","op":None,"args":{}},f"unsupported-local-reject:{text}")
+        checks.append(f"unsupported-local-reject:{text}")
+
+    for text in ["طراحی رو برای پرینت سه بعدی قابل اعتمادتر کن",
+                 "گوشه ها رو جوری اصلاح کن که stress concentration کم بشه",
+                 "clearance مونتاژ رو بهتر کن بدون اینکه لق بشه",
+                 "این part رو ارزون تر تولیدپذیر کن",
+                 "مدل رو robust کن که با تغییر اندازه خراب نشه"]:
+        c,_=compiled(text)
+        assert_eq(c,{"route":"think","op":None,"args":{}},f"design-local-escalation:{text}")
+        checks.append(f"design-local-escalation:{text}")
+
+    c,ev=compiled("Extrude 8 رو tenish mm کن")
+    if not ev.get("quantity_issues"):
+        raise AssertionError("unparseable-unit-must-produce-quantity-issue")
+    assert_eq(c,{"route":"ask","op":None,"args":{}},"unparseable-unit-local-reject")
+    checks.append("unparseable-unit-local-reject")
+
     # Metamorphic invariants: neutral conversational envelopes must preserve semantics.
     envelope_bases=[
         ("Part 5 رو مخفی کن",{},{"route":"do","op":"part.visibility","args":{"part_name":"Part 5","visible":False}}),
