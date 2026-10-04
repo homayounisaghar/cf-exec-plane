@@ -1,7 +1,7 @@
 {
   "schema": "cf.onshape.fast-router-divergent-v14-1000",
   "statistical_role": "fresh_stress_holdout",
-  "corpus_freeze_commit": "beb2dafe06d7909b7e213907dee44757eb1f53f2",
+  "corpus_freeze_commit": "a0de52e0193e53554d40fa6559d2629bc40f79db",
   "router_source_repo": "homayounisaghar/capability-fabric",
   "router_source_ref": "work/onshape-fast-router-evidence-v07",
   "router_source_head": "0ef25e3dd156f42c1ca1626f52f24850516d8a7a",
@@ -9,5 +9,6 @@
   "selftest_file_sha": "0fd5e71ca0463a33a0488051c330e525fe787a64",
   "cases": 1000,
   "production_effects": false,
-  "note": "Fresh 1000-case divergent/adversarial synthetic stress holdout. Corpus source was committed and frozen before first score. Do not alter corpus after observing results."
+  "note": "Fresh 1000-case divergent/adversarial synthetic stress holdout. The initial pre-score corpus build exposed 28 exact surface duplicates and produced no router score. Surface-only de-duplication was applied, then this commit became the final frozen corpus before first score. Do not alter after observing results.",
+  "corpus_file_sha": "06eb9c75555703bf848a4ea4fff5bec4b09164d3"
 }
