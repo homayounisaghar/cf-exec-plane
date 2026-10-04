@@ -45,7 +45,7 @@ jobs:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           BATCH_SIZE: '12'
           MAX_BATCH_RETRIES: '12'
-          OUT_DIR: artifacts/onshape-fast-router-synthetic-holdout-v05
+          OUT_DIR: ${{ github.workspace }}/artifacts/onshape-fast-router-synthetic-holdout-v05
         run: |
           cd qualification/onshape-fast-router-synthetic-holdout-v05
           python hybrid_holdout.py
