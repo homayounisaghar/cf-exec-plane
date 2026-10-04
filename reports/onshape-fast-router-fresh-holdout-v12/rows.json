@@ -40,6 +40,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "یه کم مدل رو بنداز سمت راست",
       "design": false,
       "unsupported": false,
@@ -69,14 +83,15 @@
       "provenance": {
         "direction": "text/context",
         "magnitude": null
-      }
+      },
+      "consumed_evidence_count": 1
     },
     "model_choice": {
       "id": "v12_c01",
       "d": "a",
       "i": "camera_move"
     },
-    "model_latency_ms": 924.7082910000017,
+    "model_latency_ms": 788.3546260000003,
     "outcome": "correct"
   },
   {
@@ -120,6 +135,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "یکم rotate کن به چپ",
       "design": false,
       "unsupported": false,
@@ -149,7 +178,8 @@
       "provenance": {
         "direction": "text/context",
         "magnitude": null
-      }
+      },
+      "consumed_evidence_count": 1
     },
     "outcome": "correct"
   },
@@ -194,6 +224,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "یه ذره با جهت عقربه ها بچرخون",
       "design": false,
       "unsupported": false,
@@ -223,7 +267,8 @@
       "provenance": {
         "direction": "text/context",
         "magnitude": null
-      }
+      },
+      "consumed_evidence_count": 1
     },
     "outcome": "correct"
   },
@@ -268,11 +313,25 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "یه ذره خلاف عقربه ها بچرخون",
       "design": false,
       "unsupported": false,
       "camera_action": "orbit",
-      "camera_direction": null,
+      "camera_direction": "counterclockwise",
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
@@ -284,15 +343,23 @@
       "action_cues": []
     },
     "post": {
-      "accepted": false,
-      "reason": "camera-ungrounded",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
-      }
+        "route": "do",
+        "op": "view.move",
+        "args": {
+          "action": "orbit",
+          "direction": "counterclockwise"
+        }
+      },
+      "provenance": {
+        "direction": "text/context",
+        "magnitude": null
+      },
+      "consumed_evidence_count": 1
     },
-    "outcome": "conservative_escalation"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -354,6 +421,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "بیست و پنج درجه سمت چپ بچرخون",
       "design": false,
       "unsupported": false,
@@ -384,7 +465,8 @@
       "provenance": {
         "direction": "text/context",
         "magnitude": "q1"
-      }
+      },
+      "consumed_evidence_count": 1
     },
     "outcome": "correct"
   },
@@ -447,6 +529,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "ربع دور به راست ببرش",
       "design": false,
       "unsupported": false,
@@ -477,7 +573,8 @@
       "provenance": {
         "direction": "text/context",
         "magnitude": "q1"
-      }
+      },
+      "consumed_evidence_count": 1
     },
     "outcome": "correct"
   },
@@ -522,6 +619,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "نما رو کمی بکش سمت چپ",
       "design": false,
       "unsupported": false,
@@ -551,7 +662,8 @@
       "provenance": {
         "direction": "text/context",
         "magnitude": null
-      }
+      },
+      "consumed_evidence_count": 1
     },
     "outcome": "correct"
   },
@@ -596,6 +708,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "صفحه رو یه خورده بکش بالا",
       "design": false,
       "unsupported": false,
@@ -625,7 +751,8 @@
       "provenance": {
         "direction": "text/context",
         "magnitude": null
-      }
+      },
+      "consumed_evidence_count": 1
     },
     "outcome": "correct"
   },
@@ -670,6 +797,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "pan down یه کوچولو",
       "design": false,
       "unsupported": false,
@@ -699,7 +840,8 @@
       "provenance": {
         "direction": "text/context",
         "magnitude": null
-      }
+      },
+      "consumed_evidence_count": 1
     },
     "outcome": "correct"
   },
@@ -744,11 +886,25 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "یه قدم زوم کن داخل",
       "design": false,
       "unsupported": false,
       "camera_action": "zoom",
-      "camera_direction": null,
+      "camera_direction": "in",
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
@@ -773,7 +929,8 @@
       "provenance": {
         "direction": "text/context",
         "magnitude": null
-      }
+      },
+      "consumed_evidence_count": 1
     },
     "outcome": "correct"
   },
@@ -794,7 +951,7 @@
         }
       ]
     },
-    "source": "model_intent",
+    "source": "evidence_reflex",
     "decision": "act",
     "intent": "camera_move",
     "evidence": {
@@ -818,11 +975,25 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "یه قدم ازش دور شو",
       "design": false,
       "unsupported": false,
-      "camera_action": null,
-      "camera_direction": null,
+      "camera_action": "zoom",
+      "camera_direction": "out",
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
@@ -834,21 +1005,23 @@
       "action_cues": []
     },
     "post": {
-      "accepted": false,
-      "reason": "camera-ungrounded",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
-      }
+        "route": "do",
+        "op": "view.move",
+        "args": {
+          "action": "zoom",
+          "direction": "out"
+        }
+      },
+      "provenance": {
+        "direction": "text/context",
+        "magnitude": null
+      },
+      "consumed_evidence_count": 1
     },
-    "model_choice": {
-      "id": "v12_c11",
-      "d": "a",
-      "i": "camera_move"
-    },
-    "model_latency_ms": 924.7082910000017,
-    "outcome": "conservative_escalation"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -890,6 +1063,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "کل مدل رو جوری بیار که کامل دیده بشه",
       "design": false,
       "unsupported": false,
@@ -917,7 +1104,8 @@
       },
       "provenance": {
         "target": "text"
-      }
+      },
+      "consumed_evidence_count": 1
     },
     "outcome": "correct"
   },
@@ -970,6 +1158,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": "selection",
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "فقط انتخابم رو تو صفحه جا بده",
       "design": false,
       "unsupported": false,
@@ -986,20 +1188,18 @@
       "action_cues": []
     },
     "post": {
-      "accepted": true,
-      "reason": "ok",
+      "accepted": false,
+      "reason": "effect-evidence-unconsumed",
       "compiled": {
-        "route": "do",
-        "op": "view.fit",
-        "args": {
-          "action": "fit_selection"
-        }
+        "route": "ask",
+        "op": null,
+        "args": {}
       },
-      "provenance": {
-        "target": "text+verified-selection-context"
-      }
+      "unconsumed_evidence": [
+        "sem:inspect_target"
+      ]
     },
-    "outcome": "correct"
+    "outcome": "conservative_escalation"
   },
   {
     "case": {
@@ -1017,7 +1217,7 @@
         }
       ]
     },
-    "source": "model_intent",
+    "source": "evidence_reflex",
     "decision": "act",
     "intent": "top_view",
     "evidence": {
@@ -1041,6 +1241,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": "top",
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "نمای top رو بده",
       "design": false,
       "unsupported": false,
@@ -1050,28 +1264,28 @@
       "fit_all": false,
       "fit_selection": false,
       "fit_target": null,
-      "top_view": false,
+      "top_view": true,
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
       "action_cues": []
     },
     "post": {
-      "accepted": false,
-      "reason": "standard-view-not-grounded",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
-      }
+        "route": "do",
+        "op": "view.standard",
+        "args": {
+          "view": "top"
+        }
+      },
+      "provenance": {
+        "view": "text"
+      },
+      "consumed_evidence_count": 1
     },
-    "model_choice": {
-      "id": "v12_c14",
-      "d": "a",
-      "i": "top_view"
-    },
-    "model_latency_ms": 924.7082910000017,
-    "outcome": "conservative_escalation"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -1087,9 +1301,9 @@
         }
       ]
     },
-    "source": "model_intent",
+    "source": "evidence_reflex",
     "decision": "act",
-    "intent": "clear_selection",
+    "intent": "inspect",
     "evidence": {
       "text": "selection رو کامل خالی کن",
       "quantities": [],
@@ -1111,6 +1325,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": "selection",
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": true,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": true,
       "cue_text": "selection رو کامل خالی کن",
       "design": false,
       "unsupported": false,
@@ -1131,18 +1359,17 @@
       "reason": "ok",
       "compiled": {
         "route": "do",
-        "op": "viewer.selection.clear",
-        "args": {}
+        "op": "viewer.inspect",
+        "args": {
+          "mode": "selection"
+        }
       },
-      "provenance": {}
+      "provenance": {
+        "mode": "semantic-evidence"
+      },
+      "consumed_evidence_count": 1
     },
-    "model_choice": {
-      "id": "v12_c15",
-      "d": "a",
-      "i": "clear_selection"
-    },
-    "model_latency_ms": 924.7082910000017,
-    "outcome": "correct"
+    "outcome": "wrong_reversible_accepted"
   },
   {
     "case": {
@@ -1157,8 +1384,8 @@
       ]
     },
     "source": "model_intent",
-    "decision": "act",
-    "intent": "camera_move",
+    "decision": "ask",
+    "intent": null,
     "evidence": {
       "text": "نمای جلو رو نشون بده",
       "quantities": [],
@@ -1180,6 +1407,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "نمای جلو رو نشون بده",
       "design": false,
       "unsupported": false,
@@ -1199,7 +1440,7 @@
     },
     "post": {
       "accepted": false,
-      "reason": "camera-ungrounded",
+      "reason": "clarification",
       "compiled": {
         "route": "ask",
         "op": null,
@@ -1208,10 +1449,10 @@
     },
     "model_choice": {
       "id": "v12_c16",
-      "d": "a",
-      "i": "camera_move"
+      "d": "q",
+      "i": null
     },
-    "model_latency_ms": 924.7082910000017,
+    "model_latency_ms": 788.3546260000003,
     "outcome": "correct"
   },
   {
@@ -1228,7 +1469,7 @@
     },
     "source": "model_intent",
     "decision": "act",
-    "intent": "camera_move",
+    "intent": "fit",
     "evidence": {
       "text": "یه نمای سه بعدی استاندارد بده",
       "quantities": [],
@@ -1250,6 +1491,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "یه نمای سه بعدی استاندارد بده",
       "design": false,
       "unsupported": false,
@@ -1267,7 +1522,7 @@
     },
     "post": {
       "accepted": false,
-      "reason": "camera-ungrounded",
+      "reason": "fit-target-unproven",
       "compiled": {
         "route": "ask",
         "op": null,
@@ -1277,9 +1532,9 @@
     "model_choice": {
       "id": "v12_c17",
       "d": "a",
-      "i": "camera_move"
+      "i": "fit"
     },
-    "model_latency_ms": 924.7082910000017,
+    "model_latency_ms": 788.3546260000003,
     "outcome": "correct"
   },
   {
@@ -1329,6 +1584,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": "selection",
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "همین انتخابم توی صفحه کامل معلوم باشه",
       "design": false,
       "unsupported": false,
@@ -1345,20 +1614,18 @@
       "action_cues": []
     },
     "post": {
-      "accepted": true,
-      "reason": "ok",
+      "accepted": false,
+      "reason": "effect-evidence-unconsumed",
       "compiled": {
-        "route": "do",
-        "op": "view.fit",
-        "args": {
-          "action": "fit_selection"
-        }
+        "route": "ask",
+        "op": null,
+        "args": {}
       },
-      "provenance": {
-        "target": "text+verified-selection-context"
-      }
+      "unconsumed_evidence": [
+        "sem:inspect_target"
+      ]
     },
-    "outcome": "correct"
+    "outcome": "conservative_escalation"
   },
   {
     "case": {
@@ -1400,6 +1667,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": "selection",
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "الان چی انتخاب کردم؟",
       "design": false,
       "unsupported": false,
@@ -1426,8 +1707,9 @@
         }
       },
       "provenance": {
-        "mode": "text"
-      }
+        "mode": "semantic-evidence"
+      },
+      "consumed_evidence_count": 1
     },
     "outcome": "correct"
   },
@@ -1447,7 +1729,7 @@
         }
       ]
     },
-    "source": "model_intent",
+    "source": "evidence_reflex",
     "decision": "act",
     "intent": "inspect",
     "evidence": {
@@ -1471,6 +1753,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": "selection",
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "بگو چی الان دستمه",
       "design": false,
       "unsupported": false,
@@ -1493,20 +1789,15 @@
         "route": "do",
         "op": "viewer.inspect",
         "args": {
-          "mode": "state"
+          "mode": "selection"
         }
       },
       "provenance": {
-        "mode": "text"
-      }
+        "mode": "semantic-evidence"
+      },
+      "consumed_evidence_count": 1
     },
-    "model_choice": {
-      "id": "v12_i02",
-      "d": "a",
-      "i": "inspect"
-    },
-    "model_latency_ms": 924.7082910000017,
-    "outcome": "wrong_reversible_accepted"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -1548,6 +1839,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": "state",
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "وضعیت خود viewer رو چک کن",
       "design": false,
       "unsupported": false,
@@ -1574,8 +1879,9 @@
         }
       },
       "provenance": {
-        "mode": "text"
-      }
+        "mode": "semantic-evidence"
+      },
+      "consumed_evidence_count": 1
     },
     "outcome": "correct"
   },
@@ -1595,7 +1901,7 @@
         }
       ]
     },
-    "source": "model_intent",
+    "source": "evidence_reflex",
     "decision": "act",
     "intent": "inspect",
     "evidence": {
@@ -1619,6 +1925,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": "collaboration",
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "ببین الان چند نفر وصل هستن",
       "design": false,
       "unsupported": false,
@@ -1645,15 +1965,10 @@
         }
       },
       "provenance": {
-        "mode": "text"
-      }
+        "mode": "semantic-evidence"
+      },
+      "consumed_evidence_count": 1
     },
-    "model_choice": {
-      "id": "v12_i04",
-      "d": "a",
-      "i": "inspect"
-    },
-    "model_latency_ms": 924.7082910000017,
     "outcome": "correct"
   },
   {
@@ -1696,6 +2011,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": "collaboration",
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "توی این session چند نفریم؟",
       "design": false,
       "unsupported": false,
@@ -1722,8 +2051,9 @@
         }
       },
       "provenance": {
-        "mode": "text"
-      }
+        "mode": "semantic-evidence"
+      },
+      "consumed_evidence_count": 1
     },
     "outcome": "correct"
   },
@@ -1767,6 +2097,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "اون طرف مقابلم رو دنبال کن",
       "design": false,
       "unsupported": false,
@@ -1792,7 +2136,8 @@
       },
       "provenance": {
         "candidate": "text/context"
-      }
+      },
+      "consumed_evidence_count": 0
     },
     "outcome": "correct"
   },
@@ -1838,6 +2183,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": 2,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "نفر دوم رو follow کن",
       "design": false,
       "unsupported": false,
@@ -1865,7 +2224,8 @@
       },
       "provenance": {
         "candidate": "text/context"
-      }
+      },
+      "consumed_evidence_count": 0
     },
     "outcome": "correct"
   },
@@ -1907,6 +2267,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "یکی از سه نفر رو follow کن",
       "design": false,
       "unsupported": false,
@@ -1945,9 +2319,9 @@
         }
       ]
     },
-    "source": "model_intent",
-    "decision": "ask",
-    "intent": null,
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "inspect",
     "evidence": {
       "text": "همین چیزی که موس روشه رو انتخاب کن",
       "quantities": [],
@@ -1969,6 +2343,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": "selection",
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "همین چیزی که موس روشه رو انتخاب کن",
       "design": false,
       "unsupported": false,
@@ -1985,21 +2373,21 @@
       "action_cues": []
     },
     "post": {
-      "accepted": false,
-      "reason": "clarification",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
-      }
+        "route": "do",
+        "op": "viewer.inspect",
+        "args": {
+          "mode": "selection"
+        }
+      },
+      "provenance": {
+        "mode": "semantic-evidence"
+      },
+      "consumed_evidence_count": 1
     },
-    "model_choice": {
-      "id": "v12_i09",
-      "d": "q",
-      "i": null
-    },
-    "model_latency_ms": 924.7082910000017,
-    "outcome": "correct"
+    "outcome": "false_execute"
   },
   {
     "case": {
@@ -2037,6 +2425,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "یه لبه از سمت راست بردار",
       "design": false,
       "unsupported": false,
@@ -2066,7 +2468,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 924.7082910000017,
+    "model_latency_ms": 788.3546260000003,
     "outcome": "correct"
   },
   {
@@ -2139,6 +2541,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "روی این لبه ها فیلت یک و چهار دهم میل بزن",
       "design": false,
       "unsupported": false,
@@ -2171,7 +2587,8 @@
         "kind": "text",
         "amount": "q1",
         "selection": "verified-context"
-      }
+      },
+      "consumed_evidence_count": 0
     },
     "outcome": "correct"
   },
@@ -2199,7 +2616,7 @@
     },
     "source": "evidence_reflex",
     "decision": "act",
-    "intent": "edge_on_selection",
+    "intent": "inspect",
     "evidence": {
       "text": "این انتخاب رو پنجاه و پنج صدم میل پخ کن",
       "quantities": [
@@ -2242,6 +2659,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": "selection",
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "این انتخاب رو پنجاه و پنج صدم میل پخ کن",
       "design": false,
       "unsupported": false,
@@ -2264,19 +2695,17 @@
       "reason": "ok",
       "compiled": {
         "route": "do",
-        "op": "feature.from_selection",
+        "op": "viewer.inspect",
         "args": {
-          "feature_type": "chamfer",
-          "amount": "0.55 mm"
+          "mode": "selection"
         }
       },
       "provenance": {
-        "kind": "text",
-        "amount": "q1",
-        "selection": "verified-context"
-      }
+        "mode": "semantic-evidence"
+      },
+      "consumed_evidence_count": 1
     },
-    "outcome": "correct"
+    "outcome": "wrong_reversible_accepted"
   },
   {
     "case": {
@@ -2356,6 +2785,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "همین دوتا لبه رو دو میل و نیم فیلت کن",
       "design": false,
       "unsupported": false,
@@ -2388,7 +2831,8 @@
         "kind": "text",
         "amount": "q1",
         "selection": "verified-context"
-      }
+      },
+      "consumed_evidence_count": 0
     },
     "outcome": "correct"
   },
@@ -2416,7 +2860,7 @@
     },
     "source": "evidence_reflex",
     "decision": "act",
-    "intent": "edge_on_selection",
+    "intent": "inspect",
     "evidence": {
       "text": "پخ یک ممیز شش میل روی همین انتخاب",
       "quantities": [
@@ -2461,6 +2905,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": "selection",
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "پخ یک ممیز شش میل روی همین انتخاب",
       "design": false,
       "unsupported": false,
@@ -2483,19 +2941,17 @@
       "reason": "ok",
       "compiled": {
         "route": "do",
-        "op": "feature.from_selection",
+        "op": "viewer.inspect",
         "args": {
-          "feature_type": "chamfer",
-          "amount": "1.6 mm"
+          "mode": "selection"
         }
       },
       "provenance": {
-        "kind": "text",
-        "amount": "q1",
-        "selection": "verified-context"
-      }
+        "mode": "semantic-evidence"
+      },
+      "consumed_evidence_count": 1
     },
-    "outcome": "correct"
+    "outcome": "wrong_reversible_accepted"
   },
   {
     "case": {
@@ -2567,6 +3023,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "فیلت دو و چهل صدم میلی روی اینا",
       "design": false,
       "unsupported": false,
@@ -2599,7 +3069,8 @@
         "kind": "text",
         "amount": "q1",
         "selection": "verified-context"
-      }
+      },
+      "consumed_evidence_count": 0
     },
     "outcome": "correct"
   },
@@ -2627,7 +3098,7 @@
     },
     "source": "evidence_reflex",
     "decision": "act",
-    "intent": "edge_on_selection",
+    "intent": "inspect",
     "evidence": {
       "text": "پخ شش دهم روی انتخاب فعلی",
       "quantities": [
@@ -2671,6 +3142,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": "selection",
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "پخ شش دهم روی انتخاب فعلی",
       "design": false,
       "unsupported": false,
@@ -2693,19 +3178,17 @@
       "reason": "ok",
       "compiled": {
         "route": "do",
-        "op": "feature.from_selection",
+        "op": "viewer.inspect",
         "args": {
-          "feature_type": "chamfer",
-          "amount": "0.6 mm"
+          "mode": "selection"
         }
       },
       "provenance": {
-        "kind": "text",
-        "amount": "q1",
-        "selection": "verified-context"
-      }
+        "mode": "semantic-evidence"
+      },
+      "consumed_evidence_count": 1
     },
-    "outcome": "correct"
+    "outcome": "wrong_reversible_accepted"
   },
   {
     "case": {
@@ -2774,6 +3257,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "روی این لبه ها 1.25 mm fillet بزن",
       "design": false,
       "unsupported": false,
@@ -2806,7 +3303,8 @@
         "kind": "text",
         "amount": "q1",
         "selection": "verified-context"
-      }
+      },
+      "consumed_evidence_count": 0
     },
     "outcome": "correct"
   },
@@ -2875,6 +3373,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "پخ نیم میلی روی همین لبه",
       "design": false,
       "unsupported": false,
@@ -2907,7 +3419,8 @@
         "kind": "text",
         "amount": "q1",
         "selection": "verified-context"
-      }
+      },
+      "consumed_evidence_count": 0
     },
     "outcome": "correct"
   },
@@ -2967,6 +3480,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "سه میل فیلت بزن",
       "design": false,
       "unsupported": false,
@@ -3013,7 +3540,7 @@
     },
     "source": "evidence_reflex",
     "decision": "act",
-    "intent": "edge_on_selection",
+    "intent": "inspect",
     "evidence": {
       "text": "روی انتخاب فعلی پخ بزن",
       "quantities": [],
@@ -3038,6 +3565,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": "selection",
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "روی انتخاب فعلی پخ بزن",
       "design": false,
       "unsupported": false,
@@ -3056,15 +3597,21 @@
       ]
     },
     "post": {
-      "accepted": false,
-      "reason": "edge-amount-ambiguous",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
-      }
+        "route": "do",
+        "op": "viewer.inspect",
+        "args": {
+          "mode": "selection"
+        }
+      },
+      "provenance": {
+        "mode": "semantic-evidence"
+      },
+      "consumed_evidence_count": 1
     },
-    "outcome": "correct"
+    "outcome": "false_execute"
   },
   {
     "case": {
@@ -3125,6 +3672,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": true,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": true,
       "cue_text": "یه fillet خالی دو و نیم میل درست کن",
       "design": false,
       "unsupported": false,
@@ -3156,7 +3717,8 @@
       "provenance": {
         "kind": "text",
         "amount": "q1"
-      }
+      },
+      "consumed_evidence_count": 0
     },
     "outcome": "correct"
   },
@@ -3179,7 +3741,7 @@
     },
     "source": "evidence_reflex",
     "decision": "act",
-    "intent": "add_edge_feature",
+    "intent": "inspect",
     "evidence": {
       "text": "یه chamfer جدید شش دهم میل بدون انتخاب بساز",
       "quantities": [
@@ -3220,6 +3782,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": "selection",
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": true,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": true,
       "cue_text": "یه chamfer جدید شش دهم میل بدون انتخاب بساز",
       "design": false,
       "unsupported": false,
@@ -3242,18 +3818,17 @@
       "reason": "ok",
       "compiled": {
         "route": "do",
-        "op": "feature.add",
+        "op": "viewer.inspect",
         "args": {
-          "feature_type": "chamfer",
-          "amount": "0.6 mm"
+          "mode": "selection"
         }
       },
       "provenance": {
-        "kind": "text",
-        "amount": "q1"
-      }
+        "mode": "semantic-evidence"
+      },
+      "consumed_evidence_count": 1
     },
-    "outcome": "correct"
+    "outcome": "wrong_reversible_accepted"
   },
   {
     "case": {
@@ -3335,6 +3910,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": "start",
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "اول دو میل فیلت بعد یه میل پخ",
       "design": false,
       "unsupported": false,
@@ -3408,6 +3997,34 @@
       "property": "color",
       "property_value": "green",
       "name_value": null,
+      "payloads": [
+        {
+          "id": "lit1",
+          "kind": "literal_payload",
+          "field": "color",
+          "value": "green",
+          "span": [
+            18,
+            21
+          ],
+          "scope": null,
+          "effect_bearing": true,
+          "provenance": "typed_literal_color"
+        }
+      ],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "فیلتش کن و همزمان سبزش کن",
       "design": false,
       "unsupported": false,
@@ -3500,6 +4117,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": "radius",
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "دو میل radius روی این لبه ها بده",
       "design": false,
       "unsupported": false,
@@ -3569,6 +4200,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "چمفر سه",
       "design": false,
       "unsupported": false,
@@ -3621,7 +4266,7 @@
     },
     "source": "evidence_reflex",
     "decision": "act",
-    "intent": "edge_on_selection",
+    "intent": "inspect",
     "evidence": {
       "text": "پخ دو ممیز پنج میل روی انتخاب",
       "quantities": [
@@ -3666,6 +4311,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": "selection",
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "پخ دو ممیز پنج میل روی انتخاب",
       "design": false,
       "unsupported": false,
@@ -3688,19 +4347,17 @@
       "reason": "ok",
       "compiled": {
         "route": "do",
-        "op": "feature.from_selection",
+        "op": "viewer.inspect",
         "args": {
-          "feature_type": "chamfer",
-          "amount": "2.5 mm"
+          "mode": "selection"
         }
       },
       "provenance": {
-        "kind": "text",
-        "amount": "q1",
-        "selection": "verified-context"
-      }
+        "mode": "semantic-evidence"
+      },
+      "consumed_evidence_count": 1
     },
-    "outcome": "correct"
+    "outcome": "wrong_reversible_accepted"
   },
   {
     "case": {
@@ -3760,6 +4417,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": true,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": true,
       "cue_text": "یه فیلت خالی 0.25 میلی بساز",
       "design": false,
       "unsupported": false,
@@ -3791,7 +4462,8 @@
       "provenance": {
         "kind": "text",
         "amount": "q1"
-      }
+      },
+      "consumed_evidence_count": 0
     },
     "outcome": "correct"
   },
@@ -3864,6 +4536,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": "radius",
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "radius fillet 4 رو پنج میل کن",
       "design": false,
       "unsupported": false,
@@ -3895,7 +4581,8 @@
         "feature": "text/context",
         "value": "q1",
         "parameter": "text/type"
-      }
+      },
+      "consumed_evidence_count": 0
     },
     "outcome": "correct"
   },
@@ -3968,6 +4655,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": "depth",
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "عمق extrude 6 رو شانزده میل کن",
       "design": false,
       "unsupported": false,
@@ -3999,7 +4700,8 @@
         "feature": "text/context",
         "value": "q1",
         "parameter": "text/type"
-      }
+      },
+      "consumed_evidence_count": 0
     },
     "outcome": "correct"
   },
@@ -4066,6 +4768,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "extrude 6 رو شانزده میل کن",
       "design": false,
       "unsupported": false,
@@ -4161,6 +4877,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": "angle",
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "زاویه draft 4 رو هشت درجه کن",
       "design": false,
       "unsupported": false,
@@ -4192,7 +4922,8 @@
         "feature": "text/context",
         "value": "q1",
         "parameter": "text/type"
-      }
+      },
+      "consumed_evidence_count": 0
     },
     "outcome": "correct"
   },
@@ -4259,6 +4990,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": "angle",
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "زاویه extrude 6 رو هشت درجه کن",
       "design": false,
       "unsupported": false,
@@ -4348,6 +5093,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": "depth",
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "عمق draft 4 رو ده میل کن",
       "design": false,
       "unsupported": false,
@@ -4437,6 +5196,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": "radius",
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "شعاع extrude 6 رو چهار میل کن",
       "design": false,
       "unsupported": false,
@@ -4454,7 +5227,7 @@
     },
     "post": {
       "accepted": false,
-      "reason": "feature-parameter-ungrounded",
+      "reason": "feature-parameter-incompatible",
       "compiled": {
         "route": "ask",
         "op": null,
@@ -4530,6 +5303,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "این فیلت رو یک و نیم میل بیشتر کن",
       "design": false,
       "unsupported": false,
@@ -4562,7 +5349,8 @@
         "delta": "q1",
         "current": "verified-context",
         "operator": "add"
-      }
+      },
+      "consumed_evidence_count": 0
     },
     "outcome": "correct"
   },
@@ -4634,6 +5422,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "این فیلت رو پنجاه صدم میل کمتر کن",
       "design": false,
       "unsupported": false,
@@ -4666,7 +5468,8 @@
         "delta": "q1",
         "current": "verified-context",
         "operator": "subtract"
-      }
+      },
+      "consumed_evidence_count": 0
     },
     "outcome": "correct"
   },
@@ -4713,6 +5516,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "این اکسترود رو یه مقدار بیشتر کن",
       "design": false,
       "unsupported": false,
@@ -4789,6 +5606,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "extrude 7 رو suppress کن",
       "design": false,
       "unsupported": false,
@@ -4818,7 +5649,8 @@
       "provenance": {
         "feature": "text/context",
         "state": "text"
-      }
+      },
+      "consumed_evidence_count": 1
     },
     "outcome": "correct"
   },
@@ -4839,9 +5671,9 @@
         }
       ]
     },
-    "source": "model_intent",
-    "decision": "ask",
-    "intent": null,
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "feature_suppressed",
     "evidence": {
       "text": "Extrude 7 رو برگردون روشن",
       "quantities": [],
@@ -4866,12 +5698,26 @@
       "last_action": null,
       "collaborator_count": null,
       "visibility": null,
-      "suppressed": null,
+      "suppressed": false,
       "relation": null,
       "relative": null,
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": true,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "extrude 7 رو برگردون روشن",
       "design": false,
       "unsupported": false,
@@ -4888,21 +5734,23 @@
       "action_cues": []
     },
     "post": {
-      "accepted": false,
-      "reason": "clarification",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
-      }
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 7",
+          "suppressed": false
+        }
+      },
+      "provenance": {
+        "feature": "text/context",
+        "state": "text"
+      },
+      "consumed_evidence_count": 1
     },
-    "model_choice": {
-      "id": "v12_f12",
-      "d": "q",
-      "i": null
-    },
-    "model_latency_ms": 548.6793700000021,
-    "outcome": "conservative_escalation"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -4954,6 +5802,34 @@
       "property": "name",
       "property_value": "soft corner",
       "name_value": "soft corner",
+      "payloads": [
+        {
+          "id": "lit1",
+          "kind": "literal_payload",
+          "field": "name",
+          "value": "soft corner",
+          "span": [
+            17,
+            28
+          ],
+          "scope": null,
+          "effect_bearing": true,
+          "provenance": "typed_literal_name"
+        }
+      ],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "اسم fillet 8 بشه            ",
       "design": false,
       "unsupported": false,
@@ -4985,7 +5861,8 @@
       "provenance": {
         "feature": "text/context",
         "name": "text-span"
-      }
+      },
+      "consumed_evidence_count": 1
     },
     "outcome": "correct"
   },
@@ -5038,6 +5915,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": true,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "fillet 9 رو حذف کن",
       "design": false,
       "unsupported": false,
@@ -5067,7 +5958,8 @@
       },
       "provenance": {
         "feature": "text/context"
-      }
+      },
+      "consumed_evidence_count": 0
     },
     "outcome": "correct"
   },
@@ -5111,6 +6003,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": "last",
+      "rollback_position": "end",
+      "feature_word": true,
+      "delete_cue": true,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "آخرین آیتم درخت فیچر رو پاک کن",
       "design": false,
       "unsupported": false,
@@ -5139,8 +6045,9 @@
         }
       },
       "provenance": {
-        "position": "text"
-      }
+        "position": "semantic-evidence"
+      },
+      "consumed_evidence_count": 1
     },
     "outcome": "correct"
   },
@@ -5160,9 +6067,9 @@
         }
       ]
     },
-    "source": "model_intent",
-    "decision": "ask",
-    "intent": null,
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "feature_delete",
     "evidence": {
       "text": "اولین feature رو بنداز دور",
       "quantities": [],
@@ -5184,6 +6091,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": "first",
+      "rollback_position": "start",
+      "feature_word": true,
+      "delete_cue": true,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "اولین feature رو بنداز دور",
       "design": false,
       "unsupported": false,
@@ -5202,21 +6123,21 @@
       ]
     },
     "post": {
-      "accepted": false,
-      "reason": "clarification",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
-      }
+        "route": "do",
+        "op": "feature.delete",
+        "args": {
+          "position": "first"
+        }
+      },
+      "provenance": {
+        "position": "semantic-evidence"
+      },
+      "consumed_evidence_count": 1
     },
-    "model_choice": {
-      "id": "v12_f16",
-      "d": "q",
-      "i": null
-    },
-    "model_latency_ms": 548.6793700000021,
-    "outcome": "conservative_escalation"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -5269,6 +6190,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": "flip direction",
+      "boolean_value": true,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "flip direction برای extrude 2 رو true کن",
       "design": false,
       "unsupported": false,
@@ -5299,7 +6234,8 @@
       "provenance": {
         "feature": "text/context",
         "value": "text"
-      }
+      },
+      "consumed_evidence_count": 0
     },
     "outcome": "correct"
   },
@@ -5348,6 +6284,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": "flip direction",
+      "boolean_value": true,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "flip direction برای draft 2 رو روشن کن",
       "design": false,
       "unsupported": false,
@@ -5391,9 +6341,9 @@
         }
       ]
     },
-    "source": "model_intent",
-    "decision": "ask",
-    "intent": null,
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "part_visibility",
     "evidence": {
       "text": "Part 5 رو از نما بردار",
       "quantities": [],
@@ -5417,13 +6367,27 @@
       "feature_parameters": {},
       "last_action": null,
       "collaborator_count": null,
-      "visibility": null,
+      "visibility": false,
       "suppressed": null,
       "relation": null,
       "relative": null,
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "part 5 رو از نما بردار",
       "design": false,
       "unsupported": false,
@@ -5437,24 +6401,28 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [
+        "hide_show"
+      ]
     },
     "post": {
-      "accepted": false,
-      "reason": "clarification",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
-      }
+        "route": "do",
+        "op": "part.visibility",
+        "args": {
+          "part_name": "Part 5",
+          "visible": false
+        }
+      },
+      "provenance": {
+        "part": "text/context",
+        "state": "text-negation-aware"
+      },
+      "consumed_evidence_count": 1
     },
-    "model_choice": {
-      "id": "v12_p01",
-      "d": "q",
-      "i": null
-    },
-    "model_latency_ms": 548.6793700000021,
-    "outcome": "conservative_escalation"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -5506,6 +6474,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "part 5 دیگه دیده نشه",
       "design": false,
       "unsupported": false,
@@ -5537,7 +6519,8 @@
       "provenance": {
         "part": "text/context",
         "state": "text-negation-aware"
-      }
+      },
+      "consumed_evidence_count": 1
     },
     "outcome": "correct"
   },
@@ -5585,6 +6568,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "همون پارت رو دوباره بیار توی نما",
       "design": false,
       "unsupported": false,
@@ -5616,7 +6613,8 @@
       "provenance": {
         "part": "text/context",
         "state": "text-negation-aware"
-      }
+      },
+      "consumed_evidence_count": 1
     },
     "outcome": "correct"
   },
@@ -5670,6 +6668,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "bracket رو show کن",
       "design": false,
       "unsupported": false,
@@ -5701,7 +6713,8 @@
       "provenance": {
         "part": "text/context",
         "state": "text-negation-aware"
-      }
+      },
+      "consumed_evidence_count": 1
     },
     "outcome": "correct"
   },
@@ -5756,6 +6769,34 @@
       "property": "color",
       "property_value": "yellow",
       "name_value": null,
+      "payloads": [
+        {
+          "id": "lit1",
+          "kind": "literal_payload",
+          "field": "color",
+          "value": "yellow",
+          "span": [
+            10,
+            13
+          ],
+          "scope": null,
+          "effect_bearing": true,
+          "provenance": "typed_literal_color"
+        }
+      ],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "part 3 رو زرد کن",
       "design": false,
       "unsupported": false,
@@ -5789,7 +6830,8 @@
         "part": "text/context",
         "property": "text",
         "value": "text-span"
-      }
+      },
+      "consumed_evidence_count": 1
     },
     "outcome": "correct"
   },
@@ -5844,6 +6886,34 @@
       "property": "color",
       "property_value": "black",
       "name_value": null,
+      "payloads": [
+        {
+          "id": "lit1",
+          "kind": "literal_payload",
+          "field": "color",
+          "value": "black",
+          "span": [
+            11,
+            15
+          ],
+          "scope": null,
+          "effect_bearing": true,
+          "provenance": "typed_literal_color"
+        }
+      ],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "bracket رو سیاه کن",
       "design": false,
       "unsupported": false,
@@ -5877,7 +6947,8 @@
         "part": "text/context",
         "property": "text",
         "value": "text-span"
-      }
+      },
+      "consumed_evidence_count": 1
     },
     "outcome": "correct"
   },
@@ -5932,6 +7003,34 @@
       "property": "name",
       "property_value": "inner frame",
       "name_value": "inner frame",
+      "payloads": [
+        {
+          "id": "lit1",
+          "kind": "literal_payload",
+          "field": "name",
+          "value": "inner frame",
+          "span": [
+            15,
+            26
+          ],
+          "scope": null,
+          "effect_bearing": true,
+          "provenance": "typed_literal_name"
+        }
+      ],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "اسم part 7 بشه            ",
       "design": false,
       "unsupported": false,
@@ -5965,7 +7064,8 @@
         "part": "text/context",
         "property": "text",
         "value": "text-span"
-      }
+      },
+      "consumed_evidence_count": 1
     },
     "outcome": "correct"
   },
@@ -6020,6 +7120,34 @@
       "property": "material",
       "property_value": "Aluminum",
       "name_value": null,
+      "payloads": [
+        {
+          "id": "lit1",
+          "kind": "literal_payload",
+          "field": "material",
+          "value": "Aluminum",
+          "span": [
+            17,
+            26
+          ],
+          "scope": null,
+          "effect_bearing": true,
+          "provenance": "typed_literal_material"
+        }
+      ],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "متریال part 4 رو آلومینیوم کن",
       "design": false,
       "unsupported": false,
@@ -6051,7 +7179,8 @@
         "part": "text/context",
         "property": "text",
         "value": "text-span"
-      }
+      },
+      "consumed_evidence_count": 1
     },
     "outcome": "correct"
   },
@@ -6106,6 +7235,34 @@
       "property": "material",
       "property_value": "Steel",
       "name_value": null,
+      "payloads": [
+        {
+          "id": "lit1",
+          "kind": "literal_payload",
+          "field": "material",
+          "value": "Steel",
+          "span": [
+            10,
+            15
+          ],
+          "scope": null,
+          "effect_bearing": true,
+          "provenance": "typed_literal_material"
+        }
+      ],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "part 6 رو فولاد متریال بده",
       "design": false,
       "unsupported": false,
@@ -6137,7 +7294,8 @@
         "part": "text/context",
         "property": "text",
         "value": "text-span"
-      }
+      },
+      "consumed_evidence_count": 1
     },
     "outcome": "correct"
   },
@@ -6192,6 +7350,34 @@
       "property": "description",
       "property_value": "frame trial",
       "name_value": null,
+      "payloads": [
+        {
+          "id": "lit1",
+          "kind": "literal_payload",
+          "field": "description",
+          "value": "frame trial",
+          "span": [
+            27,
+            38
+          ],
+          "scope": null,
+          "effect_bearing": true,
+          "provenance": "typed_literal_description"
+        }
+      ],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "description part 7 رو بذار frame trial",
       "design": false,
       "unsupported": false,
@@ -6223,7 +7409,8 @@
         "part": "text/context",
         "property": "text",
         "value": "text-span"
-      }
+      },
+      "consumed_evidence_count": 1
     },
     "outcome": "correct"
   },
@@ -6276,6 +7463,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": true,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "part 10 رو حذف کن",
       "design": false,
       "unsupported": false,
@@ -6305,7 +7506,8 @@
       },
       "provenance": {
         "part": "text/context"
-      }
+      },
+      "consumed_evidence_count": 0
     },
     "outcome": "correct"
   },
@@ -6351,6 +7553,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": "end",
+      "feature_word": false,
+      "delete_cue": true,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "همین پارت آخری رو پاک کن",
       "design": false,
       "unsupported": false,
@@ -6380,7 +7596,8 @@
       },
       "provenance": {
         "part": "text/context"
-      }
+      },
+      "consumed_evidence_count": 0
     },
     "outcome": "correct"
   },
@@ -6429,6 +7646,34 @@
       "property": "color",
       "property_value": "red",
       "name_value": null,
+      "payloads": [
+        {
+          "id": "lit1",
+          "kind": "literal_payload",
+          "field": "color",
+          "value": "red",
+          "span": [
+            10,
+            14
+          ],
+          "scope": null,
+          "effect_bearing": true,
+          "provenance": "typed_literal_color"
+        }
+      ],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "part 3 رو قرمز کن و مخفیش کن",
       "design": false,
       "unsupported": false,
@@ -6496,6 +7741,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "اسم همین پارت رو عوض کن",
       "design": false,
       "unsupported": false,
@@ -6562,6 +7821,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": true,
+      "plane_create_explicit": true,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": true,
       "cue_text": "یه صفحه مرجع خالی درست کن",
       "design": false,
       "unsupported": false,
@@ -6591,7 +7864,8 @@
       },
       "provenance": {
         "name": null
-      }
+      },
+      "consumed_evidence_count": 0
     },
     "outcome": "correct"
   },
@@ -6633,10 +7907,38 @@
       "suppressed": null,
       "relation": null,
       "relative": null,
-      "property": null,
-      "property_value": null,
-      "name_value": null,
-      "cue_text": "یه plane بساز با اسم datum bottom",
+      "property": "name",
+      "property_value": "datum bottom",
+      "name_value": "datum bottom",
+      "payloads": [
+        {
+          "id": "lit1",
+          "kind": "literal_payload",
+          "field": "name",
+          "value": "datum bottom",
+          "span": [
+            21,
+            33
+          ],
+          "scope": null,
+          "effect_bearing": true,
+          "provenance": "typed_literal_name"
+        }
+      ],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": true,
+      "plane_create_explicit": true,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": true,
+      "cue_text": "یه plane بساز با اسم             ",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -6650,6 +7952,7 @@
       "edge_kind": null,
       "multi_action": false,
       "action_cues": [
+        "rename",
         "create_plane"
       ]
     },
@@ -6660,14 +7963,16 @@
         "route": "do",
         "op": "feature.add",
         "args": {
-          "feature_type": "plane"
+          "feature_type": "plane",
+          "name": "datum bottom"
         }
       },
       "provenance": {
-        "name": null
-      }
+        "name": "text-span"
+      },
+      "consumed_evidence_count": 1
     },
-    "outcome": "wrong_material_accepted"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -6705,6 +8010,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": true,
+      "plane_create_explicit": true,
+      "plane_reference_direction": "right",
+      "pattern_explicit": false,
+      "edge_new_explicit": true,
       "cue_text": "روی right یه plane بساز",
       "design": false,
       "unsupported": false,
@@ -6803,6 +8122,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": true,
+      "edge_new_explicit": false,
       "cue_text": "part 4 رو linear pattern پنج تایی با فاصله نه میل کن",
       "design": false,
       "unsupported": false,
@@ -6837,7 +8170,8 @@
         "part": "text/context",
         "copies": "text",
         "distance": "q1"
-      }
+      },
+      "consumed_evidence_count": 0
     },
     "outcome": "correct"
   },
@@ -6911,6 +8245,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": true,
+      "plane_reference_direction": null,
+      "pattern_explicit": true,
+      "edge_new_explicit": true,
       "cue_text": "از part 3 سه تا pattern با فاصله شش و نیم میل بساز",
       "design": false,
       "unsupported": false,
@@ -6945,7 +8293,8 @@
         "part": "text/context",
         "copies": "text",
         "distance": "q1"
-      }
+      },
+      "consumed_evidence_count": 0
     },
     "outcome": "correct"
   },
@@ -6962,8 +8311,8 @@
       ]
     },
     "source": "model_intent",
-    "decision": "ask",
-    "intent": null,
+    "decision": "act",
+    "intent": "add_pattern",
     "evidence": {
       "text": "Part 4 رو پنج نسخه کن هر نه میل",
       "quantities": [
@@ -7012,6 +8361,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "part 4 رو پنج نسخه کن هر نه میل",
       "design": false,
       "unsupported": false,
@@ -7029,7 +8392,7 @@
     },
     "post": {
       "accepted": false,
-      "reason": "clarification",
+      "reason": "pattern-not-explicit",
       "compiled": {
         "route": "ask",
         "op": null,
@@ -7038,10 +8401,10 @@
     },
     "model_choice": {
       "id": "v12_d06",
-      "d": "q",
-      "i": null
+      "d": "a",
+      "i": "add_pattern"
     },
-    "model_latency_ms": 548.6793700000021,
+    "model_latency_ms": 788.3546260000003,
     "outcome": "correct"
   },
   {
@@ -7103,6 +8466,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "fillet 4 رو بالای extrude 7 ببر",
       "design": false,
       "unsupported": false,
@@ -7136,7 +8513,8 @@
         "source": "text/context",
         "target": "text",
         "placement": "text"
-      }
+      },
+      "consumed_evidence_count": 0
     },
     "outcome": "correct"
   },
@@ -7199,6 +8577,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "extrude 7 رو بعد sketch 5 بذار",
       "design": false,
       "unsupported": false,
@@ -7232,7 +8624,8 @@
         "source": "text/context",
         "target": "text",
         "placement": "text"
-      }
+      },
+      "consumed_evidence_count": 0
     },
     "outcome": "correct"
   },
@@ -7285,6 +8678,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "rollback رو قبل draft 2 بذار",
       "design": false,
       "unsupported": false,
@@ -7314,7 +8721,8 @@
       },
       "provenance": {
         "target": "text"
-      }
+      },
+      "consumed_evidence_count": 0
     },
     "outcome": "correct"
   },
@@ -7358,6 +8766,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": "start",
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "rollback رو بذار اول",
       "design": false,
       "unsupported": false,
@@ -7387,7 +8809,8 @@
       },
       "provenance": {
         "target": "text"
-      }
+      },
+      "consumed_evidence_count": 0
     },
     "outcome": "correct"
   },
@@ -7431,6 +8854,34 @@
       "property": "name",
       "property_value": "fit shell",
       "name_value": "fit shell",
+      "payloads": [
+        {
+          "id": "lit1",
+          "kind": "literal_payload",
+          "field": "name",
+          "value": "fit shell",
+          "span": [
+            27,
+            41
+          ],
+          "scope": null,
+          "effect_bearing": true,
+          "provenance": "typed_literal_name"
+        }
+      ],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": true,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": true,
       "cue_text": "یه part studio جدید به اسم           بساز",
       "design": false,
       "unsupported": false,
@@ -7460,7 +8911,8 @@
       },
       "provenance": {
         "name": "text-span"
-      }
+      },
+      "consumed_evidence_count": 1
     },
     "outcome": "correct"
   },
@@ -7504,6 +8956,34 @@
       "property": "name",
       "property_value": "case archive",
       "name_value": "case archive",
+      "payloads": [
+        {
+          "id": "lit1",
+          "kind": "literal_payload",
+          "field": "name",
+          "value": "case archive",
+          "span": [
+            19,
+            31
+          ],
+          "scope": "document",
+          "effect_bearing": true,
+          "provenance": "typed_literal_name"
+        }
+      ],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "rename document to             ",
       "design": false,
       "unsupported": false,
@@ -7533,7 +9013,8 @@
       },
       "provenance": {
         "name": "text-span"
-      }
+      },
+      "consumed_evidence_count": 1
     },
     "outcome": "correct"
   },
@@ -7573,6 +9054,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "طراحی رو یه کم حرفه ای تر و مرتب تر کن",
       "design": true,
       "unsupported": false,
@@ -7635,6 +9130,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "جوری تغییرش بده که برای تزریق بهتر باشه",
       "design": true,
       "unsupported": false,
@@ -7697,6 +9206,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "سبکش کن ولی استحکامش حفظ شه",
       "design": true,
       "unsupported": false,
@@ -7759,6 +9282,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": true,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "درخت فیچر رو خلوت و منطقی کن",
       "design": true,
       "unsupported": false,
@@ -7821,6 +9358,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": true,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "اون یکی رو پاک کن",
       "design": false,
       "unsupported": false,
@@ -7885,6 +9436,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "دو میلش کن",
       "design": false,
       "unsupported": false,
@@ -7914,7 +9479,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 548.6793700000021,
+    "model_latency_ms": 788.3546260000003,
     "outcome": "correct"
   },
   {
@@ -7953,6 +9518,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "همون عملیات قبلی رو روی اینم بزن",
       "design": false,
       "unsupported": false,
@@ -7982,7 +9561,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 548.6793700000021,
+    "model_latency_ms": 788.3546260000003,
     "outcome": "correct"
   },
   {
@@ -8021,6 +9600,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "یه step ازش خروجی بگیر",
       "design": false,
       "unsupported": true,
@@ -8083,6 +9676,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "با بقیه share کن",
       "design": false,
       "unsupported": true,
@@ -8145,6 +9752,20 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "payloads": [],
+      "inspect_target": null,
+      "parameter_hint": null,
+      "boolean_value": null,
+      "follow_candidate_index": null,
+      "delete_position": null,
+      "rollback_position": null,
+      "feature_word": false,
+      "delete_cue": false,
+      "plane_explicit": false,
+      "plane_create_explicit": false,
+      "plane_reference_direction": null,
+      "pattern_explicit": false,
+      "edge_new_explicit": false,
       "cue_text": "این document رو public کن",
       "design": false,
       "unsupported": true,
