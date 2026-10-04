@@ -1,0 +1,13 @@
+{
+  "request_id": "v18-untouched-20261004-1550",
+  "source_head": "26716b6561cde901d47225dcf5f47e4cbacdfdf0",
+  "source_sha": "6a26727ea4136c4b9640c171ceaf299f57e42a20",
+  "selftest_sha": "344f36c0bb5401721741e6eeab28fc2f7f617228",
+  "pre_score_filter": "apprentice-only",
+  "overlap_must_be_zero_with": [
+    "V15",
+    "V16",
+    "V17"
+  ],
+  "production_effects": false
+}
