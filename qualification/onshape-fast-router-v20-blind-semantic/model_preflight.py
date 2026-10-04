@@ -2,9 +2,9 @@ from __future__ import annotations
 import argparse, json
 from llm_client import get_client
 
-GENERATOR_PREFS=["qwen/qwen3.8-27b","allam-2-7b"]
-JUDGE_A_PREFS=["openai/gpt-oss-20b"]
-JUDGE_B_PREFS=["openai/gpt-oss-120b"]
+GENERATOR_PREFS=["qwen/qwen3.8-27b"]
+JUDGE_A_PREFS=["openai/gpt-oss-120b"]
+JUDGE_B_PREFS=["allam-2-7b"]
 
 def pick(prefs,ids,forbidden):
     return next((m for m in prefs if m in ids and m not in forbidden),None)

@@ -1,0 +1,10 @@
+{
+  "request_id": "v20-non20b-judge-retry-20261004-1432",
+  "reason": "gpt-oss-20b TPD quota exhausted before V20 freeze/score; keep candidate/corpus semantics unchanged and calibrate remaining independent models",
+  "generator": "qwen/qwen3.8-27b",
+  "judge_a": "openai/gpt-oss-120b",
+  "judge_b": "allam-2-7b",
+  "candidate_commit": "54580b67a9a61d2463ec3b9ced7a801707bb242b",
+  "fresh_status": "unscored-unfrozen",
+  "production_effects": false
+}
