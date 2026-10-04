@@ -1,0 +1,11 @@
+{
+  "request_id": "v20-output-budget-retry-20261004-1431",
+  "reason": "Qwen returned 13/16 because generation max_completion_tokens was only 560; increase output budget and bound judge batches",
+  "generator_batch_size": 16,
+  "generator_max_tokens_rule": "max(1600,120*n)",
+  "judge_batch_size": 20,
+  "judge_max_tokens_rule": "max(1800,160*n)",
+  "candidate_commit": "54580b67a9a61d2463ec3b9ced7a801707bb242b",
+  "fresh_status": "unscored-unfrozen",
+  "production_effects": false
+}

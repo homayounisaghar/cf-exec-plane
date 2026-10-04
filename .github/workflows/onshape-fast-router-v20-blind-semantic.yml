@@ -89,8 +89,8 @@ jobs:
             (
               cd "$sand"
               python generate_utterances.py --input input.jsonl --output generated.jsonl --attempt "$round" --batch-size 16
-              python judge_utterances.py --input generated.jsonl --output judge-a.jsonl --variant A --batch-size 40
-              python judge_utterances.py --input generated.jsonl --output judge-b.jsonl --variant B --batch-size 40
+              python judge_utterances.py --input generated.jsonl --output judge-a.jsonl --variant A --batch-size 20
+              python judge_utterances.py --input generated.jsonl --output judge-b.jsonl --variant B --batch-size 20
             )
             cp "$sand/generated.jsonl" "$ART/generated-round-$round.jsonl"
             cp "$sand/judge-a.jsonl" "$ART/judge-a-round-$round.jsonl"

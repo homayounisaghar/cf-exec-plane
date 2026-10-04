@@ -64,7 +64,7 @@ def main():
     src=read_jsonl(a.input); out=[]; usage=[]
     for batch in chunks(src,a.batch_size):
         payload=[{"id":r["scenario_id"],"utterance":r["text"],"context":r.get("context",{})} for r in batch]
-        data,u=chat_json(client,model,system,json.dumps({"items":payload},ensure_ascii=False,separators=(",",":")),temperature=0,max_tokens=max(900,75*len(batch)))
+        data,u=chat_json(client,model,system,json.dumps({"items":payload},ensure_ascii=False,separators=(",",":")),temperature=0,max_tokens=max(1800,160*len(batch)))
         items=data.get("items") if isinstance(data,dict) else None
         if not isinstance(items,list): raise RuntimeError("judge missing items")
         got={str(x.get("id")):x for x in items if isinstance(x,dict)}
