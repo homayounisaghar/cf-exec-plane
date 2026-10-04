@@ -516,10 +516,14 @@ def extract_evidence(text, ctx=None):
         if has_any(cue_t,["نزدیک تر شو","نزدیک‌تر شو"]): camera_direction="in"
         elif has_any(cue_t,["دورتر شو","دور تر شو"]): camera_direction="out"
 
-    fit_all = has_any(cue_t,["فیت","fit","تو کادر جا","توی کادر جا","کل مدل تو کادر"])
+    fit_all = has_any(cue_t,[
+        "فیت","fit","تو کادر جا","توی کادر جا","کل مدل تو کادر",
+        "همه مدل معلوم","کل مدل معلوم","همه مدل دیده","کل مدل دیده",
+        "بزرگ شه تو صفحه","بزرگ بشه تو صفحه"
+    ])
     fit_selection = fit_all and has_any(cue_t,["انتخاب","همین انتخاب","selection"])
     top_view = has_any(cue_t,["از بالا","top view","نمای بالا"])
-    clear_selection = has_any(cue_t,["انتخاب رو پاک","انتخاب را پاک","selection رو پاک","selection را پاک","selection رو خالی","selection را خالی","selection فعلی رو صفر","انتخابارو ول کن","انتخاب ها رو ول کن"])
+    clear_selection = has_any(cue_t,["انتخاب رو پاک","انتخاب را پاک","selection رو پاک","selection را پاک","selection رو خالی","selection را خالی","selection فعلی رو صفر","انتخابارو ول کن","انتخاب ها رو ول کن"]) or bool(re.search(r"(?:هر چی|هرچی).*(?:انتخاب|selection).*(?:پاک|خالی)",cue_t))
 
     edge_kind=None
     if has_any(cue_t,["پخ","چمفر","chamfer"]): edge_kind="chamfer"
