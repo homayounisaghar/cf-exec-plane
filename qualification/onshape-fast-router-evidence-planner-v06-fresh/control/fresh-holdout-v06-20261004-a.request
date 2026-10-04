@@ -1,0 +1,6 @@
+{
+  "request_id": "fresh-holdout-v06-20261004-a",
+  "code_under_test_commit": "f54fb6273e641f1e6fefa7403c4a047a99f8ff8a",
+  "holdout_frozen_commit": "6a74493b81b2d9b999cfa945047f117c91f5a820",
+  "cases": 120
+}
