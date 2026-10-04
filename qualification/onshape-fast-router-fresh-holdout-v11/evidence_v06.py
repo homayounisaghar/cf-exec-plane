@@ -661,6 +661,7 @@ def direct_intent(case, ev):
     if ev["multi_action"]: return ("ask",None)
 
     if ev["clear_selection"]: return ("act","clear_selection")
+    if ev["fit_selection"]: return ("act","fit_selection")
     if ev["fit_all"]: return ("act","fit")
     if ev["top_view"]: return ("act","top_view")
     if has_any(t,["چی انتخاب","چی انتخابه","چی انتخاب شده","چی سلکت","سلکت شده","چی دستمه","چی گرفتم"]): return ("act","inspect")
