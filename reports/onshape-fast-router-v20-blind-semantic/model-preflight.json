@@ -16,13 +16,13 @@
     "qwen/qwen3.8-27b"
   ],
   "judge_a_preferences": [
-    "openai/gpt-oss-120b"
+    "openai/gpt-oss-20b"
   ],
   "judge_b_preferences": [
-    "allam-2-7b"
+    "openai/gpt-oss-120b"
   ],
   "selected_generator": "qwen/qwen3.8-27b",
-  "selected_judge_a": "openai/gpt-oss-120b",
-  "selected_judge_b": "allam-2-7b",
+  "selected_judge_a": "openai/gpt-oss-20b",
+  "selected_judge_b": "openai/gpt-oss-120b",
   "three_distinct_model_ids": true
 }
