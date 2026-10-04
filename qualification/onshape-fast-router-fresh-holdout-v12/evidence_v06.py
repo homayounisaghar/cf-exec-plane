@@ -571,6 +571,7 @@ def extract_literal_payloads(text):
                 r"(?:متریال|material).*?(?:رو|را|=|to|بشه|بشود)\s+(.+?)(?:\s+(?:بذار|بگذار|کن))?$",
                 r"(?:متریالش رو)\s+(.+?)\s+کن$",
                 r"^(.+?)\s+(?:بذار|بگذار)\s+(?:متریال|material)\b",
+                r"(?:Part\s+\d+|پارت\s+\S+)\s+(?:material|متریال)\s+(?!(?:رو|را)\s*$)(.+)$",
                 r"\bmaterial\s+(?:Part\s+\d+|پارت\s+\S+)\s+(?!(?:رو|را)\s*$)(.+)$",
             ]
             for pat in patterns:
