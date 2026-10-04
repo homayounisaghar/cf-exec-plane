@@ -358,6 +358,20 @@ def main():
     assert_eq(c,{"route":"do","op":"documented.updateWVEPMetadata","args":{"part_name":"Part 3","property":"name","value":"selection follow"}},"persian-name-synonym-part-rename")
     checks.append("persian-name-synonym-part-rename")
 
+    # Politeness and true conditions are semantically distinct.
+    for text,want in [
+        ("به سمت چپ اگه میشه یه کم rotate کن",{"route":"do","op":"view.move","args":{"action":"orbit","direction":"left"}}),
+        ("top view اگه میشه بده",{"route":"do","op":"view.standard","args":{"view":"top"}}),
+        ("یه صفحه مرجع جدید بساز اگه میشه الان",{"route":"do","op":"feature.add","args":{"feature_type":"plane"}}),
+    ]:
+        c,_=compiled(text)
+        assert_eq(c,want,f"mid-clause-politeness:{text}")
+        checks.append(f"mid-clause-politeness:{text}")
+
+    c,_=compiled("اگه selection خالی بود top view بده",{"selection_count":1})
+    assert_eq(c,{"route":"ask","op":None,"args":{}},"real-condition-still-fails-closed")
+    checks.append("real-condition-still-fails-closed")
+
     # V15 fallback-collapse invariants: routine apprentice work stays local.
     for text,want in [
         ("همه چی توی viewport جا بشه",{"route":"do","op":"view.fit","args":{"action":"fit"}}),
