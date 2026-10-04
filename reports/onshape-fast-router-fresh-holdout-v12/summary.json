@@ -23,7 +23,7 @@
   "provider_completion_tokens": 0,
   "model_batch_p50_ms": null,
   "model_batch_p95_ms": null,
-  "wall_seconds": 240.47125349100003,
+  "wall_seconds": 240.298923179,
   "outcomes": {
     "api_failure": 8,
     "correct": 92
