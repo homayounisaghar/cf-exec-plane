@@ -1,0 +1,10 @@
+{
+  "request_id": "onshape-fast-router-fresh-v13-first-score-20261004-a",
+  "source_repo": "homayounisaghar/capability-fabric",
+  "source_ref": "work/onshape-fast-router-evidence-v07",
+  "source_head": "4052965b84e1672a8a6ca21926f02afa0e6f4648",
+  "frozen_holdout_ref": "holdout/onshape-fast-router-v13-frozen",
+  "frozen_holdout_commit": "24fcc5a523f85bacd27ccdaf8af3b90eb2b45747",
+  "purpose": "first score of frozen fresh V13 holdout",
+  "production_effects": false
+}
