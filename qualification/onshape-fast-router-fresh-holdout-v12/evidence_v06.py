@@ -733,7 +733,7 @@ def extract_evidence(text, ctx=None):
     # independent interrogative/state evidence; this prevents "fillet this selection"
     # from being hijacked into viewer.inspect.
     selection_inspect_cue = (
-        has_any(cue_t,["چی انتخاب","چی انتخابه","چی انتخاب شده","چی سلکت","چی دستمه","چی گرفتم"]) or
+        bool(re.search(r"(?<!\S)چی\s+(?:الان\s+)?(?:انتخاب|سلکت|دستم|دستمه|گرفتم)",cue_t)) or
         bool(re.search(r"(?:(?<!\S)چی(?=\s|$)|چه چیزی).*?(?:دست|گرفت|انتخاب|سلکت)",cue_t)) or
         bool(re.search(r"(?:انتخاب|selection|سلکت).*?(?:چیه|چی هست|چی شده)",cue_t)) or
         bool(re.search(r"(?:دستم|دستمه|دست من).*?(?:چیه|چی هست|چی شده)",cue_t))
