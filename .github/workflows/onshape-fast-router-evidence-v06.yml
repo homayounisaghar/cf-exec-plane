@@ -11,7 +11,7 @@ permissions:
 
 concurrency:
   group: onshape-fast-router-evidence-v06
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   qualify:
