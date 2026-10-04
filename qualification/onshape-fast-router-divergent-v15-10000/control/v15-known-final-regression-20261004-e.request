@@ -1,0 +1,9 @@
+{
+  "request_id": "onshape-fast-router-v15-known-final-regression-20261004-e",
+  "corpus_sha256": "04137cbf8eb0e85933a356d5837c77431e94cde7f0f4772f6f0b797d646f452a",
+  "source_head": "19af066da67cc2b56e41b6680d2fe5aff2682243",
+  "statistical_role": "regression_only",
+  "batch_size": 10,
+  "production_effects": false,
+  "purpose": "full known V15 regression on final fundamental-hardening candidate with stable provider batching"
+}
