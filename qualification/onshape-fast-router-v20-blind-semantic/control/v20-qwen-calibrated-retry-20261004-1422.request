@@ -1,0 +1,11 @@
+{
+  "request_id": "v20-qwen-calibrated-retry-20261004-1422",
+  "reason": "allam-2-7b failed generator schema/literal calibration before corpus generation",
+  "required_generator_preferences": [
+    "qwen/qwen3.8-27b",
+    "openai/gpt-oss-120b",
+    "allam-2-7b"
+  ],
+  "candidate_commit": "54580b67a9a61d2463ec3b9ced7a801707bb242b",
+  "production_effects": false
+}

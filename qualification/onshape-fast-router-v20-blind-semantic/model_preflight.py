@@ -1,8 +1,10 @@
 from __future__ import annotations
-import argparse, json, os
+import argparse, json
 from llm_client import get_client
 
 GENERATOR_PREFS=[
+    "qwen/qwen3.8-27b",
+    "openai/gpt-oss-120b",
     "allam-2-7b",
 ]
 JUDGE_PREFS=[
