@@ -315,7 +315,7 @@ unsupported=[
 ]
 for i in range(200):
     core=unsupported[i%len(unsupported)]
-    add("unsupported_precise",f"v15_unsup_{i:04d}",style(core,i),ask(),axes=["professional_cad","unsupported","precise","fail_closed"]); fam("unsupported_precise")
+    add("unsupported_precise",f"v15_unsupported_{i:04d}",style(core,i),ask(),axes=["professional_cad","unsupported","precise","fail_closed"]); fam("unsupported_precise")
 
 # 40 open-ended professional judgment => think
 designs=[
