@@ -1,0 +1,4 @@
+request_id=pcg-web-r116-edit-provider-authority
+candidate_commit=4e477eef4f568985960a5a5711340a5516dfafc3
+expected_sequence=116
+expected_release=pcg-web-stage6-edit-provider-authority-r116
