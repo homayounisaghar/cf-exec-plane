@@ -93,49 +93,122 @@
       ""
     ]
   ],
+  "generator_raw": {
+    "attempt": 0,
+    "items": [
+      {
+        "id": "cal_hide",
+        "meaning": "پنهان کردن جزئ ۱۲ در ناقد و نمایش آن فقط اگر جزئ ۱۲ را پنهان نکرد.",
+        "context": {},
+        "flags": {
+          "ambiguous": false,
+          "conditional": false,
+          "multi_effect": false,
+          "invalid_quantity": false,
+          "negated_only": false
+        },
+        "style": "spoken-fa",
+        "preserve_literals": [
+          "جزئ ۱۲"
+        ],
+        "constraints": {}
+      },
+      {
+        "id": "cal_radius",
+        "meaning": "تنظیم شعاع اندازه تکه ۹ به ۰ میلی متر.",
+        "context": {},
+        "flags": {
+          "ambiguous": false,
+          "conditional": false,
+          "multi_effect": false,
+          "invalid_quantity": false,
+          "negated_only": false
+        },
+        "style": "spoken-fa",
+        "preserve_literals": [
+          "اندازه تکه ۹"
+        ],
+        "constraints": {}
+      },
+      {
+        "id": "cal_part_delete",
+        "meaning": "حذف جزئ ۱۵ از نمایشگر و نمایش آن فقط جزئ ۱۵ را حذف کن.",
+        "context": {},
+        "flags": {
+          "ambiguous": false,
+          "conditional": false,
+          "multi_effect": false,
+          "invalid_quantity": false,
+          "negated_only": false
+        },
+        "style": "spoken-fa",
+        "preserve_literals": [
+          "جزئ ۱۵"
+        ],
+        "constraints": {}
+      },
+      {
+        "id": "cal_zoom_out",
+        "meaning": "انکار دادن زوم و در مقایسه فقط جزئ‌های موجود را زوم کن.",
+        "context": {},
+        "flags": {
+          "ambiguous": false,
+          "conditional": false,
+          "multi_effect": false,
+          "invalid_quantity": false,
+          "negated_only": false
+        },
+        "style": "spoken-fa",
+        "preserve_literals": [
+          "جزئ‌های موجود"
+        ],
+        "constraints": {}
+      }
+    ]
+  },
   "usage": [
     {
-      "completion_tokens": 925,
+      "completion_tokens": 907,
       "prompt_tokens": 1026,
-      "total_tokens": 1951,
+      "total_tokens": 1933,
       "completion_tokens_details": {
         "accepted_prediction_tokens": null,
         "audio_tokens": null,
-        "reasoning_tokens": 487,
+        "reasoning_tokens": 469,
         "rejected_prediction_tokens": null
       },
       "prompt_tokens_details": null,
-      "queue_time": 0.222262756,
-      "prompt_time": 0.051397603,
-      "completion_time": 1.146290922,
-      "total_time": 1.197688525
+      "queue_time": 0.081839921,
+      "prompt_time": 0.058151729,
+      "completion_time": 0.96971578,
+      "total_time": 1.027867509
     },
     {
-      "completion_tokens": 737,
+      "completion_tokens": 776,
       "prompt_tokens": 1037,
-      "total_tokens": 1774,
+      "total_tokens": 1813,
       "completion_tokens_details": {
         "accepted_prediction_tokens": null,
         "audio_tokens": null,
-        "reasoning_tokens": 299,
+        "reasoning_tokens": 338,
         "rejected_prediction_tokens": null
       },
       "prompt_tokens_details": null,
-      "queue_time": 0.031850888,
-      "prompt_time": 0.06138176,
-      "completion_time": 0.838979665,
-      "total_time": 0.900361425
+      "queue_time": 0.260210301,
+      "prompt_time": 0.062462849,
+      "completion_time": 0.866411711,
+      "total_time": 0.92887456
     },
     {
-      "completion_tokens": 500,
+      "completion_tokens": 459,
       "prompt_tokens": 970,
-      "total_tokens": 1470,
+      "total_tokens": 1429,
       "completion_tokens_details": null,
       "prompt_tokens_details": null,
-      "queue_time": 0.191403467,
-      "prompt_time": 0.026496273,
-      "completion_time": 0.35827685,
-      "total_time": 0.384773123
+      "queue_time": 0.199318652,
+      "prompt_time": 0.03289976,
+      "completion_time": 0.331567224,
+      "total_time": 0.364466984
     }
   ]
 }
