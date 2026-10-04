@@ -2,9 +2,9 @@ Traceback (most recent call last):
   File "/home/runner/work/cf-exec-plane/cf-exec-plane/qualification/onshape-fast-router-fresh-holdout-v12/evidence_architecture_selftest.py", line 394, in <module>
     main()
     ~~~~^^
-  File "/home/runner/work/cf-exec-plane/cf-exec-plane/qualification/onshape-fast-router-fresh-holdout-v12/evidence_architecture_selftest.py", line 286, in main
-    assert_eq(c,{"route":"do","op":"view.follow","args":{}},"follow-participant")
-    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/cf-exec-plane/cf-exec-plane/qualification/onshape-fast-router-fresh-holdout-v12/evidence_architecture_selftest.py", line 318, in main
+    assert_eq(c,{"route":"do","op":"metadata.property.set","args":{"part_name":"Part 9","property":"material","value":"titanium"}},"bare-material-order")
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   File "/home/runner/work/cf-exec-plane/cf-exec-plane/qualification/onshape-fast-router-fresh-holdout-v12/evidence_architecture_selftest.py", line 24, in assert_eq
     raise AssertionError(f"{label}: got={got!r} want={want!r}")
-AssertionError: follow-participant: got={'route': 'ask', 'op': None, 'args': {}} want={'route': 'do', 'op': 'view.follow', 'args': {}}
+AssertionError: bare-material-order: got={'route': 'ask', 'op': None, 'args': {}} want={'route': 'do', 'op': 'metadata.property.set', 'args': {'part_name': 'Part 9', 'property': 'material', 'value': 'titanium'}}
