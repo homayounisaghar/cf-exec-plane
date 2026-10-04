@@ -1039,7 +1039,7 @@
       "d": "a",
       "i": "fit"
     },
-    "model_latency_ms": 862.7280769999857,
+    "model_latency_ms": 1062.6964570000014,
     "outcome": "correct"
   },
   {
@@ -1188,7 +1188,7 @@
       "d": "a",
       "i": "top_view"
     },
-    "model_latency_ms": 862.7280769999857,
+    "model_latency_ms": 1062.6964570000014,
     "outcome": "correct"
   },
   {
@@ -1256,7 +1256,7 @@
       "d": "a",
       "i": "clear_selection"
     },
-    "model_latency_ms": 862.7280769999857,
+    "model_latency_ms": 1062.6964570000014,
     "outcome": "correct"
   },
   {
@@ -1457,7 +1457,7 @@
       "d": "a",
       "i": "inspect"
     },
-    "model_latency_ms": 862.7280769999857,
+    "model_latency_ms": 1062.6964570000014,
     "outcome": "correct"
   },
   {
@@ -1787,7 +1787,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 862.7280769999857,
+    "model_latency_ms": 1062.6964570000014,
     "outcome": "correct"
   },
   {
@@ -1854,7 +1854,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 862.7280769999857,
+    "model_latency_ms": 1062.6964570000014,
     "outcome": "correct"
   },
   {
@@ -3331,7 +3331,7 @@
       "d": "a",
       "i": "feature_parameter"
     },
-    "model_latency_ms": 862.7280769999857,
+    "model_latency_ms": 1062.6964570000014,
     "outcome": "correct"
   },
   {
@@ -4148,7 +4148,7 @@
       "d": "a",
       "i": "feature_delete"
     },
-    "model_latency_ms": 862.7280769999857,
+    "model_latency_ms": 1062.6964570000014,
     "outcome": "correct"
   },
   {
@@ -5448,7 +5448,7 @@
     },
     "source": "model_intent",
     "decision": "act",
-    "intent": "feature_rename",
+    "intent": "part_property",
     "evidence": {
       "text": "اسمش رو عوض کن",
       "quantities": [],
@@ -5484,7 +5484,7 @@
     },
     "post": {
       "accepted": false,
-      "reason": "feature-rename-ungrounded",
+      "reason": "part-property-ungrounded",
       "compiled": {
         "route": "ask",
         "op": null,
@@ -5494,9 +5494,9 @@
     "model_choice": {
       "id": "v07_part_14",
       "d": "a",
-      "i": "feature_rename"
+      "i": "part_property"
     },
-    "model_latency_ms": 862.7280769999857,
+    "model_latency_ms": 1062.6964570000014,
     "outcome": "correct"
   },
   {
@@ -5981,7 +5981,7 @@
       "d": "a",
       "i": "add_pattern"
     },
-    "model_latency_ms": 862.7280769999857,
+    "model_latency_ms": 1062.6964570000014,
     "outcome": "correct"
   },
   {
@@ -7363,7 +7363,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 457.0516869999892,
+    "model_latency_ms": 374.7681380000074,
     "outcome": "correct"
   },
   {
@@ -7428,7 +7428,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 457.0516869999892,
+    "model_latency_ms": 374.7681380000074,
     "outcome": "correct"
   },
   {
@@ -7493,7 +7493,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 457.0516869999892,
+    "model_latency_ms": 374.7681380000074,
     "outcome": "correct"
   },
   {
@@ -7558,7 +7558,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 457.0516869999892,
+    "model_latency_ms": 374.7681380000074,
     "outcome": "correct"
   },
   {
