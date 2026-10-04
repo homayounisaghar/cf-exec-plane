@@ -18,6 +18,9 @@ Environment=OMP_NUM_THREADS=1
 Environment=MKL_NUM_THREADS=1
 Environment=RVC_AUDIO_FORCE_CPU=1
 Environment=RVC_CUDA_GRAPH=0
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=XDG_CACHE_HOME=/tmp/cf-rvc-cache
+Environment=NUMBA_CACHE_DIR=/tmp/cf-rvc-numba
 ExecStart=/var/lib/capability-fabric/rvc/current/.venv/bin/python /usr/local/libexec/capability-fabric-rvc-worker
 Restart=on-failure
 RestartSec=5
