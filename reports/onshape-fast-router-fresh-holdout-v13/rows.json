@@ -69,7 +69,12 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [
+        "camera"
+      ],
+      "action_families": [
+        "camera"
+      ]
     },
     "post": {
       "accepted": true,
@@ -160,7 +165,12 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [
+        "camera"
+      ],
+      "action_families": [
+        "camera"
+      ]
     },
     "post": {
       "accepted": true,
@@ -270,7 +280,12 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [
+        "camera"
+      ],
+      "action_families": [
+        "camera"
+      ]
     },
     "post": {
       "accepted": true,
@@ -362,7 +377,12 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [
+        "camera"
+      ],
+      "action_families": [
+        "camera"
+      ]
     },
     "post": {
       "accepted": true,
@@ -453,7 +473,12 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [
+        "camera"
+      ],
+      "action_families": [
+        "camera"
+      ]
     },
     "post": {
       "accepted": true,
@@ -544,7 +569,12 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [
+        "camera"
+      ],
+      "action_families": [
+        "camera"
+      ]
     },
     "post": {
       "accepted": true,
@@ -635,7 +665,12 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [
+        "camera"
+      ],
+      "action_families": [
+        "camera"
+      ]
     },
     "post": {
       "accepted": true,
@@ -726,7 +761,12 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [
+        "camera"
+      ],
+      "action_families": [
+        "camera"
+      ]
     },
     "post": {
       "accepted": true,
@@ -816,7 +856,12 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [
+        "fit"
+      ],
+      "action_families": [
+        "fit"
+      ]
     },
     "post": {
       "accepted": true,
@@ -915,7 +960,12 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [
+        "fit"
+      ],
+      "action_families": [
+        "fit"
+      ]
     },
     "post": {
       "accepted": true,
@@ -1003,7 +1053,12 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [
+        "standard_view"
+      ],
+      "action_families": [
+        "standard_view"
+      ]
     },
     "post": {
       "accepted": true,
@@ -1089,7 +1144,12 @@
       "clear_selection": true,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [
+        "clear_selection"
+      ],
+      "action_families": [
+        "clear_selection"
+      ]
     },
     "post": {
       "accepted": true,
@@ -1182,7 +1242,12 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [
+        "camera"
+      ],
+      "action_families": [
+        "camera"
+      ]
     },
     "post": {
       "accepted": true,
@@ -1281,7 +1346,12 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [
+        "camera"
+      ],
+      "action_families": [
+        "camera"
+      ]
     },
     "post": {
       "accepted": true,
@@ -1367,7 +1437,12 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [
+        "camera"
+      ],
+      "action_families": [
+        "camera"
+      ]
     },
     "post": {
       "accepted": false,
@@ -1445,7 +1520,8 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [],
+      "action_families": []
     },
     "post": {
       "accepted": false,
@@ -1527,7 +1603,12 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [
+        "inspect"
+      ],
+      "action_families": [
+        "inspect"
+      ]
     },
     "post": {
       "accepted": true,
@@ -1615,7 +1696,12 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [
+        "inspect"
+      ],
+      "action_families": [
+        "inspect"
+      ]
     },
     "post": {
       "accepted": true,
@@ -1703,7 +1789,12 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [
+        "inspect"
+      ],
+      "action_families": [
+        "inspect"
+      ]
     },
     "post": {
       "accepted": true,
@@ -1791,7 +1882,12 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [
+        "inspect"
+      ],
+      "action_families": [
+        "inspect"
+      ]
     },
     "post": {
       "accepted": true,
@@ -1879,7 +1975,12 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [
+        "inspect"
+      ],
+      "action_families": [
+        "inspect"
+      ]
     },
     "post": {
       "accepted": true,
@@ -1967,7 +2068,12 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [
+        "follow"
+      ],
+      "action_families": [
+        "follow"
+      ]
     },
     "post": {
       "accepted": true,
@@ -2055,7 +2161,12 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [
+        "follow"
+      ],
+      "action_families": [
+        "follow"
+      ]
     },
     "post": {
       "accepted": true,
@@ -2141,7 +2252,12 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [
+        "follow"
+      ],
+      "action_families": [
+        "follow"
+      ]
     },
     "post": {
       "accepted": false,
@@ -2219,7 +2335,12 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [
+        "selection_select"
+      ],
+      "action_families": [
+        "selection_select"
+      ]
     },
     "post": {
       "accepted": false,
@@ -2301,7 +2422,12 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [
+        "inspect"
+      ],
+      "action_families": [
+        "inspect"
+      ]
     },
     "post": {
       "accepted": true,
@@ -2420,7 +2546,10 @@
       "edge_kind": "fillet",
       "multi_action": false,
       "action_cues": [
-        "fillet"
+        "edge_fillet"
+      ],
+      "action_families": [
+        "edge_fillet"
       ]
     },
     "post": {
@@ -2540,7 +2669,10 @@
       "edge_kind": "chamfer",
       "multi_action": false,
       "action_cues": [
-        "chamfer"
+        "edge_chamfer"
+      ],
+      "action_families": [
+        "edge_chamfer"
       ]
     },
     "post": {
@@ -2659,7 +2791,8 @@
       "clear_selection": false,
       "edge_kind": "fillet",
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [],
+      "action_families": []
     },
     "post": {
       "accepted": true,
@@ -2776,7 +2909,10 @@
       "edge_kind": "chamfer",
       "multi_action": false,
       "action_cues": [
-        "chamfer"
+        "edge_chamfer"
+      ],
+      "action_families": [
+        "edge_chamfer"
       ]
     },
     "post": {
@@ -2907,7 +3043,10 @@
       "edge_kind": "fillet",
       "multi_action": false,
       "action_cues": [
-        "fillet"
+        "edge_fillet"
+      ],
+      "action_families": [
+        "edge_fillet"
       ]
     },
     "post": {
@@ -3028,7 +3167,10 @@
       "edge_kind": "chamfer",
       "multi_action": false,
       "action_cues": [
-        "chamfer"
+        "edge_chamfer"
+      ],
+      "action_families": [
+        "edge_chamfer"
       ]
     },
     "post": {
@@ -3136,7 +3278,8 @@
       "clear_selection": false,
       "edge_kind": "fillet",
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [],
+      "action_families": []
     },
     "post": {
       "accepted": false,
@@ -3224,7 +3367,10 @@
       "edge_kind": "fillet",
       "multi_action": false,
       "action_cues": [
-        "fillet"
+        "edge_fillet"
+      ],
+      "action_families": [
+        "edge_fillet"
       ]
     },
     "post": {
@@ -3328,7 +3474,10 @@
       "edge_kind": "fillet",
       "multi_action": false,
       "action_cues": [
-        "fillet"
+        "edge_fillet"
+      ],
+      "action_families": [
+        "edge_fillet"
       ]
     },
     "post": {
@@ -3441,7 +3590,10 @@
       "edge_kind": "chamfer",
       "multi_action": false,
       "action_cues": [
-        "chamfer"
+        "edge_chamfer"
+      ],
+      "action_families": [
+        "edge_chamfer"
       ]
     },
     "post": {
@@ -3536,8 +3688,12 @@
       "edge_kind": "chamfer",
       "multi_action": true,
       "action_cues": [
-        "fillet",
-        "chamfer"
+        "edge_fillet",
+        "edge_chamfer"
+      ],
+      "action_families": [
+        "edge_chamfer",
+        "edge_fillet"
       ]
     },
     "post": {
@@ -3639,8 +3795,12 @@
       "edge_kind": "fillet",
       "multi_action": true,
       "action_cues": [
-        "fillet",
-        "color"
+        "edge_fillet",
+        "part_property"
+      ],
+      "action_families": [
+        "edge_fillet",
+        "part_property"
       ]
     },
     "post": {
@@ -3720,7 +3880,7 @@
       "payloads": [],
       "inspect_target": null,
       "selection_action": null,
-      "parameter_hint": "radius",
+      "parameter_hint": null,
       "boolean_value": null,
       "follow_candidate_index": null,
       "delete_position": null,
@@ -3746,7 +3906,8 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [],
+      "action_families": []
     },
     "post": {
       "accepted": false,
@@ -3841,7 +4002,10 @@
       "edge_kind": "fillet",
       "multi_action": false,
       "action_cues": [
-        "fillet"
+        "edge_fillet"
+      ],
+      "action_families": [
+        "edge_fillet"
       ]
     },
     "post": {
@@ -3954,7 +4118,10 @@
       "edge_kind": "fillet",
       "multi_action": false,
       "action_cues": [
-        "fillet"
+        "edge_fillet"
+      ],
+      "action_families": [
+        "edge_fillet"
       ]
     },
     "post": {
@@ -4072,7 +4239,10 @@
       "edge_kind": "chamfer",
       "multi_action": false,
       "action_cues": [
-        "chamfer"
+        "edge_chamfer"
+      ],
+      "action_families": [
+        "edge_chamfer"
       ]
     },
     "post": {
@@ -4193,7 +4363,10 @@
       "edge_kind": "fillet",
       "multi_action": false,
       "action_cues": [
-        "fillet"
+        "edge_fillet"
+      ],
+      "action_families": [
+        "edge_fillet"
       ]
     },
     "post": {
@@ -4304,7 +4477,10 @@
       "edge_kind": "fillet",
       "multi_action": false,
       "action_cues": [
-        "fillet"
+        "edge_fillet"
+      ],
+      "action_families": [
+        "edge_fillet"
       ]
     },
     "post": {
@@ -4424,7 +4600,12 @@
       "clear_selection": false,
       "edge_kind": "fillet",
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [
+        "feature_parameter"
+      ],
+      "action_families": [
+        "feature_parameter"
+      ]
     },
     "post": {
       "accepted": true,
@@ -4545,7 +4726,12 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [
+        "feature_parameter"
+      ],
+      "action_families": [
+        "feature_parameter"
+      ]
     },
     "post": {
       "accepted": true,
@@ -4660,7 +4846,8 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [],
+      "action_families": []
     },
     "post": {
       "accepted": false,
@@ -4771,7 +4958,8 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [],
+      "action_families": []
     },
     "post": {
       "accepted": true,
@@ -4886,7 +5074,12 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [
+        "feature_parameter"
+      ],
+      "action_families": [
+        "feature_parameter"
+      ]
     },
     "post": {
       "accepted": false,
@@ -4991,7 +5184,12 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [
+        "feature_parameter"
+      ],
+      "action_families": [
+        "feature_parameter"
+      ]
     },
     "post": {
       "accepted": false,
@@ -5096,7 +5294,12 @@
       "clear_selection": false,
       "edge_kind": "fillet",
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [
+        "feature_parameter"
+      ],
+      "action_families": [
+        "feature_parameter"
+      ]
     },
     "post": {
       "accepted": false,
@@ -5206,7 +5409,8 @@
       "clear_selection": false,
       "edge_kind": "fillet",
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [],
+      "action_families": []
     },
     "post": {
       "accepted": true,
@@ -5328,7 +5532,8 @@
       "clear_selection": false,
       "edge_kind": "fillet",
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [],
+      "action_families": []
     },
     "post": {
       "accepted": true,
@@ -5442,7 +5647,8 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [],
+      "action_families": []
     },
     "post": {
       "accepted": false,
@@ -5534,7 +5740,12 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [
+        "feature_suppression"
+      ],
+      "action_families": [
+        "feature_suppression"
+      ]
     },
     "post": {
       "accepted": true,
@@ -5634,7 +5845,12 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [
+        "feature_suppression"
+      ],
+      "action_families": [
+        "feature_suppression"
+      ]
     },
     "post": {
       "accepted": true,
@@ -5749,7 +5965,10 @@
       "edge_kind": "fillet",
       "multi_action": false,
       "action_cues": [
-        "rename"
+        "feature_rename"
+      ],
+      "action_families": [
+        "feature_rename"
       ]
     },
     "post": {
@@ -5851,6 +6070,9 @@
       "multi_action": false,
       "action_cues": [
         "delete"
+      ],
+      "action_families": [
+        "delete"
       ]
     },
     "post": {
@@ -5939,9 +6161,8 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": [
-        "delete"
-      ]
+      "action_cues": [],
+      "action_families": []
     },
     "post": {
       "accepted": true,
@@ -6029,9 +6250,8 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": [
-        "delete"
-      ]
+      "action_cues": [],
+      "action_families": []
     },
     "post": {
       "accepted": true,
@@ -6130,7 +6350,12 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [
+        "feature_parameter"
+      ],
+      "action_families": [
+        "feature_parameter"
+      ]
     },
     "post": {
       "accepted": true,
@@ -6226,7 +6451,12 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [
+        "feature_parameter"
+      ],
+      "action_families": [
+        "feature_parameter"
+      ]
     },
     "post": {
       "accepted": false,
@@ -6319,7 +6549,10 @@
       "edge_kind": null,
       "multi_action": false,
       "action_cues": [
-        "hide_show"
+        "part_visibility"
+      ],
+      "action_families": [
+        "part_visibility"
       ]
     },
     "post": {
@@ -6415,7 +6648,10 @@
       "edge_kind": null,
       "multi_action": false,
       "action_cues": [
-        "hide_show"
+        "part_visibility"
+      ],
+      "action_families": [
+        "part_visibility"
       ]
     },
     "post": {
@@ -6517,7 +6753,10 @@
       "edge_kind": null,
       "multi_action": false,
       "action_cues": [
-        "hide_show"
+        "part_visibility"
+      ],
+      "action_families": [
+        "part_visibility"
       ]
     },
     "post": {
@@ -6634,7 +6873,10 @@
       "edge_kind": null,
       "multi_action": false,
       "action_cues": [
-        "color"
+        "part_property"
+      ],
+      "action_families": [
+        "part_property"
       ]
     },
     "post": {
@@ -6753,7 +6995,10 @@
       "edge_kind": null,
       "multi_action": false,
       "action_cues": [
-        "color"
+        "part_property"
+      ],
+      "action_families": [
+        "part_property"
       ]
     },
     "post": {
@@ -6872,7 +7117,10 @@
       "edge_kind": null,
       "multi_action": false,
       "action_cues": [
-        "rename"
+        "part_property"
+      ],
+      "action_families": [
+        "part_property"
       ]
     },
     "post": {
@@ -6990,7 +7238,12 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [
+        "part_property"
+      ],
+      "action_families": [
+        "part_property"
+      ]
     },
     "post": {
       "accepted": true,
@@ -7107,7 +7360,12 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [
+        "part_property"
+      ],
+      "action_families": [
+        "part_property"
+      ]
     },
     "post": {
       "accepted": true,
@@ -7224,7 +7482,12 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [
+        "part_property"
+      ],
+      "action_families": [
+        "part_property"
+      ]
     },
     "post": {
       "accepted": true,
@@ -7327,6 +7590,9 @@
       "multi_action": false,
       "action_cues": [
         "delete"
+      ],
+      "action_families": [
+        "delete"
       ]
     },
     "post": {
@@ -7418,6 +7684,9 @@
       "edge_kind": null,
       "multi_action": false,
       "action_cues": [
+        "delete"
+      ],
+      "action_families": [
         "delete"
       ]
     },
@@ -7527,8 +7796,12 @@
       "edge_kind": null,
       "multi_action": true,
       "action_cues": [
-        "hide_show",
-        "color"
+        "part_visibility",
+        "part_property"
+      ],
+      "action_families": [
+        "part_property",
+        "part_visibility"
       ]
     },
     "post": {
@@ -7616,7 +7889,8 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [],
+      "action_families": []
     },
     "post": {
       "accepted": false,
@@ -7642,8 +7916,8 @@
       ]
     },
     "source": "evidence_reflex",
-    "decision": "act",
-    "intent": "part_visibility",
+    "decision": "ask",
+    "intent": null,
     "evidence": {
       "text": "Part 2 رو مخفی کن با اسم spare shell",
       "quantities": [],
@@ -7716,23 +7990,24 @@
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
-      "multi_action": false,
+      "multi_action": true,
       "action_cues": [
-        "hide_show",
-        "rename"
+        "part_visibility",
+        "part_property"
+      ],
+      "action_families": [
+        "part_property",
+        "part_visibility"
       ]
     },
     "post": {
       "accepted": false,
-      "reason": "effect-evidence-unconsumed",
+      "reason": "clarification",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
-      },
-      "unconsumed_evidence": [
-        "lit1"
-      ]
+      }
     },
     "outcome": "correct"
   },
@@ -7830,7 +8105,12 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [
+        "part_property"
+      ],
+      "action_families": [
+        "part_property"
+      ]
     },
     "post": {
       "accepted": true,
@@ -7947,7 +8227,12 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [
+        "part_property"
+      ],
+      "action_families": [
+        "part_property"
+      ]
     },
     "post": {
       "accepted": true,
@@ -8040,6 +8325,9 @@
       "edge_kind": null,
       "multi_action": false,
       "action_cues": [
+        "create_plane"
+      ],
+      "action_families": [
         "create_plane"
       ]
     },
@@ -8145,7 +8433,9 @@
       "edge_kind": null,
       "multi_action": false,
       "action_cues": [
-        "rename",
+        "create_plane"
+      ],
+      "action_families": [
         "create_plane"
       ]
     },
@@ -8252,7 +8542,9 @@
       "edge_kind": null,
       "multi_action": false,
       "action_cues": [
-        "rename",
+        "create_plane"
+      ],
+      "action_families": [
         "create_plane"
       ]
     },
@@ -8340,6 +8632,9 @@
       "edge_kind": null,
       "multi_action": false,
       "action_cues": [
+        "create_plane"
+      ],
+      "action_families": [
         "create_plane"
       ]
     },
@@ -8454,6 +8749,9 @@
       "edge_kind": null,
       "multi_action": false,
       "action_cues": [
+        "pattern"
+      ],
+      "action_families": [
         "pattern"
       ]
     },
@@ -8580,6 +8878,9 @@
       "multi_action": false,
       "action_cues": [
         "pattern"
+      ],
+      "action_families": [
+        "pattern"
       ]
     },
     "post": {
@@ -8696,7 +8997,8 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [],
+      "action_families": []
     },
     "post": {
       "accepted": false,
@@ -8712,7 +9014,7 @@
       "d": "a",
       "i": "add_pattern"
     },
-    "model_latency_ms": 530.1035679999977,
+    "model_latency_ms": 651.7319700000002,
     "outcome": "correct"
   },
   {
@@ -8804,6 +9106,9 @@
       "edge_kind": null,
       "multi_action": false,
       "action_cues": [
+        "reorder"
+      ],
+      "action_families": [
         "reorder"
       ]
     },
@@ -8918,6 +9223,9 @@
       "multi_action": false,
       "action_cues": [
         "reorder"
+      ],
+      "action_families": [
+        "reorder"
       ]
     },
     "post": {
@@ -9021,6 +9329,9 @@
       "multi_action": false,
       "action_cues": [
         "rollback"
+      ],
+      "action_families": [
+        "rollback"
       ]
     },
     "post": {
@@ -9056,7 +9367,7 @@
         }
       ]
     },
-    "source": "model_intent",
+    "source": "evidence_reflex",
     "decision": "act",
     "intent": "create_part_studio",
     "evidence": {
@@ -9088,7 +9399,7 @@
           "value": "hide fit studio",
           "span": [
             27,
-            47
+            42
           ],
           "scope": null,
           "effect_bearing": true,
@@ -9105,12 +9416,12 @@
       "feature_word": false,
       "delete_cue": false,
       "plane_explicit": false,
-      "plane_create_explicit": false,
+      "plane_create_explicit": true,
       "plane_reference_direction": null,
       "pattern_explicit": false,
-      "edge_new_explicit": false,
+      "edge_new_explicit": true,
       "copy_count": null,
-      "cue_text": "یه part studio تازه به اسم                     ",
+      "cue_text": "یه part studio تازه به اسم                 بساز",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -9124,7 +9435,10 @@
       "edge_kind": null,
       "multi_action": false,
       "action_cues": [
-        "rename"
+        "create_part_studio"
+      ],
+      "action_families": [
+        "create_part_studio"
       ]
     },
     "post": {
@@ -9142,12 +9456,6 @@
       },
       "consumed_evidence_count": 1
     },
-    "model_choice": {
-      "id": "v13_d11",
-      "d": "a",
-      "i": "create_part_studio"
-    },
-    "model_latency_ms": 530.1035679999977,
     "outcome": "correct"
   },
   {
@@ -9234,7 +9542,10 @@
       "edge_kind": null,
       "multi_action": false,
       "action_cues": [
-        "rename"
+        "rename_document"
+      ],
+      "action_families": [
+        "rename_document"
       ]
     },
     "post": {
@@ -9319,7 +9630,8 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [],
+      "action_families": []
     },
     "post": {
       "accepted": false,
@@ -9397,7 +9709,8 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [],
+      "action_families": []
     },
     "post": {
       "accepted": false,
@@ -9475,7 +9788,8 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [],
+      "action_families": []
     },
     "post": {
       "accepted": false,
@@ -9553,7 +9867,8 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [],
+      "action_families": []
     },
     "post": {
       "accepted": false,
@@ -9631,9 +9946,8 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": [
-        "delete"
-      ]
+      "action_cues": [],
+      "action_families": []
     },
     "post": {
       "accepted": false,
@@ -9658,12 +9972,30 @@
         }
       ]
     },
-    "source": "model_intent",
+    "source": "evidence_reflex",
     "decision": "ask",
     "intent": null,
     "evidence": {
       "text": "سه میلش کن",
-      "quantities": [],
+      "quantities": [
+        {
+          "id": "q1",
+          "value": 3.0,
+          "unit": "mm",
+          "text": "سه میلش",
+          "span": [
+            0,
+            7
+          ],
+          "ast": {
+            "value": 3.0,
+            "kind": "cardinal",
+            "source": "سه",
+            "cardinal": 3
+          },
+          "provenance": "canonical_quantity_grammar"
+        }
+      ],
       "quantity_issues": [],
       "features": [],
       "parts": [],
@@ -9711,7 +10043,8 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [],
+      "action_families": []
     },
     "post": {
       "accepted": false,
@@ -9722,12 +10055,6 @@
         "args": {}
       }
     },
-    "model_choice": {
-      "id": "v13_x06",
-      "d": "q",
-      "i": null
-    },
-    "model_latency_ms": 530.1035679999977,
     "outcome": "correct"
   },
   {
@@ -9795,7 +10122,8 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [],
+      "action_families": []
     },
     "post": {
       "accepted": false,
@@ -9873,7 +10201,8 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [],
+      "action_families": []
     },
     "post": {
       "accepted": false,
@@ -9951,7 +10280,8 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [],
+      "action_families": []
     },
     "post": {
       "accepted": false,
@@ -10029,7 +10359,8 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [],
+      "action_families": []
     },
     "post": {
       "accepted": false,
