@@ -1,0 +1,10 @@
+{
+  "schema": "cf.synthetic-holdout.v1",
+  "private_source_repo": "homayounisaghar/capability-fabric",
+  "private_source_ref": "experiment/onshape-fast-router-synthetic-holdout-v05",
+  "frozen_holdout_commit": "58bed5b096b51743d368ec45003602229f409116",
+  "router_baseline_ref": "experiment/onshape-fast-router-groq-v04-hybrid",
+  "router_baseline_commit": "888054e66bc6005689eb9138141b856660390d23",
+  "cases": 96,
+  "note": "Synthetic colloquial Persian holdout; frozen before scoring; no production Onshape effects."
+}
