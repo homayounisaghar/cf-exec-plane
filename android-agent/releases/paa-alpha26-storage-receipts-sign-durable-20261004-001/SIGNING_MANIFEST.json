@@ -1,0 +1,21 @@
+{
+  "schema": "personal-android-agent.signed-apk.v1",
+  "request_id": "paa-alpha26-storage-receipts-sign-durable-20261004-001",
+  "candidate_commit": "bb85659015bd78d58b5c7157f1f955c2a771a6d2",
+  "unsigned_sha256": "2a6da2d08bf00b90bba6725c264de3c2ca79978526c699a60d72d458bab7e315",
+  "signed_sha256": "48c35760230c3b36cdc66967367ccdbc4a345a5a97e1817b8acc42e4d8c797aa",
+  "package_id": "com.homayounisaghar.androidagent",
+  "version_code": 26,
+  "version_name": "0.1.0-alpha26",
+  "signer_alias": "personal_android_agent_line3",
+  "signer_certificate_sha256": "e5b102356f271078a3d03e982782c3776e3d9f301c1b24c0e7194f06e5a001fa",
+  "signature_schemes": [
+    "v1",
+    "v2",
+    "v3"
+  ],
+  "payload_identity": "verified-by-stage-a-digest",
+  "zip_integrity": "pass",
+  "alignment": "pass",
+  "result": "SUCCESS"
+}
