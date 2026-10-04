@@ -2,23 +2,21 @@
   "candidate_cases_before_filter": 10000,
   "filtered_before_score": 200,
   "cases": 9800,
-  "deterministic_cases": 9750,
-  "fallback_cases": 50,
-  "exact_correct": 9650,
-  "exact_accuracy": 0.9846938775510204,
-  "effect_correct": 9650,
-  "effect_accuracy": 0.9846938775510204,
-  "effect_errors": 150,
+  "deterministic_cases": 9800,
+  "fallback_cases": 0,
+  "exact_correct": 9800,
+  "exact_accuracy": 1.0,
+  "effect_correct": 9800,
+  "effect_accuracy": 1.0,
+  "effect_errors": 0,
   "severe_accepted_effect_errors": 0,
   "wrong_material_accepted": 0,
   "false_execute": 0,
   "wrong_reversible_accepted": 0,
-  "conservative_escalations": 100,
+  "conservative_escalations": 0,
   "route_mismatch": 0,
   "outcomes": {
-    "correct": 9650,
-    "fallback": 50,
-    "conservative_escalation": 100
+    "correct": 9800
   },
   "by_category": {
     "ambiguous_target_safe_ask": {
@@ -76,8 +74,7 @@
       "correct": 200
     },
     "inspect_collaboration": {
-      "fallback": 50,
-      "correct": 150
+      "correct": 200
     },
     "inspect_selection": {
       "correct": 200
@@ -128,8 +125,7 @@
       "correct": 200
     },
     "part_hide": {
-      "correct": 150,
-      "conservative_escalation": 50
+      "correct": 200
     },
     "part_material": {
       "correct": 200
@@ -138,8 +134,7 @@
       "correct": 200
     },
     "part_show": {
-      "correct": 150,
-      "conservative_escalation": 50
+      "correct": 200
     },
     "plane_named": {
       "correct": 200
@@ -172,240 +167,7 @@
       "correct": 200
     }
   },
-  "failure_reason_counts": {
-    "inspect_collaboration": {
-      "model-fallback-required": 50
-    },
-    "part_hide": {
-      "effect-evidence-unconsumed": 50
-    },
-    "part_show": {
-      "effect-evidence-unconsumed": 50
-    }
-  },
-  "representative_failures": {
-    "inspect_collaboration": [
-      {
-        "id": "v17_incollab_0000",
-        "text": "بگو چه کسانی الان در این جلسه حاضرند",
-        "expected": [
-          {
-            "route": "do",
-            "op": "viewer.inspect",
-            "args": {
-              "mode": "collaboration"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v17_incollab_0004",
-        "text": "یه لطفی کن بگو چه کسانی الان در این جلسه حاضرند",
-        "expected": [
-          {
-            "route": "do",
-            "op": "viewer.inspect",
-            "args": {
-              "mode": "collaboration"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v17_incollab_0008",
-        "text": "وقتی آماده‌ای بگو چه کسانی الان در این جلسه حاضرند",
-        "expected": [
-          {
-            "route": "do",
-            "op": "viewer.inspect",
-            "args": {
-              "mode": "collaboration"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      }
-    ],
-    "part_hide": [
-      {
-        "id": "v17_phide_0002",
-        "text": "لطفاً یه لحظه نمایش Part 5 را خاموش کن",
-        "expected": [
-          {
-            "route": "do",
-            "op": "part.visibility",
-            "args": {
-              "part_name": "Part 5",
-              "visible": false
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "effect-evidence-unconsumed",
-        "action_families": [
-          "part_visibility"
-        ],
-        "quantity_issues": []
-      },
-      {
-        "id": "v17_phide_0006",
-        "text": "خب پس نمایش Part 9 را خاموش کن",
-        "expected": [
-          {
-            "route": "do",
-            "op": "part.visibility",
-            "args": {
-              "part_name": "Part 9",
-              "visible": false
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "effect-evidence-unconsumed",
-        "action_families": [
-          "part_visibility"
-        ],
-        "quantity_issues": []
-      },
-      {
-        "id": "v17_phide_0010",
-        "text": "نمایش Part 13 را خاموش کن؛ ممنون",
-        "expected": [
-          {
-            "route": "do",
-            "op": "part.visibility",
-            "args": {
-              "part_name": "Part 13",
-              "visible": false
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "effect-evidence-unconsumed",
-        "action_families": [
-          "part_visibility"
-        ],
-        "quantity_issues": []
-      }
-    ],
-    "part_show": [
-      {
-        "id": "v17_pshow_0002",
-        "text": "لطفاً یه لحظه نمایش Part 16 را روشن کن",
-        "expected": [
-          {
-            "route": "do",
-            "op": "part.visibility",
-            "args": {
-              "part_name": "Part 16",
-              "visible": true
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "effect-evidence-unconsumed",
-        "action_families": [
-          "part_visibility"
-        ],
-        "quantity_issues": []
-      },
-      {
-        "id": "v17_pshow_0006",
-        "text": "خب پس نمایش Part 20 را روشن کن",
-        "expected": [
-          {
-            "route": "do",
-            "op": "part.visibility",
-            "args": {
-              "part_name": "Part 20",
-              "visible": true
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "effect-evidence-unconsumed",
-        "action_families": [
-          "part_visibility"
-        ],
-        "quantity_issues": []
-      },
-      {
-        "id": "v17_pshow_0010",
-        "text": "نمایش Part 24 را روشن کن؛ ممنون",
-        "expected": [
-          {
-            "route": "do",
-            "op": "part.visibility",
-            "args": {
-              "part_name": "Part 24",
-              "visible": true
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "effect-evidence-unconsumed",
-        "action_families": [
-          "part_visibility"
-        ],
-        "quantity_issues": []
-      }
-    ]
-  },
-  "wall_seconds": 3.8390442880000037
+  "failure_reason_counts": {},
+  "representative_failures": {},
+  "wall_seconds": 7.047876113000001
 }
