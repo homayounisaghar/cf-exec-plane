@@ -7,6 +7,6 @@
   "cases": 100,
   "production_effects": false,
   "statistical_role": "regression_only",
-  "note": "V12 remains regression-only. This run qualifies the latest evidence-v07 head, including typed selection-action separation and literal-masking invariants.",
+  "note": "Frozen V12 regression only. Cross-regression candidate includes the V13 semantic hardening; corpus remains unchanged.",
   "selftest_file_sha": "0fd5e71ca0463a33a0488051c330e525fe787a64"
 }
