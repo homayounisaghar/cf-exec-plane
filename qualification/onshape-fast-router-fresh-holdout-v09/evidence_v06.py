@@ -756,7 +756,10 @@ def compile_intent(case, decision, intent, ev):
             return reject("fit-selection-ungrounded")
         return accept("view.fit",{"action":"fit_selection" if target=="selection" else "fit"},{"target":"text/context"})
 
-    if intent=="top_view": return accept("view.standard",{"view":"top"},{"view":"text"})
+    if intent=="top_view":
+        if not ev.get("top_view"):
+            return reject("standard-view-not-grounded")
+        return accept("view.standard",{"view":"top"},{"view":"text"})
     if intent=="clear_selection": return accept("viewer.selection.clear",{},{})
 
     if intent=="inspect":
