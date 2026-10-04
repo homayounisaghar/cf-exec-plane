@@ -1,0 +1,178 @@
+{
+  "cases": 10000,
+  "deterministic_cases": 9287,
+  "fallback_cases": 713,
+  "deterministic_correct": 9067,
+  "deterministic_accuracy": 0.9763109723269086,
+  "wrong_material_accepted": 7,
+  "false_execute": 0,
+  "wrong_reversible_accepted": 5,
+  "severe_accepted_effect_errors": 12,
+  "conservative_escalations": 142,
+  "route_mismatch": 66,
+  "outcomes": {
+    "correct": 9067,
+    "conservative_escalation": 142,
+    "wrong_reversible_accepted": 5,
+    "wrong_material_accepted": 7,
+    "route_mismatch": 66
+  },
+  "by_category": {
+    "clear_selection": {
+      "correct": 200
+    },
+    "conditional_discourse": {
+      "correct": 200
+    },
+    "context_camera": {
+      "correct": 104
+    },
+    "context_relative": {
+      "correct": 200
+    },
+    "create_part_studio": {
+      "correct": 100
+    },
+    "design_judgment": {
+      "correct": 100
+    },
+    "edge_chamfer": {
+      "correct": 200
+    },
+    "edge_fillet": {
+      "correct": 200
+    },
+    "feature_angle": {
+      "correct": 200
+    },
+    "feature_delete": {
+      "correct": 200
+    },
+    "feature_depth": {
+      "correct": 200
+    },
+    "feature_flip": {
+      "correct": 200
+    },
+    "feature_radius": {
+      "correct": 200
+    },
+    "feature_rename": {
+      "correct": 100,
+      "conservative_escalation": 90,
+      "wrong_reversible_accepted": 5
+    },
+    "fit_all": {
+      "correct": 150
+    },
+    "fit_selection": {
+      "correct": 150
+    },
+    "follow": {
+      "correct": 200
+    },
+    "inspect_collaboration": {
+      "correct": 200
+    },
+    "inspect_selection": {
+      "correct": 200
+    },
+    "inspect_state": {
+      "correct": 200
+    },
+    "literal_collision": {
+      "correct": 200
+    },
+    "localized_quantity_valid": {
+      "correct": 200
+    },
+    "multi_material": {
+      "correct": 200
+    },
+    "multi_mixed": {
+      "correct": 200
+    },
+    "multi_viewer": {
+      "correct": 200
+    },
+    "negation_correction": {
+      "correct": 200
+    },
+    "new_chamfer": {
+      "correct": 200
+    },
+    "new_fillet": {
+      "correct": 200
+    },
+    "noisy_language": {
+      "correct": 198,
+      "conservative_escalation": 2
+    },
+    "orbit": {
+      "correct": 200
+    },
+    "pan": {
+      "correct": 200
+    },
+    "part_color": {
+      "correct": 200
+    },
+    "part_delete": {
+      "correct": 150
+    },
+    "part_hide": {
+      "correct": 200
+    },
+    "part_material": {
+      "correct": 193,
+      "wrong_material_accepted": 7
+    },
+    "part_show": {
+      "correct": 200
+    },
+    "part_text_meta": {
+      "correct": 175
+    },
+    "pattern": {
+      "correct": 200
+    },
+    "plane": {
+      "correct": 200
+    },
+    "professional_out_of_contract": {
+      "route_mismatch": 66,
+      "correct": 106
+    },
+    "quantity_invalid": {
+      "correct": 180
+    },
+    "rename_document": {
+      "correct": 150
+    },
+    "reorder": {
+      "correct": 200
+    },
+    "rollback": {
+      "conservative_escalation": 50,
+      "correct": 100
+    },
+    "selection_ambiguous": {
+      "correct": 200
+    },
+    "suppress": {
+      "correct": 200
+    },
+    "top_view": {
+      "correct": 200
+    },
+    "unsupported_precise": {
+      "correct": 161
+    },
+    "unsuppress": {
+      "correct": 150
+    },
+    "zoom": {
+      "correct": 200
+    }
+  }
+}
