@@ -1,0 +1,9 @@
+{
+  "request_id": "v20-qwen-small-batch-retry-20261004-1426",
+  "reason": "Qwen calibration passed; first blind generation truncated 40-item response before any corpus/freeze. Reduce generator batch only.",
+  "generator_batch_size": 16,
+  "judge_batch_size": 40,
+  "candidate_commit": "54580b67a9a61d2463ec3b9ced7a801707bb242b",
+  "fresh_status": "unscored-unfrozen",
+  "production_effects": false
+}

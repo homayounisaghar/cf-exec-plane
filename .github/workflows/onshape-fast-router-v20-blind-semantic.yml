@@ -88,7 +88,7 @@ jobs:
             cp "$input" "$sand/input.jsonl"
             (
               cd "$sand"
-              python generate_utterances.py --input input.jsonl --output generated.jsonl --attempt "$round" --batch-size 40
+              python generate_utterances.py --input input.jsonl --output generated.jsonl --attempt "$round" --batch-size 16
               python judge_utterances.py --input generated.jsonl --output judge-a.jsonl --variant A --batch-size 40
               python judge_utterances.py --input generated.jsonl --output judge-b.jsonl --variant B --batch-size 40
             )
