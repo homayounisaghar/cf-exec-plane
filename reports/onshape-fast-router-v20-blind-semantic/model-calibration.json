@@ -1,8 +1,8 @@
 {
   "pass": false,
   "stage": "direct_judge",
-  "generator_model": "openai/gpt-oss-20b",
-  "judge_model": "openai/gpt-oss-safeguard-20b",
+  "generator_model": "allam-2-7b",
+  "judge_model": "openai/gpt-oss-20b",
   "direct_a": [
     {
       "id": "cal_hide",
@@ -28,37 +28,143 @@
     {
       "id": "cal_radius",
       "ok": false,
-      "reason": "missing"
+      "reason": "args",
+      "parsed": {
+        "scenario_id": "cal_radius",
+        "route": "do",
+        "op": "feature.parameter.set",
+        "args": {
+          "feature_name": "Fillet 7",
+          "parameter": "radius",
+          "amount": "N mm",
+          "value": "2"
+        },
+        "flags": {
+          "ambiguous": false,
+          "conditional": false,
+          "multi_effect": false,
+          "invalid_quantity": false,
+          "negated_only": false
+        }
+      }
     },
     {
       "id": "cal_cond",
-      "ok": false,
-      "reason": "missing"
+      "ok": true,
+      "reason": "ok",
+      "parsed": {
+        "scenario_id": "cal_cond",
+        "route": "ask",
+        "op": null,
+        "args": {},
+        "flags": {
+          "ambiguous": false,
+          "conditional": true,
+          "multi_effect": false,
+          "invalid_quantity": false,
+          "negated_only": false
+        }
+      }
     },
     {
       "id": "cal_amb",
-      "ok": false,
-      "reason": "missing"
+      "ok": true,
+      "reason": "ok",
+      "parsed": {
+        "scenario_id": "cal_amb",
+        "route": "ask",
+        "op": null,
+        "args": {},
+        "flags": {
+          "ambiguous": true,
+          "conditional": false,
+          "multi_effect": false,
+          "invalid_quantity": false,
+          "negated_only": false
+        }
+      }
     },
     {
       "id": "cal_inspect",
-      "ok": false,
-      "reason": "missing"
+      "ok": true,
+      "reason": "ok",
+      "parsed": {
+        "scenario_id": "cal_inspect",
+        "route": "do",
+        "op": "viewer.inspect",
+        "args": {
+          "mode": "selection"
+        },
+        "flags": {
+          "ambiguous": false,
+          "conditional": false,
+          "multi_effect": false,
+          "invalid_quantity": false,
+          "negated_only": false
+        }
+      }
     },
     {
       "id": "cal_suppress",
-      "ok": false,
-      "reason": "missing"
+      "ok": true,
+      "reason": "ok",
+      "parsed": {
+        "scenario_id": "cal_suppress",
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 9",
+          "suppressed": true,
+          "new_name": null
+        },
+        "flags": {
+          "ambiguous": false,
+          "conditional": false,
+          "multi_effect": false,
+          "invalid_quantity": false,
+          "negated_only": false
+        }
+      }
     },
     {
       "id": "cal_part_delete",
-      "ok": false,
-      "reason": "missing"
+      "ok": true,
+      "reason": "ok",
+      "parsed": {
+        "scenario_id": "cal_part_delete",
+        "route": "do",
+        "op": "feature.delete_part",
+        "args": {
+          "part_name": "Part 15"
+        },
+        "flags": {
+          "ambiguous": false,
+          "conditional": false,
+          "multi_effect": false,
+          "invalid_quantity": false,
+          "negated_only": false
+        }
+      }
     },
     {
       "id": "cal_zoom_correct",
       "ok": false,
-      "reason": "missing"
+      "reason": "op",
+      "parsed": {
+        "scenario_id": "cal_zoom_correct",
+        "route": "do",
+        "op": "view.fit",
+        "args": {
+          "action": "zoomOut"
+        },
+        "flags": {
+          "ambiguous": false,
+          "conditional": false,
+          "multi_effect": false,
+          "invalid_quantity": false,
+          "negated_only": false
+        }
+      }
     }
   ],
   "direct_b": [
@@ -126,17 +232,17 @@
     },
     {
       "id": "cal_amb",
-      "ok": false,
-      "reason": "flags",
+      "ok": true,
+      "reason": "ok",
       "parsed": {
         "scenario_id": "cal_amb",
         "route": "ask",
         "op": null,
         "args": {},
         "flags": {
-          "ambiguous": false,
+          "ambiguous": true,
           "conditional": false,
-          "multi_effect": true,
+          "multi_effect": false,
           "invalid_quantity": false,
           "negated_only": false
         }
@@ -207,17 +313,19 @@
     {
       "id": "cal_zoom_correct",
       "ok": false,
-      "reason": "route",
+      "reason": "op",
       "parsed": {
         "scenario_id": "cal_zoom_correct",
-        "route": "ask",
-        "op": null,
-        "args": {},
+        "route": "do",
+        "op": "view.fit",
+        "args": {
+          "action": "zoom_out"
+        },
         "flags": {
           "ambiguous": false,
           "conditional": false,
           "multi_effect": false,
-          "invalid_quantity": true,
+          "invalid_quantity": false,
           "negated_only": false
         }
       }
@@ -225,40 +333,36 @@
   ],
   "usage": [
     {
-      "completion_tokens": 900,
-      "prompt_tokens": 812,
-      "total_tokens": 1712,
+      "completion_tokens": 856,
+      "prompt_tokens": 818,
+      "total_tokens": 1674,
       "completion_tokens_details": {
         "accepted_prediction_tokens": null,
         "audio_tokens": null,
-        "reasoning_tokens": 827,
+        "reasoning_tokens": 412,
         "rejected_prediction_tokens": null
       },
       "prompt_tokens_details": null,
-      "queue_time": 0.058736889,
-      "prompt_time": 0.043736903,
-      "completion_time": 0.926377239,
-      "total_time": 0.970114142
+      "queue_time": 0.171531112,
+      "prompt_time": 0.041347514,
+      "completion_time": 0.996518215,
+      "total_time": 1.037865729
     },
     {
-      "completion_tokens": 839,
-      "prompt_tokens": 823,
-      "total_tokens": 1662,
+      "completion_tokens": 649,
+      "prompt_tokens": 829,
+      "total_tokens": 1478,
       "completion_tokens_details": {
         "accepted_prediction_tokens": null,
         "audio_tokens": null,
-        "reasoning_tokens": 404,
+        "reasoning_tokens": 209,
         "rejected_prediction_tokens": null
       },
-      "prompt_tokens_details": {
-        "audio_tokens": null,
-        "cache_write_tokens": null,
-        "cached_tokens": 512
-      },
-      "queue_time": 0.058824291,
-      "prompt_time": 0.018455237,
-      "completion_time": 0.872910806,
-      "total_time": 0.891366043
+      "prompt_tokens_details": null,
+      "queue_time": 0.048893194,
+      "prompt_time": 0.050438902,
+      "completion_time": 0.718410959,
+      "total_time": 0.768849861
     }
   ]
 }
