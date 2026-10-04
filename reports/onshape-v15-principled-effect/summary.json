@@ -1,0 +1,8 @@
+{
+  "cases": 10000,
+  "effect_correct": 10000,
+  "effect_accuracy": 1.0,
+  "effect_errors": 0,
+  "fallback_cases": 0,
+  "errors": []
+}
