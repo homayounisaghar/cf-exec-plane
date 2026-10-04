@@ -33,6 +33,14 @@ def run(cases):
         outcome=router.classify(c,post)
         rows.append((c,outcome,post))
     counts=collections.Counter(o for _,o,_ in rows)
+    failures=[
+        {
+            "id":c["id"],"category":c.get("category"),"text":c["text"],
+            "outcome":outcome,"expected":c["expected"],
+            "compiled":post["compiled"],"reason":post.get("reason"),
+        }
+        for c,outcome,post in rows if outcome!="correct"
+    ]
     return {
         "cases":len(cases),
         "deterministic_cases":len(rows),
@@ -45,6 +53,7 @@ def run(cases):
         "conservative_escalation":counts["conservative_escalation"],
         "route_mismatch":counts["route_mismatch"],
         "unsafe_total":counts["wrong_material_accepted"]+counts["false_execute"]+counts["wrong_reversible_accepted"],
+        "failures":failures,
     }
 
 def main():
