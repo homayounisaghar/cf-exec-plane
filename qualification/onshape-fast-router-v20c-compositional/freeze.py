@@ -109,7 +109,10 @@ def main():
         vals.append(best)
         if meta: nearest.append({"scenario_id":sid,"ratio":best,"prior_corpus":meta[0],"prior_id":meta[1]})
         if best>=0.70: violations.append({"scenario_id":sid,"ratio":best,"prior":meta})
-    if violations: raise SystemExit(f"surface similarity gate failed count={len(violations)} examples={violations[:10]}")
+    if violations:
+        fam=Counter(x["scenario_id"].rsplit("_",1)[0].replace("v20_","") for x in violations)
+        (out/"similarity-violations.json").write_text(json.dumps({"count":len(violations),"by_family":dict(fam),"examples":violations[:100]},ensure_ascii=False,indent=2),encoding="utf-8")
+        raise SystemExit(f"surface similarity gate failed count={len(violations)} by_family={dict(fam)} examples={violations[:10]}")
 
     byfam=defaultdict(list)
     for s in S: byfam[s["family"]].append(toks(rm[s["scenario_id"]]["text"]))
