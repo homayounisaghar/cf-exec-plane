@@ -670,7 +670,11 @@ def extract_evidence(text, ctx=None):
 
     camera_action=None; camera_direction=None; camera_inverse=False
     if has_any(cue_t,["زوم","zoom","نزدیک تر شو","نزدیک‌تر شو","نزدیک شو","دورتر شو","دور تر شو","دور شو","ازش دور شو","ازش دورتر شو"]): camera_action="zoom"
-    elif re.search(r"\bpan\b",cue_t,re.I) or has_any(cue_t,["پن ","نما رو","صفحه رو","viewport","هل بده"]) or (has_any(cue_t,["بکش بالا","بکش پایین"]) and has_any(cue_t,["نما","صفحه"])):
+    elif re.search(r"\bpan\b",cue_t,re.I) or "پن " in cue_t or (
+        has_any(cue_t,["viewport","نما","صفحه"]) and
+        has_any(cue_t,["هل بده","بکش","ببر"]) and
+        has_any(cue_t,["چپ","راست","بالا","پایین","left","right","up","down"])
+    ):
         camera_action="pan"
     elif has_any(cue_t,["بچرخ","rotate","ساعتگرد","پادساعتگرد","clockwise","counterclockwise","ربع دور","عقربه"]) or (
         re.search(r"\bcamera\b",cue_t,re.I) and has_any(cue_t,["ببر","left","right","چپ","راست"])
