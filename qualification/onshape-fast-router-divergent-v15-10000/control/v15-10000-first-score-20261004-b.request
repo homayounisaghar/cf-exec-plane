@@ -1,0 +1,11 @@
+{
+  "request_id": "onshape-fast-router-v15-10000-first-score-20261004-b",
+  "corpus_freeze_commit": "905cd8960d2e8a432a7c827047065089e3da8d38",
+  "corpus_file_sha": "91897f0d98841a58000570d0ca5bee842ec39a4f",
+  "corpus_sha256": "04137cbf8eb0e85933a356d5837c77431e94cde7f0f4772f6f0b797d646f452a",
+  "source_repo": "homayounisaghar/capability-fabric",
+  "source_ref": "work/onshape-fast-router-v14-hardening",
+  "source_head": "91c285ad97adb5af45fa806f7af2caf4a693cd93",
+  "purpose": "first valid score of frozen 10k critically redesigned professional-modeler holdout",
+  "production_effects": false
+}
