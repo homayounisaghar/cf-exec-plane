@@ -526,6 +526,8 @@ def extract_evidence(text, ctx=None):
         visibility=False
     elif has_any(cue_t,["نشون بده","نشان بده","نشونش بده","نشانش بده","show","دوباره بیار","برگردونش توی نما","برگردون تو نما","برگردون توی نما"]):
         visibility=True
+    elif (ps or ctx.get("last_part")) and has_any(cue_t,["دیده بشه","دیده بشود","دیده شه","دوباره دیده"]):
+        visibility=True
 
     suppressed=None
     if has_any(cue_t,["خاموش","suppress"]): suppressed=True
@@ -552,9 +554,13 @@ def extract_evidence(text, ctx=None):
         "تزریق","منطقی تر","منطقی‌تر","مرتبش کن","تمیزتر بشه","تمیزتر شه",
         "جمع و جورتر","بهتر دربیار","بهترش کن"
     ])
-    tree_design = ("درخت فیچر" in cue_t) and has_any(cue_t,["مرتب","خلوت","شلوغ","منطقی","تمیز","سامان"])
-    design = design or tree_design
-    unsupported = has_any(cue_t,["public","share","pdf","export","step","mate","company","شرکت onshape"])
+    weight_design = has_any(cue_t,["سبکش کن","سبک کن"])
+    tree_design = has_any(cue_t,["درخت فیچر","درخت feature","feature tree"]) and has_any(cue_t,["مرتب","خلوت","شلوغ","منطقی","تمیز","سامان"])
+    design = design or weight_design or tree_design
+    unsupported = (
+        has_any(cue_t,["شرکت onshape"]) or
+        bool(re.search(r"\b(?:public|share|pdf|export|step|mate|company)\b",cue_t,re.I))
+    )
 
     camera_action=None; camera_direction=None; camera_inverse=False
     if has_any(cue_t,["زوم","zoom","نزدیک تر شو","نزدیک‌تر شو","دورتر شو","دور تر شو","دور شو","ازش دور شو","ازش دورتر شو"]): camera_action="zoom"
@@ -615,7 +621,8 @@ def extract_evidence(text, ctx=None):
     selection_inspect_cue = (
         has_any(cue_t,["چی انتخاب","چی انتخابه","چی انتخاب شده","چی سلکت","چی دستمه","چی گرفتم"]) or
         bool(re.search(r"(?:چی(?=\s|$)|چه چیزی).*?(?:دست|گرفت|انتخاب|سلکت)",cue_t)) or
-        bool(re.search(r"(?:انتخاب|selection|سلکت).*?(?:چیه|چی هست|چی شده)",cue_t))
+        bool(re.search(r"(?:انتخاب|selection|سلکت).*?(?:چیه|چی هست|چی شده)",cue_t)) or
+        bool(re.search(r"(?:دستم|دستمه|دست من).*?(?:چیه|چی هست|چی شده)",cue_t))
     )
     selection_action = None
     if clear_selection:
@@ -779,6 +786,18 @@ def feature_parameter_compatible(feature_name, parameter):
         return False
     return parameter in FEATURE_PARAMETER_COMPAT.get(ftype,set())
 
+def inferred_feature_parameter(ev):
+    """Infer only provider-safe type/unit defaults; explicit parameter evidence wins."""
+    if ev.get("parameter_hint"):
+        return ev["parameter_hint"]
+    feature=choose_feature(ev)
+    ftype=feature_type_from_name(feature)
+    if ftype=="fillet" and len(all_quantities(ev,"mm"))==1:
+        return "radius"
+    if ftype=="draft" and len(all_quantities(ev,"deg"))==1:
+        return "angle"
+    return None
+
 def direct_intent(case, ev):
     t=ev.get("cue_text") or low(case["text"])
     ctx=case.get("ctx",{})
@@ -834,7 +853,7 @@ def direct_intent(case, ev):
     if has_any(t,["pattern","الگو","خطی تکرار"]): return ("act","add_pattern")
 
     # Existing-feature parameter cues.
-    if choose_feature(ev) and (has_any(t,["شعاع","radius","عمق","depth","زاویه","angle","flip direction"]) or ev["relative"]):
+    if choose_feature(ev) and (inferred_feature_parameter(ev) is not None or ev["relative"]):
         return ("act","feature_parameter")
 
     # Existing-part property by common shorthand.
@@ -938,8 +957,7 @@ def compile_intent(case, decision, intent, ev):
     if intent=="feature_parameter":
         feature=choose_feature(ev)
         if not feature: return reject("feature-ungrounded")
-        if str(feature).lower().startswith("fillet"): parameter="radius"
-        else: parameter=ev.get("parameter_hint")
+        parameter=inferred_feature_parameter(ev)
         if parameter not in {"radius","depth","angle","flip direction"}:
             return reject("feature-parameter-ungrounded")
 
@@ -1110,6 +1128,8 @@ def enforce_evidence_consumption(post, ev):
         atoms.append({"id":"sem:standard_view","kind":"semantic","field":"standard_view","value":"top"})
     if ev.get("delete_position") is not None and ev.get("delete_cue"):
         atoms.append({"id":"sem:delete_position","kind":"semantic","field":"delete_position","value":ev["delete_position"]})
+    if ev.get("parameter_hint") is not None:
+        atoms.append({"id":"sem:parameter_hint","kind":"semantic","field":"parameter_hint","value":ev["parameter_hint"]})
 
     unconsumed=[]
     for atom in atoms:
@@ -1132,6 +1152,8 @@ def enforce_evidence_consumption(post, ev):
             consumed=(op=="view.standard" and args.get("view")==value)
         elif field=="delete_position":
             consumed=(op=="feature.delete" and args.get("position")==value)
+        elif field=="parameter_hint":
+            consumed=(op=="feature.parameter.set" and args.get("parameter")==value)
         else:
             consumed=False
         if not consumed:
