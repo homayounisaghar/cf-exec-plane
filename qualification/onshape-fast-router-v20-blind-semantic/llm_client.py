@@ -27,13 +27,16 @@ def chat_json(client,model,system,user,temperature=0,max_tokens=14000):
     last=None
     for attempt in range(4):
         try:
-            r=client.chat.completions.create(
-                model=model,
-                messages=[{"role":"system","content":system},{"role":"user","content":user}],
-                temperature=temperature,
-                max_completion_tokens=max_tokens,
-                response_format={"type":"json_object"},
-            )
+            kwargs={
+                "model":model,
+                "messages":[{"role":"system","content":system},{"role":"user","content":user}],
+                "temperature":temperature,
+                "max_completion_tokens":max_tokens,
+                "response_format":{"type":"json_object"},
+            }
+            if model.startswith("openai/gpt-oss-"):
+                kwargs["reasoning_effort"]="low"
+            r=client.chat.completions.create(**kwargs)
             content=r.choices[0].message.content
             return parse_json(content), (r.usage.model_dump() if getattr(r,"usage",None) else {})
         except Exception as e:
