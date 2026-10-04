@@ -1,0 +1,44 @@
+name: Onshape V15 Current Deterministic
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - qualification/onshape-fast-router-divergent-v15-10000/deterministic-control/*.request
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Run deterministic V15
+        env:
+          OUT_DIR: ${{ github.workspace }}/artifacts/onshape-fast-router-v15-current-deterministic
+        run: |
+          mkdir -p "$OUT_DIR"
+          cd qualification/onshape-fast-router-divergent-v15-10000
+          python deterministic_current.py
+      - name: Publish
+        run: |
+          src="artifacts/onshape-fast-router-v15-current-deterministic"
+          dst="reports/onshape-fast-router-v15-current-deterministic"
+          mkdir -p "$dst"
+          cp "$src/summary.json" "$dst/summary.json"
+          cp "$src/failures.json" "$dst/failures.json"
+          printf '{"run_id":"%s","head_sha":"%s"}\n' "$GITHUB_RUN_ID" "$GITHUB_SHA" > "$dst/latest-meta.json"
+          git config user.name "cf-exec-plane"
+          git config user.email "actions@users.noreply.github.com"
+          git add "$dst"
+          git commit -m "Report: V15 current deterministic" || exit 0
+          git pull --rebase origin main
+          git push origin HEAD:main
