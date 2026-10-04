@@ -13,12 +13,14 @@
     "whisper-large-v3-turbo"
   ],
   "generator_preferences": [
+    "qwen/qwen3.8-27b",
+    "openai/gpt-oss-120b",
     "allam-2-7b"
   ],
   "judge_preferences": [
     "openai/gpt-oss-20b"
   ],
-  "selected_generator": "allam-2-7b",
+  "selected_generator": "qwen/qwen3.8-27b",
   "selected_judge": "openai/gpt-oss-20b",
   "independent_model_ids": true
 }
