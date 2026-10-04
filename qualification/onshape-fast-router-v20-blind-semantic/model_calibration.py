@@ -86,7 +86,7 @@ def main():
         generated.append((sid,text))
     if literal_fail:
         report={"pass":False,"stage":"generator_literals","generator_model":generator,"judge_model":judge_model,
-                "literal_failures":literal_fail,"generated":generated,"usage":[ua,ub,ug]}
+                "literal_failures":literal_fail,"generated":generated,"generator_raw":data,"usage":[ua,ub,ug]}
         open(a.report,"w",encoding="utf-8").write(json.dumps(report,ensure_ascii=False,indent=2))
         raise SystemExit("generator calibration failed")
 
