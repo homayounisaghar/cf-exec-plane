@@ -1,0 +1,21 @@
+{
+  "schema": "capability-fabric.android-standard-app-output.v1",
+  "requestId": "paa-alpha25-storage-durable-20261004-002",
+  "projectId": "personal-android-agent",
+  "checkoutRef": "58e66f489f1c52928909de95bade5bb5ea602ee3",
+  "application": {
+    "packageId": "com.homayounisaghar.androidagent",
+    "versionName": "0.1.0-alpha25",
+    "versionCode": 25
+  },
+  "expectedSigner": {
+    "alias": "personal_android_agent_line3",
+    "certificateSha256": "e5b102356f271078a3d03e982782c3776e3d9f301c1b24c0e7194f06e5a001fa"
+  },
+  "result": "SUCCESS",
+  "artifact": {
+    "file": "personal-android-agent-release-unsigned.apk",
+    "sha256": "0b58f59b8a0d873b174b5fd3a7da33017048efa00eb5cc21aef2346c6cdb54aa",
+    "installable": false
+  }
+}
