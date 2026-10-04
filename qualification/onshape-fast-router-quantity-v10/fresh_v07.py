@@ -1,0 +1,126 @@
+CASES=[]
+
+def add(cat,cid,text,expected,ctx=None):
+    CASES.append({"category":cat,"id":cid,"text":text,"ctx":ctx or {},"expected":expected if isinstance(expected,list) else [expected]})
+
+def do(op,args=None): return {"route":"do","op":op,"args":args or {}}
+def ask(): return {"route":"ask"}
+def think(): return {"route":"think"}
+
+# camera 18
+add("camera","v07_cam_01","یه ذره مدل رو سمت راست بچرخون",do("view.move",{"action":"orbit","direction":"right"}))
+add("camera","v07_cam_02","کمی بچرخونش چپ",do("view.move",{"action":"orbit","direction":"left"}))
+add("camera","v07_cam_03","یه کم clockwise بچرخون",do("view.move",{"action":"orbit","direction":"clockwise"}))
+add("camera","v07_cam_04","counterclockwise یه کوچولو",do("view.move",{"action":"orbit","direction":"counterclockwise"}))
+add("camera","v07_cam_05","نود درجه به چپ بچرخون",do("view.move",{"action":"orbit","direction":"left","angle_degrees":90}))
+add("camera","v07_cam_06","یه ربع دور سمت چپ",do("view.move",{"action":"orbit","direction":"left","angle_degrees":90}))
+add("camera","v07_cam_07","صفحه رو یه کم بیار پایین",do("view.move",{"action":"pan","direction":"down"}))
+add("camera","v07_cam_08","نما رو یکم هل بده چپ",do("view.move",{"action":"pan","direction":"left"}))
+add("camera","v07_cam_09","pan right یه ذره",do("view.move",{"action":"pan","direction":"right"}))
+add("camera","v07_cam_10","زوم کن",do("view.move",{"action":"zoom","direction":"in"}))
+add("camera","v07_cam_11","zoom out یه کوچولو",do("view.move",{"action":"zoom","direction":"out"}))
+add("camera","v07_cam_12","همون حرکت رو یه کم بیشتر",do("view.move",{"action":"orbit","direction":"right"}),{"last_move":{"action":"orbit","direction":"right","intensity":0.2}})
+add("camera","v07_cam_13","نه برش گردون",do("view.move",{"action":"orbit","direction":"left"}),{"last_move":{"action":"orbit","direction":"right","intensity":0.5}})
+add("camera","v07_cam_14","کلش کامل توی کادر باشه",do("view.fit",{"action":"fit"}))
+add("camera","v07_cam_15","فیت روی انتخاب فعلی",do("view.fit",{"action":"fit_selection"}),{"selection_count":1,"selection_types":["face"]})
+add("camera","v07_cam_16","ببر نمای بالا",do("view.standard",{"view":"top"}))
+add("camera","v07_cam_17","انتخاب فعلی رو خالی کن",do("viewer.selection.clear",{}))
+add("camera","v07_cam_18","نمای ایزومتریک بده",ask())
+
+# inspect/follow 8
+add("inspect","v07_ins_01","بگو الان چی سلکت شده",do("viewer.inspect",{"mode":"selection"}))
+add("inspect","v07_ins_02","وضعیت فعلی viewer رو بخون",do("viewer.inspect",{"mode":"state"}))
+add("inspect","v07_ins_03","ببین چند نفر الان توی session هستن",do("viewer.inspect",{"mode":"collaboration"}))
+add("inspect","v07_ins_04","کاربر مقابل رو follow کن",do("view.follow",{}),{"collaborator_count":2})
+add("inspect","v07_ins_05","سومی رو فالو کن",ask(),{"collaborator_count":3})
+add("inspect","v07_ins_06","نفر دوم رو فالو کن",do("view.follow",{"candidate_index":2}),{"collaborator_count":3})
+add("inspect","v07_ins_07","اون سطحه رو انتخاب کن",ask())
+add("inspect","v07_ins_08","یه چیز دیگه هم به انتخاب اضافه کن",ask(),{"selection_count":1})
+
+# selection edge 14
+add("edge","v07_edge_01","روی انتخاب فعلی فیلت سه میل بزن",do("feature.from_selection",{"feature_type":"fillet","amount":"3 mm"}),{"selection_count":2,"selection_types":["edge","edge"]})
+add("edge","v07_edge_02","همین لبه‌ها رو دو میل پخ کن",do("feature.from_selection",{"feature_type":"chamfer","amount":"2 mm"}),{"selection_count":2,"selection_types":["edge","edge"]})
+add("edge","v07_edge_03","چمفر یک و نیم میل روی همین انتخاب",do("feature.from_selection",{"feature_type":"chamfer","amount":"1.5 mm"}),{"selection_count":1,"selection_types":["edge"]})
+add("edge","v07_edge_04","فیلت دو و بیست و پنج صدم میلی روی اینا",do("feature.from_selection",{"feature_type":"fillet","amount":"2.25 mm"}),{"selection_count":2,"selection_types":["edge","edge"]})
+add("edge","v07_edge_05","پخ سه دهم روی همینا",do("feature.from_selection",{"feature_type":"chamfer","amount":"0.3 mm"}),{"selection_count":2,"selection_types":["edge","edge"]})
+add("edge","v07_edge_06","فیلت نیم میل",do("feature.from_selection",{"feature_type":"fillet","amount":"0.5 mm"}),{"selection_count":1,"selection_types":["edge"]})
+add("edge","v07_edge_07","پخ دو میل",ask(),{"selection_count":0})
+add("edge","v07_edge_08","این انتخاب رو پخ کن",ask(),{"selection_count":2,"selection_types":["edge","edge"]})
+add("edge","v07_edge_09","یه فیلت خالی چهار میل بساز",do("feature.add",{"feature_type":"fillet","amount":"4 mm"}))
+add("edge","v07_edge_10","یه chamfer جدید یک میل بساز",do("feature.add",{"feature_type":"chamfer","amount":"1 mm"}))
+add("edge","v07_edge_11","این دوتا رو فیلت دو میل و بعد پخ یک میل",ask(),{"selection_count":2,"selection_types":["edge","edge"]})
+add("edge","v07_edge_12","فیلتش کن و قایمش کن",ask(),{"selection_count":1,"selection_types":["edge"],"last_part":"Part 2"})
+add("edge","v07_edge_13","لبه های انتخاب شده رو 2.75 mm chamfer کن",do("feature.from_selection",{"feature_type":"chamfer","amount":"2.75 mm"}),{"selection_count":2,"selection_types":["edge","edge"]})
+add("edge","v07_edge_14","فیلت دو",ask(),{"selection_count":1,"selection_types":["edge"]})
+
+# feature edit 16
+add("feature","v07_feat_01","شعاع Fillet 3 رو هفت میل کن",do("feature.parameter.set",{"feature_name":"Fillet 3","parameter":"radius","amount":"7 mm"}))
+add("feature","v07_feat_02","عمق Extrude 2 بشه بیست میل",do("feature.parameter.set",{"feature_name":"Extrude 2","parameter":"depth","amount":"20 mm"}))
+add("feature","v07_feat_03","Extrude 2 رو بیست میل کن",ask())
+add("feature","v07_feat_04","زاویه Draft 1 رو پنج درجه بذار",do("feature.parameter.set",{"feature_name":"Draft 1","parameter":"angle","amount":"5 deg"}))
+add("feature","v07_feat_05","این فیلت رو یه میل بیشتر کن",do("feature.parameter.set",{"feature_name":"Fillet 2","parameter":"radius","amount":"5 mm"}),{"last_feature":"Fillet 2","feature_parameters":{"radius":"4 mm"}})
+add("feature","v07_feat_06","این فیلت رو نیم میل کمتر کن",do("feature.parameter.set",{"feature_name":"Fillet 2","parameter":"radius","amount":"3.5 mm"}),{"last_feature":"Fillet 2","feature_parameters":{"radius":"4 mm"}})
+add("feature","v07_feat_07","یه کم بیشترش کن",ask(),{"last_feature":"Extrude 3","feature_parameters":{"depth":"12 mm"}})
+add("feature","v07_feat_08","Extrude 3 رو suppress کن",do("feature.patch",{"feature_name":"Extrude 3","suppressed":True}))
+add("feature","v07_feat_09","Extrude 3 رو دوباره روشن کن",do("feature.patch",{"feature_name":"Extrude 3","suppressed":False}))
+add("feature","v07_feat_10","برش گردون",do("feature.patch",{"feature_name":"Extrude 3","suppressed":False}),{"last_feature":"Extrude 3","last_action":"suppress"})
+add("feature","v07_feat_11","اسم Fillet 4 رو بذار edge soft",do("feature.patch",{"feature_name":"Fillet 4","new_name":"edge soft"}))
+add("feature","v07_feat_12","Fillet 6 رو حذف کن",do("feature.delete",{"feature_name":"Fillet 6"}))
+add("feature","v07_feat_13","آخرین feature رو پاک کن",do("feature.delete",{"position":"last"}))
+add("feature","v07_feat_14","اولین فیچر رو حذف کن",do("feature.delete",{"position":"first"}))
+add("feature","v07_feat_15","flip direction رو برای Extrude 4 روشن کن",do("feature.parameter.set",{"feature_name":"Extrude 4","parameter":"flip direction","value":True}))
+add("feature","v07_feat_16","flip direction رو برای Extrude 4 خاموش کن",do("feature.parameter.set",{"feature_name":"Extrude 4","parameter":"flip direction","value":False}))
+
+# parts 14
+add("part","v07_part_01","Part 4 رو مخفی کن",do("part.visibility",{"part_name":"Part 4","visible":False}))
+add("part","v07_part_02","Part 4 رو نشون بده",do("part.visibility",{"part_name":"Part 4","visible":True}))
+add("part","v07_part_03","Part 4 رو نشون نده",do("part.visibility",{"part_name":"Part 4","visible":False}))
+add("part","v07_part_04","Cap رو قایم کن",do("part.visibility",{"part_name":"Cap","visible":False}))
+add("part","v07_part_05","همون پارت رو دوباره بیار",do("part.visibility",{"part_name":"Cap","visible":True}),{"last_part":"Cap","last_action":"hide"})
+add("part","v07_part_06","Part 2 رو قرمز کن",do("metadata.property.set",{"part_name":"Part 2","property":"color","value":"red"}))
+add("part","v07_part_07","Part 2 رو خاکستری کن",do("metadata.property.set",{"part_name":"Part 2","property":"color","value":"gray"}))
+add("part","v07_part_08","اسم Part 5 بشه shell",do("metadata.property.set",{"part_name":"Part 5","property":"name","value":"shell"}))
+add("part","v07_part_09","متریال Part 1 رو فولاد کن",do("metadata.property.set",{"part_name":"Part 1","property":"material","value":"Steel"}))
+add("part","v07_part_10","description Part 3 رو بذار test body",do("metadata.property.set",{"part_name":"Part 3","property":"description","value":"test body"}))
+add("part","v07_part_11","Part 6 رو پاک کن",do("feature.delete_part",{"part_name":"Part 6"}))
+add("part","v07_part_12","این پارت رو حذف کن",do("feature.delete_part",{"part_name":"Part 7"}),{"last_part":"Part 7"})
+add("part","v07_part_13","Part 2 رو سبز کن و مخفیش کن",ask())
+add("part","v07_part_14","اسمش رو عوض کن",ask(),{"last_part":"Part 2"})
+
+# create 10
+add("create","v07_add_01","یه plane خالی بساز",do("feature.add",{"feature_type":"plane"}))
+add("create","v07_add_02","یه plane بساز اسمش datum A",do("feature.add",{"feature_type":"plane","name":"datum A"}))
+add("create","v07_add_03","یه plane روی Front بساز",ask())
+add("create","v07_add_04","از Part 2 یه linear pattern سه تایی با فاصله ده میل بساز",do("feature.add",{"feature_type":"linearPattern","part_name":"Part 2","copies":3,"distance":"10 mm"}))
+add("create","v07_add_05","Part 3 رو پنج تا pattern کن با گام شش میل",do("feature.add",{"feature_type":"linearPattern","part_name":"Part 3","copies":5,"distance":"6 mm"}))
+add("create","v07_add_06","Part 2 رو سه تا کن هر ده میل",ask())
+add("create","v07_add_07","یه hole پنج میل بزن",ask())
+add("create","v07_add_08","یه mirror از این بساز",ask())
+add("create","v07_add_09","یه fillet جدید دو میل بدون لبه بساز",do("feature.add",{"feature_type":"fillet","amount":"2 mm"}))
+add("create","v07_add_10","یه chamfer خالی سه دهم بساز",do("feature.add",{"feature_type":"chamfer","amount":"0.3 mm"}))
+
+# ordering/document 10
+add("order","v07_ord_01","Fillet 2 رو قبل Extrude 5 ببر",do("feature.reorder",{"source_feature":"Fillet 2","target_feature":"Extrude 5","placement":"before"}))
+add("order","v07_ord_02","Extrude 4 رو زیر Sketch 3 بنداز",do("feature.reorder",{"source_feature":"Extrude 4","target_feature":"Sketch 3","placement":"after"}))
+add("order","v07_ord_03","همین فیچر رو قبل Fillet 8 ببر",do("feature.reorder",{"source_feature":"Extrude 2","target_feature":"Fillet 8","placement":"before"}),{"last_feature":"Extrude 2"})
+add("order","v07_ord_04","rollback رو قبل Fillet 3 بذار",do("rollback.set",{"before_feature":"Fillet 3"}))
+add("order","v07_ord_05","rollback رو بعد Extrude 2 بذار",do("rollback.set",{"after_feature":"Extrude 2"}))
+add("order","v07_ord_06","rollback بره آخر",do("rollback.set",{"position":"end"}))
+add("order","v07_ord_07","rollback بیاد اول",do("rollback.set",{"position":"start"}))
+add("order","v07_ord_08","یه Part Studio جدید به اسم rough shell بساز",do("documented.createPartStudio",{"new_name":"rough shell"}))
+add("order","v07_ord_09","اسم داکیومنت بشه case rev2",do("documented.updateDocumentAttributes",{"new_name":"case rev2"}))
+add("order","v07_ord_10","rename document to final shell",do("documented.updateDocumentAttributes",{"new_name":"final shell"}))
+
+# escalation / ambiguity 10
+add("escalate","v07_esc_01","این طراحی رو حرفه ای تر کن",think())
+add("escalate","v07_esc_02","سبکش کن ولی مقاومتش کم نشه",think())
+add("escalate","v07_esc_03","جوری تغییرش بده که قالب گیری راحت تر شه",think())
+add("escalate","v07_esc_04","فیچرهای به دردنخور رو جمع کن",think())
+add("escalate","v07_esc_05","اون یکی رو پاک کن",ask())
+add("escalate","v07_esc_06","سه میلش کن",ask())
+add("escalate","v07_esc_07","این کارو روی اون یکی هم انجام بده",ask())
+add("escalate","v07_esc_08","ازش STEP خروجی بگیر",ask())
+add("escalate","v07_esc_09","با کاربر بیرونی share کن",ask())
+add("escalate","v07_esc_10","همه چی رو public کن",ask())
+
+assert len(CASES)==100, len(CASES)
