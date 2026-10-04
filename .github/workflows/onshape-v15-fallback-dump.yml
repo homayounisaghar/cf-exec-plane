@@ -1,0 +1,44 @@
+name: Onshape V15 Fallback Dump
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - qualification/onshape-fast-router-divergent-v15-10000/fallback-control/*.request
+
+permissions:
+  contents: write
+
+jobs:
+  dump:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Dump deterministic fallback cases
+        env:
+          OUT_DIR: ${{ github.workspace }}/artifacts/onshape-fast-router-v15-fallback-dump
+        run: |
+          mkdir -p "$OUT_DIR"
+          cd qualification/onshape-fast-router-divergent-v15-10000
+          python fallback_dump.py
+      - name: Publish
+        run: |
+          src="artifacts/onshape-fast-router-v15-fallback-dump"
+          dst="reports/onshape-fast-router-v15-fallback-dump"
+          mkdir -p "$dst"
+          cp "$src/summary.json" "$dst/summary.json"
+          cp "$src/fallbacks.json" "$dst/fallbacks.json"
+          printf '{"run_id":"%s","head_sha":"%s"}\n' "$GITHUB_RUN_ID" "$GITHUB_SHA" > "$dst/latest-meta.json"
+          git config user.name "cf-exec-plane"
+          git config user.email "actions@users.noreply.github.com"
+          git add "$dst"
+          git commit -m "Report: V15 fallback dump" || exit 0
+          git pull --rebase origin main
+          git push origin HEAD:main
