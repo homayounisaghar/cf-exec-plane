@@ -1,0 +1,41 @@
+[Unit]
+Description=Capability Fabric RVC Worker
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=cf-rvc
+Group=cf-rvc
+WorkingDirectory=/var/lib/capability-fabric/rvc/current
+Environment=CF_RVC_HOST=127.0.0.1
+Environment=CF_RVC_PORT=8794
+Environment=CF_RVC_ROOT=/var/lib/capability-fabric/rvc/current
+Environment=CF_RVC_MODEL=/var/lib/capability-fabric/rvc/models/owner.pth
+Environment=CF_RVC_INDEX=/var/lib/capability-fabric/rvc/models/owner.index
+Environment=OPENBLAS_NUM_THREADS=1
+Environment=OMP_NUM_THREADS=1
+Environment=MKL_NUM_THREADS=1
+Environment=RVC_AUDIO_FORCE_CPU=1
+Environment=RVC_CUDA_GRAPH=0
+ExecStart=/var/lib/capability-fabric/rvc/current/.venv/bin/python /usr/local/libexec/capability-fabric-rvc-worker
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=15
+Nice=10
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+MemoryDenyWriteExecute=false
+ReadOnlyPaths=/var/lib/capability-fabric/rvc
+ReadWritePaths=/tmp
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+
+[Install]
+WantedBy=multi-user.target
