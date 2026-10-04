@@ -1,0 +1,7 @@
+{
+  "request_id": "v20-qwen-otpm-bounded-20261004-1520",
+  "reason": "Qwen OTPM limit is 1000 and previous request declared 1920 max output tokens; bound generation to <=900 and batch 8",
+  "candidate_commit": "54580b67a9a61d2463ec3b9ced7a801707bb242b",
+  "fresh_status": "unscored-unfrozen",
+  "production_effects": false
+}
