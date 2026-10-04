@@ -853,7 +853,7 @@ def extract_evidence(text, ctx=None):
             has_any(cue_t,["هل بده","بکش","ببر","جابه جا","جابه‌جا","منتقل کن","انتقال بده","انتقال","سر بده","شیفت بده","شیفت"]) and
             has_any(cue_t,["چپ","راست","بالا","پایین","left","right","up","down"])
         )
-        orbit_phrase=has_any(cue_t,["بچرخ","بچرخان","rotate","orbit","چرخش","rotation","گردش","قوس بده","متمایل کن","رول کن","roll","ساعتگرد","پادساعتگرد","clockwise","counterclockwise","ربع دور","عقربه"]) or (
+        orbit_phrase=(has_any(cue_t,["بچرخ","بچرخان","چرخش","گردش","قوس بده","متمایل کن","رول کن","ساعتگرد","پادساعتگرد","ربع دور","عقربه"]) or bool(re.search(r"\\b(?:rotate|orbit|rotation|roll|clockwise|counterclockwise)\\b",cue_t,re.I))) or (
             has_any(cue_t,["دور مدل","دور قطعه","دور جسم","حول مدل","حول قطعه","حول جسم"]) and has_any(cue_t,["چپ","راست","بالا","پایین","left","right","up","down"])
         ) or (
             re.search(r"\bcamera\b",cue_t,re.I) and has_any(cue_t,["ببر","move"]) and
