@@ -7,12 +7,13 @@ Wants=network-online.target
 Type=simple
 User=cf-rvc
 Group=cf-rvc
-WorkingDirectory=/var/lib/capability-fabric/rvc/current
+WorkingDirectory=/var/lib/capability-fabric/rvc
 Environment=CF_RVC_HOST=127.0.0.1
 Environment=CF_RVC_PORT=8794
 Environment=CF_RVC_ROOT=/var/lib/capability-fabric/rvc/current
 Environment=CF_RVC_MODEL=/var/lib/capability-fabric/rvc/models/owner.pth
 Environment=CF_RVC_INDEX=/var/lib/capability-fabric/rvc/models/owner.index
+Environment=CF_RVC_BOOTSTRAP_STATUS=/var/lib/capability-fabric/rvc/bootstrap-status.json
 Environment=OPENBLAS_NUM_THREADS=1
 Environment=OMP_NUM_THREADS=1
 Environment=MKL_NUM_THREADS=1
@@ -21,7 +22,7 @@ Environment=RVC_CUDA_GRAPH=0
 Environment=PYTHONDONTWRITEBYTECODE=1
 Environment=XDG_CACHE_HOME=/tmp/cf-rvc-cache
 Environment=NUMBA_CACHE_DIR=/tmp/cf-rvc-numba
-ExecStart=/var/lib/capability-fabric/rvc/current/.venv/bin/python /usr/local/libexec/capability-fabric-rvc-worker
+ExecStart=/usr/bin/python3 /usr/local/libexec/capability-fabric-rvc-worker
 Restart=on-failure
 RestartSec=5
 TimeoutStopSec=15
