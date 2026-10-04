@@ -1,0 +1,11 @@
+{
+  "request_id": "onshape-fast-router-v15-known-regression-v15-hardening-20261004-c",
+  "corpus_sha256": "04137cbf8eb0e85933a356d5837c77431e94cde7f0f4772f6f0b797d646f452a",
+  "source_repo": "homayounisaghar/capability-fabric",
+  "source_ref": "work/onshape-fast-router-v15-hardening",
+  "source_head": "b795ce3f3f14937681ffca085f50f9ff4ccc9d5a",
+  "batch_size": 10,
+  "statistical_role": "regression_only",
+  "production_effects": false,
+  "purpose": "regress the already-observed frozen V15 corpus against the fundamental hardening candidate"
+}
