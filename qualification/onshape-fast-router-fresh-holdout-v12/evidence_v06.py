@@ -511,14 +511,13 @@ def extract_evidence(text, ctx=None):
     prop,pval=extract_property_value(text,ctx,payloads)
     copy_count=extract_copy_count(text)
 
-    # Literal/name payload is opaque to intent cues. Words such as "fit", "hide"
-    # or "fillet" inside a requested name must never hijack the command.
+    # All typed literal payload values are opaque to semantic/action cues.
+    # A description/material/name/color value may contain words such as "fit",
+    # "hide" or "fillet" without changing the requested operation.
     cue_t=t
-    if name_value:
-        nv=low(name_value)
-        idx=cue_t.rfind(nv)
-        if idx >= 0:
-            cue_t=cue_t[:idx] + (" " * len(nv)) + cue_t[idx+len(nv):]
+    for atom in payloads:
+        start,end=atom["span"]
+        cue_t=cue_t[:start] + (" " * max(0,end-start)) + cue_t[end:]
 
     visibility=None
     if re.search(r"(?:نشون|نشان)\s+نده",cue_t) or "نشون نده" in cue_t or "نشان نده" in cue_t:
