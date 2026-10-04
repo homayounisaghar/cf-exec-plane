@@ -490,9 +490,11 @@ def extract_evidence(text, ctx=None):
         "تزریق پلاستیک","طراحی بهتر","طراحی رو درست","اضافی",
         "مقاومتش کم نشه","مقاومت کم نشه","قالب گیری","قالب‌گیری","به دردنخور",
         "محکم تر","محکم‌تر","وزن قطعه","ضعیف نشه","تولید انبوه","غیرضروری",
-        "تزریق","منطقی تر","منطقی‌تر","درخت فیچر","مرتبش کن","تمیزتر بشه","تمیزتر شه",
+        "تزریق","منطقی تر","منطقی‌تر","مرتبش کن","تمیزتر بشه","تمیزتر شه",
         "جمع و جورتر","بهتر دربیار","بهترش کن"
     ])
+    tree_design = ("درخت فیچر" in cue_t) and has_any(cue_t,["مرتب","خلوت","شلوغ","منطقی","تمیز","سامان"])
+    design = design or tree_design
     unsupported = has_any(cue_t,["public","share","pdf","export","step","mate","company","شرکت onshape"])
 
     camera_action=None; camera_direction=None; camera_inverse=False
@@ -501,7 +503,7 @@ def extract_evidence(text, ctx=None):
         camera_action="pan"
     elif has_any(cue_t,["بچرخ","rotate","ساعتگرد","پادساعتگرد","clockwise","counterclockwise","ربع دور","عقربه"]): camera_action="orbit"
     if "پادساعتگرد" in cue_t or re.search(r"\bcounterclockwise\b",cue_t) or has_any(cue_t,["برعکس عقربه","خلاف جهت عقربه"]): camera_direction="counterclockwise"
-    elif "ساعتگرد" in cue_t or re.search(r"\bclockwise\b",cue_t) or has_any(cue_t,["در جهت عقربه","با عقربه"]): camera_direction="clockwise"
+    elif "ساعتگرد" in cue_t or re.search(r"\bclockwise\b",cue_t) or has_any(cue_t,["در جهت عقربه","با عقربه","با جهت عقربه"]): camera_direction="clockwise"
     elif has_any(cue_t,["سمت راست","به راست","طرف راست","راست بچرخ","هل بده راست"]): camera_direction="right"
     elif has_any(cue_t,["سمت چپ","به چپ","طرف چپ","چپ بچرخ","هل بده چپ"]): camera_direction="left"
     elif has_any(cue_t,["ببر بالا","پن کن بالا","بالا بچرخ","بکش بالا"]): camera_direction="up"
@@ -516,12 +518,19 @@ def extract_evidence(text, ctx=None):
         if has_any(cue_t,["نزدیک تر شو","نزدیک‌تر شو"]): camera_direction="in"
         elif has_any(cue_t,["دورتر شو","دور تر شو"]): camera_direction="out"
 
-    fit_all = has_any(cue_t,[
-        "فیت","fit","تو کادر جا","توی کادر جا","کل مدل تو کادر",
-        "همه مدل معلوم","کل مدل معلوم","همه مدل دیده","کل مدل دیده",
-        "بزرگ شه تو صفحه","بزرگ بشه تو صفحه"
+    fit_selection_cue = has_any(cue_t,[
+        "انتخاب","selection","انتخابم","همین انتخاب","چیزای انتخاب","چیزهای انتخاب"
     ])
-    fit_selection = fit_all and has_any(cue_t,["انتخاب","همین انتخاب","selection"])
+    fit_all_cue = has_any(cue_t,[
+        "کل مدل","همه مدل","کلش","همه اش","همه‌اش"
+    ])
+    fit_verb = has_any(cue_t,[
+        "فیت","fit","تو کادر جا","توی کادر جا","تو صفحه جا","توی صفحه جا",
+        "معلوم باشه","دیده بشه","بزرگ شه تو صفحه","بزرگ بشه تو صفحه"
+    ])
+    fit_selection = fit_verb and fit_selection_cue
+    fit_all = fit_verb and not fit_selection and (fit_all_cue or has_any(cue_t,["فیت","fit"]))
+    fit_target = "selection" if fit_selection else ("all" if fit_all else None)
     top_view = has_any(cue_t,["از بالا","top view","نمای بالا"])
     clear_selection = has_any(cue_t,["انتخاب رو پاک","انتخاب را پاک","selection رو پاک","selection را پاک","selection رو خالی","selection را خالی","selection فعلی رو صفر","انتخابارو ول کن","انتخاب ها رو ول کن"]) or bool(re.search(r"(?:هر چی|هرچی).*(?:انتخاب|selection).*(?:پاک|خالی)",cue_t))
 
@@ -593,6 +602,7 @@ def extract_evidence(text, ctx=None):
         "camera_inverse":camera_inverse,
         "fit_all":fit_all,
         "fit_selection":fit_selection,
+        "fit_target":fit_target,
         "top_view":top_view,
         "clear_selection":clear_selection,
         "edge_kind":edge_kind,
@@ -620,6 +630,26 @@ def opposite(d):
     return {"left":"right","right":"left","up":"down","down":"up",
             "in":"out","out":"in","clockwise":"counterclockwise",
             "counterclockwise":"clockwise"}.get(d)
+
+FEATURE_PARAMETER_COMPAT = {
+    "fillet": {"radius"},
+    "extrude": {"depth", "flip direction"},
+    "draft": {"angle"},
+}
+
+def feature_type_from_name(name):
+    if not name:
+        return None
+    first=low(str(name)).split()[0]
+    aliases={"فیلت":"fillet","اکسترود":"extrude","درفت":"draft"}
+    first=aliases.get(first,first)
+    return first if first in FEATURE_PARAMETER_COMPAT else None
+
+def feature_parameter_compatible(feature_name, parameter):
+    ftype=feature_type_from_name(feature_name)
+    if ftype is None:
+        return False
+    return parameter in FEATURE_PARAMETER_COMPAT.get(ftype,set())
 
 def direct_intent(case, ev):
     t=ev.get("cue_text") or low(case["text"])
@@ -746,15 +776,19 @@ def compile_intent(case, decision, intent, ev):
         return accept("view.move",args,{"direction":"text/context","magnitude":q["id"] if q else None})
 
     if intent=="fit_selection":
-        if ev["selection_count"]<=0:
-            return reject("fit-selection-ungrounded")
-        return accept("view.fit",{"action":"fit_selection"},{"target":"verified-selection-context"})
+        if ev.get("fit_target")!="selection" or ev["selection_count"]<=0:
+            return reject("fit-selection-target-unproven")
+        return accept("view.fit",{"action":"fit_selection"},{"target":"text+verified-selection-context"})
 
     if intent=="fit":
-        target="selection" if ev["fit_selection"] else "all"
-        if target=="selection" and ev["selection_count"]<=0:
-            return reject("fit-selection-ungrounded")
-        return accept("view.fit",{"action":"fit_selection" if target=="selection" else "fit"},{"target":"text/context"})
+        target=ev.get("fit_target")
+        if target=="selection":
+            if ev["selection_count"]<=0:
+                return reject("fit-selection-ungrounded")
+            return accept("view.fit",{"action":"fit_selection"},{"target":"text+verified-selection-context"})
+        if target=="all":
+            return accept("view.fit",{"action":"fit"},{"target":"text"})
+        return reject("fit-target-unproven")
 
     if intent=="top_view":
         if not ev.get("top_view"):
@@ -791,6 +825,9 @@ def compile_intent(case, decision, intent, ev):
         elif has_any(t,["زاویه","angle"]): parameter="angle"
         elif "flip direction" in t: parameter="flip direction"
         else: return reject("feature-parameter-ungrounded")
+
+        if not feature_parameter_compatible(feature,parameter):
+            return reject("feature-parameter-incompatible")
 
         if parameter=="flip direction":
             if has_any(t,["خاموش"]) or re.search(r"\b(?:off|false)\b",t): value=False
