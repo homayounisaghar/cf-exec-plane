@@ -55,7 +55,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for f in browser.js core.js server.js gateway.js onshape-agent.js; do
+          for f in browser.js core.js server.js gateway.js onshape-agent.js telegram-ingress.mjs; do
             node --check "$SNAPSHOT/$f"
           done
           node --check "$SNAPSHOT/onshape-request.cjs"
@@ -127,6 +127,11 @@ jobs:
           assert 'execution_path: "mcp->semantic-contract->onshape-agent->browser-session->onshape"' in server
           assert 'server.registerTool("onshape_operation_execute"' in server
           assert 'server.registerTool("onshape_intent_execute"' not in server
+
+          telegram = (root / "telegram-ingress.mjs").read_text()
+          assert 'server.registerTool("audio_upload"' in telegram
+          assert '"openai/fileParams": ["file"]' in telegram
+          assert "CHAT_FILE_CLIENT_HANDOFF_UNAVAILABLE" in telegram
 
           agent = (root / "onshape-agent.js").read_text()
           assert "_buildOperationRegistry()" in agent
