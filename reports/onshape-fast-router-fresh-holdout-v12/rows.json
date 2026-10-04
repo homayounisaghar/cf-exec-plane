@@ -93,7 +93,7 @@
       "d": "a",
       "i": "camera_move"
     },
-    "model_latency_ms": 779.015373,
+    "model_latency_ms": 951.5788279999811,
     "outcome": "correct"
   },
   {
@@ -1483,7 +1483,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 779.015373,
+    "model_latency_ms": 951.5788279999811,
     "outcome": "correct"
   },
   {
@@ -1567,7 +1567,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 779.015373,
+    "model_latency_ms": 951.5788279999811,
     "outcome": "correct"
   },
   {
@@ -2520,7 +2520,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 779.015373,
+    "model_latency_ms": 951.5788279999811,
     "outcome": "correct"
   },
   {
@@ -4110,7 +4110,7 @@
       "pattern_explicit": false,
       "edge_new_explicit": false,
       "copy_count": null,
-      "cue_text": "فیلتش کن و همزمان سبزش کن",
+      "cue_text": "فیلتش کن و همزمان    ش کن",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -6939,7 +6939,7 @@
       "pattern_explicit": false,
       "edge_new_explicit": false,
       "copy_count": null,
-      "cue_text": "part 3 رو زرد کن",
+      "cue_text": "part 3 رو     کن",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -7058,7 +7058,7 @@
       "pattern_explicit": false,
       "edge_new_explicit": false,
       "copy_count": null,
-      "cue_text": "bracket رو سیاه کن",
+      "cue_text": "bracket رو      کن",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -7296,7 +7296,7 @@
       "pattern_explicit": false,
       "edge_new_explicit": false,
       "copy_count": null,
-      "cue_text": "متریال part 4 رو آلومینیوم کن",
+      "cue_text": "متریال part 4 رو           کن",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -7413,7 +7413,7 @@
       "pattern_explicit": false,
       "edge_new_explicit": false,
       "copy_count": null,
-      "cue_text": "part 6 رو فولاد متریال بده",
+      "cue_text": "part 6 رو       متریال بده",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -7530,7 +7530,7 @@
       "pattern_explicit": false,
       "edge_new_explicit": false,
       "copy_count": null,
-      "cue_text": "description part 7 رو بذار frame trial",
+      "cue_text": "description part 7 رو بذار            ",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -7832,7 +7832,7 @@
       "pattern_explicit": false,
       "edge_new_explicit": false,
       "copy_count": null,
-      "cue_text": "part 3 رو قرمز کن و مخفیش کن",
+      "cue_text": "part 3 رو      کن و مخفیش کن",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -8576,7 +8576,7 @@
       "d": "a",
       "i": "add_pattern"
     },
-    "model_latency_ms": 779.015373,
+    "model_latency_ms": 951.5788279999811,
     "outcome": "correct"
   },
   {
@@ -9064,7 +9064,7 @@
       "pattern_explicit": false,
       "edge_new_explicit": true,
       "copy_count": null,
-      "cue_text": "یه part studio جدید به اسم           بساز",
+      "cue_text": "یه part studio جدید به اسم               ",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -9675,7 +9675,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 779.015373,
+    "model_latency_ms": 951.5788279999811,
     "outcome": "correct"
   },
   {
@@ -9759,7 +9759,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 779.015373,
+    "model_latency_ms": 951.5788279999811,
     "outcome": "correct"
   },
   {
