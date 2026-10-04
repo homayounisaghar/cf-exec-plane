@@ -240,63 +240,74 @@ def extract_evidence(text, ctx=None):
     qs=extract_quantities(text)
     fs=extract_named_features(text)
     ps=extract_parts(text)
+    name_value=extract_name_value(text)
     prop,pval=extract_property_value(text,ctx)
 
+    # Literal/name payload is opaque to intent cues. Words such as "fit", "hide"
+    # or "fillet" inside a requested name must never hijack the command.
+    cue_t=t
+    if name_value:
+        nv=low(name_value)
+        idx=cue_t.rfind(nv)
+        if idx >= 0:
+            cue_t=cue_t[:idx] + (" " * len(nv)) + cue_t[idx+len(nv):]
+
     visibility=None
-    if re.search(r"(?:نشون|نشان)\s+نده",t) or "نشون نده" in t or "نشان نده" in t:
+    if re.search(r"(?:نشون|نشان)\s+نده",cue_t) or "نشون نده" in cue_t or "نشان نده" in cue_t:
         visibility=False
-    elif has_any(t,["مخفی","قایم","hide","نشونش نده","نشانش نده"]):
+    elif has_any(cue_t,["مخفی","قایم","hide","نشونش نده","نشانش نده"]):
         visibility=False
-    elif has_any(t,["نشون بده","نشان بده","نشونش بده","نشانش بده","show","دوباره بیار","برگردونش توی نما"]):
+    elif has_any(cue_t,["نشون بده","نشان بده","نشونش بده","نشانش بده","show","دوباره بیار","برگردونش توی نما"]):
         visibility=True
 
     suppressed=None
-    if has_any(t,["خاموش","suppress"]): suppressed=True
-    if has_any(t,["دوباره روشن","روشنش کن","روشن کن","unsuppress"]): suppressed=False
-    if ctx.get("last_action")=="suppress" and has_any(t,["برش گردون","برگردونش","دوباره بیارش"]):
+    if has_any(cue_t,["خاموش","suppress"]): suppressed=True
+    if has_any(cue_t,["دوباره روشن","روشنش کن","روشن کن","unsuppress"]): suppressed=False
+    if ctx.get("last_action")=="suppress" and has_any(cue_t,["برش گردون","برگردونش","دوباره بیارش"]):
         suppressed=False
 
     relation=None
-    if has_any(t,["قبل از","قبل ","بالای","بالا ی"]): relation="before"
-    elif has_any(t,["بعد از","بعد ","زیر"]): relation="after"
+    if has_any(cue_t,["قبل از","قبل ","بالای","بالا ی"]): relation="before"
+    elif has_any(cue_t,["بعد از","بعد ","زیر"]): relation="after"
 
     relative=None
-    if has_any(t,["زیادش کن","بیشترش کن","بیشتر کن","یه میل بیشتر","یک میل بیشتر"]) or re.search(r"\bبیشتر\s+کن\b",t): relative="add"
-    elif has_any(t,["کمترش کن","کم کن","یه میل کمتر","یک میل کمتر"]) or re.search(r"\bکمتر\s+کن\b",t): relative="subtract"
+    if has_any(cue_t,["زیادش کن","بیشترش کن","بیشتر کن","یه میل بیشتر","یک میل بیشتر"]) or re.search(r"\bبیشتر\s+کن\b",t): relative="add"
+    elif has_any(cue_t,["کمترش کن","کم کن","یه میل کمتر","یک میل کمتر"]) or re.search(r"\bکمتر\s+کن\b",t): relative="subtract"
 
-    design = has_any(t,[
+    design = has_any(cue_t,[
         "خوشگل","پریمیوم","حرفه ای تر","حرفه‌ای‌تر","تولیدش راحت","تولید راحت",
         "سبک تر","سبک‌تر","وزنشو کم","وزنش رو کم","سفت بمونه","استحکام","قوی تر","قوی‌تر",
         "تزریق پلاستیک","طراحی بهتر","طراحی رو درست","اضافی",
-        "مقاومتش کم نشه","مقاومت کم نشه","قالب گیری","قالب‌گیری","به دردنخور"
+        "مقاومتش کم نشه","مقاومت کم نشه","قالب گیری","قالب‌گیری","به دردنخور",
+        "محکم تر","محکم‌تر","وزن قطعه","ضعیف نشه","تولید انبوه","غیرضروری"
     ])
-    unsupported = has_any(t,["public","share","pdf","export","step بگیر","mate","company","شرکت onshape"])
+    unsupported = has_any(cue_t,["public","share","pdf","export","step","mate","company","شرکت onshape"])
 
     camera_action=None; camera_direction=None; camera_inverse=False
-    if has_any(t,["زوم","zoom"]): camera_action="zoom"
-    elif has_any(t,["پن ","pan","نما رو","صفحه رو","هل بده"]): camera_action="pan"
-    elif has_any(t,["بچرخ","rotate","ساعتگرد","پادساعتگرد","clockwise","counterclockwise","ربع دور"]): camera_action="orbit"
-    if "پادساعتگرد" in t or re.search(r"\bcounterclockwise\b",t): camera_direction="counterclockwise"
-    elif "ساعتگرد" in t or re.search(r"\bclockwise\b",t): camera_direction="clockwise"
-    elif has_any(t,["سمت راست","به راست","طرف راست","راست بچرخ","هل بده راست"]): camera_direction="right"
-    elif has_any(t,["سمت چپ","به چپ","طرف چپ","چپ بچرخ","هل بده چپ"]): camera_direction="left"
-    elif has_any(t,["ببر بالا","پن کن بالا","بالا بچرخ"]): camera_direction="up"
-    elif has_any(t,["ببر پایین","پن کن پایین","پایین بچرخ"]): camera_direction="down"
-    elif camera_action and re.search(r"\b(right|راست)\b",t): camera_direction="right"
-    elif camera_action and re.search(r"\b(left|چپ)\b",t): camera_direction="left"
-    elif camera_action and re.search(r"\b(up|بالا)\b",t): camera_direction="up"
-    elif camera_action and re.search(r"\b(down|پایین)\b",t): camera_direction="down"
-    if has_any(t,["زیادی شد","برش گردون","برگرد","عقب تر","عقب‌تر"]):
+    if has_any(cue_t,["زوم","zoom"]): camera_action="zoom"
+    elif has_any(cue_t,["پن ","pan","نما رو","صفحه رو","هل بده"]): camera_action="pan"
+    elif has_any(cue_t,["بچرخ","rotate","ساعتگرد","پادساعتگرد","clockwise","counterclockwise","ربع دور"]): camera_action="orbit"
+    if "پادساعتگرد" in cue_t or re.search(r"\bcounterclockwise\b",cue_t): camera_direction="counterclockwise"
+    elif "ساعتگرد" in cue_t or re.search(r"\bclockwise\b",cue_t): camera_direction="clockwise"
+    elif has_any(cue_t,["سمت راست","به راست","طرف راست","راست بچرخ","هل بده راست"]): camera_direction="right"
+    elif has_any(cue_t,["سمت چپ","به چپ","طرف چپ","چپ بچرخ","هل بده چپ"]): camera_direction="left"
+    elif has_any(cue_t,["ببر بالا","پن کن بالا","بالا بچرخ"]): camera_direction="up"
+    elif has_any(cue_t,["ببر پایین","پن کن پایین","پایین بچرخ"]): camera_direction="down"
+    elif camera_action and re.search(r"\b(right|راست)\b",cue_t): camera_direction="right"
+    elif camera_action and re.search(r"\b(left|چپ)\b",cue_t): camera_direction="left"
+    elif camera_action and re.search(r"\b(up|بالا)\b",cue_t): camera_direction="up"
+    elif camera_action and re.search(r"\b(down|پایین)\b",cue_t): camera_direction="down"
+    if has_any(cue_t,["زیادی شد","برش گردون","برگرد","عقب تر","عقب‌تر"]):
         camera_inverse=True
 
-    fit_all = has_any(t,["فیت","fit","تو کادر جا","توی کادر جا","کل مدل تو کادر"])
-    fit_selection = fit_all and has_any(t,["انتخاب","همین انتخاب","selection"])
-    top_view = has_any(t,["از بالا","top view"])
-    clear_selection = has_any(t,["انتخاب رو پاک","انتخاب را پاک","selection رو خالی","selection را خالی","انتخابارو ول کن","انتخاب ها رو ول کن"])
+    fit_all = has_any(cue_t,["فیت","fit","تو کادر جا","توی کادر جا","کل مدل تو کادر"])
+    fit_selection = fit_all and has_any(cue_t,["انتخاب","همین انتخاب","selection"])
+    top_view = has_any(cue_t,["از بالا","top view","نمای بالا"])
+    clear_selection = has_any(cue_t,["انتخاب رو پاک","انتخاب را پاک","selection رو پاک","selection را پاک","selection رو خالی","selection را خالی","انتخابارو ول کن","انتخاب ها رو ول کن"])
 
     edge_kind=None
-    if has_any(t,["پخ","چمفر","chamfer"]): edge_kind="chamfer"
-    elif has_any(t,["فیلت","fillet","فیلِت"]): edge_kind="fillet"
+    if has_any(cue_t,["پخ","چمفر","chamfer"]): edge_kind="chamfer"
+    elif has_any(cue_t,["فیلت","fillet","فیلِت"]): edge_kind="fillet"
 
     # In the owner's CAD shorthand, a bare fractional edge size is millimetres.
     # Keep this bounded to explicit fractional forms so "فیلت دو" can never become 2 mm.
@@ -312,18 +323,18 @@ def extract_evidence(text, ctx=None):
     action_cues=[]
     def cue(name, cond):
         if cond: action_cues.append(name)
-    named_feature_context = bool(fs) and (relation is not None or has_any(t,["اسم","rename","پاک","حذف","بنداز دور"]))
-    edge_effect_context = (ctx.get("selection_count",0)>0 or has_any(t,["لبه","انتخاب","selected"]) or has_any(t,["جدید","خالی","بدون انتخاب"]))
-    cue("fillet", has_any(t,["فیلت","fillet","فیلِت"]) and edge_effect_context and not named_feature_context)
-    cue("chamfer", has_any(t,["پخ","چمفر","chamfer"]) and edge_effect_context and not named_feature_context)
+    named_feature_context = bool(fs) and (relation is not None or has_any(cue_t,["اسم","rename","پاک","حذف","بنداز دور"]))
+    edge_effect_context = (ctx.get("selection_count",0)>0 or has_any(cue_t,["لبه","انتخاب","selected"]) or has_any(cue_t,["جدید","خالی","بدون انتخاب"]))
+    cue("fillet", has_any(cue_t,["فیلت","fillet","فیلِت"]) and edge_effect_context and not named_feature_context)
+    cue("chamfer", has_any(cue_t,["پخ","چمفر","chamfer"]) and edge_effect_context and not named_feature_context)
     cue("hide_show", visibility is not None)
     cue("color", prop=="color")
-    cue("rename", prop=="name" or (has_any(t,["اسم","rename"]) and extract_name_value(text)))
-    cue("delete", has_any(t,["پاک کن","حذف کن","بنداز دور","حذفش کن"]))
+    cue("rename", prop=="name" or (has_any(cue_t,["اسم","rename"]) and name_value))
+    cue("delete", has_any(cue_t,["پاک کن","حذف کن","بنداز دور","حذفش کن"]))
     cue("reorder", relation is not None and len(fs)>=1 and "rollback" not in t)
-    cue("rollback", "rollback" in t)
-    cue("create_plane", has_any(t,["plane","صفحه مرجع"]) and has_any(t,["بساز","جدید","خالی"]))
-    cue("pattern", has_any(t,["pattern","الگو","خطی تکرار"]))
+    cue("rollback", "rollback" in cue_t)
+    cue("create_plane", has_any(cue_t,["plane","صفحه مرجع"]) and has_any(cue_t,["بساز","جدید","خالی"]))
+    cue("pattern", has_any(cue_t,["pattern","الگو","خطی تکرار"]))
     # Multi-action only for genuinely different effect families. A rename phrase containing "بذار"
     # is one action; quantity conjunctions are never counted here.
     distinct=set(action_cues)
@@ -350,7 +361,8 @@ def extract_evidence(text, ctx=None):
         "relative":relative,
         "property":prop,
         "property_value":pval,
-        "name_value":extract_name_value(text),
+        "name_value":name_value,
+        "cue_text":cue_t,
         "design":design,
         "unsupported":unsupported,
         "camera_action":camera_action,
@@ -387,7 +399,7 @@ def opposite(d):
             "counterclockwise":"clockwise"}.get(d)
 
 def direct_intent(case, ev):
-    t=low(case["text"])
+    t=ev.get("cue_text") or low(case["text"])
     ctx=case.get("ctx",{})
 
     if ev["design"]: return ("think",None)
@@ -398,9 +410,9 @@ def direct_intent(case, ev):
     if ev["fit_all"]: return ("act","fit")
     if ev["top_view"]: return ("act","top_view")
     if has_any(t,["چی انتخاب","چی انتخابه","چی انتخاب شده","چی سلکت","سلکت شده"]): return ("act","inspect")
-    if has_any(t,["وضعیت ویور","viewer state"]): return ("act","inspect")
+    if has_any(t,["وضعیت ویور","viewer state"]) or ("وضعیت" in t and "viewer" in t): return ("act","inspect")
     if has_any(t,["سشن","session","چند نفر تو","کسایی تو","کسانی تو"]): return ("act","inspect")
-    if has_any(t,["فالو","follow"]): return ("act","follow")
+    if has_any(t,["فالو","follow","دنبال کن"]): return ("act","follow")
 
     if "flip direction" in t and choose_feature(ev):
         return ("act","feature_parameter")
@@ -445,15 +457,31 @@ def direct_intent(case, ev):
     if choose_part(ev) and has_any(t,["رنگ","color","متریال","material","description"]):
         return ("act","part_property")
 
+    # Generic missing-grounding shapes fail closed locally.
+    if choose_feature(ev) and first_quantity(ev) and not has_any(t,["شعاع","radius","عمق","depth","زاویه","angle","flip direction"]) and not str(choose_feature(ev)).lower().startswith("fillet"):
+        return ("ask",None)
+    if (choose_part(ev) or ev.get("context_part")) and has_any(t,["اسم","rename"]) and not ev.get("name_value"):
+        return ("ask",None)
+    if has_any(t,["plane","صفحه مرجع"]) and has_any(t,["right","left","top","front"]) and not has_any(t,["به اسم","اسمش","called","named"]):
+        return ("ask",None)
+    if choose_part(ev) and re.search(r"(?:\d+|یک|دو|سه|چهار|پنج|شش|هفت|هشت|نه|ده)\s*تا",t) and not has_any(t,["pattern","الگو","تکرار"]):
+        return ("ask",None)
+    if has_any(t,["پاک کن","حذف کن","حذفش کن","اون رو حذف","اون رو پاک"]) and not choose_feature(ev) and not choose_part(ev):
+        return ("ask",None)
+    if ev.get("quantities") and not choose_feature(ev) and not choose_part(ev) and not ev.get("edge_kind") and not ev.get("camera_action"):
+        return ("ask",None)
+    if has_any(t,["همون کاری که","همین کاری که"]) and not (ev.get("context_feature") or ev.get("context_part") or ev.get("last_move")):
+        return ("ask",None)
+
     # Known unsupported/deictic shapes fail closed.
-    if has_any(t,["ایزو","ایزومتریک","front view","نمای روبرو","mirror","سوراخ","hole","این رو انتخاب","اون لبه"]):
+    if has_any(t,["ایزو","ایزومتریک","front view","نمای front","نمای روبرو","mirror","سوراخ","hole","این رو انتخاب","اون لبه"]):
         return ("ask",None)
     if has_any(t,["همه رو پاک","همه را پاک","کل مدل رو حذف"]):
         return ("ask",None)
     return (None,None)
 
 def compile_intent(case, decision, intent, ev):
-    t=low(case["text"]); ctx=case.get("ctx",{})
+    t=ev.get("cue_text") or low(case["text"]); ctx=case.get("ctx",{})
     if decision=="think":
         return reject("design-escalation")
     if decision=="ask" or not intent:
