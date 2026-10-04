@@ -33,6 +33,7 @@ jobs:
       - name: Syntax gate
         run: |
           python -m py_compile qualification/onshape-fast-router-v20-blind-semantic/model_preflight.py
+          python -m py_compile qualification/onshape-fast-router-v20-blind-semantic/model_calibration.py
           python -m py_compile qualification/onshape-fast-router-v20-blind-semantic/scenario_builder.py
           python -m py_compile qualification/onshape-fast-router-v20-blind-semantic/llm_client.py
           python -m py_compile qualification/onshape-fast-router-v20-blind-semantic/generate_utterances.py
@@ -60,6 +61,14 @@ jobs:
           ART="$GITHUB_WORKSPACE/artifacts/onshape-fast-router-v20-blind-semantic"
           python qualification/onshape-fast-router-v20-blind-semantic/model_preflight.py             --github-env "$GITHUB_ENV"             --report "$ART/model-preflight.json"
 
+      - name: Calibrate generator and semantic judges
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GROQ_API_KEY_BACKUP: ${{ secrets.GROQ_API_KEY_BACKUP }}
+        run: |
+          ART="$GITHUB_WORKSPACE/artifacts/onshape-fast-router-v20-blind-semantic"
+          python qualification/onshape-fast-router-v20-blind-semantic/model_calibration.py             --report "$ART/model-calibration.json"
+
       - name: Blind realization and dual semantic fidelity
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
@@ -79,9 +88,9 @@ jobs:
             cp "$input" "$sand/input.jsonl"
             (
               cd "$sand"
-              python generate_utterances.py --input input.jsonl --output generated.jsonl --attempt "$round" --batch-size 64
-              python judge_utterances.py --input generated.jsonl --output judge-a.jsonl --variant A --batch-size 64
-              python judge_utterances.py --input generated.jsonl --output judge-b.jsonl --variant B --batch-size 64
+              python generate_utterances.py --input input.jsonl --output generated.jsonl --attempt "$round" --batch-size 40
+              python judge_utterances.py --input generated.jsonl --output judge-a.jsonl --variant A --batch-size 40
+              python judge_utterances.py --input generated.jsonl --output judge-b.jsonl --variant B --batch-size 40
             )
             cp "$sand/generated.jsonl" "$ART/generated-round-$round.jsonl"
             cp "$sand/judge-a.jsonl" "$ART/judge-a-round-$round.jsonl"
@@ -133,7 +142,7 @@ jobs:
           src="artifacts/onshape-fast-router-v20-blind-semantic"
           dst="reports/onshape-fast-router-v20-blind-semantic"
           mkdir -p "$dst"
-          for f in model-preflight.json scenario-universe.jsonl apprentice-scenarios.jsonl scope-filter.json                    accepted-final.jsonl frozen-corpus.jsonl fidelity-report.json diversity-report.json                    freeze.json architecture-selftest.json summary.json failures.json evidence-kind.txt                    fidelity-round-1.json fidelity-round-2.json fidelity-round-3.json; do
+          for f in model-preflight.json model-calibration.json scenario-universe.jsonl apprentice-scenarios.jsonl scope-filter.json                    accepted-final.jsonl frozen-corpus.jsonl fidelity-report.json diversity-report.json                    freeze.json architecture-selftest.json summary.json failures.json evidence-kind.txt                    fidelity-round-1.json fidelity-round-2.json fidelity-round-3.json; do
             test -f "$src/$f" && cp "$src/$f" "$dst/$f" || true
           done
           printf '{"run_id":"%s","head_sha":"%s"}\n' "$GITHUB_RUN_ID" "$GITHUB_SHA" > "$dst/latest-meta.json"
