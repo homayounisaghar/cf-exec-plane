@@ -27,9 +27,12 @@ jobs:
           python-version: '3.13'
       - name: Syntax gate
         run: |
-          python -m py_compile qualification/onshape-fast-router-fresh-holdout-v09/evidence_v06.py
-          python -m py_compile qualification/onshape-fast-router-fresh-holdout-v09/fresh_holdout_v09.py
-          python -m py_compile qualification/onshape-fast-router-fresh-holdout-v09/run_v09.py
+          mkdir -p artifacts/onshape-fast-router-fresh-holdout-v09
+          set +e
+          python -m py_compile qualification/onshape-fast-router-fresh-holdout-v09/evidence_v06.py qualification/onshape-fast-router-fresh-holdout-v09/fresh_holdout_v09.py qualification/onshape-fast-router-fresh-holdout-v09/run_v09.py > artifacts/onshape-fast-router-fresh-holdout-v09/syntax.log 2>&1
+          rc=$?
+          printf '{"exit_code":%s}\n' "$rc" > artifacts/onshape-fast-router-fresh-holdout-v09/syntax-status.json
+          exit 0
       - name: Require Groq credential
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
@@ -64,6 +67,8 @@ jobs:
           fi
           test -f "$src/runner.log" && cp "$src/runner.log" "$dst/runner.log" || true
           test -f "$src/status.json" && cp "$src/status.json" "$dst/status.json" || true
+          test -f "$src/syntax.log" && cp "$src/syntax.log" "$dst/syntax.log" || true
+          test -f "$src/syntax-status.json" && cp "$src/syntax-status.json" "$dst/syntax-status.json" || true
           printf '{"run_id":"%s","head_sha":"%s"}\n' "$GITHUB_RUN_ID" "$GITHUB_SHA" > "$dst/latest-meta.json"
           git config user.name "cf-exec-plane"
           git config user.email "actions@users.noreply.github.com"
