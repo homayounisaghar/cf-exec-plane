@@ -1,0 +1,1 @@
+{"request_id":"v18-hardening-5e9be15d-20261004-1254","source_head":"5e9be15d022b75660697a3fbb301e5d479520922","source_sha":"b441e63d43114943cb8052ed496a93cc4f92885c","frozen_corpus_sha256":"f595020150c6a86c883376cedd201ff95d35292ed13e69f596f1d0af25fb998f","pre_score_filter":"apprentice-only","overlap_must_be_zero_with":["V15","V16","V17"],"production_effects":false}
