@@ -2,9 +2,9 @@ Traceback (most recent call last):
   File "/home/runner/work/cf-exec-plane/cf-exec-plane/qualification/onshape-fast-router-fresh-holdout-v12/evidence_architecture_selftest.py", line 362, in <module>
     main()
     ~~~~^^
-  File "/home/runner/work/cf-exec-plane/cf-exec-plane/qualification/onshape-fast-router-fresh-holdout-v12/evidence_architecture_selftest.py", line 282, in main
-    assert_eq(c,{"route":"do","op":"view.standard","args":{"view":"top"}},"top-view-colloquial")
-    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/cf-exec-plane/cf-exec-plane/qualification/onshape-fast-router-fresh-holdout-v12/evidence_architecture_selftest.py", line 286, in main
+    assert_eq(c,{"route":"do","op":"view.follow","args":{}},"follow-participant")
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   File "/home/runner/work/cf-exec-plane/cf-exec-plane/qualification/onshape-fast-router-fresh-holdout-v12/evidence_architecture_selftest.py", line 24, in assert_eq
     raise AssertionError(f"{label}: got={got!r} want={want!r}")
-AssertionError: top-view-colloquial: got={'route': 'ask', 'op': None, 'args': {}} want={'route': 'do', 'op': 'view.standard', 'args': {'view': 'top'}}
+AssertionError: follow-participant: got={'route': 'ask', 'op': None, 'args': {}} want={'route': 'do', 'op': 'view.follow', 'args': {}}
