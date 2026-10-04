@@ -1,0 +1,351 @@
+{
+  "cases": 1000,
+  "correct": 938,
+  "non_api_cases": 990,
+  "non_api_correct": 938,
+  "non_api_accuracy": 0.9474747474747475,
+  "by_source": {
+    "evidence_reflex": {
+      "correct": 926,
+      "conservative_escalation": 28,
+      "wrong_reversible_accepted": 4,
+      "false_execute": 4
+    },
+    "model_intent": {
+      "correct": 12,
+      "conservative_escalation": 16,
+      "api_failure": 10
+    }
+  },
+  "by_category": {
+    "ambiguous": {
+      "correct": 40
+    },
+    "code_switch": {
+      "correct": 30,
+      "conservative_escalation": 10
+    },
+    "context": {
+      "correct": 40
+    },
+    "design": {
+      "correct": 40
+    },
+    "document": {
+      "correct": 40
+    },
+    "edge_chamfer": {
+      "correct": 40
+    },
+    "edge_fillet": {
+      "correct": 40
+    },
+    "feature_invalid": {
+      "correct": 40
+    },
+    "feature_mutation": {
+      "correct": 40
+    },
+    "feature_valid": {
+      "correct": 30,
+      "conservative_escalation": 10
+    },
+    "inspect": {
+      "correct": 40
+    },
+    "literal_mask": {
+      "correct": 40
+    },
+    "multi_action": {
+      "correct": 36,
+      "false_execute": 4
+    },
+    "new_edge": {
+      "correct": 40
+    },
+    "orbit": {
+      "correct": 32,
+      "conservative_escalation": 8
+    },
+    "order": {
+      "correct": 40
+    },
+    "pan": {
+      "correct": 40
+    },
+    "part_meta": {
+      "correct": 38,
+      "conservative_escalation": 2
+    },
+    "part_state": {
+      "correct": 40
+    },
+    "pattern": {
+      "correct": 30,
+      "conservative_escalation": 4,
+      "api_failure": 6
+    },
+    "plane": {
+      "correct": 30,
+      "conservative_escalation": 10
+    },
+    "selection_semantics": {
+      "correct": 40
+    },
+    "unsupported": {
+      "correct": 36,
+      "api_failure": 4
+    },
+    "view_state": {
+      "correct": 40
+    },
+    "zoom": {
+      "correct": 36,
+      "wrong_reversible_accepted": 4
+    }
+  },
+  "severe": [
+    {
+      "id": "v14_zoom_026",
+      "category": "zoom",
+      "text": "زوم کن بیرون، یه لحظه",
+      "outcome": "wrong_reversible_accepted",
+      "source": "evidence_reflex",
+      "intent": "camera_move",
+      "expected": [
+        {
+          "route": "do",
+          "op": "view.move",
+          "args": {
+            "action": "zoom",
+            "direction": "out"
+          }
+        }
+      ],
+      "compiled": {
+        "route": "do",
+        "op": "view.move",
+        "args": {
+          "action": "zoom",
+          "direction": "in"
+        }
+      },
+      "reason": "ok"
+    },
+    {
+      "id": "v14_zoom_028",
+      "category": "zoom",
+      "text": "زوم کن بیرون، اگه میشه",
+      "outcome": "wrong_reversible_accepted",
+      "source": "evidence_reflex",
+      "intent": "camera_move",
+      "expected": [
+        {
+          "route": "do",
+          "op": "view.move",
+          "args": {
+            "action": "zoom",
+            "direction": "out"
+          }
+        }
+      ],
+      "compiled": {
+        "route": "do",
+        "op": "view.move",
+        "args": {
+          "action": "zoom",
+          "direction": "in"
+        }
+      },
+      "reason": "ok"
+    },
+    {
+      "id": "v14_zoom_030",
+      "category": "zoom",
+      "text": "زوم کن بیرون، همین الان",
+      "outcome": "wrong_reversible_accepted",
+      "source": "evidence_reflex",
+      "intent": "camera_move",
+      "expected": [
+        {
+          "route": "do",
+          "op": "view.move",
+          "args": {
+            "action": "zoom",
+            "direction": "out"
+          }
+        }
+      ],
+      "compiled": {
+        "route": "do",
+        "op": "view.move",
+        "args": {
+          "action": "zoom",
+          "direction": "in"
+        }
+      },
+      "reason": "ok"
+    },
+    {
+      "id": "v14_zoom_032",
+      "category": "zoom",
+      "text": "زوم کن بیرون، فقط",
+      "outcome": "wrong_reversible_accepted",
+      "source": "evidence_reflex",
+      "intent": "camera_move",
+      "expected": [
+        {
+          "route": "do",
+          "op": "view.move",
+          "args": {
+            "action": "zoom",
+            "direction": "out"
+          }
+        }
+      ],
+      "compiled": {
+        "route": "do",
+        "op": "view.move",
+        "args": {
+          "action": "zoom",
+          "direction": "in"
+        }
+      },
+      "reason": "ok"
+    },
+    {
+      "id": "v14_multi_009",
+      "category": "multi_action",
+      "text": "انتخاب رو پاک کن و بعد follow کن یه لحظه",
+      "outcome": "false_execute",
+      "source": "evidence_reflex",
+      "intent": "clear_selection",
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ],
+      "compiled": {
+        "route": "do",
+        "op": "viewer.selection.clear",
+        "args": {}
+      },
+      "reason": "ok"
+    },
+    {
+      "id": "v14_multi_019",
+      "category": "multi_action",
+      "text": "انتخاب رو پاک کن و بعد follow کن همین الان",
+      "outcome": "false_execute",
+      "source": "evidence_reflex",
+      "intent": "clear_selection",
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ],
+      "compiled": {
+        "route": "do",
+        "op": "viewer.selection.clear",
+        "args": {}
+      },
+      "reason": "ok"
+    },
+    {
+      "id": "v14_multi_029",
+      "category": "multi_action",
+      "text": "اول انتخاب رو پاک کن و بعد follow کن سریع",
+      "outcome": "false_execute",
+      "source": "evidence_reflex",
+      "intent": "clear_selection",
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ],
+      "compiled": {
+        "route": "do",
+        "op": "viewer.selection.clear",
+        "args": {}
+      },
+      "reason": "ok"
+    },
+    {
+      "id": "v14_multi_039",
+      "category": "multi_action",
+      "text": "اول انتخاب رو پاک کن و بعد follow کن برای من",
+      "outcome": "false_execute",
+      "source": "evidence_reflex",
+      "intent": "clear_selection",
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ],
+      "compiled": {
+        "route": "do",
+        "op": "viewer.selection.clear",
+        "args": {}
+      },
+      "reason": "ok"
+    }
+  ],
+  "api_failure_ids": [
+    "v14_pat_015",
+    "v14_pat_016",
+    "v14_pat_017",
+    "v14_pat_018",
+    "v14_pat_019",
+    "v14_pat_020",
+    "v14_ask_007",
+    "v14_ask_017",
+    "v14_ask_027",
+    "v14_ask_037"
+  ],
+  "conservative_ids": [
+    "v14_orbit_017",
+    "v14_orbit_018",
+    "v14_orbit_019",
+    "v14_orbit_020",
+    "v14_orbit_021",
+    "v14_orbit_022",
+    "v14_orbit_023",
+    "v14_orbit_024",
+    "v14_fp_flip_001",
+    "v14_fp_flip_002",
+    "v14_fp_flip_003",
+    "v14_fp_flip_004",
+    "v14_fp_flip_005",
+    "v14_fp_flip_006",
+    "v14_fp_flip_007",
+    "v14_fp_flip_008",
+    "v14_fp_flip_009",
+    "v14_fp_flip_010",
+    "v14_color_009",
+    "v14_color_010",
+    "v14_plane_named_002",
+    "v14_plane_named_004",
+    "v14_plane_named_006",
+    "v14_plane_named_008",
+    "v14_plane_named_010",
+    "v14_plane_named_012",
+    "v14_plane_named_014",
+    "v14_plane_named_016",
+    "v14_plane_named_018",
+    "v14_plane_named_020",
+    "v14_pat_011",
+    "v14_pat_012",
+    "v14_pat_013",
+    "v14_pat_014",
+    "v14_mix_mat_001",
+    "v14_mix_mat_002",
+    "v14_mix_mat_003",
+    "v14_mix_mat_004",
+    "v14_mix_mat_005",
+    "v14_mix_mat_006",
+    "v14_mix_mat_007",
+    "v14_mix_mat_008",
+    "v14_mix_mat_009",
+    "v14_mix_mat_010"
+  ]
+}
