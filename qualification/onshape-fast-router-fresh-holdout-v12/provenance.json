@@ -1,8 +1,11 @@
 {
-  "schema": "cf.onshape.fast-router-fresh-holdout-v12",
+  "schema": "cf.onshape.fast-router-v12-regression",
   "frozen_holdout_commit": "712b58063bec518301cf8458363d7c8a0e87b07c",
-  "router_source_head": "0321c481287566af65bede462b0f5abfa2ee127d",
+  "router_source_ref": "work/onshape-fast-router-evidence-v07",
+  "router_source_head": "03c11135a4194b0a643adfc5d1d2899b03b6a20f",
+  "router_source_file_sha": "d6ba156e2c812fa1754d78d549ddec7424f23898",
   "cases": 100,
   "production_effects": false,
-  "note": "Fresh synthetic Persian holdout frozen only after v11 reached 100/100; no v12 result was observed before this snapshot."
+  "statistical_role": "regression_only",
+  "note": "The V12 corpus remains byte-for-byte frozen from the original fresh holdout. This run occurs after observing V12 failures and is regression evidence only, not fresh generalization evidence."
 }
