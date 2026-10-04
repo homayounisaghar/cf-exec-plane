@@ -1,0 +1,8 @@
+{
+  "schema": "capability-fabric.android-standard-app-receipt.v1",
+  "requestId": "paa-alpha26-storage-receipts-durable-20261004-002",
+  "projectId": "personal-android-agent",
+  "checkoutRef": "5501bdcbdaa8b54326998e3cc0dc3326bedc30d8",
+  "operation": "unit-test-and-build-signing-kit",
+  "result": "SUCCESS"
+}
