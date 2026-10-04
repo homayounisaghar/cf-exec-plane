@@ -1,0 +1,4 @@
+request_id=pvc-r195-voice-convert-stage1-ci-20261004-001
+candidate_commit=eb02ca9d5b9f4630ab9834a5842676092104bde5
+expected_sequence=195
+expected_release=onshape-vps-fast-r100-direct-orbit1-paa-storage-r195-voice-convert-stage1
