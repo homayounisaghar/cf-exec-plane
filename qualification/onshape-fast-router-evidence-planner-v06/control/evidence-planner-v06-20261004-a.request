@@ -1,0 +1,10 @@
+{
+  "request_id": "evidence-planner-v06-20261004-a",
+  "source_ref": "experiment/onshape-fast-router-evidence-planner-v06",
+  "source_head": "7d806051a3241cae2381581cb88deb0da6a82963",
+  "suites": [
+    "known120",
+    "frozen96",
+    "metamorphic29"
+  ]
+}
