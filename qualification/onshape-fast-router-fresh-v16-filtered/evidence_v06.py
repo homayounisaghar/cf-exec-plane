@@ -936,7 +936,8 @@ def extract_evidence(text, ctx=None):
     collab_inspect_signal=has_any(cue_t,["بگو","گزارش","گزارش بده","لیست","فهرست","list","چند نفر","چند نفریم","کیا","چه کسایی","چه کسانی","چه آدم","چه همکار","چه participant","وضع","وضعیت","آنلاین"])
     collaboration_cue = (
         (collab_terms and collab_inspect_signal) or
-        has_any(cue_t,["چند نفر","چند نفریم","کیا وصلن"])
+        has_any(cue_t,["چند نفر","چند نفریم","کیا وصلن"]) or
+        bool(re.search(r"کیا(?:\s+\S+){0,3}\s+وصلن",cue_t))
     )
     # A selection mention is a referent, not an inspect request.  Inspection needs
     # independent interrogative/state evidence; this prevents "fillet this selection"
