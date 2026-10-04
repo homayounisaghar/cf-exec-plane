@@ -111,11 +111,26 @@ def _negated_action_clause(seg):
     )
 
 def mask_negated_action_clauses(text):
-    """Mask explicitly cancelled clauses but keep their targets available elsewhere."""
+    """Mask cancelled action scope while preserving later corrections and external targets."""
     chars=list(text)
     masked=0
+    neg_re=re.compile(r"(?:نکن|نزن|نساز|نده|نذار|نگذار|نبر|نچرخون|نچرخان|نکش)")
     for m in re.finditer(r"[^،,؛;]+",text):
-        if _negated_action_clause(m.group(0)):
+        seg=m.group(0)
+        nm=neg_re.search(seg)
+        if nm:
+            after=seg[nm.end():]
+            end=m.start()+nm.end() if _ACTION_MARKER_RE.search(after) else m.end()
+            for i in range(m.start(),end):
+                chars[i]=" "
+            masked+=1
+            continue
+        no=re.search(r"(?:^|\s)نه(?:\s|$)",seg)
+        if no and _ACTION_MARKER_RE.search(seg[:no.start()]) and _ACTION_MARKER_RE.search(seg[no.end():]):
+            for i in range(m.start(),m.start()+no.end()):
+                chars[i]=" "
+            masked+=1
+        elif no and not seg[no.end():].strip():
             for i in range(m.start(),m.end()):
                 chars[i]=" "
             masked+=1
@@ -123,8 +138,8 @@ def mask_negated_action_clauses(text):
 
 _ACTION_MARKER_RE=re.compile(
     r"(?:\b(?:show|hide|fit|zoom|pan|follow|clear|inspect|rename|suppress|unsuppress|pattern|"
-    r"create|delete|set|rotate)\b|کن|بده|بساز|بزن|بذار|بگذار|حذف|پاک|مخفی|نشون|نشان|"
-    r"ببر|بکش|بچرخ|برگردون|ول کن|فیت|زوم|فالو|rollback)",
+    r"create|delete|set|rotate|move)\b|کن|بده|بساز|بزن|بذار|بگذار|حذف|پاک|مخفی|نشون|نشان|"
+    r"ببر|بکش|بچرخ|برگردون|ول کن|بگو|گزارش|بگیر|فیت|زوم|فالو|rollback)",
     re.I,
 )
 
@@ -136,9 +151,15 @@ def count_effect_clauses(text):
 def has_conditional_or_exception(text):
     t=low(text)
     return (
-        bool(re.search(r"(?:^|\s)(?:اگر|اگه|مگر|if|unless)(?:\s|$)",t,re.I)) or
+        bool(re.search(r"(?:^|\s)(?:اگر|اگه|مگر|وقتی|if|unless|when)(?:\s|$)",t,re.I)) or
         has_any(t,["به جز","به‌جز","مگر اینکه","در صورتی که","به شرط"])
     )
+
+def has_dependent_sequence(text):
+    t=low(text)
+    if not has_any(t,["قبل از","بعد از","before","after"]):
+        return False
+    return len(_ACTION_MARKER_RE.findall(t)) >= 2
 
 def parse_int_words(s):
     """Parse one canonical Persian cardinal phrase. Return None on non-cardinal composition.
@@ -619,7 +640,7 @@ def extract_evidence(text, ctx=None):
     visibility=None
     if re.search(r"(?:نشون|نشان)\s+نده",cue_t) or "نشون نده" in cue_t or "نشان نده" in cue_t:
         visibility=False
-    elif has_any(cue_t,["مخفی","قایم","hide","نشونش نده","نشانش نده","از جلوی چشم بردار","از نما بردار","از توی نما بردار","دیده نشه","دیده نشود"]):
+    elif has_any(cue_t,["مخفی","قایم","hide","هاید","نشونش نده","نشانش نده","از جلوی چشم بردار","از نما بردار","از توی نما بردار","دیده نشه","دیده نشود"]):
         visibility=False
     elif has_any(cue_t,["نشون بده","نشان بده","نشونش بده","نشانش بده","show","دوباره بیار","برگردونش توی نما","برگردون تو نما","برگردون توی نما"]):
         visibility=True
@@ -744,6 +765,7 @@ def extract_evidence(text, ctx=None):
         bool(re.search(r"(?<!\S)چی\s+(?:الان\s+)?(?:انتخاب|سلکت|دستم|دستمه|گرفتم)",cue_t)) or
         bool(re.search(r"(?:(?<!\S)چی(?=\s|$)|چه چیزی).*?(?:دست|گرفت|انتخاب|سلکت)",cue_t)) or
         bool(re.search(r"(?:انتخاب|selection|سلکت|سلکشن).*?(?:چیه|چی هست|چی شده)",cue_t)) or
+        has_any(cue_t,["وضعیت selection","وضعیت انتخاب","selection status"]) or
         bool(re.search(r"(?:دستم|دستمه|دست من).*?(?:چیه|چی هست|چی شده)",cue_t))
     )
     selection_action = None
@@ -838,6 +860,7 @@ def extract_evidence(text, ctx=None):
     clause_text=mask_spans(cue_t,[q["span"] for q in qs])
     effect_clause_count=count_effect_clauses(clause_text)
     conditional=has_conditional_or_exception(cue_t)
+    dependent_sequence=has_dependent_sequence(cue_t)
     action_families=sorted(set(action_cues))
     multi_action=(len(action_families)>1 or effect_clause_count>1)
     negated_action_only=(negated_clause_count>0 and effect_clause_count==0)
@@ -895,6 +918,7 @@ def extract_evidence(text, ctx=None):
         "multi_action":multi_action,
         "effect_clause_count":effect_clause_count,
         "conditional":conditional,
+        "dependent_sequence":dependent_sequence,
         "negated_clause_count":negated_clause_count,
         "negated_action_only":negated_action_only,
         "action_cues":action_cues,
@@ -960,7 +984,7 @@ def direct_intent(case, ev):
 
     if ev["design"]: return ("think",None)
     if ev["unsupported"]: return ("ask",None)
-    if ev.get("conditional"): return ("ask",None)
+    if ev.get("conditional") or ev.get("dependent_sequence"): return ("ask",None)
     if ev.get("negated_action_only"): return ("ask",None)
     if ev["multi_action"]: return ("ask",None)
 
@@ -1050,8 +1074,17 @@ def compile_intent(case, decision, intent, ev):
     if intent not in INTENTS and intent!="fit_selection":
         return reject("intent-not-allowed")
 
+    single_feature_intents={"feature_parameter","feature_suppressed","feature_rename","feature_delete","rollback"}
+    single_part_intents={"part_delete","part_visibility","part_property","add_pattern"}
+    if intent in single_feature_intents and len(ev.get("features") or [])>1:
+        return reject("feature-target-ambiguous")
+    if intent in single_part_intents and len(ev.get("parts") or [])>1:
+        return reject("part-target-ambiguous")
+
     if ev.get("conditional"):
         return reject("conditional-needs-resolution")
+    if ev.get("dependent_sequence"):
+        return reject("dependent-sequence-needs-resolution")
     if ev.get("negated_action_only"):
         return reject("negated-action")
     if ev["multi_action"]:
@@ -1109,6 +1142,9 @@ def compile_intent(case, decision, intent, ev):
 
     if intent=="edge_on_selection":
         if ev["selection_count"]<=0: return reject("selection-ungrounded")
+        types=[low(str(x)) for x in (ev.get("selection_types") or [])]
+        if types and any(x not in {"edge","edges"} for x in types):
+            return reject("selection-type-incompatible")
         if ev["edge_kind"] not in {"fillet","chamfer"}: return reject("edge-kind-missing")
         qs=all_quantities(ev,"mm")
         if len(qs)!=1: return reject("edge-amount-ambiguous")
