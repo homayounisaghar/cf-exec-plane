@@ -40,7 +40,7 @@ def main():
             })
         data,u=chat_json(client,model,SYSTEM,
             json.dumps({"attempt":a.attempt,"items":payload},ensure_ascii=False,separators=(",",":")),
-            temperature=0.7,max_tokens=14000)
+            temperature=0.7,max_tokens=max(500,35*len(batch)))
         items=data.get("items") if isinstance(data,dict) else None
         if not isinstance(items,list): raise RuntimeError("generator missing items")
         got={str(x.get("id")):x for x in items if isinstance(x,dict)}
