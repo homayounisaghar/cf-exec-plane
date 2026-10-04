@@ -61,7 +61,7 @@ HUNDREDS = {
 FRACTION_DENOMS = {"دهم":10,"صدم":100,"هزارم":1000}
 
 def norm_text(text):
-    t = text.translate(PERSIAN_DIGITS).translate(ARABIC_NORMALIZE).replace("\u200c"," ")
+    t = text.translate(PERSIAN_DIGITS).translate(ARABIC_NORMALIZE).replace("\u200c"," ").replace("٫",".")
     t = re.sub(r"\s+"," ",t).strip()
     return t
 
@@ -70,6 +70,96 @@ def low(text):
 
 def has_any(t, xs):
     return any(x in t for x in xs)
+
+_LEADING_ENVELOPE_RE=re.compile(
+    r"^(?:(?:لطفاً|لطفا|بی\s*زحمت|بی‌زحمت|اگه میشه|اگر میشه|میشه|الان|یه لحظه|برای من|فقط|"
+    r"خب[،,]?|باشه[،,]?|ممنون می شم|ممنون می‌شم|زحمت میشه|وقتی آماده ای|وقتی آماده‌ای|"
+    r"سریع|آروم|دقیقاً|دقیقا|فعلاً|فعلا|اول از همه|اگه امکانش هست[،,]?|می‌خوام)\s+)+",
+    re.I,
+)
+_TRAILING_ENVELOPE_RE=re.compile(
+    r"(?:[،,؛;]\s*)?(?:لطفاً|لطفا|بی\s*زحمت|بی‌زحمت|اگه میشه|اگر میشه|مرسی|ممنون|"
+    r"همین الان|برای من|فعلاً|فعلا|یه لحظه|و تموم|ممنون ازت|مرسی ازت|اگه اوکیه|"
+    r"اگر امکانش هست|وقتی فرصت داری|لطف می‌کنی|لطفاً انجامش بده|خواهشاً|لطف داری)\s*$",
+    re.I,
+)
+
+def utterance_core(text):
+    """Remove conversational envelope while preserving the semantic command."""
+    s=norm_text(text).strip()
+    prev=None
+    while s!=prev:
+        prev=s
+        s=_LEADING_ENVELOPE_RE.sub("",s).strip()
+        s=re.sub(r"[؟?!]+\s*$","",s).strip()
+        s=_TRAILING_ENVELOPE_RE.sub("",s).strip()
+        s=re.sub(r"[؟?!]+\s*$","",s).strip()
+    return s
+
+def mask_spans(text, spans):
+    out=text
+    for start,end in sorted(spans,reverse=True):
+        if 0 <= start <= end <= len(out):
+            out=out[:start]+(" "*(end-start))+out[end:]
+    return out
+
+def _negated_action_clause(seg):
+    q=low(seg).strip()
+    return (
+        has_any(q,["نکن","نزن","نساز","نده","نذار","نگذار","نبر","نچرخون","نچرخان","نکش"]) or
+        bool(re.search(r"(?:^|\s)نه\s*$",q))
+    )
+
+def mask_negated_action_clauses(text):
+    """Mask cancelled action scope while preserving later corrections and external targets."""
+    chars=list(text)
+    masked=0
+    neg_re=re.compile(r"(?:نکن|نزن|نساز|نده|نذار|نگذار|نبر|نچرخون|نچرخان|نکش)")
+    for m in re.finditer(r"[^،,؛;]+",text):
+        seg=m.group(0)
+        nm=neg_re.search(seg)
+        if nm:
+            after=seg[nm.end():]
+            end=m.start()+nm.end() if _ACTION_MARKER_RE.search(after) else m.end()
+            for i in range(m.start(),end):
+                chars[i]=" "
+            masked+=1
+            continue
+        no=re.search(r"(?:^|\s)نه(?:\s|$)",seg)
+        if no and _ACTION_MARKER_RE.search(seg[:no.start()]) and _ACTION_MARKER_RE.search(seg[no.end():]):
+            for i in range(m.start(),m.start()+no.end()):
+                chars[i]=" "
+            masked+=1
+        elif no and not seg[no.end():].strip():
+            for i in range(m.start(),m.end()):
+                chars[i]=" "
+            masked+=1
+    return "".join(chars),masked
+
+_ACTION_MARKER_RE=re.compile(
+    r"(?:\b(?:show|hide|fit|zoom|pan|follow|clear|inspect|rename|suppress|unsuppress|pattern|"
+    r"create|delete|set|rotate|move)\b|کن|بده|بساز|بزن|بذار|بگذار|حذف|پاک|مخفی|نشون|نشان|"
+    r"ببر|بکش|بچرخ|برگردون|ول کن|بگو|گزارش|بگیر|فیت|زوم|فالو|rollback)",
+    re.I,
+)
+
+def count_effect_clauses(text):
+    """Count independent imperative clauses after literals/quantities/negations are masked."""
+    parts=re.split(r"(?:[؛;]|\s+و\s+بعد\s+|\s+بعدش\s+|\s+سپس\s+|\s+then\s+|\s+و\s+)",text,flags=re.I)
+    return sum(1 for p in parts if _ACTION_MARKER_RE.search(p or ""))
+
+def has_conditional_or_exception(text):
+    t=low(text)
+    return (
+        bool(re.search(r"(?:^|\s)(?:اگر|اگه|مگر|وقتی|if|unless|when)(?:\s|$)",t,re.I)) or
+        has_any(t,["به جز","به‌جز","مگر اینکه","در صورتی که","به شرط"])
+    )
+
+def has_dependent_sequence(text):
+    t=low(text)
+    if not has_any(t,["قبل از","بعد از","before","after"]):
+        return False
+    return len(_ACTION_MARKER_RE.findall(t)) >= 2
 
 def parse_int_words(s):
     """Parse one canonical Persian cardinal phrase. Return None on non-cardinal composition.
@@ -272,7 +362,7 @@ def extract_quantity_evidence(text):
     out=[]
     issues=[]
     seen=set()
-    unit_pat=re.compile(r"(?:میلی\s*متر|میلیمتر|میلی|میل(?:ش)?|mm|درجه|deg)\b",re.I)
+    unit_pat=re.compile(r"(?:میلی\s*متر|میلیمتر|میلی|میل(?:ش)?|mm|درجه|degrees?|deg)\b",re.I)
     for um in unit_pat.finditer(t):
         parsed=_longest_spoken_number_before(t,um.start())
         if not parsed:
@@ -288,6 +378,13 @@ def extract_quantity_evidence(text):
         # "دو دهم" parsed from an intended "یک و دو دهم", the preceding
         # conjunction exposes the partial match and forces fail-closed behavior.
         prefix_before=t[:start].rstrip()
+        if prefix_before.endswith("منفی"):
+            issues.append({
+                "kind":"negative_spoken_quantity",
+                "text":cand,
+                "span":[start,um.end()],
+            })
+            continue
         if prefix_before.endswith(" و") or prefix_before.endswith(" ممیز"):
             issues.append({
                 "kind":"partial_numeric_match",
@@ -299,7 +396,7 @@ def extract_quantity_evidence(text):
         raw_unit=um.group(0).lower().replace(" ","")
         if raw_unit=="میلش":
             raw_unit="میل"
-        unit="deg" if raw_unit in {"درجه","deg"} else "mm"
+        unit="deg" if raw_unit in {"درجه","deg","degree","degrees"} else "mm"
         end=um.end()
         combined_ast=ast
 
@@ -364,13 +461,13 @@ def extract_named_features(text):
     out=[]
     for m in re.finditer(r"\b(Fillet|Extrude|Draft|Sketch)\s*(\d+)\b",t,re.I):
         out.append({"id":f"f{len(out)+1}","name":m.group(1).title()+" "+m.group(2),"span":[m.start(),m.end()]})
-    for m in re.finditer(r"(فیلت|اکسترود)\s*("+NUMBER_PHRASE+r")",t,re.I):
+    for m in re.finditer(r"(فیلت|فیلِت|اکسترود)\s*("+NUMBER_PHRASE+r")",t,re.I):
         suffix=t[m.end():].lstrip()
         if re.match(r"(?:میلی(?:متر)?|میل|mm)\b",suffix,re.I):
             continue
         n=parse_spoken_number(m.group(2))
         if n is not None and float(n).is_integer():
-            name=("Fillet" if m.group(1)=="فیلت" else "Extrude")+" "+str(int(n))
+            name=("Fillet" if m.group(1) in {"فیلت","فیلِت"} else "Extrude")+" "+str(int(n))
             if name not in [x["name"] for x in out]:
                 out.append({"id":f"f{len(out)+1}","name":name,"span":[m.start(),m.end()]})
     out.sort(key=lambda x:x["span"][0])
@@ -400,15 +497,15 @@ def extract_parts(text):
 
 def extract_literal_payloads(text):
     """Extract typed effect-bearing payloads with precise, non-overlapping spans."""
-    s=norm_text(text)
-    t=low(text)
+    s=utterance_core(text)
+    t=low(s)
     out=[]
 
     def claimed(start,end):
         return any(start < x["span"][1] and end > x["span"][0] for x in out)
 
     def add(field,value,span,provenance,scope=None):
-        value=str(value).strip(" ،,.;")
+        value=str(value).strip(" ،,.;؛؟?!")
         if not value:
             return
         if claimed(span[0],span[1]):
@@ -427,16 +524,20 @@ def extract_literal_payloads(text):
     # Opaque free-text fields are claimed first so keywords inside them never
     # become secondary semantic payloads.
     name_patterns=[
-        r"(?:به|با)\s+اسم\s+(.+?)(?:\s+بساز)?$",
-        r"(?:اسم(?:ش)?\s+(?:بشه|بشود))\s+(.+?)(?:\s+بساز)?$",
-        r"(?:اسم\s+.+?\s+(?:بشه|بشود))\s+(.+?)(?:\s+بساز)?$",
-        r"اسمش\s+(?!رو\b|را\b)(.+?)(?:\s+بساز)?$",
+        r"(?:به|با)\s+(?:اسم|نام)\s+(.+?)\s+(?:یه\s+)?(?:plane|صفحه مرجع)\s+(?:جدید\s+)?(?:بساز|ایجاد کن)$",
+        r"(?:به|با)\s+(?:اسم|نام)\s+(.+?)(?:\s+بساز)?$",
+        r"(?:(?:اسم|نام)(?:ش)?\s+(?:بشه|بشود))\s+(.+?)(?:\s+بساز)?$",
+        r"(?:(?:اسم|نام)\s+.+?\s+(?:بشه|بشود))\s+(.+?)(?:\s+بساز)?$",
+        r"(?:اسم|نام)ش\s+(?!رو\b|را\b)(.+?)(?:\s+بساز)?$",
         r"\bcalled\s+(.+?)(?:\s+بساز)?$",
-        r"(?:اسم\s+.+?\s+رو\s+بذار)\s+(.+?)(?:\s+بساز)?$",
+        r"(?:(?:اسم|نام)\s+.+?\s+رو\s+بذار)\s+(.+?)(?:\s+بساز)?$",
         r"(?:عوض کن به)\s+(.+)$",
         r"\brename\s+document\s+to\s+(.+)$",
+        r"\bdocument\s+name\s*=\s*(.+)$",
+        r"\bnew\s+part\s+studio\s*:\s*(.+)$",
         r"\brename\s+.+?\s+to\s+(.+)$",
         r"(?:داکیومنت(?:و| رو)?\s+rename\s+کن\s+به)\s+(.+)$",
+        r"(?:نام|اسم)\s+داکیومنت\s+رو\s+بذار\s+(.+)$",
     ]
     for pat in name_patterns:
         m=re.search(pat,s,re.I)
@@ -467,9 +568,11 @@ def extract_literal_payloads(text):
                 break
         if not found:
             patterns=[
-                r"(?:متریال|material).*?(?:رو|را|=|to)\s+(.+?)(?:\s+(?:بذار|بگذار|کن))?$",
+                r"(?:متریال|material).*?(?:رو|را|=|to|بشه|بشود)\s+(.+?)(?:\s+(?:بذار|بگذار|کن))?$",
                 r"(?:متریالش رو)\s+(.+?)\s+کن$",
-                r"^(?:(?:لطفا|لطفاً|الان|فقط|فعلا|فعلاً)\s+)?(.+?)\s+(?:بذار|بگذار)\s+(?:متریال|material)\b",
+                r"^(.+?)\s+(?:بذار|بگذار)\s+(?:متریال|material)\b",
+                r"(?:Part\s+\d+|پارت\s+\S+)\s+(?:material|متریال)\s+(?!(?:رو|را)\s*$)(.+)$",
+                r"\bmaterial\s+(?:Part\s+\d+|پارت\s+\S+)\s+(?!(?:رو|را)\s*$)(.+)$",
             ]
             for pat in patterns:
                 m=re.search(pat,s,re.I)
@@ -518,27 +621,27 @@ def extract_property_value(text, ctx, payloads=None):
 
 def extract_evidence(text, ctx=None):
     ctx=ctx or {}
-    t=low(text)
-    qs,quantity_issues=extract_quantity_evidence(text)
-    fs=extract_named_features(text)
-    ps=extract_parts(text)
-    payloads=extract_literal_payloads(text)
-    name_value=payload_value(payloads,"name")
-    prop,pval=extract_property_value(text,ctx,payloads)
-    copy_count=extract_copy_count(text)
+    core=utterance_core(text)
 
-    # All typed literal payload values are opaque to semantic/action cues.
-    # A description/material/name/color value may contain words such as "fit",
-    # "hide" or "fillet" without changing the requested operation.
-    cue_t=t
-    for atom in payloads:
-        start,end=atom["span"]
-        cue_t=cue_t[:start] + (" " * max(0,end-start)) + cue_t[end:]
+    # Literal-first architecture: payload values are opaque before targets,
+    # quantities, semantic cues or action families are extracted.
+    payloads=extract_literal_payloads(core)
+    semantic_text=mask_spans(core,[x["span"] for x in payloads])
+    t=low(semantic_text)
+    qs,quantity_issues=extract_quantity_evidence(semantic_text)
+    fs=extract_named_features(semantic_text)
+    ps=extract_parts(semantic_text)
+    name_value=payload_value(payloads,"name")
+    prop,pval=extract_property_value(core,ctx,payloads)
+    copy_count=extract_copy_count(semantic_text)
+
+    # Explicitly cancelled clauses do not contribute action semantics.
+    cue_t,negated_clause_count=mask_negated_action_clauses(t)
 
     visibility=None
     if re.search(r"(?:نشون|نشان)\s+نده",cue_t) or "نشون نده" in cue_t or "نشان نده" in cue_t:
         visibility=False
-    elif has_any(cue_t,["مخفی","قایم","hide","نشونش نده","نشانش نده","از جلوی چشم بردار","از نما بردار","از توی نما بردار","دیده نشه","دیده نشود"]):
+    elif has_any(cue_t,["مخفی","قایم","hide","هاید","نشونش نده","نشانش نده","از جلوی چشم بردار","از نما بردار","از توی نما بردار","دیده نشه","دیده نشود"]):
         visibility=False
     elif has_any(cue_t,["نشون بده","نشان بده","نشونش بده","نشانش بده","show","دوباره بیار","برگردونش توی نما","برگردون تو نما","برگردون توی نما"]):
         visibility=True
@@ -546,20 +649,26 @@ def extract_evidence(text, ctx=None):
         visibility=True
 
     suppressed=None
-    if has_any(cue_t,["خاموش","suppress"]): suppressed=True
-    if has_any(cue_t,["دوباره روشن","روشنش کن","روشن کن","unsuppress"]) or (
+    if has_any(cue_t,["خاموش","suppress","غیرفعال باشه","غیرفعال باشد"]): suppressed=True
+    if has_any(cue_t,["دوباره روشن","روشنش کن","روشن کن","unsuppress","دوباره فعال باشه","دوباره فعال باشد"]) or (
         "روشن" in cue_t and has_any(cue_t,["برگردون","برگردان","برش گردون","برگردونش"])
     ): suppressed=False
     if ctx.get("last_action")=="suppress" and has_any(cue_t,["برش گردون","برگردونش","دوباره بیارش"]):
         suppressed=False
 
     relation=None
-    if has_any(cue_t,["قبل از","قبل ","بالای","بالا ی"]): relation="before"
-    elif has_any(cue_t,["بعد از","بعد ","زیر"]): relation="after"
+    if has_any(cue_t,["قبل از","قبل ","بالای","بالا ی"]) or re.search(r"\bbefore\b",cue_t,re.I): relation="before"
+    elif has_any(cue_t,["بعد از","بعد ","زیر"]) or re.search(r"\bafter\b",cue_t,re.I): relation="after"
 
     relative=None
-    if has_any(cue_t,["زیادش کن","بیشترش کن","بیشتر کن","یه میل بیشتر","یک میل بیشتر"]) or re.search(r"\bبیشتر\s+کن\b",t): relative="add"
-    elif has_any(cue_t,["کمترش کن","کم کن","یه میل کمتر","یک میل کمتر"]) or re.search(r"\bکمتر\s+کن\b",t): relative="subtract"
+    if has_any(cue_t,["زیادش کن","بیشترش کن","بیشتر کن","یه میل بیشتر","یک میل بیشتر"]) or re.search(r"\bبیشتر\s+کن\b",cue_t):
+        relative="add"
+    elif has_any(cue_t,["کمترش کن","کم کن","یه میل کمتر","یک میل کمتر"]) or re.search(r"\bکمتر\s+کن\b",cue_t):
+        relative="subtract"
+    elif ctx.get("last_feature") and qs and re.search(r"(?:^|\s)بیشتر(?:\s|$)",cue_t):
+        relative="add"
+    elif ctx.get("last_feature") and qs and re.search(r"(?:^|\s)کمتر(?:\s|$)",cue_t):
+        relative="subtract"
 
     design = has_any(cue_t,[
         "خوشگل","پریمیوم","حرفه ای تر","حرفه‌ای‌تر","تولیدش راحت","تولید راحت",
@@ -568,21 +677,30 @@ def extract_evidence(text, ctx=None):
         "مقاومتش کم نشه","مقاومت کم نشه","قالب گیری","قالب‌گیری","به دردنخور",
         "محکم تر","محکم‌تر","وزن قطعه","ضعیف نشه","تولید انبوه","غیرضروری",
         "تزریق","منطقی تر","منطقی‌تر","مرتبش کن","تمیزتر بشه","تمیزتر شه",
-        "جمع و جورتر","بهتر دربیار","بهترش کن"
+        "جمع و جورتر","بهتر دربیار","بهترش کن","بهترین","تداخل نداشته باشه",
+        "تداخل نداشته باشد","جوری تغییر بده","طوری تغییر بده","بررسی کن بعد بهترین"
     ])
     weight_design = has_any(cue_t,["سبکش کن","سبک کن"])
     tree_design = has_any(cue_t,["درخت فیچر","درخت feature","feature tree"]) and has_any(cue_t,["مرتب","خلوت","شلوغ","منطقی","تمیز","سامان"])
     design = design or weight_design or tree_design
     unsupported = (
-        has_any(cue_t,["شرکت onshape"]) or
-        bool(re.search(r"\b(?:public|share|pdf|export|step|mate|company)\b",cue_t,re.I))
+        has_any(cue_t,["شرکت onshape","fully constrain","constraint","کانسترینت","سوراخ","shell","loft","sweep",
+                       "mirror","revolve","drawing","configuration","mass properties","center of mass",
+                       "thread","counterbore","boolean union","stl"]) or
+        bool(re.search(r"\b(?:public|share|pdf|export|step|mate|company|hole|shell|loft|sweep|mirror|revolve|drawing|configuration|thread|stl)\b",cue_t,re.I))
     )
 
     camera_action=None; camera_direction=None; camera_inverse=False
-    if has_any(cue_t,["زوم","zoom","نزدیک تر شو","نزدیک‌تر شو","دورتر شو","دور تر شو","دور شو","ازش دور شو","ازش دورتر شو"]): camera_action="zoom"
-    elif has_any(cue_t,["پن ","pan","نما رو","صفحه رو","هل بده"]) or (has_any(cue_t,["بکش بالا","بکش پایین"]) and has_any(cue_t,["نما","صفحه"])):
+    if has_any(cue_t,["زوم","zoom","نزدیک تر شو","نزدیک‌تر شو","نزدیک شو","دورتر شو","دور تر شو","دور شو","ازش دور شو","ازش دورتر شو"]): camera_action="zoom"
+    elif re.search(r"\bpan\b",cue_t,re.I) or "پن " in cue_t or (
+        has_any(cue_t,["viewport","نما","صفحه"]) and
+        has_any(cue_t,["هل بده","بکش","ببر"]) and
+        has_any(cue_t,["چپ","راست","بالا","پایین","left","right","up","down"])
+    ):
         camera_action="pan"
-    elif has_any(cue_t,["بچرخ","rotate","ساعتگرد","پادساعتگرد","clockwise","counterclockwise","ربع دور","عقربه"]): camera_action="orbit"
+    elif has_any(cue_t,["بچرخ","rotate","ساعتگرد","پادساعتگرد","clockwise","counterclockwise","ربع دور","عقربه"]) or (
+        re.search(r"\bcamera\b",cue_t,re.I) and has_any(cue_t,["ببر","left","right","چپ","راست"])
+    ): camera_action="orbit"
     if "پادساعتگرد" in cue_t or re.search(r"\bcounterclockwise\b",cue_t) or re.search(r"خلاف(?:\s+جهت)?\s+عقربه(?:\s*ها)?",cue_t) or has_any(cue_t,["برعکس عقربه"]): camera_direction="counterclockwise"
     elif "ساعتگرد" in cue_t or re.search(r"\bclockwise\b",cue_t) or has_any(cue_t,["در جهت عقربه","با عقربه","با جهت عقربه"]): camera_direction="clockwise"
     elif has_any(cue_t,["سمت راست","به راست","طرف راست","راست بچرخ","هل بده راست"]): camera_direction="right"
@@ -597,7 +715,7 @@ def extract_evidence(text, ctx=None):
         camera_inverse=True
     if camera_action=="zoom":
         zoom_out=has_any(cue_t,["دورتر شو","دور تر شو","دور شو","ازش دور شو","ازش دورتر شو","اوت","out","بیرون"])
-        zoom_in=has_any(cue_t,["نزدیک تر شو","نزدیک‌تر شو","داخل","zoom in"])
+        zoom_in=has_any(cue_t,["نزدیک تر شو","نزدیک‌تر شو","نزدیک شو","داخل","zoom in"])
         if zoom_out and zoom_in:
             camera_direction=None
         elif zoom_out:
@@ -630,22 +748,28 @@ def extract_evidence(text, ctx=None):
     fit_all = fit_verb and not fit_selection and (fit_all_cue or has_any(cue_t,["فیت","fit"]))
     fit_target = "selection" if fit_selection else ("all" if fit_all else None)
     top_view = has_any(cue_t,["از بالا","top view","نمای بالا"]) or bool(
-        re.search(r"(?:نمای|نما)\s+top\b|\btop\s+(?:view|نما)",cue_t,re.I)
+        re.search(r"(?:نمای|نما).*?\btop\b|\btop\s+(?:view|نما)",cue_t,re.I)
     )
     clear_selection = (
-        has_any(cue_t,["انتخاب رو پاک","انتخاب را پاک","selection رو پاک","selection را پاک","selection رو خالی","selection را خالی","selection فعلی رو صفر","انتخابارو ول کن","انتخاب ها رو ول کن"]) or
-        bool(re.search(r"(?:هر چی|هرچی).*(?:انتخاب|selection).*(?:پاک|خالی)",cue_t)) or
-        bool(re.search(r"(?:انتخاب|selection).*?(?:کامل\s+)?(?:پاک|خالی)(?:\s+کن)?",cue_t))
+        has_any(cue_t,["انتخاب رو پاک","انتخاب را پاک","selection رو پاک","selection را پاک","selection رو خالی","selection را خالی",
+                       "selection فعلی رو صفر","انتخابارو ول کن","انتخاب ها رو ول کن","clear selection","selection رو clear","selection را clear",
+                       "selection ro clear","selection ro clear kon"]) or
+        bool(re.search(r"(?:هر چی|هرچی).*(?:انتخاب|selection).*(?:پاک|خالی|ول کن|clear)",cue_t)) or
+        bool(re.search(r"(?:انتخاب|selection).*?(?:کامل\s+)?(?:پاک|خالی|clear)(?:\s+کن)?",cue_t))
     )
 
-    collaboration_cue = has_any(cue_t,["سشن","session","چند نفر","کسایی","کسانی","کیا","وصلن","چند نفریم"])
+    collaboration_cue = (
+        has_any(cue_t,["سشن","session","چند نفر","کسایی","کسانی","کیا","وصلن","چند نفریم"]) or
+        (has_any(cue_t,["participant","participants"]) and has_any(cue_t,["بگو","گزارش","کیا","چه کسایی","لیست","list"]))
+    )
     # A selection mention is a referent, not an inspect request.  Inspection needs
     # independent interrogative/state evidence; this prevents "fillet this selection"
     # from being hijacked into viewer.inspect.
     selection_inspect_cue = (
-        has_any(cue_t,["چی انتخاب","چی انتخابه","چی انتخاب شده","چی سلکت","چی دستمه","چی گرفتم"]) or
-        bool(re.search(r"(?:چی(?=\s|$)|چه چیزی).*?(?:دست|گرفت|انتخاب|سلکت)",cue_t)) or
-        bool(re.search(r"(?:انتخاب|selection|سلکت).*?(?:چیه|چی هست|چی شده)",cue_t)) or
+        bool(re.search(r"(?<!\S)چی\s+(?:الان\s+)?(?:انتخاب|سلکت|دستم|دستمه|گرفتم)",cue_t)) or
+        bool(re.search(r"(?:(?<!\S)چی(?=\s|$)|چه چیزی).*?(?:دست|گرفت|انتخاب|سلکت)",cue_t)) or
+        bool(re.search(r"(?:انتخاب|selection|سلکت|سلکشن).*?(?:چیه|چی هست|چی شده)",cue_t)) or
+        has_any(cue_t,["وضعیت selection","وضعیت انتخاب","selection status"]) or
         bool(re.search(r"(?:دستم|دستمه|دست من).*?(?:چیه|چی هست|چی شده)",cue_t))
     )
     selection_action = None
@@ -653,16 +777,16 @@ def extract_evidence(text, ctx=None):
         selection_action = "clear"
     elif has_any(cue_t,["انتخاب کن","انتخابش کن","select کن","سلکت کن"]):
         selection_action = "select"
-    state_cue = has_any(cue_t,["وضعیت ویور","viewer state","وضعیت صفحه"]) or ("وضعیت" in cue_t and "viewer" in cue_t)
+    state_cue = has_any(cue_t,["وضعیت ویور","viewer state","وضعیت صفحه","ویور استیت","چه وضعیه","چه وضعی است","گزارش کن"]) and has_any(cue_t,["ویور","viewer","صفحه","state","وضعیت","وضع"])
     inspect_target = "collaboration" if collaboration_cue else ("selection" if selection_inspect_cue else ("state" if state_cue else None))
 
     parameter_hint=None
     feature_target_present=bool(fs or ctx.get("last_feature"))
     if feature_target_present:
-        if "flip direction" in cue_t: parameter_hint="flip direction"
-        elif has_any(cue_t,["عمق","depth"]): parameter_hint="depth"
+        if re.search(r"(?:flip\s+direction|جهت\s+flip|flip\s+جهت)",cue_t,re.I): parameter_hint="flip direction"
+        elif has_any(cue_t,["عمق","depth","دیپث"]): parameter_hint="depth"
         elif has_any(cue_t,["زاویه","angle"]): parameter_hint="angle"
-        elif has_any(cue_t,["شعاع","radius"]): parameter_hint="radius"
+        elif has_any(cue_t,["شعاع","radius","ریدیوس"]): parameter_hint="radius"
 
     # روشن/خاموش is the boolean slot of flip-direction when that typed parameter
     # is explicit; it must not simultaneously become feature-suppression evidence.
@@ -689,7 +813,7 @@ def extract_evidence(text, ctx=None):
     edge_new_explicit = has_any(cue_t,["جدید","خالی","بدون انتخاب","فعلا بدون","فعلاً بدون","بساز"])
 
     edge_kind=None
-    if has_any(cue_t,["پخ","چمفر","chamfer"]): edge_kind="chamfer"
+    if has_any(cue_t,["پخ","چمفر","chamfer","bevel"]): edge_kind="chamfer"
     elif has_any(cue_t,["فیلت","fillet","فیلِت","گرد کن"]): edge_kind="fillet"
 
     # In the owner's CAD shorthand, a bare fractional edge size is millimetres.
@@ -714,7 +838,7 @@ def extract_evidence(text, ctx=None):
     named_feature_context = bool(fs) and (relation is not None or has_any(cue_t,["اسم","rename","پاک","حذف","بنداز دور"]))
     edge_effect_context = (ctx.get("selection_count",0)>0 or has_any(cue_t,["لبه","انتخاب","selected"]) or has_any(cue_t,["جدید","خالی","بدون انتخاب"]))
     cue("edge_fillet", has_any(cue_t,["فیلت","fillet","فیلِت"]) and edge_effect_context and not named_feature_context)
-    cue("edge_chamfer", has_any(cue_t,["پخ","چمفر","chamfer"]) and edge_effect_context and not named_feature_context)
+    cue("edge_chamfer", has_any(cue_t,["پخ","چمفر","chamfer","bevel"]) and edge_effect_context and not named_feature_context)
     cue("part_visibility", visibility is not None and part_target)
     cue("part_property", prop is not None and part_target)
     cue("feature_rename", name_value is not None and feature_target and has_any(cue_t,["اسم","rename"]))
@@ -730,18 +854,24 @@ def extract_evidence(text, ctx=None):
     cue("fit", fit_target is not None)
     cue("standard_view", top_view)
     cue("inspect", inspect_target is not None)
-    cue("follow", has_any(cue_t,["فالو","follow","دنبال کن"]))
+    cue("follow", has_any(cue_t,["فالو","follow","دنبال کن"]) or (has_any(cue_t,["طرف مقابل","دومی","نفر دوم"]) and "بگیر" in cue_t))
     cue("camera", camera_action is not None)
     cue("create_part_studio", has_any(cue_t,["part studio","پارت استودیو"]) and has_any(cue_t,["بساز","جدید","new"]))
     cue("rename_document", has_any(cue_t,["داکیومنت","document"]) and has_any(cue_t,["اسم","rename","بشه","بذار"]))
 
-    # Residue is action-family complete, not material-only.  Any two independent
-    # effects in one utterance leave the fast lane, including reversible viewer actions.
+    # Clause/scope layer: quantities cannot create fake conjunctions and cancelled
+    # clauses cannot create fake effects. Two independent imperative clauses fail closed.
+    clause_text=mask_spans(cue_t,[q["span"] for q in qs])
+    effect_clause_count=count_effect_clauses(clause_text)
+    conditional=has_conditional_or_exception(cue_t)
+    dependent_sequence=has_dependent_sequence(cue_t)
     action_families=sorted(set(action_cues))
-    multi_action=len(action_families)>1
+    multi_action=(len(action_families)>1 or effect_clause_count>1)
+    negated_action_only=(negated_clause_count>0 and effect_clause_count==0)
 
     return {
         "text":norm_text(text),
+        "core_text":core,
         "quantities":qs,
         "quantity_issues":quantity_issues,
         "features":fs,
@@ -790,6 +920,11 @@ def extract_evidence(text, ctx=None):
         "clear_selection":clear_selection,
         "edge_kind":edge_kind,
         "multi_action":multi_action,
+        "effect_clause_count":effect_clause_count,
+        "conditional":conditional,
+        "dependent_sequence":dependent_sequence,
+        "negated_clause_count":negated_clause_count,
+        "negated_action_only":negated_action_only,
         "action_cues":action_cues,
         "action_families":action_families,
     }
@@ -853,6 +988,8 @@ def direct_intent(case, ev):
 
     if ev["design"]: return ("think",None)
     if ev["unsupported"]: return ("ask",None)
+    if ev.get("conditional") or ev.get("dependent_sequence"): return ("ask",None)
+    if ev.get("negated_action_only"): return ("ask",None)
     if ev["multi_action"]: return ("ask",None)
 
     if ev["clear_selection"]: return ("act","clear_selection")
@@ -862,9 +999,9 @@ def direct_intent(case, ev):
     if ev["fit_all"]: return ("act","fit")
     if ev["top_view"]: return ("act","top_view")
     if ev.get("inspect_target"): return ("act","inspect")
-    if has_any(t,["فالو","follow","دنبال کن"]): return ("act","follow")
+    if has_any(t,["فالو","follow","دنبال کن"]) or (has_any(t,["طرف مقابل","دومی","نفر دوم"]) and "بگیر" in t): return ("act","follow")
 
-    if "flip direction" in t and choose_feature(ev):
+    if ev.get("parameter_hint")=="flip direction" and choose_feature(ev):
         return ("act","feature_parameter")
     if has_any(t,["اسم","rename"]) and choose_feature(ev):
         return ("act","feature_rename")
@@ -872,9 +1009,9 @@ def direct_intent(case, ev):
         return ("act","feature_delete")
     if "آخرین" in t and has_any(t,["از فیچرها","درخت فیچر"]) and has_any(t,["پاک","حذف"]):
         return ("act","feature_delete")
-    if choose_feature(ev) and has_any(t,["پاک کن","حذف کن","بنداز دور"]):
+    if choose_feature(ev) and has_any(t,["پاک کن","حذف کن","بنداز دور","delete کن","delete "]):
         return ("act","feature_delete")
-    if choose_part(ev) and has_any(t,["پاک کن","حذف کن"]) and not choose_feature(ev):
+    if choose_part(ev) and has_any(t,["پاک کن","حذف کن","delete کن","delete "]) and not choose_feature(ev):
         return ("act","part_delete")
     if "rollback" in t: return ("act","rollback")
     if ev["relation"] and (len(ev["features"])>=2 or (ctx.get("last_feature") and len(ev["features"])>=1)):
@@ -941,6 +1078,19 @@ def compile_intent(case, decision, intent, ev):
     if intent not in INTENTS and intent!="fit_selection":
         return reject("intent-not-allowed")
 
+    single_feature_intents={"feature_parameter","feature_suppressed","feature_rename","feature_delete","rollback"}
+    single_part_intents={"part_delete","part_visibility","part_property","add_pattern"}
+    if intent in single_feature_intents and len(ev.get("features") or [])>1:
+        return reject("feature-target-ambiguous")
+    if intent in single_part_intents and len(ev.get("parts") or [])>1:
+        return reject("part-target-ambiguous")
+
+    if ev.get("conditional"):
+        return reject("conditional-needs-resolution")
+    if ev.get("dependent_sequence"):
+        return reject("dependent-sequence-needs-resolution")
+    if ev.get("negated_action_only"):
+        return reject("negated-action")
     if ev["multi_action"]:
         return reject("semantic-residue-multi-action")
 
@@ -996,9 +1146,13 @@ def compile_intent(case, decision, intent, ev):
 
     if intent=="edge_on_selection":
         if ev["selection_count"]<=0: return reject("selection-ungrounded")
+        types=[low(str(x)) for x in (ev.get("selection_types") or [])]
+        if types and any(x not in {"edge","edges"} for x in types):
+            return reject("selection-type-incompatible")
         if ev["edge_kind"] not in {"fillet","chamfer"}: return reject("edge-kind-missing")
         qs=all_quantities(ev,"mm")
         if len(qs)!=1: return reject("edge-amount-ambiguous")
+        if not quantity_in_bounds("length",qs[0]["value"]): return reject("edge-amount-out-of-bounds")
         return accept("feature.from_selection",
                       {"feature_type":ev["edge_kind"],"amount":quantity_string(qs[0])},
                       {"kind":"text","amount":qs[0]["id"],"selection":"verified-context"})
@@ -1030,10 +1184,14 @@ def compile_intent(case, decision, intent, ev):
             if cur is None: return reject("relative-current-missing")
             delta=qs[0]["value"]*(1 if ev["relative"]=="add" else -1)
             value=cur+delta
+            bound_kind="angle" if parameter=="angle" else "length"
+            if not quantity_in_bounds(bound_kind,value): return reject("relative-result-out-of-bounds")
             qstr=f"{int(value) if float(value).is_integer() else value:g} {unit}"
             return accept("feature.parameter.set",{"feature_name":feature,"parameter":parameter,"amount":qstr},
                           {"feature":"text/context","delta":qs[0]["id"],"current":"verified-context","operator":ev["relative"]})
         if len(qs)!=1: return reject("feature-value-ambiguous")
+        bound_kind="angle" if parameter=="angle" else "length"
+        if not quantity_in_bounds(bound_kind,qs[0]["value"]): return reject("feature-value-out-of-bounds")
         return accept("feature.parameter.set",{"feature_name":feature,"parameter":parameter,"amount":quantity_string(qs[0])},
                       {"feature":"text/context","value":qs[0]["id"],"parameter":"text/type"})
 
@@ -1092,6 +1250,8 @@ def compile_intent(case, decision, intent, ev):
         qs=all_quantities(ev,"mm")
         copies=ev.get("copy_count")
         if not part or copies is None or len(qs)!=1: return reject("pattern-ungrounded")
+        if not (2 <= copies <= 1000): return reject("pattern-count-out-of-bounds")
+        if not quantity_in_bounds("length",qs[0]["value"]): return reject("pattern-distance-out-of-bounds")
         return accept("feature.add",
                       {"feature_type":"linearPattern","part_name":part,"copies":copies,"distance":quantity_string(qs[0])},
                       {"part":"text/context","copies":"text","distance":qs[0]["id"]})
@@ -1102,6 +1262,7 @@ def compile_intent(case, decision, intent, ev):
         qs=all_quantities(ev,"mm")
         if ev["edge_kind"] not in {"fillet","chamfer"} or len(qs)!=1:
             return reject("new-edge-ungrounded")
+        if not quantity_in_bounds("length",qs[0]["value"]): return reject("new-edge-amount-out-of-bounds")
         return accept("feature.add",{"feature_type":ev["edge_kind"],"amount":quantity_string(qs[0])},
                       {"kind":"text","amount":qs[0]["id"]})
 
@@ -1215,6 +1376,17 @@ def enforce_evidence_consumption(post, ev):
     post["consumed_evidence_count"]=len(atoms)
     return post
 
+def quantity_in_bounds(kind, value):
+    try:
+        v=float(value)
+    except Exception:
+        return False
+    if kind=="length":
+        return 0.0 < v <= 100000.0
+    if kind=="angle":
+        return 0.0 <= abs(v) < 90.0
+    return False
+
 def parse_quantity_literal(v, unit):
     if v is None: return None
     s=low(str(v))
@@ -1248,7 +1420,7 @@ def model_items(cases):
         compact={k:v for k,v in ev.items() if k not in {"feature_parameters","last_move"}}
         compact["feature_parameters"]=ev.get("feature_parameters")
         compact["last_move"]=ev.get("last_move")
-        items.append({"id":c["id"],"command":ev["text"],"evidence":compact})
+        items.append({"id":c["id"],"command":ev.get("core_text") or ev["text"],"evidence":compact})
     return items
 
 def call_model_batch(key,cases):
