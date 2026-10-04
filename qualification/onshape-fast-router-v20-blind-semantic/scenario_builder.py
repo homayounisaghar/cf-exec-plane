@@ -135,7 +135,7 @@ def build():
         elif m==3: f=f"Part {3+i%41}"; desc=f"Request invalid linear pattern count 1 for {f} with spacing 5 mm."; lits=[f,"1","5 mm"]
         else: f=f"Fillet {3+i%41}"; desc=f"Request invalid radius -2 mm for {f}."; lits=[f,"-2 mm"]
         add(R,"invalid_quantity_safe_ask",i,desc,ASK(),safety="clarification_required",lits=lits,flags=F(invalid_quantity=True),extra={"must_preserve_invalid_value":True})
-    amb=["Request hiding two distinct targets Part 4 and Part 7 in one single-target command.","Request deleting two distinct targets Fillet 4 and Fillet 6 in one single-target command.","Request selecting a deictic face with no grounded face id.","Request selecting a deictic edge with no grounded edge id."]
+    amb=["Request hiding either Part 4 or Part 7, but leave which one is intended unresolved.","Request deleting either Fillet 4 or Fillet 6, but leave which one is intended unresolved.","Request selecting a deictic face with no grounded face id.","Request selecting a deictic edge with no grounded edge id."]
     for i in range(200):
         lits=[["Part 4","Part 7"],["Fillet 4","Fillet 6"],[],[]][i%4]
         add(R,"ambiguous_target_safe_ask",i,amb[i%4],ASK(),safety="clarification_required",lits=lits,flags=F(ambiguous=True),extra={"must_preserve_ambiguity":True})
