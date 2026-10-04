@@ -1,0 +1,8 @@
+{
+  "request_id": "onshape-fast-router-v12-v15-architecture-gate-20261004-a",
+  "source_repo": "homayounisaghar/capability-fabric",
+  "source_ref": "work/onshape-fast-router-v15-hardening",
+  "source_head": "264bf950d764d640bf04892e2c57ddac2dc00158",
+  "purpose": "gate literal-first envelope, clause scope, negation, conditional and quantity bounds before larger regressions",
+  "production_effects": false
+}
