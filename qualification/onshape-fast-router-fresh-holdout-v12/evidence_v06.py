@@ -150,9 +150,17 @@ def count_effect_clauses(text):
 
 def has_conditional_or_exception(text):
     t=low(text)
+    # "اگه/اگر میشه" and "اگه/اگر امکانش هست" are politeness envelopes,
+    # even when inserted mid-clause; they are not semantic conditions.
+    semantic_t=re.sub(
+        r"(?:^|\s)(?:اگر|اگه)\s+(?:میشه|می شه|امکانش هست)(?=\s|$)",
+        " ",
+        t,
+        flags=re.I,
+    )
     return (
-        bool(re.search(r"(?:^|\s)(?:اگر|اگه|مگر|وقتی|if|unless|when)(?:\s|$)",t,re.I)) or
-        has_any(t,["به جز","به‌جز","مگر اینکه","در صورتی که","به شرط"])
+        bool(re.search(r"(?:^|\s)(?:اگر|اگه|مگر|وقتی|if|unless|when)(?:\s|$)",semantic_t,re.I)) or
+        has_any(semantic_t,["به جز","به‌جز","مگر اینکه","در صورتی که","به شرط"])
     )
 
 _DEPENDENT_EFFECT_RE=re.compile(
