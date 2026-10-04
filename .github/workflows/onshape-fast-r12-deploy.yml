@@ -77,6 +77,15 @@ jobs:
           assert 'server.registerTool("audio_upload"' in telegram
           assert '"openai/fileParams": ["file"]' in telegram
           assert "CHAT_FILE_CLIENT_HANDOFF_UNAVAILABLE" in telegram
+          assert 'server.registerTool("voice_convert"' in telegram
+          assert 'CF_RVC_WORKER_URL' in telegram
+          assert 'RVC_SOURCE_DIGEST_MISMATCH' in telegram
+          compose = (root / "compose.yaml").read_text()
+          assert 'CF_RVC_WORKER_URL: http://127.0.0.1:8794' in compose
+          assert '/var/lib/capability-fabric/rvc:/rvc:ro' not in compose
+          health = (root / "health.sh").read_text()
+          assert 'CF_RVC_WORKER_HEALTH=pass' in health
+          assert '127.0.0.1:8794' in health
           for rel,h in m["files"].items():
               p=root/rel
               assert p.is_file(), rel
