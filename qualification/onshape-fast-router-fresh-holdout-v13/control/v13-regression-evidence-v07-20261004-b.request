@@ -1,0 +1,10 @@
+{
+  "request_id": "onshape-fast-router-v13-regression-evidence-v07-20261004-b",
+  "source_repo": "homayounisaghar/capability-fabric",
+  "source_ref": "work/onshape-fast-router-evidence-v07",
+  "source_head": "0ef25e3dd156f42c1ca1626f52f24850516d8a7a",
+  "frozen_holdout_ref": "holdout/onshape-fast-router-v13-frozen",
+  "frozen_holdout_commit": "24fcc5a523f85bacd27ccdaf8af3b90eb2b45747",
+  "purpose": "regression-only after generic V13 semantic evidence hardening",
+  "production_effects": false
+}
