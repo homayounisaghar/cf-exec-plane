@@ -1,0 +1,8 @@
+{
+  "request_id": "onshape-fast-router-v12-regression-v14-hardening-20261004-0712-a",
+  "source_repo": "homayounisaghar/capability-fabric",
+  "source_ref": "work/onshape-fast-router-v14-hardening",
+  "source_head": "91c285ad97adb5af45fa806f7af2caf4a693cd93",
+  "purpose": "gate role-scoped evidence, polarity precedence, complete action-family residue, and deterministic coverage before V13/V14 regression",
+  "production_effects": false
+}
