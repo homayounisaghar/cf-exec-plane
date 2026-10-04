@@ -1,9 +1,9 @@
 {
   "cases_total": 10000,
-  "deterministic_cases": 9950,
-  "fallback_cases": 50,
-  "deterministic_correct": 9870,
-  "deterministic_accuracy": 0.9919597989949749,
+  "deterministic_cases": 10000,
+  "fallback_cases": 0,
+  "deterministic_correct": 9920,
+  "deterministic_accuracy": 0.992,
   "wrong_material_accepted": 0,
   "false_execute": 0,
   "wrong_reversible_accepted": 0,
@@ -62,7 +62,7 @@
       "correct": 200
     },
     "inspect_collaboration": {
-      "correct": 150
+      "correct": 200
     },
     "inspect_selection": {
       "correct": 200
