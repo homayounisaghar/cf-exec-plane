@@ -104,5 +104,223 @@
         "edge_fillet"
       ]
     }
+  ],
+  "fallback": [
+    {
+      "id": "v15_incollab_0000",
+      "category": "inspect_collaboration",
+      "text": "کیا الان وصلن",
+      "expected": [
+        {
+          "route": "do",
+          "op": "viewer.inspect",
+          "args": {
+            "mode": "collaboration"
+          }
+        }
+      ],
+      "action_families": [],
+      "inspect_target": null,
+      "core_text": "کیا الان وصلن",
+      "cue_text": "کیا الان وصلن"
+    },
+    {
+      "id": "v15_incollab_0004",
+      "category": "inspect_collaboration",
+      "text": "میشه کیا الان وصلن؟",
+      "expected": [
+        {
+          "route": "do",
+          "op": "viewer.inspect",
+          "args": {
+            "mode": "collaboration"
+          }
+        }
+      ],
+      "action_families": [],
+      "inspect_target": null,
+      "core_text": "کیا الان وصلن",
+      "cue_text": "کیا الان وصلن"
+    },
+    {
+      "id": "v15_incollab_0008",
+      "category": "inspect_collaboration",
+      "text": "فقط کیا الان وصلن",
+      "expected": [
+        {
+          "route": "do",
+          "op": "viewer.inspect",
+          "args": {
+            "mode": "collaboration"
+          }
+        }
+      ],
+      "action_families": [],
+      "inspect_target": null,
+      "core_text": "کیا الان وصلن",
+      "cue_text": "کیا الان وصلن"
+    },
+    {
+      "id": "v15_incollab_0012",
+      "category": "inspect_collaboration",
+      "text": "میشه کیا الان وصلن؟ لطفاً",
+      "expected": [
+        {
+          "route": "do",
+          "op": "viewer.inspect",
+          "args": {
+            "mode": "collaboration"
+          }
+        }
+      ],
+      "action_families": [],
+      "inspect_target": null,
+      "core_text": "کیا الان وصلن",
+      "cue_text": "کیا الان وصلن"
+    },
+    {
+      "id": "v15_incollab_0016",
+      "category": "inspect_collaboration",
+      "text": "دقیقاً کیا الان وصلن",
+      "expected": [
+        {
+          "route": "do",
+          "op": "viewer.inspect",
+          "args": {
+            "mode": "collaboration"
+          }
+        }
+      ],
+      "action_families": [],
+      "inspect_target": null,
+      "core_text": "کیا الان وصلن",
+      "cue_text": "کیا الان وصلن"
+    },
+    {
+      "id": "v15_incollab_0020",
+      "category": "inspect_collaboration",
+      "text": "میشه کیا الان وصلن؟ لطفاً لطفاً",
+      "expected": [
+        {
+          "route": "do",
+          "op": "viewer.inspect",
+          "args": {
+            "mode": "collaboration"
+          }
+        }
+      ],
+      "action_families": [],
+      "inspect_target": null,
+      "core_text": "کیا الان وصلن",
+      "cue_text": "کیا الان وصلن"
+    },
+    {
+      "id": "v15_incollab_0024",
+      "category": "inspect_collaboration",
+      "text": "میشه کیا الان وصلن لطفاً",
+      "expected": [
+        {
+          "route": "do",
+          "op": "viewer.inspect",
+          "args": {
+            "mode": "collaboration"
+          }
+        }
+      ],
+      "action_families": [],
+      "inspect_target": null,
+      "core_text": "کیا الان وصلن",
+      "cue_text": "کیا الان وصلن"
+    },
+    {
+      "id": "v15_incollab_0028",
+      "category": "inspect_collaboration",
+      "text": "میشه کیا الان وصلن؟ لطفاً ممنون",
+      "expected": [
+        {
+          "route": "do",
+          "op": "viewer.inspect",
+          "args": {
+            "mode": "collaboration"
+          }
+        }
+      ],
+      "action_families": [],
+      "inspect_target": null,
+      "core_text": "کیا الان وصلن",
+      "cue_text": "کیا الان وصلن"
+    },
+    {
+      "id": "v15_incollab_0032",
+      "category": "inspect_collaboration",
+      "text": "زحمت میشه کیا الان وصلن لطفاً",
+      "expected": [
+        {
+          "route": "do",
+          "op": "viewer.inspect",
+          "args": {
+            "mode": "collaboration"
+          }
+        }
+      ],
+      "action_families": [],
+      "inspect_target": null,
+      "core_text": "کیا الان وصلن",
+      "cue_text": "کیا الان وصلن"
+    },
+    {
+      "id": "v15_incollab_0036",
+      "category": "inspect_collaboration",
+      "text": "میشه کیا الان وصلن؟ لطفاً بی‌زحمت",
+      "expected": [
+        {
+          "route": "do",
+          "op": "viewer.inspect",
+          "args": {
+            "mode": "collaboration"
+          }
+        }
+      ],
+      "action_families": [],
+      "inspect_target": null,
+      "core_text": "کیا الان وصلن",
+      "cue_text": "کیا الان وصلن"
+    },
+    {
+      "id": "v15_incollab_0040",
+      "category": "inspect_collaboration",
+      "text": "کیا الان وصلن اگه میشه",
+      "expected": [
+        {
+          "route": "do",
+          "op": "viewer.inspect",
+          "args": {
+            "mode": "collaboration"
+          }
+        }
+      ],
+      "action_families": [],
+      "inspect_target": null,
+      "core_text": "کیا الان وصلن",
+      "cue_text": "کیا الان وصلن"
+    },
+    {
+      "id": "v15_incollab_0044",
+      "category": "inspect_collaboration",
+      "text": "میشه کیا الان وصلن؟ اگه میشه",
+      "expected": [
+        {
+          "route": "do",
+          "op": "viewer.inspect",
+          "args": {
+            "mode": "collaboration"
+          }
+        }
+      ],
+      "action_families": [],
+      "inspect_target": null,
+      "core_text": "کیا الان وصلن",
+      "cue_text": "کیا الان وصلن"
+    }
   ]
 }
