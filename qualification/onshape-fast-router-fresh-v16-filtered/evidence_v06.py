@@ -794,7 +794,7 @@ def extract_evidence(text, ctx=None):
 
     suppressed=None
     feature_suppression_target=bool(fs or ctx.get("last_feature"))
-    explicit_unsuppress=feature_suppression_target and has_any(cue_t,["از حالت suppress دربیار","از حالت suppress در بیار","از حالت suppressed خارج","دوباره فعال کن","دوباره به محاسبه برگرد","به محاسبه برگرد","برگرده توی regeneration","برگرده تو regeneration","regeneration برای","unsuppress","enable کن","دوباره enable","حساب بشه","حساب شود","برگردون به اجرا","برگردان به اجرا"])
+    explicit_unsuppress=feature_suppression_target and has_any(cue_t,["از حالت suppress دربیار","از حالت suppress در بیار","از حالت suppressed خارج","دوباره فعال کن","دوباره به محاسبه برگرد","به محاسبه برگرد","برگرده توی regeneration","برگرده تو regeneration","unsuppress","enable کن","دوباره enable","حساب بشه","حساب شود","برگردون به اجرا","برگردان به اجرا"])
     if explicit_unsuppress:
         suppressed=False
     elif feature_suppression_target and re.search(r"\b(?:suppressed|suppression)\b.*?(?:خاموش|off|false)",cue_t,re.I):
