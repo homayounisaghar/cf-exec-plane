@@ -2,25 +2,23 @@
   "candidate_cases_before_filter": 10000,
   "filtered_before_score": 200,
   "cases": 9800,
-  "deterministic_cases": 9380,
-  "fallback_cases": 420,
-  "exact_correct": 9150,
-  "exact_accuracy": 0.9336734693877551,
-  "effect_correct": 9150,
-  "effect_accuracy": 0.9336734693877551,
-  "effect_errors": 650,
-  "severe_accepted_effect_errors": 100,
-  "wrong_material_accepted": 50,
+  "deterministic_cases": 9680,
+  "fallback_cases": 120,
+  "exact_correct": 9600,
+  "exact_accuracy": 0.9795918367346939,
+  "effect_correct": 9600,
+  "effect_accuracy": 0.9795918367346939,
+  "effect_errors": 200,
+  "severe_accepted_effect_errors": 0,
+  "wrong_material_accepted": 0,
   "false_execute": 0,
-  "wrong_reversible_accepted": 50,
-  "conservative_escalations": 130,
+  "wrong_reversible_accepted": 0,
+  "conservative_escalations": 80,
   "route_mismatch": 0,
   "outcomes": {
-    "correct": 9150,
-    "conservative_escalation": 130,
-    "fallback": 420,
-    "wrong_material_accepted": 50,
-    "wrong_reversible_accepted": 50
+    "correct": 9600,
+    "conservative_escalation": 80,
+    "fallback": 120
   },
   "by_category": {
     "ambiguous_target_safe_ask": {
@@ -36,8 +34,7 @@
       "correct": 200
     },
     "context_camera_reverse": {
-      "correct": 150,
-      "wrong_reversible_accepted": 50
+      "correct": 200
     },
     "context_relative": {
       "correct": 200
@@ -67,16 +64,13 @@
       "correct": 200
     },
     "fit_selection": {
-      "fallback": 50,
-      "correct": 150
+      "correct": 200
     },
     "flip_direction": {
-      "correct": 150,
-      "wrong_material_accepted": 50
+      "correct": 200
     },
     "follow_pair": {
-      "correct": 100,
-      "fallback": 100
+      "correct": 200
     },
     "follow_three": {
       "correct": 200
@@ -134,8 +128,7 @@
       "correct": 200
     },
     "part_hide": {
-      "correct": 150,
-      "fallback": 50
+      "correct": 200
     },
     "part_material": {
       "correct": 200
@@ -144,8 +137,7 @@
       "correct": 200
     },
     "part_show": {
-      "correct": 150,
-      "fallback": 50
+      "correct": 200
     },
     "plane_named": {
       "correct": 200
@@ -154,8 +146,7 @@
       "correct": 200
     },
     "rename_document": {
-      "fallback": 50,
-      "correct": 150
+      "correct": 200
     },
     "rollback": {
       "correct": 200
@@ -176,346 +167,16 @@
       "correct": 200
     },
     "zoom": {
-      "conservative_escalation": 50,
-      "correct": 150
+      "correct": 200
     }
   },
   "failure_reason_counts": {
-    "context_camera_reverse": {
-      "ok": 50
-    },
-    "fit_selection": {
-      "model-fallback-required": 50
-    },
-    "flip_direction": {
-      "ok": 50
-    },
-    "follow_pair": {
-      "model-fallback-required": 100
-    },
     "negation_correction": {
       "clarification": 80,
       "model-fallback-required": 120
-    },
-    "part_hide": {
-      "model-fallback-required": 50
-    },
-    "part_show": {
-      "model-fallback-required": 50
-    },
-    "rename_document": {
-      "model-fallback-required": 50
-    },
-    "zoom": {
-      "camera-ungrounded": 50
     }
   },
   "representative_failures": {
-    "context_camera_reverse": [
-      {
-        "id": "v18_ctx_reverse_0003",
-        "text": "می‌خوام view رو خلاف حرکت قبلی جابه‌جا کن",
-        "expected": [
-          {
-            "route": "do",
-            "op": "view.move",
-            "args": {
-              "action": "orbit",
-              "direction": "up"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "do",
-          "op": "view.move",
-          "args": {
-            "action": "orbit",
-            "direction": "down"
-          }
-        },
-        "outcome": "wrong_reversible_accepted",
-        "reason": "ok",
-        "action_families": [
-          "camera"
-        ],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_ctx_reverse_0007",
-        "text": "زحمتش رو بکش و view رو خلاف حرکت قبلی جابه‌جا کن",
-        "expected": [
-          {
-            "route": "do",
-            "op": "view.move",
-            "args": {
-              "action": "orbit",
-              "direction": "up"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "do",
-          "op": "view.move",
-          "args": {
-            "action": "orbit",
-            "direction": "down"
-          }
-        },
-        "outcome": "wrong_reversible_accepted",
-        "reason": "ok",
-        "action_families": [
-          "camera"
-        ],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_ctx_reverse_0011",
-        "text": "راستی، view رو خلاف حرکت قبلی جابه‌جا کن، لطف کردی",
-        "expected": [
-          {
-            "route": "do",
-            "op": "view.move",
-            "args": {
-              "action": "orbit",
-              "direction": "up"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "do",
-          "op": "view.move",
-          "args": {
-            "action": "orbit",
-            "direction": "down"
-          }
-        },
-        "outcome": "wrong_reversible_accepted",
-        "reason": "ok",
-        "action_families": [
-          "camera"
-        ],
-        "quantity_issues": []
-      }
-    ],
-    "fit_selection": [
-      {
-        "id": "v18_fitsel_0000",
-        "text": "فقط چیزایی که گرفتم قاب رو پر کنن",
-        "expected": [
-          {
-            "route": "do",
-            "op": "view.fit",
-            "args": {
-              "action": "fit_selection"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_fitsel_0004",
-        "text": "یه کار دیگه: فقط چیزایی که گرفتم قاب رو پر کنن",
-        "expected": [
-          {
-            "route": "do",
-            "op": "view.fit",
-            "args": {
-              "action": "fit_selection"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_fitsel_0008",
-        "text": "فعلاً فقط چیزایی که گرفتم قاب رو پر کنن",
-        "expected": [
-          {
-            "route": "do",
-            "op": "view.fit",
-            "args": {
-              "action": "fit_selection"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      }
-    ],
-    "flip_direction": [
-      {
-        "id": "v18_flip_0001",
-        "text": "راستی، برای Extrude 4 جهت معکوس خاموش باشه",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.parameter.set",
-            "args": {
-              "feature_name": "Extrude 4",
-              "parameter": "flip direction",
-              "value": false
-            }
-          }
-        ],
-        "compiled": {
-          "route": "do",
-          "op": "feature.patch",
-          "args": {
-            "feature_name": "Extrude 4",
-            "suppressed": true
-          }
-        },
-        "outcome": "wrong_material_accepted",
-        "reason": "ok",
-        "action_families": [
-          "feature_suppression"
-        ],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_flip_0005",
-        "text": "این یکی رو: برای Extrude 8 جهت معکوس خاموش باشه",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.parameter.set",
-            "args": {
-              "feature_name": "Extrude 8",
-              "parameter": "flip direction",
-              "value": false
-            }
-          }
-        ],
-        "compiled": {
-          "route": "do",
-          "op": "feature.patch",
-          "args": {
-            "feature_name": "Extrude 8",
-            "suppressed": true
-          }
-        },
-        "outcome": "wrong_material_accepted",
-        "reason": "ok",
-        "action_families": [
-          "feature_suppression"
-        ],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_flip_0009",
-        "text": "خب این بار برای Extrude 12 جهت معکوس خاموش باشه",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.parameter.set",
-            "args": {
-              "feature_name": "Extrude 12",
-              "parameter": "flip direction",
-              "value": false
-            }
-          }
-        ],
-        "compiled": {
-          "route": "do",
-          "op": "feature.patch",
-          "args": {
-            "feature_name": "Extrude 12",
-            "suppressed": true
-          }
-        },
-        "outcome": "wrong_material_accepted",
-        "reason": "ok",
-        "action_families": [
-          "feature_suppression"
-        ],
-        "quantity_issues": []
-      }
-    ],
-    "follow_pair": [
-      {
-        "id": "v18_follow2_0001",
-        "text": "راستی، دوربینم رو به دید نفر مقابل وصل کن",
-        "expected": [
-          {
-            "route": "do",
-            "op": "view.follow",
-            "args": {}
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_follow2_0003",
-        "text": "می‌خوام من رو روی دوربین همکار دیگر ببر",
-        "expected": [
-          {
-            "route": "do",
-            "op": "view.follow",
-            "args": {}
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_follow2_0005",
-        "text": "این یکی رو: دوربینم رو به دید نفر مقابل وصل کن",
-        "expected": [
-          {
-            "route": "do",
-            "op": "view.follow",
-            "args": {}
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      }
-    ],
     "negation_correction": [
       {
         "id": "v18_neg_0000",
@@ -585,294 +246,7 @@
         "action_families": [],
         "quantity_issues": []
       }
-    ],
-    "part_hide": [
-      {
-        "id": "v18_phide_0001",
-        "text": "راستی، نمایش Part 4 رو ببند",
-        "expected": [
-          {
-            "route": "do",
-            "op": "part.visibility",
-            "args": {
-              "part_name": "Part 4",
-              "visible": false
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_phide_0005",
-        "text": "این یکی رو: نمایش Part 8 رو ببند",
-        "expected": [
-          {
-            "route": "do",
-            "op": "part.visibility",
-            "args": {
-              "part_name": "Part 8",
-              "visible": false
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_phide_0009",
-        "text": "خب این بار نمایش Part 12 رو ببند",
-        "expected": [
-          {
-            "route": "do",
-            "op": "part.visibility",
-            "args": {
-              "part_name": "Part 12",
-              "visible": false
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      }
-    ],
-    "part_show": [
-      {
-        "id": "v18_pshow_0001",
-        "text": "راستی، نمایش Part 15 رو باز کن",
-        "expected": [
-          {
-            "route": "do",
-            "op": "part.visibility",
-            "args": {
-              "part_name": "Part 15",
-              "visible": true
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_pshow_0005",
-        "text": "این یکی رو: نمایش Part 19 رو باز کن",
-        "expected": [
-          {
-            "route": "do",
-            "op": "part.visibility",
-            "args": {
-              "part_name": "Part 19",
-              "visible": true
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_pshow_0009",
-        "text": "خب این بار نمایش Part 23 رو باز کن",
-        "expected": [
-          {
-            "route": "do",
-            "op": "part.visibility",
-            "args": {
-              "part_name": "Part 23",
-              "visible": true
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      }
-    ],
-    "rename_document": [
-      {
-        "id": "v18_docrename_0000",
-        "text": "اسم فایل فعلی رو selection orbit project 0 کن",
-        "expected": [
-          {
-            "route": "do",
-            "op": "documented.updateDocumentAttributes",
-            "args": {
-              "new_name": "selection orbit project 0"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_docrename_0004",
-        "text": "یه کار دیگه: اسم فایل فعلی رو selection orbit project 4 کن",
-        "expected": [
-          {
-            "route": "do",
-            "op": "documented.updateDocumentAttributes",
-            "args": {
-              "new_name": "selection orbit project 4"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_docrename_0008",
-        "text": "فعلاً اسم فایل فعلی رو selection orbit project 8 کن",
-        "expected": [
-          {
-            "route": "do",
-            "op": "documented.updateDocumentAttributes",
-            "args": {
-              "new_name": "selection orbit project 8"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      }
-    ],
-    "zoom": [
-      {
-        "id": "v18_zoom_0000",
-        "text": "مدل رو درشت‌تر ببینم",
-        "expected": [
-          {
-            "route": "do",
-            "op": "view.move",
-            "args": {
-              "action": "zoom",
-              "direction": "in"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "camera-ungrounded",
-        "action_families": [
-          "camera"
-        ],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_zoom_0004",
-        "text": "یه کار دیگه: مدل رو درشت‌تر ببینم",
-        "expected": [
-          {
-            "route": "do",
-            "op": "view.move",
-            "args": {
-              "action": "zoom",
-              "direction": "in"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "camera-ungrounded",
-        "action_families": [
-          "camera"
-        ],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_zoom_0008",
-        "text": "فعلاً مدل رو درشت‌تر ببینم",
-        "expected": [
-          {
-            "route": "do",
-            "op": "view.move",
-            "args": {
-              "action": "zoom",
-              "direction": "in"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "camera-ungrounded",
-        "action_families": [
-          "camera"
-        ],
-        "quantity_issues": []
-      }
     ]
   },
-  "wall_seconds": 3.5620182440000008
+  "wall_seconds": 6.489370919999999
 }
