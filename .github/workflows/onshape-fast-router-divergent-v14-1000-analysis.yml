@@ -1,0 +1,32 @@
+name: Onshape Fast Router Divergent V14 1000 Analysis
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - qualification/onshape-fast-router-divergent-v14-1000/analysis-control/*.request
+
+permissions:
+  contents: write
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Analyze frozen report
+        run: python qualification/onshape-fast-router-divergent-v14-1000/analyze_report.py
+      - name: Publish analysis
+        run: |
+          git config user.name "cf-exec-plane"
+          git config user.email "actions@users.noreply.github.com"
+          git add reports/onshape-fast-router-divergent-v14-1000/failure-analysis.json
+          git commit -m "Report: analyze Onshape divergent v14 1000" || exit 0
+          git pull --rebase origin main
+          git push origin HEAD:main
