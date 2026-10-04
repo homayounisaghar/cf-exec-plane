@@ -8,10 +8,23 @@ def main():
     os.makedirs(outdir,exist_ok=True)
     rows=[]
     fallback=0
+    fallback_samples=[]
     for c in CASES:
         row=e.plan_case(c)
         if row is None:
             fallback+=1
+            if len(fallback_samples)<12:
+                ev=e.extract_evidence(c["text"],c.get("ctx") or {})
+                fallback_samples.append({
+                    "id":c["id"],
+                    "category":c["category"],
+                    "text":c["text"],
+                    "expected":c["expected"],
+                    "action_families":ev.get("action_families"),
+                    "inspect_target":ev.get("inspect_target"),
+                    "core_text":ev.get("core_text"),
+                    "cue_text":ev.get("cue_text"),
+                })
             continue
         row["outcome"]=e.classify(c,row["post"])
         rows.append(row)
@@ -54,6 +67,8 @@ def main():
     }
     with open(os.path.join(outdir,"summary.json"),"w",encoding="utf-8") as f:
         json.dump(summary,f,ensure_ascii=False,indent=2)
+    if fallback_samples:
+        samples["fallback"] = fallback_samples
     with open(os.path.join(outdir,"failure-samples.json"),"w",encoding="utf-8") as f:
         json.dump(samples,f,ensure_ascii=False,indent=2)
     print(json.dumps(summary,ensure_ascii=False,sort_keys=True))
