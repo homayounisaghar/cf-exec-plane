@@ -2,17 +2,16 @@
   "cases": 10000,
   "deterministic_cases": 9287,
   "fallback_cases": 713,
-  "deterministic_correct": 9176,
-  "deterministic_accuracy": 0.9880478087649402,
+  "deterministic_correct": 9221,
+  "deterministic_accuracy": 0.9928932916980726,
   "wrong_material_accepted": 0,
   "false_execute": 0,
   "wrong_reversible_accepted": 0,
   "severe_accepted_effect_errors": 0,
-  "conservative_escalations": 45,
+  "conservative_escalations": 0,
   "route_mismatch": 66,
   "outcomes": {
-    "correct": 9176,
-    "conservative_escalation": 45,
+    "correct": 9221,
     "route_mismatch": 66
   },
   "by_category": {
@@ -56,8 +55,7 @@
       "correct": 200
     },
     "feature_rename": {
-      "correct": 150,
-      "conservative_escalation": 45
+      "correct": 195
     },
     "fit_all": {
       "correct": 150
