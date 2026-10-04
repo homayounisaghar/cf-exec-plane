@@ -55,7 +55,7 @@ def main():
     a=p.parse_args()
     model=(os.environ.get("JUDGE_MODEL_A","openai/gpt-oss-20b") if a.variant=="A"
            else os.environ.get("JUDGE_MODEL_B","openai/gpt-oss-120b"))
-    keyenv="GROQ_API_KEY_BACKUP" if a.variant=="B" and os.environ.get("GROQ_API_KEY_BACKUP","").strip() else "GROQ_API_KEY"
+    keyenv="GROQ_API_KEY"
     client=get_client(keyenv)
     role=("Reconstruct only effects literally entailed by the utterance."
           if a.variant=="A" else

@@ -1,0 +1,10 @@
+{
+  "request_id": "v20-primary-key-three-model-retry-20261004-1518",
+  "reason": "backup Groq secret returned 401 invalid_api_key; model independence is by distinct model IDs, so run all three on valid primary credential",
+  "generator": "qwen/qwen3.8-27b",
+  "judge_a": "openai/gpt-oss-20b",
+  "judge_b": "openai/gpt-oss-120b",
+  "candidate_commit": "54580b67a9a61d2463ec3b9ced7a801707bb242b",
+  "fresh_status": "unscored-unfrozen",
+  "production_effects": false
+}

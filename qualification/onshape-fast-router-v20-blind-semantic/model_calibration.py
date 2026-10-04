@@ -74,7 +74,7 @@ def main():
     p=argparse.ArgumentParser(); p.add_argument("--report",required=True); a=p.parse_args()
     generator=os.environ["GENERATOR_MODEL"]; ma=os.environ["JUDGE_MODEL_A"]; mb=os.environ["JUDGE_MODEL_B"]
     primary=get_client("GROQ_API_KEY")
-    backup=get_client("GROQ_API_KEY_BACKUP") if os.environ.get("GROQ_API_KEY_BACKUP","").strip() else primary
+    backup=primary
 
     direct_a,ua=judge_items(primary,ma,DIRECT,"A")
     direct_b,ub=judge_items(backup,mb,DIRECT,"B")
