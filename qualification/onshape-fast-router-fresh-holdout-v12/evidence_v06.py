@@ -548,9 +548,9 @@ def extract_literal_payloads(text):
         if not found:
             patterns=[
                 r"(?:متریال|material).*?(?:رو|را|=|to|بشه|بشود)\s+(.+?)(?:\s+(?:بذار|بگذار|کن))?$",
-                r"\bmaterial\s+(?:Part\s+\d+|پارت\s+\S+)\s+(.+)$",
                 r"(?:متریالش رو)\s+(.+?)\s+کن$",
                 r"^(.+?)\s+(?:بذار|بگذار)\s+(?:متریال|material)\b",
+                r"\bmaterial\s+(?:Part\s+\d+|پارت\s+\S+)\s+(?!(?:رو|را)\s*$)(.+)$",
             ]
             for pat in patterns:
                 m=re.search(pat,s,re.I)
