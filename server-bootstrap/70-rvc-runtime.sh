@@ -27,6 +27,7 @@ status_file_worker="$root/bootstrap-status.json"
 tmpdir=''
 CURRENT_STAGE="bootstrap_prepare"
 BOOTSTRAP_OK=0
+FAIL_DETAIL=''
 
 write_status() {
   local state="$1" stage="$2" detail="${3:-}"
@@ -70,7 +71,11 @@ on_exit() {
   local rc=$?
   cleanup_bootstrap
   if [[ "$rc" -ne 0 ]]; then
-    write_status "FAILED" "$CURRENT_STAGE" "exit_code=$rc"
+    if [[ -n "$FAIL_DETAIL" ]]; then
+      write_status "FAILED" "$CURRENT_STAGE" "$FAIL_DETAIL exit_code=$rc"
+    else
+      write_status "FAILED" "$CURRENT_STAGE" "exit_code=$rc"
+    fi
   elif [[ "$BOOTSTRAP_OK" != 1 ]]; then
     write_status "FAILED" "$CURRENT_STAGE" "bootstrap exited before ready marker"
   fi
@@ -97,7 +102,8 @@ CURRENT_STAGE="os_check"
 write_status "RUNNING" "$CURRENT_STAGE" "validating host OS"
 . /etc/os-release
 [[ "${ID:-}" == "ubuntu" && "${VERSION_ID:-}" == "24.04" ]] || {
-  echo "RVC_RUNTIME_UNSUPPORTED_OS id=${ID:-unknown} version=${VERSION_ID:-unknown}" >&2
+  FAIL_DETAIL="id=${ID:-unknown} version=${VERSION_ID:-unknown}"
+  echo "RVC_RUNTIME_UNSUPPORTED_OS $FAIL_DETAIL" >&2
   exit 11
 }
 
