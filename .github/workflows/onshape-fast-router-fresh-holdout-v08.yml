@@ -30,10 +30,16 @@ jobs:
           python -m py_compile qualification/onshape-fast-router-fresh-holdout-v08/evidence_v06.py
           python -m py_compile qualification/onshape-fast-router-fresh-holdout-v08/fresh_holdout_v08.py
           python -m py_compile qualification/onshape-fast-router-fresh-holdout-v08/run_v08.py
+          python -m py_compile qualification/onshape-fast-router-fresh-holdout-v08/invariants_v08.py
       - name: Require Groq credential
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
         run: test -n "$GROQ_API_KEY"
+      - name: Run structural invariants
+        run: |
+          cd qualification/onshape-fast-router-fresh-holdout-v08
+          python invariants_v08.py > "${{ github.workspace }}/artifacts/onshape-fast-router-fresh-holdout-v08/invariants.json"
+
       - name: Run fresh frozen holdout v08
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
@@ -53,6 +59,7 @@ jobs:
           if test -f "$src/summary.json"; then
             cp "$src/summary.json" "$dst/summary.json"
             cp "$src/rows.json" "$dst/rows.json"
+            cp "$src/invariants.json" "$dst/invariants.json"
           else
             printf '{"state":"NO_SUMMARY"}\n' > "$dst/latest-error.json"
           fi
