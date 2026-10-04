@@ -1,0 +1,10 @@
+{
+  "schema": "cf.onshape.fast-router-evidence-planner.v06",
+  "private_source_repo": "homayounisaghar/capability-fabric",
+  "private_source_ref": "experiment/onshape-fast-router-evidence-planner-v06",
+  "private_source_head": "7d806051a3241cae2381581cb88deb0da6a82963",
+  "known_corpus_cases": 120,
+  "frozen_holdout_cases": 96,
+  "metamorphic_cases": 29,
+  "production_effects": false
+}
