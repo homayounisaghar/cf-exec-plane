@@ -207,7 +207,7 @@ def extract_name_value(text):
         m=re.search(pat,s,re.I)
         if m:
             v=m.group(1).strip(" ،,.;")
-            v=re.sub(r"\s+(?:بساز|کن)$","",v).strip()
+            v=re.sub(r"\s+بساز$","",v).strip()
             if v: return v
     return None
 
