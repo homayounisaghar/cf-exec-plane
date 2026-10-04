@@ -3,13 +3,10 @@ import argparse, json, os
 from llm_client import get_client
 
 GENERATOR_PREFS=[
-    "qwen/qwen3.8-27b",
-    "qwen/qwen3.6-27b",
-    "llama-3.3-70b-versatile",
-    "minimaxai/minimax-m2.7",
+    "openai/gpt-oss-20b",
 ]
 JUDGE_PREFS=[
-    "openai/gpt-oss-20b",
+    "openai/gpt-oss-safeguard-20b",
 ]
 
 def main():
