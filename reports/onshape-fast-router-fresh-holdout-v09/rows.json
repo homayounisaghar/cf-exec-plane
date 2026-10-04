@@ -692,9 +692,9 @@
         }
       ]
     },
-    "source": "model_intent",
+    "source": "evidence_reflex",
     "decision": "act",
-    "intent": "part_visibility",
+    "intent": "fit",
     "evidence": {
       "text": "یه کاری کن همه مدل معلوم باشه",
       "quantities": [],
@@ -722,7 +722,7 @@
       "camera_action": null,
       "camera_direction": null,
       "camera_inverse": false,
-      "fit_all": false,
+      "fit_all": true,
       "fit_selection": false,
       "top_view": false,
       "clear_selection": false,
@@ -731,21 +731,20 @@
       "action_cues": []
     },
     "post": {
-      "accepted": false,
-      "reason": "visibility-ungrounded",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
+        "route": "do",
+        "op": "view.fit",
+        "args": {
+          "action": "fit"
+        }
+      },
+      "provenance": {
+        "target": "text/context"
       }
     },
-    "model_choice": {
-      "id": "v09_c10",
-      "d": "a",
-      "i": "part_visibility"
-    },
-    "model_latency_ms": 882.6986970000092,
-    "outcome": "conservative_escalation"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -769,7 +768,7 @@
         }
       ]
     },
-    "source": "model_intent",
+    "source": "evidence_reflex",
     "decision": "act",
     "intent": "fit",
     "evidence": {
@@ -802,8 +801,8 @@
       "camera_action": null,
       "camera_direction": null,
       "camera_inverse": false,
-      "fit_all": false,
-      "fit_selection": false,
+      "fit_all": true,
+      "fit_selection": true,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -817,20 +816,14 @@
         "route": "do",
         "op": "view.fit",
         "args": {
-          "action": "fit"
+          "action": "fit_selection"
         }
       },
       "provenance": {
         "target": "text/context"
       }
     },
-    "model_choice": {
-      "id": "v09_c11",
-      "d": "a",
-      "i": "fit"
-    },
-    "model_latency_ms": 882.6986970000092,
-    "outcome": "wrong_reversible_accepted"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -916,9 +909,9 @@
         }
       ]
     },
-    "source": "model_intent",
-    "decision": "ask",
-    "intent": null,
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "clear_selection",
     "evidence": {
       "text": "هر چی الان انتخابه پاکش کن",
       "quantities": [],
@@ -949,27 +942,22 @@
       "fit_all": false,
       "fit_selection": false,
       "top_view": false,
-      "clear_selection": false,
+      "clear_selection": true,
       "edge_kind": null,
       "multi_action": false,
       "action_cues": []
     },
     "post": {
-      "accepted": false,
-      "reason": "clarification",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
+        "route": "do",
+        "op": "viewer.selection.clear",
         "args": {}
-      }
+      },
+      "provenance": {}
     },
-    "model_choice": {
-      "id": "v09_c13",
-      "d": "q",
-      "i": null
-    },
-    "model_latency_ms": 882.6986970000092,
-    "outcome": "conservative_escalation"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -984,8 +972,8 @@
       ]
     },
     "source": "model_intent",
-    "decision": "ask",
-    "intent": null,
+    "decision": "act",
+    "intent": "top_view",
     "evidence": {
       "text": "نمای جلو رو بده",
       "quantities": [],
@@ -1022,21 +1010,26 @@
       "action_cues": []
     },
     "post": {
-      "accepted": false,
-      "reason": "clarification",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
+        "route": "do",
+        "op": "view.standard",
+        "args": {
+          "view": "top"
+        }
+      },
+      "provenance": {
+        "view": "text"
       }
     },
     "model_choice": {
       "id": "v09_c14",
-      "d": "q",
-      "i": null
+      "d": "a",
+      "i": "top_view"
     },
-    "model_latency_ms": 882.6986970000092,
-    "outcome": "correct"
+    "model_latency_ms": 680.1881960000031,
+    "outcome": "false_execute"
   },
   {
     "case": {
@@ -1464,8 +1457,8 @@
       ]
     },
     "source": "model_intent",
-    "decision": "ask",
-    "intent": null,
+    "decision": "act",
+    "intent": "add_plane",
     "evidence": {
       "text": "همین سطحی که روشم هستم رو بگیر",
       "quantities": [],
@@ -1503,7 +1496,7 @@
     },
     "post": {
       "accepted": false,
-      "reason": "clarification",
+      "reason": "plane-not-explicit",
       "compiled": {
         "route": "ask",
         "op": null,
@@ -1512,10 +1505,10 @@
     },
     "model_choice": {
       "id": "v09_i07",
-      "d": "q",
-      "i": null
+      "d": "a",
+      "i": "add_plane"
     },
-    "model_latency_ms": 882.6986970000092,
+    "model_latency_ms": 680.1881960000031,
     "outcome": "correct"
   },
   {
@@ -1584,7 +1577,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 882.6986970000092,
+    "model_latency_ms": 680.1881960000031,
     "outcome": "correct"
   },
   {
@@ -6944,7 +6937,7 @@
       "d": "a",
       "i": "rename_document"
     },
-    "model_latency_ms": 882.6986970000092,
+    "model_latency_ms": 680.1881960000031,
     "outcome": "correct"
   },
   {
@@ -7379,7 +7372,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 882.6986970000092,
+    "model_latency_ms": 680.1881960000031,
     "outcome": "correct"
   },
   {
@@ -7442,10 +7435,11 @@
       }
     },
     "model_choice": {
+      "id": "v09_x08",
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 882.6986970000092,
+    "model_latency_ms": 680.1881960000031,
     "outcome": "correct"
   },
   {
@@ -7766,8 +7760,8 @@
       ]
     },
     "source": "model_intent",
-    "decision": "ask",
-    "intent": null,
+    "decision": "act",
+    "intent": "part_property",
     "evidence": {
       "text": "همه پارت ها رو خاکستری کن",
       "quantities": [],
@@ -7807,7 +7801,7 @@
     },
     "post": {
       "accepted": false,
-      "reason": "clarification",
+      "reason": "part-property-ungrounded",
       "compiled": {
         "route": "ask",
         "op": null,
@@ -7815,10 +7809,11 @@
       }
     },
     "model_choice": {
-      "d": "q",
-      "i": null
+      "id": "v09_x14",
+      "d": "a",
+      "i": "part_property"
     },
-    "model_latency_ms": 882.6986970000092,
+    "model_latency_ms": 680.1881960000031,
     "outcome": "correct"
   },
   {
