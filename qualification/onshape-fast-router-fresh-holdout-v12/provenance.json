@@ -2,10 +2,10 @@
   "schema": "cf.onshape.fast-router-v12-regression",
   "frozen_holdout_commit": "712b58063bec518301cf8458363d7c8a0e87b07c",
   "router_source_ref": "work/onshape-fast-router-evidence-v07",
-  "router_source_head": "92d717c047b73bca67ca5d1a46ded7072289bfca",
-  "router_source_file_sha": "4042d15c6e1b3a7784fb5957668b7df8ae038f45",
+  "router_source_head": "a227c224e622df8864b2875c8a8e4ca3dd6e21b0",
+  "router_source_file_sha": "89f3e72d8aab1c49271976e9cc2557bebb805b68",
   "cases": 100,
   "production_effects": false,
   "statistical_role": "regression_only",
-  "note": "The V12 corpus remains byte-for-byte frozen from the original fresh holdout. This run occurs after observing V12 failures and is regression evidence only, not fresh generalization evidence. Candidate includes typed selection mutation distinct from inspect-selection."
+  "note": "The V12 corpus remains byte-for-byte frozen from the original fresh holdout. This is regression-only evidence. Candidate uses typed literal/semantic evidence, separates selection mutation from inspection, and keeps compile_intent text-blind."
 }
