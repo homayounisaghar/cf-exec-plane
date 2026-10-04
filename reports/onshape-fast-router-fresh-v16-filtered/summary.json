@@ -2,31 +2,28 @@
   "candidate_cases_before_filter": 10000,
   "filtered_before_score": 200,
   "cases": 9800,
-  "deterministic_cases": 9570,
-  "fallback_cases": 230,
-  "exact_correct": 9440,
-  "exact_accuracy": 0.963265306122449,
-  "effect_correct": 9440,
-  "effect_accuracy": 0.963265306122449,
-  "effect_errors": 360,
+  "deterministic_cases": 9800,
+  "fallback_cases": 0,
+  "exact_correct": 9800,
+  "exact_accuracy": 1.0,
+  "effect_correct": 9800,
+  "effect_accuracy": 1.0,
+  "effect_errors": 0,
   "severe_accepted_effect_errors": 0,
   "wrong_material_accepted": 0,
   "false_execute": 0,
   "wrong_reversible_accepted": 0,
-  "conservative_escalations": 130,
+  "conservative_escalations": 0,
   "route_mismatch": 0,
   "outcomes": {
-    "correct": 9440,
-    "conservative_escalation": 130,
-    "fallback": 230
+    "correct": 9800
   },
   "by_category": {
     "ambiguous_target_safe_ask": {
       "correct": 200
     },
     "clear_selection": {
-      "correct": 150,
-      "fallback": 50
+      "correct": 200
     },
     "conditional_safe_ask": {
       "correct": 200
@@ -50,12 +47,10 @@
       "correct": 200
     },
     "feature_delete": {
-      "correct": 180,
-      "fallback": 20
+      "correct": 200
     },
     "feature_rename": {
-      "correct": 180,
-      "conservative_escalation": 20
+      "correct": 200
     },
     "feature_reorder": {
       "correct": 200
@@ -91,8 +86,7 @@
       "correct": 200
     },
     "linear_pattern": {
-      "correct": 190,
-      "conservative_escalation": 10
+      "correct": 200
     },
     "multi_action_safe_ask": {
       "correct": 200
@@ -131,8 +125,7 @@
       "correct": 200
     },
     "part_hide": {
-      "correct": 120,
-      "fallback": 80
+      "correct": 200
     },
     "part_material": {
       "correct": 200
@@ -141,12 +134,10 @@
       "correct": 200
     },
     "part_show": {
-      "correct": 120,
-      "fallback": 80
+      "correct": 200
     },
     "plane_named": {
-      "conservative_escalation": 50,
-      "correct": 150
+      "correct": 200
     },
     "plane_plain": {
       "correct": 200
@@ -167,8 +158,7 @@
       "correct": 200
     },
     "top_view": {
-      "correct": 150,
-      "conservative_escalation": 50
+      "correct": 200
     },
     "unsuppress": {
       "correct": 200
@@ -177,616 +167,7 @@
       "correct": 200
     }
   },
-  "failure_reason_counts": {
-    "clear_selection": {
-      "model-fallback-required": 50
-    },
-    "feature_delete": {
-      "model-fallback-required": 20
-    },
-    "feature_rename": {
-      "selection-ungrounded": 20
-    },
-    "linear_pattern": {
-      "clarification": 10
-    },
-    "part_hide": {
-      "model-fallback-required": 80
-    },
-    "part_show": {
-      "model-fallback-required": 80
-    },
-    "plane_named": {
-      "clarification": 50
-    },
-    "top_view": {
-      "effect-evidence-unconsumed": 50
-    }
-  },
-  "representative_failures": {
-    "clear_selection": [
-      {
-        "id": "v16_clear_0002",
-        "text": "لطف می‌کنی selectionها رو خالی کن",
-        "expected": [
-          {
-            "route": "do",
-            "op": "viewer.selection.clear",
-            "args": {}
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v16_clear_0006",
-        "text": "میشه لطف کنی selectionها رو خالی کن",
-        "expected": [
-          {
-            "route": "do",
-            "op": "viewer.selection.clear",
-            "args": {}
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v16_clear_0010",
-        "text": "selectionها رو خالی کن مرسی",
-        "expected": [
-          {
-            "route": "do",
-            "op": "viewer.selection.clear",
-            "args": {}
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      }
-    ],
-    "feature_delete": [
-      {
-        "id": "v16_fdelete_0180",
-        "text": "Extrude 3 دیگه نباشه، حذفش کن؟ اگه اوکیه",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.delete",
-            "args": {
-              "feature_name": "Extrude 3"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [
-          "delete"
-        ],
-        "quantity_issues": []
-      },
-      {
-        "id": "v16_fdelete_0181",
-        "text": "یه زحمت، Extrude 4 دیگه نباشه، حذفش کن؟ اگه اوکیه",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.delete",
-            "args": {
-              "feature_name": "Extrude 4"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [
-          "delete"
-        ],
-        "quantity_issues": []
-      },
-      {
-        "id": "v16_fdelete_0182",
-        "text": "لطف می‌کنی Extrude 5 دیگه نباشه، حذفش کن؟ اگه اوکیه",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.delete",
-            "args": {
-              "feature_name": "Extrude 5"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [
-          "delete"
-        ],
-        "quantity_issues": []
-      }
-    ],
-    "feature_rename": [
-      {
-        "id": "v16_frename_0180",
-        "text": "Fillet 3 name = follow material node 16؟ اگه اوکیه",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.patch",
-            "args": {
-              "feature_name": "Fillet 3",
-              "new_name": "follow material node 16"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "selection-ungrounded",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v16_frename_0181",
-        "text": "یه زحمت، Fillet 4 name = zoom rollback node 17؟ اگه اوکیه",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.patch",
-            "args": {
-              "feature_name": "Fillet 4",
-              "new_name": "zoom rollback node 17"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "selection-ungrounded",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v16_frename_0182",
-        "text": "لطف می‌کنی Fillet 5 name = hide pattern node 18؟ اگه اوکیه",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.patch",
-            "args": {
-              "feature_name": "Fillet 5",
-              "new_name": "hide pattern node 18"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "selection-ungrounded",
-        "action_families": [],
-        "quantity_issues": []
-      }
-    ],
-    "linear_pattern": [
-      {
-        "id": "v16_pattern_0016",
-        "text": "میشه لطف کنی از Part 32 یه linear pattern با 4 copies و فاصله 4 mm بساز مرسی",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.add",
-            "args": {
-              "feature_type": "linearPattern",
-              "part_name": "Part 32",
-              "copies": 4,
-              "distance": "4 mm"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "clarification",
-        "action_families": [
-          "pattern"
-        ],
-        "quantity_issues": []
-      },
-      {
-        "id": "v16_pattern_0036",
-        "text": "میشه لطف کنی از Part 52 یه linear pattern با 3 copies و فاصله 9 mm بساز لطف داری",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.add",
-            "args": {
-              "feature_type": "linearPattern",
-              "part_name": "Part 52",
-              "copies": 3,
-              "distance": "9 mm"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "clarification",
-        "action_families": [
-          "pattern"
-        ],
-        "quantity_issues": []
-      },
-      {
-        "id": "v16_pattern_0056",
-        "text": "میشه لطف کنی از Part 72 یه linear pattern با 2 copies و فاصله 14 mm بساز همینو می‌خوام",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.add",
-            "args": {
-              "feature_type": "linearPattern",
-              "part_name": "Part 72",
-              "copies": 2,
-              "distance": "14 mm"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "clarification",
-        "action_families": [
-          "pattern"
-        ],
-        "quantity_issues": []
-      }
-    ],
-    "part_hide": [
-      {
-        "id": "v16_phide_0080",
-        "text": "visibility Part 3 رو off کن اگه اوکیه",
-        "expected": [
-          {
-            "route": "do",
-            "op": "part.visibility",
-            "args": {
-              "part_name": "Part 3",
-              "visible": false
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v16_phide_0081",
-        "text": "یه زحمت، visibility Part 4 رو off کن اگه اوکیه",
-        "expected": [
-          {
-            "route": "do",
-            "op": "part.visibility",
-            "args": {
-              "part_name": "Part 4",
-              "visible": false
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v16_phide_0082",
-        "text": "لطف می‌کنی visibility Part 5 رو off کن اگه اوکیه",
-        "expected": [
-          {
-            "route": "do",
-            "op": "part.visibility",
-            "args": {
-              "part_name": "Part 5",
-              "visible": false
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      }
-    ],
-    "part_show": [
-      {
-        "id": "v16_pshow_0080",
-        "text": "visibility Part 14 رو on کن اگه اوکیه",
-        "expected": [
-          {
-            "route": "do",
-            "op": "part.visibility",
-            "args": {
-              "part_name": "Part 14",
-              "visible": true
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v16_pshow_0081",
-        "text": "یه زحمت، visibility Part 15 رو on کن اگه اوکیه",
-        "expected": [
-          {
-            "route": "do",
-            "op": "part.visibility",
-            "args": {
-              "part_name": "Part 15",
-              "visible": true
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v16_pshow_0082",
-        "text": "لطف می‌کنی visibility Part 16 رو on کن اگه اوکیه",
-        "expected": [
-          {
-            "route": "do",
-            "op": "part.visibility",
-            "args": {
-              "part_name": "Part 16",
-              "visible": true
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      }
-    ],
-    "plane_named": [
-      {
-        "id": "v16_plane_named_0000",
-        "text": "یه plane مرجع تازه بساز و اسمش رو بذار fit top ref 0",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.add",
-            "args": {
-              "feature_type": "plane",
-              "name": "fit top ref 0"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "clarification",
-        "action_families": [
-          "create_plane"
-        ],
-        "quantity_issues": []
-      },
-      {
-        "id": "v16_plane_named_0004",
-        "text": "واسه من یه plane مرجع تازه بساز و اسمش رو بذار fit top ref 4",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.add",
-            "args": {
-              "feature_type": "plane",
-              "name": "fit top ref 4"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "clarification",
-        "action_families": [
-          "create_plane"
-        ],
-        "quantity_issues": []
-      },
-      {
-        "id": "v16_plane_named_0008",
-        "text": "یه کار کن: یه plane مرجع تازه بساز و اسمش رو بذار fit top ref 8",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.add",
-            "args": {
-              "feature_type": "plane",
-              "name": "fit top ref 8"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "clarification",
-        "action_families": [
-          "create_plane"
-        ],
-        "quantity_issues": []
-      }
-    ],
-    "top_view": [
-      {
-        "id": "v16_top_0003",
-        "text": "می‌تونی از جهت بالا نشونش بده",
-        "expected": [
-          {
-            "route": "do",
-            "op": "view.standard",
-            "args": {
-              "view": "top"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "effect-evidence-unconsumed",
-        "action_families": [
-          "standard_view"
-        ],
-        "quantity_issues": []
-      },
-      {
-        "id": "v16_top_0007",
-        "text": "اگه اوکیه از جهت بالا نشونش بده",
-        "expected": [
-          {
-            "route": "do",
-            "op": "view.standard",
-            "args": {
-              "view": "top"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "effect-evidence-unconsumed",
-        "action_families": [
-          "standard_view"
-        ],
-        "quantity_issues": []
-      },
-      {
-        "id": "v16_top_0011",
-        "text": "یه زحمت، از جهت بالا نشونش بده مرسی",
-        "expected": [
-          {
-            "route": "do",
-            "op": "view.standard",
-            "args": {
-              "view": "top"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "effect-evidence-unconsumed",
-        "action_families": [
-          "standard_view"
-        ],
-        "quantity_issues": []
-      }
-    ]
-  },
-  "wall_seconds": 4.301137376
+  "failure_reason_counts": {},
+  "representative_failures": {},
+  "wall_seconds": 3.0157991980000034
 }
