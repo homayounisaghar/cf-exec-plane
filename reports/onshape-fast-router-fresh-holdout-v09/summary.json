@@ -26,9 +26,9 @@
   "routine_correct": 44,
   "provider_prompt_tokens": 824,
   "provider_completion_tokens": 71,
-  "model_batch_p50_ms": 242.79049899996608,
-  "model_batch_p95_ms": 242.79049899996608,
-  "wall_seconds": 481.468642326,
+  "model_batch_p50_ms": 198.44569899998987,
+  "model_batch_p95_ms": 198.44569899998987,
+  "wall_seconds": 480.55966178600005,
   "outcomes": {
     "correct": 69,
     "conservative_escalation": 7,
