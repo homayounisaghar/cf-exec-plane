@@ -11,7 +11,7 @@ permissions:
 
 concurrency:
   group: onshape-fast-router-fresh-holdout-v09
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   qualify:
@@ -38,11 +38,16 @@ jobs:
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           BATCH_SIZE: '10'
-          MAX_BATCH_RETRIES: '8'
+          MAX_BATCH_RETRIES: '2'
           OUT_DIR: ${{ github.workspace }}/artifacts/onshape-fast-router-fresh-holdout-v09
         run: |
+          mkdir -p "${{ github.workspace }}/artifacts/onshape-fast-router-fresh-holdout-v09"
           cd qualification/onshape-fast-router-fresh-holdout-v09
-          python run_v09.py
+          set +e
+          python run_v09.py > "${{ github.workspace }}/artifacts/onshape-fast-router-fresh-holdout-v09/runner.log" 2>&1
+          rc=$?
+          printf '{"exit_code":%s}\n' "$rc" > "${{ github.workspace }}/artifacts/onshape-fast-router-fresh-holdout-v09/status.json"
+          exit 0
       - name: Publish direct readback
         if: always()
         run: |
@@ -53,9 +58,12 @@ jobs:
           if test -f "$src/summary.json"; then
             cp "$src/summary.json" "$dst/summary.json"
             cp "$src/rows.json" "$dst/rows.json"
+            rm -f "$dst/latest-error.json"
           else
             printf '{"state":"NO_SUMMARY"}\n' > "$dst/latest-error.json"
           fi
+          test -f "$src/runner.log" && cp "$src/runner.log" "$dst/runner.log" || true
+          test -f "$src/status.json" && cp "$src/status.json" "$dst/status.json" || true
           printf '{"run_id":"%s","head_sha":"%s"}\n' "$GITHUB_RUN_ID" "$GITHUB_SHA" > "$dst/latest-meta.json"
           git config user.name "cf-exec-plane"
           git config user.email "actions@users.noreply.github.com"
