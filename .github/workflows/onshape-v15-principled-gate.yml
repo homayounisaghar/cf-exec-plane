@@ -1,0 +1,60 @@
+name: Onshape V15 Principled Gate
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - qualification/onshape-fast-router-divergent-v15-10000/principled-control/*.request
+
+permissions:
+  contents: write
+
+concurrency:
+  group: onshape-v15-principled-gate
+  cancel-in-progress: false
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Syntax
+        run: |
+          python -m py_compile qualification/onshape-fast-router-divergent-v15-10000/evidence_v06.py
+          python -m py_compile qualification/onshape-fast-router-divergent-v15-10000/evidence_architecture_selftest.py
+          python -m py_compile qualification/onshape-fast-router-divergent-v15-10000/deterministic_current.py
+      - name: Architecture selftest
+        run: |
+          mkdir -p artifacts/onshape-v15-principled-gate
+          cd qualification/onshape-fast-router-divergent-v15-10000
+          python evidence_architecture_selftest.py > "${{ github.workspace }}/artifacts/onshape-v15-principled-gate/architecture-selftest.json"
+      - name: Deterministic 10k
+        env:
+          OUT_DIR: ${{ github.workspace }}/artifacts/onshape-v15-principled-gate
+        run: |
+          cd qualification/onshape-fast-router-divergent-v15-10000
+          python deterministic_current.py
+      - name: Publish
+        if: always()
+        run: |
+          src="artifacts/onshape-v15-principled-gate"
+          dst="reports/onshape-v15-principled-gate"
+          mkdir -p "$dst"
+          for f in architecture-selftest.json summary.json failures.json; do
+            test -f "$src/$f" && cp "$src/$f" "$dst/$f" || true
+          done
+          printf '{"run_id":"%s","head_sha":"%s"}\n' "$GITHUB_RUN_ID" "$GITHUB_SHA" > "$dst/latest-meta.json"
+          if test -f "$src/summary.json"; then rm -f "$dst/latest-error.json"; else printf '{"state":"NO_SUMMARY"}\n' > "$dst/latest-error.json"; fi
+          git config user.name "cf-exec-plane"
+          git config user.email "actions@users.noreply.github.com"
+          git add "$dst"
+          git commit -m "Report: V15 principled gate" || exit 0
+          git pull --rebase origin main
+          git push origin HEAD:main
