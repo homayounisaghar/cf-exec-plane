@@ -1,0 +1,7 @@
+{
+  "request_id": "v20c-context-relative-fidelity-fix-20261004-1536",
+  "reason": "realizer omitted explicit relative delta literal; fix semantic-by-construction wording before freeze/score",
+  "candidate_commit": "54580b67a9a61d2463ec3b9ced7a801707bb242b",
+  "fresh_status": "unscored-unfrozen",
+  "production_effects": false
+}

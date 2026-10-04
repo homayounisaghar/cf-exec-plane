@@ -170,7 +170,13 @@ def core(s):
     if fam=="context_camera_reverse":
         return "جهت آخرین حرکت camera را معکوس کن و یک حرکت دقیقاً مخالف قبلی انجام بده"
     if fam=="context_relative":
-        return f"radius مربوط به {a['feature_name']} را طوری تغییر بده که مقدار نهایی دقیقاً {a['amount']} شود"
+        delta=s.get("value_provenance",{}).get("preserve_literals",[""])[0]
+        cur=str(c.get("feature_parameters",{}).get("radius",""))
+        try:
+            cv=float(cur.split()[0]); fv=float(str(a["amount"]).split()[0]); direction="زیاد" if fv>cv else "کم"
+        except Exception:
+            direction="تغییر"
+        return f"radius مربوط به {a['feature_name']} را به اندازه {delta} {direction} کن تا مقدار نهایی دقیقاً {a['amount']} شود"
     if fam=="negation_correction":
         m=i%5
         if m==0: return "Part 8 را hide نکن؛ برعکس visible نگهش دار"
