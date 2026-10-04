@@ -44,7 +44,7 @@ jobs:
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           BATCH_SIZE: '10'
-          MAX_BATCH_RETRIES: '8'
+          MAX_BATCH_RETRIES: '2'
           OUT_DIR: ${{ github.workspace }}/artifacts/onshape-fast-router-fresh-holdout-v09
         run: |
           cd qualification/onshape-fast-router-evidence-v06
