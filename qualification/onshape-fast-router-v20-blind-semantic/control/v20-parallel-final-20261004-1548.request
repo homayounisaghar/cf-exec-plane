@@ -1,0 +1,10 @@
+{
+  "request_id": "v20-parallel-final-20261004-1548",
+  "reason": "same V20 methodology/candidate; parallelize execution only to finish owner-requested test",
+  "shards": 4,
+  "generator_parallelism": 4,
+  "judge_parallelism": 8,
+  "candidate_commit": "54580b67a9a61d2463ec3b9ced7a801707bb242b",
+  "fresh_status": "unscored-unfrozen",
+  "production_effects": false
+}
