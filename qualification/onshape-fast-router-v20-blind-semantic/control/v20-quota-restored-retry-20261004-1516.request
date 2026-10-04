@@ -1,0 +1,10 @@
+{
+  "request_id": "v20-quota-restored-retry-20261004-1516",
+  "reason": "Owner confirmed Groq API quota issue resolved; restore validated independent judge pair and resume untouched V20",
+  "generator": "qwen/qwen3.8-27b",
+  "judge_a": "openai/gpt-oss-20b",
+  "judge_b": "openai/gpt-oss-120b",
+  "candidate_commit": "54580b67a9a61d2463ec3b9ced7a801707bb242b",
+  "fresh_status": "unscored-unfrozen",
+  "production_effects": false
+}
