@@ -350,6 +350,77 @@ def main():
     assert_eq(c,{"route":"do","op":"part.visibility","args":{"part_name":"Part 6","visible":False}},"hide-loanword")
     checks.append("hide-loanword")
 
+    # Metamorphic invariants: neutral conversational envelopes must preserve semantics.
+    envelope_bases=[
+        ("Part 5 رو مخفی کن",{},{"route":"do","op":"part.visibility","args":{"part_name":"Part 5","visible":False}}),
+        ("نمای top رو بده",{},{"route":"do","op":"view.standard","args":{"view":"top"}}),
+        ("شعاع Fillet 4 رو 3.5 mm کن",{},{"route":"do","op":"feature.parameter.set","args":{"feature_name":"Fillet 4","parameter":"radius","amount":"3.5 mm"}}),
+        ("selection رو کامل خالی کن",{},{"route":"do","op":"viewer.selection.clear","args":{}}),
+        ("زوم کن بیرون",{},{"route":"do","op":"view.move","args":{"action":"zoom","direction":"out"}}),
+        ("material Part 8 رو Titanium بذار",{},{"route":"do","op":"metadata.property.set","args":{"part_name":"Part 8","property":"material","value":"Titanium"}}),
+        ("یه plane بساز با اسم datum alpha",{},{"route":"do","op":"feature.add","args":{"feature_type":"plane","name":"datum alpha"}}),
+        ("اسم Fillet 3 بشه corner A",{},{"route":"do","op":"feature.patch","args":{"feature_name":"Fillet 3","new_name":"corner A"}}),
+    ]
+    prefixes=["","لطفاً ","اگه میشه ","می‌خوام ","خب، ","ممنون می‌شم "]
+    suffixes=[""," لطفاً","، مرسی"," ممنون"," اگه میشه","؟"]
+    metamorphic_count=0
+    for base,ctx,want in envelope_bases:
+        for pre in prefixes:
+            for suf in suffixes:
+                c,_=compiled(pre+base+suf,ctx)
+                assert_eq(c,want,f"envelope-metamorphic:{pre}|{base}|{suf}")
+                metamorphic_count+=1
+    checks.append(f"envelope-metamorphic:{metamorphic_count}")
+
+    # Literal payloads stay opaque even when they contain operation/target/quantity language.
+    opaque_values=[
+        "fit hide","zoom out","delete top","selection clear","follow participant",
+        "Draft 7 angle 15 deg","Part 9 material Titanium","rollback after Extrude 5",
+        "pattern 4 copies 5 mm","suppress false mirror hole"
+    ]
+    opacity_count=0
+    for value in opaque_values:
+        c,ev=compiled("اسم Fillet 3 بشه "+value)
+        assert_eq(c,{"route":"do","op":"feature.patch","args":{"feature_name":"Fillet 3","new_name":value}},f"opaque-name:{value}")
+        c,ev=compiled("Part 5 description بذار "+value)
+        assert_eq(c,{"route":"do","op":"metadata.property.set","args":{"part_name":"Part 5","property":"description","value":value}},f"opaque-description:{value}")
+        opacity_count+=2
+    checks.append(f"literal-opacity-metamorphic:{opacity_count}")
+
+    # Conditional wrappers around otherwise executable commands must fail closed.
+    conditional_bases=[
+        "Part 5 رو مخفی کن",
+        "نمای top رو بده",
+        "شعاع Fillet 4 رو 3.5 mm کن",
+        "selection رو کامل خالی کن",
+        "زوم کن بیرون",
+        "material Part 8 رو Titanium بذار",
+    ]
+    conditional_count=0
+    for base in conditional_bases:
+        for pre in ["اگر لازم بود ","اگه selection خالی بود ","مگر اینکه لازم نباشه "]:
+            c,_=compiled(pre+base,{"selection_count":1})
+            assert_eq(c,{"route":"ask","op":None,"args":{}},f"conditional-metamorphic:{pre}|{base}")
+            conditional_count+=1
+    checks.append(f"conditional-metamorphic:{conditional_count}")
+
+    # Pairwise independent effects are never silently collapsed to the first action.
+    multi_effects=[
+        "Part 5 رو مخفی کن",
+        "نمای top رو بده",
+        "selection رو کامل خالی کن",
+        "زوم کن بیرون",
+        "Part 3 رو قرمز کن",
+        "Extrude 4 رو خاموش کن",
+    ]
+    pair_count=0
+    for i,a in enumerate(multi_effects):
+        for b in multi_effects[i+1:]:
+            c,_=compiled(a+" و بعد "+b,{"selection_count":1})
+            assert_eq(c,{"route":"ask","op":None,"args":{}},f"pairwise-multi-action:{a}|{b}")
+            pair_count+=1
+    checks.append(f"pairwise-multi-action:{pair_count}")
+
     # Explicit payload that is not compatible with the selected operation must never disappear.
     ev=e.extract_evidence("Part 5 رو مخفی کن با اسم Foo",{})
     post=e.accept("part.visibility",{"part_name":"Part 5","visible":False},{})
