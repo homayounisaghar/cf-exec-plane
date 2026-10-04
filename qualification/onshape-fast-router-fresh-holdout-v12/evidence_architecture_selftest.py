@@ -318,6 +318,38 @@ def main():
     assert_eq(c,{"route":"do","op":"metadata.property.set","args":{"part_name":"Part 9","property":"material","value":"titanium"}},"bare-material-order")
     checks.append("bare-material-order")
 
+    c,ev=compiled("Part 2 و Part 3 رو hide کن")
+    assert_eq(c,{"route":"ask","op":None,"args":{}},"multi-part-target-fails-closed")
+    checks.append("multi-part-target-fails-closed")
+
+    c,ev=compiled("Extrude 2 و Extrude 3 رو خاموش کن")
+    assert_eq(c,{"route":"ask","op":None,"args":{}},"multi-feature-target-fails-closed")
+    checks.append("multi-feature-target-fails-closed")
+
+    c,ev=compiled("روی selection فیلت 2 mm بزن",{"selection_count":1,"selection_types":["face"]})
+    assert_eq(c,{"route":"ask","op":None,"args":{}},"selection-type-fails-closed")
+    checks.append("selection-type-fails-closed")
+
+    c,ev=compiled("Part 4 رو مخفی نکن نشونش بده")
+    assert_eq(c,{"route":"do","op":"part.visibility","args":{"part_name":"Part 4","visible":True}},"inline-negation-correction")
+    checks.append("inline-negation-correction")
+
+    c,ev=compiled("zoom in نه zoom out کن")
+    assert_eq(c,{"route":"do","op":"view.move","args":{"action":"zoom","direction":"out"}},"inline-polarity-correction")
+    checks.append("inline-polarity-correction")
+
+    c,ev=compiled("وقتی selection خالی شد top view بده")
+    assert_eq(c,{"route":"ask","op":None,"args":{}},"temporal-condition-fails-closed")
+    checks.append("temporal-condition-fails-closed")
+
+    c,ev=compiled("قبل از حذف Fillet 7 وضعیت selection رو بگو",{"selection_count":1})
+    assert_eq(c,{"route":"ask","op":None,"args":{}},"dependent-sequence-fails-closed")
+    checks.append("dependent-sequence-fails-closed")
+
+    c,ev=compiled("پارت 6 رو هاید کن")
+    assert_eq(c,{"route":"do","op":"part.visibility","args":{"part_name":"Part 6","visible":False}},"hide-loanword")
+    checks.append("hide-loanword")
+
     # Explicit payload that is not compatible with the selected operation must never disappear.
     ev=e.extract_evidence("Part 5 رو مخفی کن با اسم Foo",{})
     post=e.accept("part.visibility",{"part_name":"Part 5","visible":False},{})
