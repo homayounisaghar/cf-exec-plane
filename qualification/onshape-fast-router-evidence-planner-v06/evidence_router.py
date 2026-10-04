@@ -226,7 +226,8 @@ def extract_features(text: str):
         # Strip a common Persian object marker if the simple regex captured it.
         phrase = re.sub(r"\s+(?:رو|را)$", "", phrase).strip()
         n = parse_integer_words(phrase)
-        if n is not None:
+        after = t[m.end():].lstrip()
+        if n is not None and not re.match(r"^(?:mm|میلی\s*متر|میلیمتر|میلی|میل|deg|درجه)\b", after, re.I):
             out.append({"value": _feature_name(m.group(1), n), "surface": m.group(0), "pos": m.start()})
     dedup = []
     seen = set()
@@ -249,7 +250,7 @@ def extract_parts(text: str):
 
     # Named-part positions: grammar around a capital/identifier token.
     pats = [
-        r"\b(Cap|Bracket)\b",
+        r"\b([A-Za-z][A-Za-z0-9_.-]*)\s+(?:رو|را)\b",
         r"(?:رنگ|color)\s+([A-Za-z][A-Za-z0-9_.-]*)\b",
         r"description\s+(?:پارت\s+)?([A-Za-z][A-Za-z0-9_.-]*)\b",
         r"linear\s+pattern\s+([A-Za-z][A-Za-z0-9_.-]*)\b",
@@ -323,7 +324,7 @@ def extract_visibility(text: str, ctx: dict):
         return False
     if has_any(t, ["مخفی", "قایم", "پنهان", "hide"]):
         return False
-    if has_any(t, ["نشون بده", "نشان بده", "نمایش بده", "show"]):
+    if has_any(t, ["نشون بده", "نشان بده", "نشونش بده", "نشانش بده", "نمایش بده", "show"]):
         return True
     if has_any(t, ["دوباره بیار", "دوباره برگردونش", "بیارش"]) and ctx.get("last_part"):
         return True
@@ -377,6 +378,7 @@ def is_design_language(text: str):
         "قوی تر", "قوی‌تر", "استحکام", "سبک تر", "سبک‌تر", "تزریق پلاستیک",
         "اضافی", "تولیدش راحت", "تولیدش ساده", "وزنشو کم", "وزنش رو کم",
         "سفت بمونه", "زیباتر", "بهترش کن", "طراحی رو درست", "طراحی را درست",
+        "تولید راحت", "تولیدش راحت",
     ]
     return has_any(t, terms)
 
@@ -484,7 +486,7 @@ def build_evidence(text: str, ctx: dict | None = None):
         action = "zoom"
     elif has_any(t, ["pan", "پن ", "نما رو", "صفحه رو", "هل بده"]):
         action = "pan"
-    elif has_any(t, ["بچرخ", "rotate", "ساعتگرد", "پادساعتگرد", "دور"]) or (has_any(t, ["مدل", "مدلو"]) and has_any(t, ["راست", "چپ", "بالا", "پایین"])):
+    elif has_any(t, ["بچرخ", "rotate", "ساعتگرد", "پادساعتگرد"]) or (has_any(t, ["مدل", "مدلو"]) and has_any(t, ["راست", "چپ", "بالا", "پایین"])):
         action = "orbit"
 
     direction = None
@@ -492,13 +494,13 @@ def build_evidence(text: str, ctx: dict | None = None):
         direction = "counterclockwise"
     elif "ساعتگرد" in t:
         direction = "clockwise"
-    elif has_any(t, ["سمت راست", "به راست", "طرف راست", "راست"]):
+    elif has_any(t, ["سمت راست", "به راست", "طرف راست", "راست"]) or re.search(r"\bright\b", t):
         direction = "right"
-    elif has_any(t, ["سمت چپ", "به چپ", "طرف چپ", "چپ"]):
+    elif has_any(t, ["سمت چپ", "به چپ", "طرف چپ", "چپ"]) or re.search(r"\bleft\b", t):
         direction = "left"
-    elif has_any(t, ["بالا", "رو به بالا"]):
+    elif has_any(t, ["بالا", "رو به بالا"]) or re.search(r"\bup\b", t):
         direction = "up"
-    elif has_any(t, ["پایین", "رو به پایین"]):
+    elif has_any(t, ["پایین", "رو به پایین"]) or re.search(r"\bdown\b", t):
         direction = "down"
 
     last_move = ctx.get("last_move") or {}
@@ -512,9 +514,10 @@ def build_evidence(text: str, ctx: dict | None = None):
         }
         action = last_move.get("action")
         direction = opp.get(last_move.get("direction"))
-    elif last_move and more and not action:
-        action = last_move.get("action")
-        direction = last_move.get("direction")
+    elif last_move and more and direction is None:
+        if action is None or action == last_move.get("action"):
+            action = last_move.get("action")
+            direction = last_move.get("direction")
 
     if last_move and has_any(t, ["عقب تر", "عقب‌تر", "عقب برو"]) and last_move.get("action") == "zoom":
         action = "zoom"
@@ -609,10 +612,6 @@ def _canonical_param(feature, ev):
         return "radius"
     if has_any(t, ["عمق", "depth"]):
         return "depth"
-    if feature and str(feature).lower().startswith("extrude"):
-        qs = [x for x in items(ev, "quantity") if str(x["value"]).endswith(" mm")]
-        if len(qs) == 1 and not ev.get("relative"):
-            return "depth"
     if has_any(t, ["زاویه", "angle"]):
         return "angle"
     if "flip direction" in t:
@@ -730,6 +729,8 @@ def reflex_decision(ev):
 
     feats_text = items(ev, "feature", "text")
     parts_text = items(ev, "part", "text")
+    if _is_delete(ev) and has_any(ev["low"], ["آخرین فیچر", "آخرین فیچرو", "اولین فیچر", "اولین فیچرو"]):
+        return "act", "feature_delete"
     if items(ev, "relation") and (len(feats_text) >= 2 or (len(feats_text) == 1 and context_item(ev, "feature"))):
         return "act", "feature_reorder"
 
@@ -747,9 +748,11 @@ def reflex_decision(ev):
             return "act", "feature_delete"
         if _name_cue(ev):
             return "act", "feature_rename"
+        if has_any(ev["low"], ["شعاع", "عمق", "depth", "زاویه", "angle", "flip direction"]) or ev["relative"]:
+            return "act", "feature_parameter"
         if _suppression_cue(ev):
             return "act", "feature_suppressed"
-        if edge_kind or has_any(ev["low"], ["شعاع", "عمق", "depth", "زاویه", "angle", "flip direction"]) or ev["relative"]:
+        if edge_kind:
             return "act", "feature_parameter"
 
     if parts_text or context_item(ev, "part"):
