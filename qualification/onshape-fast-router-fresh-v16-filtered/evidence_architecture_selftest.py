@@ -443,6 +443,49 @@ def main():
     assert_eq(c,{"route":"ask","op":None,"args":{}},"unparseable-unit-local-reject")
     checks.append("unparseable-unit-local-reject")
 
+    # V16 fresh-generalization invariants: broader natural language, same typed effects.
+    for text,want,ctx in [
+        ("یه زحمت، Part 4 رو مخفی کن",{"route":"do","op":"part.visibility","args":{"part_name":"Part 4","visible":False}},{}),
+        ("اگه اوکیه Draft 10 رو 9 deg کن",{"route":"do","op":"feature.parameter.set","args":{"feature_name":"Draft 10","parameter":"angle","amount":"9 deg"}},{}),
+        ("یکم نزدیک‌ترش کن",{"route":"do","op":"view.move","args":{"action":"zoom","direction":"in"}},{}),
+        ("دید رو با orbit ببر بالا",{"route":"do","op":"view.move","args":{"action":"orbit","direction":"up"}},{}),
+        ("نما رو صاف جابه‌جا کن به چپ",{"route":"do","op":"view.move","args":{"action":"pan","direction":"left"}},{}),
+        ("نما رو خلاف ساعتگرد بچرخون",{"route":"do","op":"view.move","args":{"action":"orbit","direction":"counterclockwise"}},{}),
+        ("کل چیزی که داریم داخل viewport جا بشه",{"route":"do","op":"view.fit","args":{"action":"fit"}},{}),
+        ("selection فعلی رو داخل viewport جا بده",{"route":"do","op":"view.fit","args":{"action":"fit_selection"}},{"selection_count":2,"selection_types":["edge","edge"]}),
+        ("هرچی الان select شده آزادش کن",{"route":"do","op":"viewer.selection.clear","args":{}},{}),
+        ("بگو الان دقیقاً چی selected هست",{"route":"do","op":"viewer.inspect","args":{"mode":"selection"}},{}),
+        ("وضع فعلی viewer رو گزارش بده",{"route":"do","op":"viewer.inspect","args":{"mode":"state"}},{}),
+        ("لیست آدم‌های حاضر در جلسه رو بگو",{"route":"do","op":"viewer.inspect","args":{"mode":"collaboration"}},{}),
+        ("view همکار روبرو رو بگیر",{"route":"do","op":"view.follow","args":{}},{"collaborator_count":2}),
+        ("feature Extrude 3 رو دوباره فعال کن",{"route":"do","op":"feature.patch","args":{"feature_name":"Extrude 3","suppressed":False}},{}),
+        ("suppressed برای Extrude 4 خاموش بشه",{"route":"do","op":"feature.patch","args":{"feature_name":"Extrude 4","suppressed":False}},{}),
+        ("نقطه بازگشت رو قبل Extrude 10 قرار بده",{"route":"do","op":"rollback.set","args":{"before_feature":"Extrude 10"}},{}),
+    ]:
+        c,_=compiled(text,ctx)
+        assert_eq(c,want,f"v16-natural:{text}")
+        checks.append(f"v16-natural:{text}")
+
+    for text,want in [
+        ("برای Part 26 material رو Steel قرار بده",{"route":"do","op":"metadata.property.set","args":{"part_name":"Part 26","property":"material","value":"Steel"}}),
+        ("برای Fillet 3 اسم جدید بذار fit orbit node 0",{"route":"do","op":"feature.patch","args":{"feature_name":"Fillet 3","new_name":"fit orbit node 0"}}),
+        ("create a new Part Studio named orbit fit workspace 1",{"route":"do","op":"documented.createPartStudio","args":{"new_name":"orbit fit workspace 1"}}),
+        ("document title بشه selection orbit project 1",{"route":"do","op":"documented.updateDocumentAttributes","args":{"new_name":"selection orbit project 1"}}),
+        ("صفحه مرجع جدید با نام fit top ref 1 ایجاد کن",{"route":"do","op":"feature.add","args":{"feature_type":"plane","name":"fit top ref 1"}}),
+        ("description برای Part 54 بذار orbit steel note 20 fit ممنونت می‌شم",{"route":"do","op":"metadata.property.set","args":{"part_name":"Part 54","property":"description","value":"orbit steel note 20 fit"}}),
+    ]:
+        c,_=compiled(text)
+        assert_eq(c,want,f"v16-literal:{text}")
+        checks.append(f"v16-literal:{text}")
+
+    c,_=compiled("از Part 16 یه linear pattern با 2 copies و فاصله 3 mm بساز")
+    assert_eq(c,{"route":"do","op":"feature.add","args":{"feature_type":"linearPattern","part_name":"Part 16","copies":2,"distance":"3 mm"}},"v16-pattern-single-effect")
+    checks.append("v16-pattern-single-effect")
+
+    c,_=compiled("یک feature chamfer تازه 1.8 mm بساز، selection خالیه")
+    assert_eq(c,{"route":"do","op":"feature.add","args":{"feature_type":"chamfer","amount":"1.8 mm"}},"v16-empty-selection-state-not-clear")
+    checks.append("v16-empty-selection-state-not-clear")
+
     # Metamorphic invariants: neutral conversational envelopes must preserve semantics.
     envelope_bases=[
         ("Part 5 رو مخفی کن",{},{"route":"do","op":"part.visibility","args":{"part_name":"Part 5","visible":False}}),
