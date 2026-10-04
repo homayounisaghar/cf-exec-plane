@@ -38,6 +38,19 @@ def main():
     assert_eq(c,{"route":"do","op":"feature.add","args":{"feature_type":"plane","name":"hide top fit"}},"literal-masking")
     checks.append("literal-masking")
 
+    for text in [
+        "این انتخاب رو پنجاه و پنج صدم میل پخ کن",
+        "پخ شش دهم روی انتخاب فعلی",
+        "پخ دو ممیز پنج میل روی انتخاب",
+    ]:
+        ev=e.extract_evidence(text,{"selection_count":2})
+        assert_eq(ev.get("inspect_target"),None,f"selection-referent-not-inspect:{text}")
+        checks.append(f"selection-referent-not-inspect:{text}")
+
+    c,ev=compiled("selection رو کامل خالی کن")
+    assert_eq(c,{"route":"do","op":"viewer.selection.clear","args":{}},"clear-selection-semantic")
+    checks.append("clear-selection-semantic")
+
     for text,want in [
         ("یه ذره خلاف عقربه ها بچرخون",("view.move",{"action":"orbit","direction":"counterclockwise"})),
         ("یه قدم ازش دور شو",("view.move",{"action":"zoom","direction":"out"})),
