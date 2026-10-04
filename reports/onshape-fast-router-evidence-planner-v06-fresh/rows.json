@@ -625,7 +625,7 @@
       },
       "model_used": true
     },
-    "latency_ms": 815.280878000003,
+    "latency_ms": 862.1957740000141,
     "model_error": null,
     "outcome": "correct"
   },
@@ -680,7 +680,7 @@
         "route": "do",
         "op": "view.fit",
         "args": {
-          "action": "fit"
+          "action": "fit_selection"
         }
       },
       "intent": "fit",
@@ -691,7 +691,7 @@
     },
     "latency_ms": 0.0,
     "model_error": null,
-    "outcome": "wrong_reversible_accepted"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -748,7 +748,7 @@
       },
       "model_used": true
     },
-    "latency_ms": 815.280878000003,
+    "latency_ms": 862.1957740000141,
     "model_error": null,
     "outcome": "correct"
   },
@@ -794,7 +794,7 @@
       "provenance": {},
       "model_used": true
     },
-    "latency_ms": 815.280878000003,
+    "latency_ms": 862.1957740000141,
     "model_error": null,
     "outcome": "correct"
   },
@@ -831,7 +831,20 @@
           "intensity": 0.25
         }
       },
-      "items": [],
+      "items": [
+        {
+          "id": "a1",
+          "kind": "action",
+          "value": "orbit",
+          "source": "text_or_context"
+        },
+        {
+          "id": "v1",
+          "kind": "direction",
+          "value": "left",
+          "source": "text_or_context"
+        }
+      ],
       "selection_count": 0,
       "selection_types": [],
       "candidate_index": null,
@@ -842,22 +855,28 @@
       "unsupported": false,
       "global_destructive": false
     },
-    "source": "model",
+    "source": "reflex",
     "post": {
-      "accepted": false,
-      "reason": "model-ask",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
+        "route": "do",
+        "op": "view.move",
+        "args": {
+          "action": "orbit",
+          "direction": "left"
+        }
       },
-      "intent": null,
-      "provenance": {},
-      "model_used": true
+      "intent": "camera_move",
+      "provenance": {
+        "action": "text_or_context:a1",
+        "direction": "text_or_context:v1"
+      },
+      "model_used": false
     },
-    "latency_ms": 815.280878000003,
+    "latency_ms": 0.0,
     "model_error": null,
-    "outcome": "conservative_escalation"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -1129,17 +1148,17 @@
     "source": "model",
     "post": {
       "accepted": false,
-      "reason": "camera-evidence-missing",
+      "reason": "model-ask",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       },
-      "intent": "camera_move",
+      "intent": null,
       "provenance": {},
       "model_used": true
     },
-    "latency_ms": 815.280878000003,
+    "latency_ms": 862.1957740000141,
     "model_error": null,
     "outcome": "correct"
   },
@@ -1275,7 +1294,20 @@
           "intensity": 0.2
         }
       },
-      "items": [],
+      "items": [
+        {
+          "id": "a1",
+          "kind": "action",
+          "value": "zoom",
+          "source": "text_or_context"
+        },
+        {
+          "id": "v1",
+          "kind": "direction",
+          "value": "in",
+          "source": "text_or_context"
+        }
+      ],
       "selection_count": 0,
       "selection_types": [],
       "candidate_index": null,
@@ -1286,22 +1318,28 @@
       "unsupported": false,
       "global_destructive": false
     },
-    "source": "model",
+    "source": "reflex",
     "post": {
-      "accepted": false,
-      "reason": "camera-evidence-missing",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
+        "route": "do",
+        "op": "view.move",
+        "args": {
+          "action": "zoom",
+          "direction": "in"
+        }
       },
       "intent": "camera_move",
-      "provenance": {},
-      "model_used": true
+      "provenance": {
+        "action": "text_or_context:a1",
+        "direction": "text_or_context:v1"
+      },
+      "model_used": false
     },
-    "latency_ms": 815.280878000003,
+    "latency_ms": 0.0,
     "model_error": null,
-    "outcome": "conservative_escalation"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -1334,7 +1372,7 @@
       "unsupported": false,
       "global_destructive": false
     },
-    "source": "model",
+    "source": "reflex",
     "post": {
       "accepted": true,
       "reason": "ok",
@@ -1342,18 +1380,18 @@
         "route": "do",
         "op": "viewer.inspect",
         "args": {
-          "mode": "state"
+          "mode": "selection"
         }
       },
       "intent": "inspect",
       "provenance": {
         "mode": "text:inspect-semantics"
       },
-      "model_used": true
+      "model_used": false
     },
-    "latency_ms": 815.280878000003,
+    "latency_ms": 0.0,
     "model_error": null,
-    "outcome": "wrong_reversible_accepted"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -1536,7 +1574,7 @@
       "items": [],
       "selection_count": 0,
       "selection_types": [],
-      "candidate_index": null,
+      "candidate_index": 3,
       "relative": null,
       "action_signature": [],
       "multi_action": false,
@@ -1546,20 +1584,24 @@
     },
     "source": "reflex",
     "post": {
-      "accepted": false,
-      "reason": "follow-ambiguous",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
+        "route": "do",
+        "op": "view.follow",
+        "args": {
+          "candidate_index": 3
+        }
       },
       "intent": "follow",
-      "provenance": {},
+      "provenance": {
+        "candidate_index": "text:candidate-index"
+      },
       "model_used": false
     },
     "latency_ms": 0.0,
     "model_error": null,
-    "outcome": "conservative_escalation"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -1653,7 +1695,7 @@
       "provenance": {},
       "model_used": true
     },
-    "latency_ms": 815.280878000003,
+    "latency_ms": 862.1957740000141,
     "model_error": null,
     "outcome": "correct"
   },
@@ -1701,7 +1743,7 @@
       "provenance": {},
       "model_used": true
     },
-    "latency_ms": 815.280878000003,
+    "latency_ms": 862.1957740000141,
     "model_error": null,
     "outcome": "correct"
   },
@@ -1753,7 +1795,7 @@
       },
       "model_used": true
     },
-    "latency_ms": 815.280878000003,
+    "latency_ms": 862.1957740000141,
     "model_error": null,
     "outcome": "correct"
   },
@@ -1799,7 +1841,7 @@
       "provenance": {},
       "model_used": true
     },
-    "latency_ms": 815.280878000003,
+    "latency_ms": 862.1957740000141,
     "model_error": null,
     "outcome": "correct"
   },
@@ -2550,7 +2592,7 @@
       "provenance": {},
       "model_used": true
     },
-    "latency_ms": 815.280878000003,
+    "latency_ms": 862.1957740000141,
     "model_error": null,
     "outcome": "correct"
   },
@@ -2825,16 +2867,6 @@
           "value": "0.25 mm",
           "source": "text",
           "surface": "0.25 میل"
-        },
-        {
-          "id": "f1",
-          "kind": "feature",
-          "value": "Fillet 0",
-          "source": "text",
-          "surface": "فیلت 0",
-          "meta": {
-            "pos": 0
-          }
         }
       ],
       "selection_count": 1,
@@ -2843,7 +2875,9 @@
       ],
       "candidate_index": null,
       "relative": null,
-      "action_signature": [],
+      "action_signature": [
+        "edge:fillet"
+      ],
       "multi_action": false,
       "design": false,
       "unsupported": false,
@@ -2855,24 +2889,23 @@
       "reason": "ok",
       "compiled": {
         "route": "do",
-        "op": "feature.parameter.set",
+        "op": "feature.from_selection",
         "args": {
-          "feature_name": "Fillet 0",
-          "parameter": "radius",
+          "feature_type": "fillet",
           "amount": "0.25 mm"
         }
       },
-      "intent": "feature_parameter",
+      "intent": "edge_on_selection",
       "provenance": {
-        "feature_name": "text:f1",
-        "parameter": "text:param-semantics",
-        "amount": "text:q1"
+        "feature_type": "text:edge-kind",
+        "amount": "text:q1",
+        "selection": "context:selection"
       },
       "model_used": false
     },
     "latency_ms": 0.0,
     "model_error": null,
-    "outcome": "wrong_material_accepted"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -3631,17 +3664,17 @@
     "source": "model",
     "post": {
       "accepted": false,
-      "reason": "model-ask",
+      "reason": "feature-value-missing",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       },
-      "intent": null,
+      "intent": "feature_parameter",
       "provenance": {},
       "model_used": true
     },
-    "latency_ms": 366.34775999999647,
+    "latency_ms": 862.1957740000141,
     "model_error": null,
     "outcome": "correct"
   },
@@ -3757,7 +3790,7 @@
           "kind": "state",
           "value": {
             "kind": "suppressed",
-            "value": true
+            "value": false
           },
           "source": "text"
         }
@@ -3781,7 +3814,7 @@
         "op": "feature.patch",
         "args": {
           "feature_name": "Extrude 6",
-          "suppressed": true
+          "suppressed": false
         }
       },
       "intent": "feature_suppressed",
@@ -3793,7 +3826,7 @@
     },
     "latency_ms": 0.0,
     "model_error": null,
-    "outcome": "wrong_material_accepted"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -4028,18 +4061,7 @@
       "text": "آخرین feature رو حذف کن",
       "low": "آخرین feature رو حذف کن",
       "ctx": {},
-      "items": [
-        {
-          "id": "p1",
-          "kind": "part",
-          "value": "feature",
-          "source": "text",
-          "surface": "feature",
-          "meta": {
-            "pos": 6
-          }
-        }
-      ],
+      "items": [],
       "selection_count": 0,
       "selection_types": [],
       "candidate_index": null,
@@ -4056,20 +4078,20 @@
       "reason": "ok",
       "compiled": {
         "route": "do",
-        "op": "feature.delete_part",
+        "op": "feature.delete",
         "args": {
-          "part_name": "feature"
+          "position": "last"
         }
       },
-      "intent": "part_delete",
+      "intent": "feature_delete",
       "provenance": {
-        "part_name": "text:p1"
+        "position": "text:last"
       },
       "model_used": false
     },
     "latency_ms": 0.0,
     "model_error": null,
-    "outcome": "wrong_material_accepted"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -4102,22 +4124,26 @@
       "unsupported": false,
       "global_destructive": false
     },
-    "source": "model",
+    "source": "reflex",
     "post": {
-      "accepted": false,
-      "reason": "model-ask",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
+        "route": "do",
+        "op": "feature.delete",
+        "args": {
+          "position": "first"
+        }
       },
-      "intent": null,
-      "provenance": {},
-      "model_used": true
+      "intent": "feature_delete",
+      "provenance": {
+        "position": "text:first"
+      },
+      "model_used": false
     },
-    "latency_ms": 366.34775999999647,
+    "latency_ms": 0.0,
     "model_error": null,
-    "outcome": "conservative_escalation"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -4210,16 +4236,6 @@
         {
           "id": "p1",
           "kind": "part",
-          "value": "body",
-          "source": "text",
-          "surface": "body",
-          "meta": {
-            "pos": 5
-          }
-        },
-        {
-          "id": "p2",
-          "kind": "part",
           "value": "Part 2",
           "source": "context",
           "surface": "last_part"
@@ -4243,18 +4259,18 @@
         "route": "do",
         "op": "feature.delete_part",
         "args": {
-          "part_name": "body"
+          "part_name": "Part 2"
         }
       },
       "intent": "part_delete",
       "provenance": {
-        "part_name": "text:p1"
+        "part_name": "context:p1"
       },
       "model_used": false
     },
     "latency_ms": 0.0,
     "model_error": null,
-    "outcome": "wrong_material_accepted"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -4304,17 +4320,17 @@
     "source": "model",
     "post": {
       "accepted": false,
-      "reason": "model-ask",
+      "reason": "feature-parameter-ambiguous",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       },
-      "intent": null,
+      "intent": "feature_parameter",
       "provenance": {},
       "model_used": true
     },
-    "latency_ms": 366.34775999999647,
+    "latency_ms": 862.1957740000141,
     "model_error": null,
     "outcome": "correct"
   },
@@ -4438,17 +4454,17 @@
     "source": "model",
     "post": {
       "accepted": false,
-      "reason": "model-ask",
+      "reason": "feature-parameter-ambiguous",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       },
-      "intent": null,
+      "intent": "feature_parameter",
       "provenance": {},
       "model_used": true
     },
-    "latency_ms": 366.34775999999647,
+    "latency_ms": 862.1957740000141,
     "model_error": null,
     "outcome": "correct"
   },
@@ -4560,34 +4576,51 @@
           "meta": {
             "pos": 0
           }
+        },
+        {
+          "id": "s1",
+          "kind": "state",
+          "value": {
+            "kind": "visible",
+            "value": false
+          },
+          "source": "text"
         }
       ],
       "selection_count": 0,
       "selection_types": [],
       "candidate_index": null,
       "relative": null,
-      "action_signature": [],
+      "action_signature": [
+        "part:visibility"
+      ],
       "multi_action": false,
       "design": false,
       "unsupported": false,
       "global_destructive": false
     },
-    "source": "model",
+    "source": "reflex",
     "post": {
-      "accepted": false,
-      "reason": "model-ask",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
+        "route": "do",
+        "op": "part.visibility",
+        "args": {
+          "part_name": "Part 3",
+          "visible": false
+        }
       },
-      "intent": null,
-      "provenance": {},
-      "model_used": true
+      "intent": "part_visibility",
+      "provenance": {
+        "part_name": "text:p1",
+        "visible": "text:s1"
+      },
+      "model_used": false
     },
-    "latency_ms": 366.34775999999647,
+    "latency_ms": 0.0,
     "model_error": null,
-    "outcome": "conservative_escalation"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -4700,34 +4733,51 @@
           "value": "Cap",
           "source": "context",
           "surface": "last_part"
+        },
+        {
+          "id": "s1",
+          "kind": "state",
+          "value": {
+            "kind": "visible",
+            "value": true
+          },
+          "source": "text"
         }
       ],
       "selection_count": 0,
       "selection_types": [],
       "candidate_index": null,
       "relative": null,
-      "action_signature": [],
+      "action_signature": [
+        "part:visibility"
+      ],
       "multi_action": false,
       "design": false,
       "unsupported": false,
       "global_destructive": false
     },
-    "source": "model",
+    "source": "reflex",
     "post": {
-      "accepted": false,
-      "reason": "model-ask",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
+        "route": "do",
+        "op": "part.visibility",
+        "args": {
+          "part_name": "Cap",
+          "visible": true
+        }
       },
-      "intent": null,
-      "provenance": {},
-      "model_used": true
+      "intent": "part_visibility",
+      "provenance": {
+        "part_name": "context:p1",
+        "visible": "text:s1"
+      },
+      "model_used": false
     },
-    "latency_ms": 366.34775999999647,
+    "latency_ms": 0.0,
     "model_error": null,
-    "outcome": "conservative_escalation"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -4830,6 +4880,16 @@
       "ctx": {},
       "items": [
         {
+          "id": "p1",
+          "kind": "part",
+          "value": "Cap",
+          "source": "text",
+          "surface": "Cap",
+          "meta": {
+            "pos": 0
+          }
+        },
+        {
           "id": "c1",
           "kind": "color",
           "value": "yellow",
@@ -4848,22 +4908,30 @@
       "unsupported": false,
       "global_destructive": false
     },
-    "source": "model",
+    "source": "reflex",
     "post": {
-      "accepted": false,
-      "reason": "model-ask",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
+        "route": "do",
+        "op": "metadata.property.set",
+        "args": {
+          "part_name": "Cap",
+          "property": "color",
+          "value": "yellow"
+        }
       },
-      "intent": null,
-      "provenance": {},
-      "model_used": true
+      "intent": "part_property",
+      "provenance": {
+        "part_name": "text:p1",
+        "property": "text:property-semantics",
+        "value": "text:c1"
+      },
+      "model_used": false
     },
-    "latency_ms": 366.34775999999647,
+    "latency_ms": 0.0,
     "model_error": null,
-    "outcome": "conservative_escalation"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -5359,17 +5427,17 @@
     "source": "model",
     "post": {
       "accepted": false,
-      "reason": "model-ask",
+      "reason": "part-property-target-missing",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       },
-      "intent": null,
+      "intent": "part_property",
       "provenance": {},
       "model_used": true
     },
-    "latency_ms": 366.34775999999647,
+    "latency_ms": 496.76188499999796,
     "model_error": null,
     "outcome": "correct"
   },
@@ -5824,6 +5892,16 @@
           "surface": "نه میل"
         },
         {
+          "id": "p1",
+          "kind": "part",
+          "value": "Cap",
+          "source": "text",
+          "surface": "Cap",
+          "meta": {
+            "pos": 3
+          }
+        },
+        {
           "id": "k1",
           "kind": "count",
           "value": 4,
@@ -5842,20 +5920,30 @@
     },
     "source": "reflex",
     "post": {
-      "accepted": false,
-      "reason": "pattern-evidence-missing",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
+        "route": "do",
+        "op": "feature.add",
+        "args": {
+          "feature_type": "linearPattern",
+          "part_name": "Cap",
+          "copies": 4,
+          "distance": "9 mm"
+        }
       },
       "intent": "add_pattern",
-      "provenance": {},
+      "provenance": {
+        "feature_type": "text:pattern",
+        "part_name": "text:p1",
+        "copies": "text:k1",
+        "distance": "text:q1"
+      },
       "model_used": false
     },
     "latency_ms": 0.0,
     "model_error": null,
-    "outcome": "conservative_escalation"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -6227,16 +6315,6 @@
           "value": "5 mm",
           "source": "text",
           "surface": "پنج میل"
-        },
-        {
-          "id": "p1",
-          "kind": "part",
-          "value": "face",
-          "source": "text",
-          "surface": "face",
-          "meta": {
-            "pos": 4
-          }
         }
       ],
       "selection_count": 1,
@@ -6617,16 +6695,6 @@
           }
         },
         {
-          "id": "p1",
-          "kind": "part",
-          "value": "rollback",
-          "source": "text",
-          "surface": "rollback",
-          "meta": {
-            "pos": 0
-          }
-        },
-        {
           "id": "r1",
           "kind": "relation",
           "value": "before",
@@ -6703,16 +6771,6 @@
           }
         },
         {
-          "id": "p1",
-          "kind": "part",
-          "value": "rollback",
-          "source": "text",
-          "surface": "rollback",
-          "meta": {
-            "pos": 0
-          }
-        },
-        {
           "id": "r1",
           "kind": "relation",
           "value": "after",
@@ -6784,20 +6842,24 @@
     },
     "source": "reflex",
     "post": {
-      "accepted": false,
-      "reason": "rollback-evidence-missing",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
+        "route": "do",
+        "op": "rollback.set",
+        "args": {
+          "position": "end"
+        }
       },
       "intent": "rollback",
-      "provenance": {},
+      "provenance": {
+        "position": "text:end"
+      },
       "model_used": false
     },
     "latency_ms": 0.0,
     "model_error": null,
-    "outcome": "conservative_escalation"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -6934,7 +6996,7 @@
         {
           "id": "n1",
           "kind": "name",
-          "value": "تست دوم بساز",
+          "value": "تست دوم",
           "source": "text"
         }
       ],
@@ -6956,7 +7018,7 @@
         "route": "do",
         "op": "documented.createPartStudio",
         "args": {
-          "new_name": "تست دوم بساز"
+          "new_name": "تست دوم"
         }
       },
       "intent": "create_part_studio",
@@ -6967,7 +7029,7 @@
     },
     "latency_ms": 0.0,
     "model_error": null,
-    "outcome": "wrong_material_accepted"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -6990,16 +7052,6 @@
       "low": "اسم document رو بذار housing rev c",
       "ctx": {},
       "items": [
-        {
-          "id": "p1",
-          "kind": "part",
-          "value": "document",
-          "source": "text",
-          "surface": "document",
-          "meta": {
-            "pos": 4
-          }
-        },
         {
           "id": "n1",
           "kind": "name",
@@ -7313,26 +7365,26 @@
       "relative": null,
       "action_signature": [],
       "multi_action": false,
-      "design": false,
+      "design": true,
       "unsupported": false,
       "global_destructive": false
     },
-    "source": "model",
+    "source": "reflex",
     "post": {
       "accepted": false,
-      "reason": "model-ask",
+      "reason": "deterministic-design",
       "compiled": {
-        "route": "ask",
+        "route": "think",
         "op": null,
         "args": {}
       },
       "intent": null,
       "provenance": {},
-      "model_used": true
+      "model_used": false
     },
-    "latency_ms": 366.34775999999647,
+    "latency_ms": 0.0,
     "model_error": null,
-    "outcome": "route_mismatch"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -7357,26 +7409,26 @@
       "relative": null,
       "action_signature": [],
       "multi_action": false,
-      "design": false,
+      "design": true,
       "unsupported": false,
       "global_destructive": false
     },
-    "source": "model",
+    "source": "reflex",
     "post": {
       "accepted": false,
-      "reason": "model-ask",
+      "reason": "deterministic-design",
       "compiled": {
-        "route": "ask",
+        "route": "think",
         "op": null,
         "args": {}
       },
       "intent": null,
       "provenance": {},
-      "model_used": true
+      "model_used": false
     },
-    "latency_ms": 366.34775999999647,
+    "latency_ms": 0.0,
     "model_error": null,
-    "outcome": "route_mismatch"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -7401,26 +7453,26 @@
       "relative": null,
       "action_signature": [],
       "multi_action": false,
-      "design": false,
+      "design": true,
       "unsupported": false,
       "global_destructive": false
     },
-    "source": "model",
+    "source": "reflex",
     "post": {
       "accepted": false,
-      "reason": "model-ask",
+      "reason": "deterministic-design",
       "compiled": {
-        "route": "ask",
+        "route": "think",
         "op": null,
         "args": {}
       },
       "intent": null,
       "provenance": {},
-      "model_used": true
+      "model_used": false
     },
-    "latency_ms": 366.34775999999647,
+    "latency_ms": 0.0,
     "model_error": null,
-    "outcome": "route_mismatch"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -7462,7 +7514,7 @@
       "provenance": {},
       "model_used": true
     },
-    "latency_ms": 366.34775999999647,
+    "latency_ms": 496.76188499999796,
     "model_error": null,
     "outcome": "correct"
   },
@@ -7506,7 +7558,7 @@
       "provenance": {},
       "model_used": true
     },
-    "latency_ms": 328.7812319999972,
+    "latency_ms": 496.76188499999796,
     "model_error": null,
     "outcome": "correct"
   },
@@ -7550,7 +7602,7 @@
       "provenance": {},
       "model_used": true
     },
-    "latency_ms": 328.7812319999972,
+    "latency_ms": 496.76188499999796,
     "model_error": null,
     "outcome": "correct"
   },
@@ -7770,7 +7822,7 @@
       "provenance": {},
       "model_used": true
     },
-    "latency_ms": 328.7812319999972,
+    "latency_ms": 496.76188499999796,
     "model_error": null,
     "outcome": "correct"
   }
