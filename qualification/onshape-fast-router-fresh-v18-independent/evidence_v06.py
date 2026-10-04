@@ -125,7 +125,13 @@ def mask_negated_action_clauses(text):
     neg_re=re.compile(r"(?:نکن|نزن|نساز|نده|نذار|نگذار|نبر|نچرخون|نچرخان|نکش|نیار|نیاور)")
     for m in re.finditer(r"[^،,؛;]+",text):
         seg=m.group(0)
-        nm=neg_re.search(seg)
+        neg_matches=list(neg_re.finditer(seg))
+        if len(neg_matches)>=2 and not _ACTION_MARKER_RE.search(seg[neg_matches[-1].end():]):
+            for i in range(m.start(),m.end()):
+                chars[i]=" "
+            masked+=len(neg_matches)
+            continue
+        nm=neg_matches[0] if neg_matches else None
         if nm:
             after=seg[nm.end():]
             end=m.start()+nm.end() if _ACTION_MARKER_RE.search(after) else m.end()
@@ -919,7 +925,7 @@ def extract_evidence(text, ctx=None):
         has_any(cue_t,["انتخاب رو پاک","انتخاب را پاک","selection رو پاک","selection را پاک",
                        "selection فعلی رو صفر","انتخاب فعلی رو صفر","selectionها رو خالی","selection ها رو خالی","انتخابارو ول کن","انتخاب ها رو ول کن","clear selection","selection رو clear","selection را clear",
                        "selection ro clear","selection ro clear kon","select شده آزادش کن","انتخاب شده آزادش کن","انتخاب‌شده آزادش کن",
-                       "هیچ چیز انتخاب شده نمونه","هیچ چیز انتخاب‌شده نمونه","هیچ انتخابی در viewer باقی نماند","هیچ انتخابی باقی نماند","از حالت انتخاب خارج کن","همه انتخاب‌ها را آزاد کن","همه انتخاب ها را آزاد کن","selection فعلی را کاملاً خالی کن","selection فعلی رو کاملاً خالی کن","انتخاب‌ها را خالی کن","انتخاب ها را خالی کن","انتخاب‌های فعلی رو لغو کن","انتخاب های فعلی رو لغو کن","هیچی selected نمونه","کل selection رو deselect کن","کل selection را deselect کن","هرچی گرفته شده رها کن"]) or
+                       "هیچ چیز انتخاب شده نمونه","هیچ چیز انتخاب‌شده نمونه","هیچ انتخابی در viewer باقی نماند","هیچ انتخابی باقی نماند","از حالت انتخاب خارج کن","همه انتخاب‌ها را آزاد کن","همه انتخاب ها را آزاد کن","selection فعلی را کاملاً خالی کن","selection فعلی رو کاملاً خالی کن","انتخاب‌ها را خالی کن","انتخاب ها را خالی کن","انتخاب‌های فعلی رو لغو کن","انتخاب های فعلی رو لغو کن","هیچی selected نمونه","کل selection رو deselect کن","کل selection را deselect کن","همه selection رو deselect کن","همه selection را deselect کن","هرچی گرفته شده رها کن"]) or
         bool(re.search(r"(?:هر چی|هرچی).*(?:انتخاب|selection|select).*(?:پاک|خالی|ول کن|آزاد|clear)",cue_t)) or
         bool(re.search(r"(?:انتخاب|selection)\s+(?:رو|را)\s+(?:کامل\s+)?خالی(?:\s+کن)?(?=$|\s)",cue_t)) or
         bool(re.search(r"(?:انتخاب|selection).*?(?:پاک|clear)(?:\s+کن)?",cue_t))
@@ -939,7 +945,7 @@ def extract_evidence(text, ctx=None):
         bool(re.search(r"(?:(?<!\S)چی(?=\s|$)|چه چیزی).*?(?:دست|گرفت|انتخاب|سلکت)",cue_t)) or
         bool(re.search(r"(?:انتخاب|selection|سلکت|سلکشن).*?(?:چیه|چی هست|چی شده|شامل چیه)",cue_t)) or
         bool(re.search(r"(?:چی|چه)\s+(?:selected|entity)",cue_t,re.I)) or
-        bool(re.search(r"(?:لیست\s+)?انتخاب\s+فعلی.*(?:بگو|چیه)",cue_t)) or
+        bool(re.search(r"(?:لیست|فهرست)?\s*انتخاب(?:‌?ها|\s*ها|\s+فعلی)?.*?(?:بگو|چیه|گزارش)",cue_t)) or
         bool(re.search(r"(?:چه چیزهایی|کدام entity|فهرست چیزهای).*?(?:گرفته|انتخاب|selected)",cue_t,re.I)) or
         bool(re.search(r"(?:محتویات\s+selection|selection\s+فعلی).*?(?:گزارش|چی|فهرست)",cue_t,re.I)) or
         bool(re.search(r"(?:entity|entityها|entityهایی).*?(?:دستم|دستمه)",cue_t,re.I)) or
@@ -1073,7 +1079,7 @@ def extract_evidence(text, ctx=None):
     )
     paired_actions=bool(re.search(r"(?:^|\s)هم\s+.+?\s+هم\s+",clause_text,re.I))
     multi_action=(len(action_families)>1 or paired_actions or (effect_clause_count>1 and not payload_binding_single_effect))
-    negated_action_only=(negated_clause_count>0 and effect_clause_count==0)
+    negated_action_only=(negated_clause_count>0 and effect_clause_count==0 and not action_families)
 
     return {
         "text":norm_text(text),
