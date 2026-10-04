@@ -1164,9 +1164,9 @@ def direct_intent(case, ev):
         return ("act","feature_delete")
     if "آخرین" in t and has_any(t,["از فیچرها","درخت فیچر"]) and has_any(t,["پاک","حذف"]):
         return ("act","feature_delete")
-    if choose_feature(ev) and has_any(t,["پاک کن","حذف کن","حذفش کن","پاکش کن","بنداز دور","بردار","دیگر در مدل نباشد","delete کن","delete "]):
+    if choose_feature(ev) and has_any(t,["پاک کن","حذف کن","حذفش کن","پاکش کن","بنداز دور","از درخت feature بردار","از درخت فیچر بردار","دیگر در مدل نباشد","delete کن","delete "]):
         return ("act","feature_delete")
-    if choose_part(ev) and has_any(t,["پاک کن","حذف کن","delete کن","delete ","بنداز دور","بردار","وجود نداشته باشد","وجود نداشته"]) and not choose_feature(ev):
+    if choose_part(ev) and has_any(t,["پاک کن","حذف کن","delete کن","delete ","بنداز دور","از مدل بردار","وجود نداشته باشد","وجود نداشته"]) and not choose_feature(ev):
         return ("act","part_delete")
     if ev.get("rollback_explicit"): return ("act","rollback")
     if ev["relation"] and (len(ev["features"])>=2 or (ctx.get("last_feature") and len(ev["features"])>=1)):
