@@ -1372,7 +1372,7 @@
     },
     "source": "model",
     "outcome": "correct",
-    "latency_ms": 680.5966100000021,
+    "latency_ms": 673.5745980000019,
     "model_error": null,
     "post": {
       "accepted": false,
@@ -1413,17 +1413,17 @@
     },
     "source": "model",
     "outcome": "correct",
-    "latency_ms": 680.5966100000021,
+    "latency_ms": 673.5745980000019,
     "model_error": null,
     "post": {
       "accepted": false,
-      "reason": "model-ask",
+      "reason": "new-edge-not-explicit",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       },
-      "intent": null,
+      "intent": "add_edge_feature",
       "provenance": {},
       "model_used": true
     },
@@ -2020,7 +2020,7 @@
     },
     "source": "model",
     "outcome": "correct",
-    "latency_ms": 680.5966100000021,
+    "latency_ms": 673.5745980000019,
     "model_error": null,
     "post": {
       "accepted": false,
@@ -2369,7 +2369,7 @@
     },
     "source": "model",
     "outcome": "conservative_escalation",
-    "latency_ms": 680.5966100000021,
+    "latency_ms": 673.5745980000019,
     "model_error": null,
     "post": {
       "accepted": false,
@@ -4125,7 +4125,7 @@
     },
     "source": "model",
     "outcome": "correct",
-    "latency_ms": 680.5966100000021,
+    "latency_ms": 673.5745980000019,
     "model_error": null,
     "post": {
       "accepted": false,
@@ -4737,16 +4737,6 @@
           }
         },
         {
-          "id": "p1",
-          "kind": "part",
-          "value": "rollback",
-          "source": "text",
-          "surface": "rollback",
-          "meta": {
-            "pos": 0
-          }
-        },
-        {
           "id": "r1",
           "kind": "relation",
           "value": "before",
@@ -4805,18 +4795,7 @@
     },
     "evidence": {
       "text": "rollback رو تا آخر بکش",
-      "items": [
-        {
-          "id": "p1",
-          "kind": "part",
-          "value": "rollback",
-          "source": "text",
-          "surface": "rollback",
-          "meta": {
-            "pos": 0
-          }
-        }
-      ],
+      "items": [],
       "relative": null,
       "action_signature": [],
       "multi_action": false,
@@ -4863,18 +4842,7 @@
     },
     "evidence": {
       "text": "rollback رو اول کار بذار",
-      "items": [
-        {
-          "id": "p1",
-          "kind": "part",
-          "value": "rollback",
-          "source": "text",
-          "surface": "rollback",
-          "meta": {
-            "pos": 0
-          }
-        }
-      ],
+      "items": [],
       "relative": null,
       "action_signature": [],
       "multi_action": false,
@@ -5308,11 +5276,11 @@
     },
     "source": "model",
     "outcome": "correct",
-    "latency_ms": 680.5966100000021,
-    "model_error": "model-result-missing",
+    "latency_ms": 673.5745980000019,
+    "model_error": null,
     "post": {
       "accepted": false,
-      "reason": "model-result-missing",
+      "reason": "model-ask",
       "compiled": {
         "route": "ask",
         "op": null,
@@ -5320,7 +5288,7 @@
       },
       "intent": null,
       "provenance": {},
-      "model_used": false
+      "model_used": true
     },
     "evidence": {
       "text": "اون یکی رو پاک کن",
@@ -5347,7 +5315,7 @@
     },
     "source": "model",
     "outcome": "correct",
-    "latency_ms": 680.5966100000021,
+    "latency_ms": 673.5745980000019,
     "model_error": "model-result-missing",
     "post": {
       "accepted": false,
@@ -5386,7 +5354,7 @@
     },
     "source": "model",
     "outcome": "correct",
-    "latency_ms": 680.5966100000021,
+    "latency_ms": 673.5745980000019,
     "model_error": "model-result-missing",
     "post": {
       "accepted": false,

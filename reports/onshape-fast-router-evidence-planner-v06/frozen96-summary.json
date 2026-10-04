@@ -24,8 +24,8 @@
   "provenance_violations": 0,
   "multi_action_blocked": 2,
   "model_batch_calls": 1,
-  "model_batch_p50_ms": 680.5966100000021,
-  "model_batch_p95_ms": 680.5966100000021,
+  "model_batch_p50_ms": 673.5745980000019,
+  "model_batch_p95_ms": 673.5745980000019,
   "provider_prompt_tokens": 910,
   "provider_completion_tokens": 384,
   "outcomes": {
@@ -33,5 +33,5 @@
     "conservative_escalation": 2
   },
   "suite": "frozen96",
-  "wall_seconds": 0.7286303049999994
+  "wall_seconds": 0.7381860099999997
 }

@@ -21,13 +21,13 @@
   "provenance_violations": 0,
   "multi_action_blocked": 0,
   "model_batch_calls": 1,
-  "model_batch_p50_ms": 795.3806469999982,
-  "model_batch_p95_ms": 795.3806469999982,
+  "model_batch_p50_ms": 842.9281929999988,
+  "model_batch_p95_ms": 842.9281929999988,
   "provider_prompt_tokens": 996,
   "provider_completion_tokens": 466,
   "outcomes": {
     "correct": 120
   },
   "suite": "known120",
-  "wall_seconds": 0.8632447939999999
+  "wall_seconds": 0.9531027020000025
 }

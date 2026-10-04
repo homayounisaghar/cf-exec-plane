@@ -1792,7 +1792,7 @@
     },
     "source": "model",
     "outcome": "correct",
-    "latency_ms": 795.3806469999982,
+    "latency_ms": 842.9281929999988,
     "model_error": null,
     "post": {
       "accepted": false,
@@ -1833,7 +1833,7 @@
     },
     "source": "model",
     "outcome": "correct",
-    "latency_ms": 795.3806469999982,
+    "latency_ms": 842.9281929999988,
     "model_error": null,
     "post": {
       "accepted": false,
@@ -1890,18 +1890,7 @@
     },
     "evidence": {
       "text": "selection رو خالی کن",
-      "items": [
-        {
-          "id": "p1",
-          "kind": "part",
-          "value": "selection",
-          "source": "text",
-          "surface": "selection",
-          "meta": {
-            "pos": 0
-          }
-        }
-      ],
+      "items": [],
       "relative": null,
       "action_signature": [],
       "multi_action": false,
@@ -3737,7 +3726,7 @@
     },
     "source": "model",
     "outcome": "correct",
-    "latency_ms": 795.3806469999982,
+    "latency_ms": 842.9281929999988,
     "model_error": null,
     "post": {
       "accepted": false,
@@ -3776,7 +3765,7 @@
     },
     "source": "model",
     "outcome": "correct",
-    "latency_ms": 795.3806469999982,
+    "latency_ms": 842.9281929999988,
     "model_error": null,
     "post": {
       "accepted": false,
@@ -4699,7 +4688,7 @@
     },
     "source": "model",
     "outcome": "correct",
-    "latency_ms": 795.3806469999982,
+    "latency_ms": 842.9281929999988,
     "model_error": null,
     "post": {
       "accepted": false,
@@ -5464,7 +5453,7 @@
     },
     "source": "model",
     "outcome": "correct",
-    "latency_ms": 795.3806469999982,
+    "latency_ms": 842.9281929999988,
     "model_error": null,
     "post": {
       "accepted": false,
@@ -5849,16 +5838,6 @@
           }
         },
         {
-          "id": "p1",
-          "kind": "part",
-          "value": "rollback",
-          "source": "text",
-          "surface": "rollback",
-          "meta": {
-            "pos": 0
-          }
-        },
-        {
           "id": "r1",
           "kind": "relation",
           "value": "before",
@@ -5924,16 +5903,6 @@
           }
         },
         {
-          "id": "p1",
-          "kind": "part",
-          "value": "rollback",
-          "source": "text",
-          "surface": "rollback",
-          "meta": {
-            "pos": 0
-          }
-        },
-        {
           "id": "r1",
           "kind": "relation",
           "value": "after",
@@ -5986,18 +5955,7 @@
     },
     "evidence": {
       "text": "rollback رو ببر آخر",
-      "items": [
-        {
-          "id": "p1",
-          "kind": "part",
-          "value": "rollback",
-          "source": "text",
-          "surface": "rollback",
-          "meta": {
-            "pos": 0
-          }
-        }
-      ],
+      "items": [],
       "relative": null,
       "action_signature": [],
       "multi_action": false,
@@ -6044,18 +6002,7 @@
     },
     "evidence": {
       "text": "rollback رو ببر اول",
-      "items": [
-        {
-          "id": "p1",
-          "kind": "part",
-          "value": "rollback",
-          "source": "text",
-          "surface": "rollback",
-          "meta": {
-            "pos": 0
-          }
-        }
-      ],
+      "items": [],
       "relative": null,
       "action_signature": [],
       "multi_action": false,
@@ -6646,7 +6593,7 @@
     },
     "source": "model",
     "outcome": "correct",
-    "latency_ms": 795.3806469999982,
+    "latency_ms": 842.9281929999988,
     "model_error": null,
     "post": {
       "accepted": false,
@@ -6685,7 +6632,7 @@
     },
     "source": "model",
     "outcome": "correct",
-    "latency_ms": 795.3806469999982,
+    "latency_ms": 842.9281929999988,
     "model_error": null,
     "post": {
       "accepted": false,
@@ -6777,7 +6724,7 @@
     },
     "source": "model",
     "outcome": "correct",
-    "latency_ms": 795.3806469999982,
+    "latency_ms": 842.9281929999988,
     "model_error": null,
     "post": {
       "accepted": false,
@@ -6816,7 +6763,7 @@
     },
     "source": "model",
     "outcome": "correct",
-    "latency_ms": 795.3806469999982,
+    "latency_ms": 842.9281929999988,
     "model_error": null,
     "post": {
       "accepted": false,
@@ -7079,7 +7026,7 @@
     },
     "source": "model",
     "outcome": "correct",
-    "latency_ms": 795.3806469999982,
+    "latency_ms": 842.9281929999988,
     "model_error": null,
     "post": {
       "accepted": false,
