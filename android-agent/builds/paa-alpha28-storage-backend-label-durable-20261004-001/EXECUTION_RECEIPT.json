@@ -1,0 +1,8 @@
+{
+  "schema": "capability-fabric.android-standard-app-receipt.v1",
+  "requestId": "paa-alpha28-storage-backend-label-durable-20261004-001",
+  "projectId": "personal-android-agent",
+  "checkoutRef": "8333de9ef5fd3a3bb73373c5997f47a6940c2640",
+  "operation": "unit-test-and-build-signing-kit",
+  "result": "SUCCESS"
+}

@@ -1,0 +1,21 @@
+{
+  "schema": "capability-fabric.android-standard-app-output.v1",
+  "requestId": "paa-alpha28-storage-backend-label-durable-20261004-001",
+  "projectId": "personal-android-agent",
+  "checkoutRef": "8333de9ef5fd3a3bb73373c5997f47a6940c2640",
+  "application": {
+    "packageId": "com.homayounisaghar.androidagent",
+    "versionName": "0.1.0-alpha28",
+    "versionCode": 28
+  },
+  "expectedSigner": {
+    "alias": "personal_android_agent_line3",
+    "certificateSha256": "e5b102356f271078a3d03e982782c3776e3d9f301c1b24c0e7194f06e5a001fa"
+  },
+  "result": "SUCCESS",
+  "artifact": {
+    "file": "personal-android-agent-release-unsigned.apk",
+    "sha256": "c0cf7f95daa47070e1c5493745da44b713f9b6a593fce6be5cedb0fc968b4a76",
+    "installable": false
+  }
+}
