@@ -5,10 +5,19 @@
   "frozen_holdout_commit": "24fcc5a523f85bacd27ccdaf8af3b90eb2b45747",
   "frozen_holdout_file_sha": "16b4172c9cc516fd473a85464e28d26106550226",
   "router_source_ref": "work/onshape-fast-router-evidence-v07",
-  "router_source_head": "4052965b84e1672a8a6ca21926f02afa0e6f4648",
-  "router_source_file_sha": "58b3b244d4b9e5ce0255ac8040c9fae220c64dcf",
+  "router_source_head": "0ef25e3dd156f42c1ca1626f52f24850516d8a7a",
+  "router_source_file_sha": "1c7f8d13d3ca67414fb2a8c995b88363f64c552e",
   "cases": 100,
   "production_effects": false,
-  "statistical_role": "first_score_fresh_holdout",
-  "note": "V13 corpus was committed on an isolated frozen holdout branch before any candidate score was run or observed."
+  "statistical_role": "regression_only_after_first_score",
+  "note": "V13 remains byte-for-byte frozen. First score was observed at 92/100; subsequent runs are regression-only after generic semantic hardening.",
+  "first_score": {
+    "exact_correct": 92,
+    "wrong_material_accepted": 0,
+    "false_execute": 1,
+    "wrong_reversible_accepted": 0,
+    "conservative_escalations": 5,
+    "route_mismatch": 2,
+    "api_failures": 0
+  }
 }
