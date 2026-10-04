@@ -54,6 +54,11 @@ WORD_NUM = {
     "چهارده":14,"پانزده":15,"شانزده":16,"هفده":17,"هجده":18,"نوزده":19,
 }
 TENS = {"بیست":20,"سی":30,"چهل":40,"پنجاه":50,"شصت":60,"هفتاد":70,"هشتاد":80,"نود":90}
+HUNDREDS = {
+    "صد":100,"یکصد":100,"دویست":200,"سیصد":300,"چهارصد":400,
+    "پانصد":500,"ششصد":600,"هفتصد":700,"هشتصد":800,"نهصد":900,
+}
+FRACTION_DENOMS = {"دهم":10,"صدم":100,"هزارم":1000}
 
 def norm_text(text):
     t = text.translate(PERSIAN_DIGITS).translate(ARABIC_NORMALIZE).replace("\u200c"," ")
@@ -67,80 +72,282 @@ def has_any(t, xs):
     return any(x in t for x in xs)
 
 def parse_int_words(s):
-    s = norm_text(s).strip()
-    if re.fullmatch(r"\d+", s):
+    """Parse one canonical Persian cardinal phrase. Return None on non-cardinal composition.
+
+    Crucially, "هفتاد و پنج" is a valid cardinal (75), while "یک و دو" is not a
+    canonical way to say 3 and therefore remains available for decimal grammar (1.2).
+    """
+    s=norm_text(s).strip(" ،,")
+    if re.fullmatch(r"[+]?\d+",s):
         return int(s)
     if s in WORD_NUM:
         return WORD_NUM[s]
     if s in TENS:
         return TENS[s]
+    if s in HUNDREDS:
+        return HUNDREDS[s]
+
+    m=re.fullmatch(r"(.+?) هزار(?: و (.+))?",s)
+    if m:
+        left=m.group(1).strip()
+        base=1 if left=="" else parse_int_words(left)
+        tail=parse_int_words(m.group(2)) if m.group(2) else 0
+        if base is not None and 0 < base < 1000 and tail is not None and 0 <= tail < 1000:
+            return base*1000+tail
+        return None
+
     parts=[x.strip() for x in s.split(" و ") if x.strip()]
-    if len(parts)==2 and parts[0] in TENS and parts[1] in WORD_NUM:
-        return TENS[parts[0]]+WORD_NUM[parts[1]]
+    if len(parts)==2:
+        a,b=parts
+        if a in TENS and b in WORD_NUM and 0 < WORD_NUM[b] < 10:
+            return TENS[a]+WORD_NUM[b]
+        if a in HUNDREDS:
+            tail=parse_int_words(b)
+            if tail is not None and 0 <= tail < 100:
+                return HUNDREDS[a]+tail
+    if len(parts)>=2 and parts[0] in HUNDREDS:
+        tail=parse_int_words(" و ".join(parts[1:]))
+        if tail is not None and 0 <= tail < 100:
+            return HUNDREDS[parts[0]]+tail
+    return None
+
+def _decimal_tail_value(s):
+    s=norm_text(s).strip()
+    if re.fullmatch(r"\d+",s):
+        return int(s)/(10**len(s)), {"digits":s}
+    toks=s.split()
+    if toks and all(tok in WORD_NUM and 0 <= WORD_NUM[tok] <= 9 for tok in toks):
+        digits="".join(str(WORD_NUM[tok]) for tok in toks)
+        return int(digits)/(10**len(digits)), {"digits":digits}
+    n=parse_int_words(s)
+    if n is not None and 0 <= n < 1000:
+        digits=str(n)
+        return n/(10**len(digits)), {"spoken_cardinal":n,"digits":digits}
+    return None,None
+
+def _fraction_only_ast(s):
+    s=norm_text(s).strip(" ،,")
+    if s=="نیم":
+        return {"value":0.5,"kind":"half","source":s}
+    if s=="ربع":
+        return {"value":0.25,"kind":"quarter","source":s}
+    for word,denom in FRACTION_DENOMS.items():
+        suffix=" "+word
+        if s.endswith(suffix):
+            numerator_phrase=s[:-len(suffix)].strip()
+            numerator=parse_int_words(numerator_phrase)
+            if numerator is not None and 0 <= numerator < denom:
+                return {
+                    "value":numerator/denom,
+                    "kind":"fraction",
+                    "source":s,
+                    "numerator":numerator,
+                    "denominator":denom,
+                }
+    return None
+
+def parse_spoken_number_ast(s):
+    s=norm_text(s).strip(" ،,")
+    if not s:
+        return None
+    if re.fullmatch(r"[+-]?\d+(?:[.,]\d+)?",s):
+        return {"value":float(s.replace(",",".")),"kind":"numeric_literal","source":s}
+    if s=="نیم":
+        return {"value":0.5,"kind":"half","source":s}
+    if s=="ربع":
+        return {"value":0.25,"kind":"quarter","source":s}
+
+    m=re.fullmatch(r"(.+?) ممیز (.+)",s)
+    if m:
+        whole=parse_int_words(m.group(1))
+        frac,meta=_decimal_tail_value(m.group(2))
+        if whole is not None and frac is not None:
+            return {
+                "value":whole+frac,
+                "kind":"spoken_decimal",
+                "source":s,
+                "whole":whole,
+                "fraction":meta,
+            }
+
+    m=re.fullmatch(r"(.+?) و نیم",s)
+    if m:
+        whole=parse_int_words(m.group(1))
+        if whole is not None:
+            return {"value":whole+0.5,"kind":"whole_plus_half","source":s,"whole":whole}
+
+    # Denominator binds to a canonical cardinal numerator first:
+    # "هفتاد و پنج صدم" => 75/100, not 70 + 5/100.
+    for word,denom in FRACTION_DENOMS.items():
+        suffix=" "+word
+        if not s.endswith(suffix):
+            continue
+        pre=s[:-len(suffix)].strip()
+        numerator=parse_int_words(pre)
+        if numerator is not None:
+            return {
+                "value":numerator/denom,
+                "kind":"fraction",
+                "source":s,
+                "numerator":numerator,
+                "denominator":denom,
+            }
+
+        # If the entire pre-denominator phrase is not a canonical cardinal, allow
+        # an explicit whole + fractional numerator composition:
+        # "یک و دو دهم" => 1 + 2/10
+        # "دو و بیست و پنج صدم" => 2 + 25/100
+        candidates=[]
+        joins=[m.start() for m in re.finditer(r" و ",pre)]
+        for pos in joins:
+            left=pre[:pos].strip()
+            right=pre[pos+3:].strip()
+            whole=parse_int_words(left)
+            frac_num=parse_int_words(right)
+            if whole is not None and frac_num is not None and 0 <= frac_num < denom:
+                candidates.append((whole,frac_num))
+        values={(whole+frac_num/denom) for whole,frac_num in candidates}
+        if len(values)==1 and candidates:
+            whole,frac_num=candidates[0]
+            return {
+                "value":whole+frac_num/denom,
+                "kind":"whole_plus_fraction",
+                "source":s,
+                "whole":whole,
+                "numerator":frac_num,
+                "denominator":denom,
+            }
+        return None
+
+    cardinal=parse_int_words(s)
+    if cardinal is not None:
+        return {"value":float(cardinal),"kind":"cardinal","source":s,"cardinal":cardinal}
     return None
 
 def parse_spoken_number(s):
-    s=norm_text(s).strip()
-    if re.fullmatch(r"[+-]?\d+(?:[.,]\d+)?",s):
-        return float(s.replace(",","."))
-    if s=="نیم":
-        return 0.5
-    if s=="ربع":
-        return 0.25
-    m=re.fullmatch(r"(.+?) و نیم",s)
-    if m:
-        a=parse_int_words(m.group(1))
-        return None if a is None else a+0.5
-    m=re.fullmatch(r"(.+?) و (.+?) صدم",s)
-    if m:
-        a=parse_int_words(m.group(1)); b=parse_int_words(m.group(2))
-        return None if a is None or b is None else a+b/100.0
-    m=re.fullmatch(r"(.+?) دهم",s)
-    if m:
-        a=parse_int_words(m.group(1))
-        return None if a is None else a/10.0
-    m=re.fullmatch(r"(.+?) صدم",s)
-    if m:
-        a=parse_int_words(m.group(1))
-        return None if a is None else a/100.0
-    return float(parse_int_words(s)) if parse_int_words(s) is not None else None
+    ast=parse_spoken_number_ast(s)
+    return ast["value"] if ast else None
 
 NUMBER_PHRASE = r"(?:[+-]?\d+(?:[.,]\d+)?|نیم|ربع|(?:یک|یه|دو|سه|چهار|پنج|شش|هفت|هشت|نه|ده|یازده|دوازده|سیزده|چهارده|پانزده|شانزده|هفده|هجده|نوزده|بیست|سی|چهل|پنجاه|شصت|هفتاد|هشتاد|نود)(?: و (?:نیم|(?:یک|یه|دو|سه|چهار|پنج|شش|هفت|هشت|نه|ده|یازده|دوازده|سیزده|چهارده|پانزده|شانزده|هفده|هجده|نوزده|بیست|سی|چهل|پنجاه|شصت|هفتاد|هشتاد|نود)(?: دهم| صدم)?))?)"
 
 def _longest_spoken_number_before(t, unit_start):
     prefix=t[:unit_start].rstrip()
     toks=list(re.finditer(r"\S+",prefix))
-    # Longest suffix first; spoken engineering numbers here are intentionally bounded.
-    for k in range(min(7,len(toks)),0,-1):
+    for k in range(min(10,len(toks)),0,-1):
         start=toks[-k].start()
         cand=prefix[start:].strip(" ،,")
-        n=parse_spoken_number(cand)
-        if n is not None:
-            return start,cand,n
+        ast=parse_spoken_number_ast(cand)
+        if ast is not None:
+            return start,cand,ast
     return None
 
-def extract_quantities(text):
+def _post_unit_fraction(t, unit_end):
+    tail=t[unit_end:]
+    m=re.match(r"\s*و\s+(.+)$",tail)
+    if not m:
+        return None
+    rest=m.group(1)
+    rest_abs_start=unit_end+m.start(1)
+    toks=list(re.finditer(r"\S+",rest))
+    for k in range(min(5,len(toks)),0,-1):
+        cand=rest[:toks[k-1].end()].strip(" ،,")
+        ast=_fraction_only_ast(cand)
+        if ast is not None:
+            return rest_abs_start, rest_abs_start+toks[k-1].end(), cand, ast
+    return None
+
+def _looks_numeric_tail(s):
+    s=norm_text(s).strip()
+    if not s:
+        return False
+    token=s.split()[-1]
+    return (
+        token in WORD_NUM or token in TENS or token in HUNDREDS or
+        token in FRACTION_DENOMS or token in {"نیم","ربع","ممیز","و"} or
+        bool(re.fullmatch(r"\d+(?:[.,]\d+)?",token))
+    )
+
+def extract_quantity_evidence(text):
     t=low(text)
     out=[]
+    issues=[]
     seen=set()
-    unit_pat=re.compile(r"(?:میلی(?:متر)?|میل|mm|درجه|deg)\b",re.I)
+    unit_pat=re.compile(r"(?:میلی\s*متر|میلیمتر|میلی|میل|mm|درجه|deg)\b",re.I)
     for um in unit_pat.finditer(t):
         parsed=_longest_spoken_number_before(t,um.start())
         if not parsed:
+            # Numeric-looking language immediately before a unit that cannot be
+            # fully parsed is an ambiguity, never permission to guess.
+            prefix=t[:um.start()].rstrip()
+            if _looks_numeric_tail(prefix):
+                issues.append({"kind":"unparsed_quantity_before_unit","unit_span":[um.start(),um.end()]})
             continue
-        start,cand,n=parsed
-        raw_unit=um.group(0).lower()
+        start,cand,ast=parsed
+
+        # A partial numeric suffix must not be accepted. Example: if only
+        # "دو دهم" parsed from an intended "یک و دو دهم", the preceding
+        # conjunction exposes the partial match and forces fail-closed behavior.
+        prefix_before=t[:start].rstrip()
+        if prefix_before.endswith(" و") or prefix_before.endswith(" ممیز"):
+            issues.append({
+                "kind":"partial_numeric_match",
+                "text":cand,
+                "span":[start,um.end()],
+            })
+            continue
+
+        raw_unit=um.group(0).lower().replace(" ","")
         unit="deg" if raw_unit in {"درجه","deg"} else "mm"
-        key=(start,um.end(),unit)
-        if key in seen: continue
+        end=um.end()
+        combined_ast=ast
+
+        post=_post_unit_fraction(t,um.end())
+        if post is not None:
+            _,post_end,post_text,post_ast=post
+            combined_ast={
+                "value":ast["value"]+post_ast["value"],
+                "kind":"unit_then_fraction",
+                "source":t[start:post_end],
+                "base":ast,
+                "post_fraction":post_ast,
+            }
+            end=post_end
+
+        key=(start,end,unit)
+        if key in seen:
+            continue
         seen.add(key)
-        out.append({"id":f"q{len(out)+1}","value":n,"unit":unit,
-                    "text":t[start:um.end()],"span":[start,um.end()]})
+        out.append({
+            "id":f"q{len(out)+1}",
+            "value":combined_ast["value"],
+            "unit":unit,
+            "text":t[start:end],
+            "span":[start,end],
+            "ast":combined_ast,
+            "provenance":"canonical_quantity_grammar",
+        })
+
     # "ربع دور" is a camera magnitude = 90 degrees.
     for m in re.finditer(r"\bربع\s+دور\b",t):
-        out.append({"id":f"q{len(out)+1}","value":90.0,"unit":"deg","text":m.group(0),"span":[m.start(),m.end()]})
+        key=(m.start(),m.end(),"deg")
+        if key not in seen:
+            out.append({
+                "id":f"q{len(out)+1}",
+                "value":90.0,
+                "unit":"deg",
+                "text":m.group(0),
+                "span":[m.start(),m.end()],
+                "ast":{"value":90.0,"kind":"quarter_turn","source":m.group(0)},
+                "provenance":"camera_quarter_turn",
+            })
+
     out.sort(key=lambda x:x["span"][0])
-    for i,q in enumerate(out,1): q["id"]=f"q{i}"
+    for i,q in enumerate(out,1):
+        q["id"]=f"q{i}"
+    return out,issues
+
+def extract_quantities(text):
+    out,_=extract_quantity_evidence(text)
     return out
 
 def quantity_string(q):
@@ -237,7 +444,7 @@ def extract_property_value(text, ctx):
 def extract_evidence(text, ctx=None):
     ctx=ctx or {}
     t=low(text)
-    qs=extract_quantities(text)
+    qs,quantity_issues=extract_quantity_evidence(text)
     fs=extract_named_features(text)
     ps=extract_parts(text)
     name_value=extract_name_value(text)
@@ -316,8 +523,10 @@ def extract_evidence(text, ctx=None):
         for fm in re.finditer(frac_pat,t):
             n=parse_spoken_number(fm.group(0))
             if n is not None:
+                ast=parse_spoken_number_ast(fm.group(0))
                 qs.append({"id":"q1","value":n,"unit":"mm","text":fm.group(0),
-                           "span":[fm.start(),fm.end()],"implicit_unit":True})
+                           "span":[fm.start(),fm.end()],"implicit_unit":True,
+                           "ast":ast,"provenance":"bounded_implicit_edge_mm"})
                 break
 
     action_cues=[]
@@ -345,6 +554,7 @@ def extract_evidence(text, ctx=None):
     return {
         "text":norm_text(text),
         "quantities":qs,
+        "quantity_issues":quantity_issues,
         "features":fs,
         "parts":ps,
         "context_feature":ctx.get("last_feature"),
@@ -489,6 +699,9 @@ def compile_intent(case, decision, intent, ev):
 
     if intent in MATERIAL_INTENTS and ev["multi_action"]:
         return reject("semantic-residue-multi-action")
+
+    if intent in {"camera_move","edge_on_selection","feature_parameter","add_pattern","add_edge_feature"} and ev.get("quantity_issues"):
+        return reject("quantity-parse-ambiguous")
 
     if intent=="camera_move":
         lm=ev.get("last_move") or {}
