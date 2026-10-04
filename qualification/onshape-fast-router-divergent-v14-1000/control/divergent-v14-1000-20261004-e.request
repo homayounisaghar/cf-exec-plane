@@ -1,0 +1,9 @@
+{
+  "request_id": "onshape-fast-router-divergent-v14-1000-20261004-e",
+  "corpus_freeze_commit": "a0de52e0193e53554d40fa6559d2629bc40f79db",
+  "corpus_sha256": "00a282dc9ee8954f9bc13dd73d8725a17a16f145e26f5a7b30bc455509f0029a",
+  "router_source_head": "0ef25e3dd156f42c1ca1626f52f24850516d8a7a",
+  "cases": 1000,
+  "mode": "provider_harness_batch10_no_semantic_changes",
+  "production_effects": false
+}
