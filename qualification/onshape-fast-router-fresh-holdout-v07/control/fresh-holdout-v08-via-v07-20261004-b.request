@@ -1,0 +1,8 @@
+{
+  "request_id": "fresh-holdout-v08-via-v07-20261004-b",
+  "frozen_cases": 80,
+  "frozen_holdout_commit": "89f1e86a8c5393280a019602309fffa4a730fa24",
+  "router_source_head": "2bd17ebd6e47b9c3ad9465555fe029aea94da0ea",
+  "retry_of": "fresh-holdout-v08-via-v07-20261004-a",
+  "production_effects": false
+}
