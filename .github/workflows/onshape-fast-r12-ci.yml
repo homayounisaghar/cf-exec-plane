@@ -139,8 +139,10 @@ jobs:
           assert 'CF_RVC_WORKER_URL: http://127.0.0.1:8794' in compose
           assert '/var/lib/capability-fabric/rvc:/rvc:ro' not in compose
           health = (root / "health.sh").read_text()
-          assert 'CF_RVC_WORKER_HEALTH=pass' in health
-          assert '127.0.0.1:8794' in health
+          assert 'RVC_OPTIONAL_LOOPBACK_GUARD=pass' in health
+          server = (root / "server.js").read_text()
+          assert 'voice_conversion: await voiceRuntimeStatus()' in server
+          assert 'RVC_WORKER_STATUS_URL' in server
 
           agent = (root / "onshape-agent.js").read_text()
           assert "_buildOperationRegistry()" in agent
