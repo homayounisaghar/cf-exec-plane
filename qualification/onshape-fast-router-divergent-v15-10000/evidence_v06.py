@@ -74,13 +74,13 @@ def has_any(t, xs):
 _LEADING_ENVELOPE_RE=re.compile(
     r"^(?:(?:لطفاً|لطفا|بی\s*زحمت|بی‌زحمت|اگه میشه|اگر میشه|میشه|الان|یه لحظه|برای من|فقط|"
     r"خب[،,]?|باشه[،,]?|ممنون می شم|ممنون می‌شم|زحمت میشه|وقتی آماده ای|وقتی آماده‌ای|"
-    r"سریع|آروم|دقیقاً|دقیقا|فعلاً|فعلا|اول از همه|اگه امکانش هست[،,]?|می‌خوام)\s+)+",
+    r"سریع|آروم|دقیقاً|دقیقا|فعلاً|فعلا|اول از همه|اگه امکانش هست[،,]?|می‌خوام|می خوام)\s+)+",
     re.I,
 )
 _TRAILING_ENVELOPE_RE=re.compile(
     r"(?:[،,؛;]\s*)?(?:لطفاً|لطفا|بی\s*زحمت|بی‌زحمت|اگه میشه|اگر میشه|مرسی|ممنون|"
     r"همین الان|برای من|فعلاً|فعلا|یه لحظه|و تموم|ممنون ازت|مرسی ازت|اگه اوکیه|"
-    r"اگر امکانش هست|وقتی فرصت داری|لطف می‌کنی|لطفاً انجامش بده|خواهشاً|لطف داری)\s*$",
+    r"اگر امکانش هست|اگه زحمتی نیست|اگر زحمتی نیست|وقتی فرصت داری|لطف می‌کنی|لطف می کنی|لطفاً انجامش بده|خواهشاً|لطف داری)\s*$",
     re.I,
 )
 
@@ -155,11 +155,20 @@ def has_conditional_or_exception(text):
         has_any(t,["به جز","به‌جز","مگر اینکه","در صورتی که","به شرط"])
     )
 
+_DEPENDENT_EFFECT_RE=re.compile(
+    r"(?:\b(?:show|hide|fit|zoom|pan|follow|clear|inspect|suppress|unsuppress|delete)\b|"
+    r"حذف|پاک|مخفی|نشون|نشان|فیت|زوم|فالو|بگو|گزارش)",
+    re.I,
+)
+
 def has_dependent_sequence(text):
     t=low(text)
     if not has_any(t,["قبل از","بعد از","before","after"]):
         return False
-    return len(_ACTION_MARKER_RE.findall(t)) >= 2
+    # rollback/reorder use before/after as a target relation inside one operation.
+    if "rollback" in t:
+        return False
+    return len(_DEPENDENT_EFFECT_RE.findall(t)) >= 2
 
 def parse_int_words(s):
     """Parse one canonical Persian cardinal phrase. Return None on non-cardinal composition.
@@ -533,6 +542,7 @@ def extract_literal_payloads(text):
         r"(?:(?:اسم|نام)\s+.+?\s+رو\s+بذار)\s+(.+?)(?:\s+بساز)?$",
         r"(?:عوض کن به)\s+(.+)$",
         r"\brename\s+document\s+to\s+(.+)$",
+        r"\brename\s+کن\s+به\s+(.+)$",
         r"\bdocument\s+name\s*=\s*(.+)$",
         r"\bnew\s+part\s+studio\s*:\s*(.+)$",
         r"\brename\s+.+?\s+to\s+(.+)$",
