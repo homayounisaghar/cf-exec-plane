@@ -127,6 +127,13 @@ def parse_number_phrase(phrase: str):
         return 0.5
     if p == "ربع":
         return 0.25
+    if p.endswith(" و ربع"):
+        base = parse_integer_words(p[:-7])
+        return None if base is None else base + 0.25
+    if p.endswith(" ربع"):
+        n = parse_integer_words(p[:-4])
+        if n is not None and 0 <= n <= 4:
+            return n / 4.0
 
     if p.endswith(" و نیم"):
         base = parse_integer_words(p[:-6])
@@ -218,7 +225,7 @@ def extract_features(text: str):
     t = norm_text(text)
     out = []
     spans = []
-    for m in re.finditer(r"\b(Fillet|Extrude|Draft|Sketch)\s*(\d+)\b", t, re.I):
+    for m in re.finditer(r"\b(Fillet|Extrude|Draft|Sketch)\s*(\d+)\b(?![.,]\d)", t, re.I):
         out.append({"value": f"{m.group(1).title()} {m.group(2)}", "surface": m.group(0), "pos": m.start()})
         spans.append(m.span())
     for m in re.finditer(r"(فیلت|اکسترود|درفت|اسکچ)\s+([^\s،,.؛;]+(?:\s+و\s+[^\s،,.؛;]+)?)", t, re.I):
@@ -226,8 +233,9 @@ def extract_features(text: str):
         # Strip a common Persian object marker if the simple regex captured it.
         phrase = re.sub(r"\s+(?:رو|را)$", "", phrase).strip()
         n = parse_integer_words(phrase)
-        after = t[m.end():].lstrip()
-        if n is not None and not re.match(r"^(?:mm|میلی\s*متر|میلیمتر|میلی|میل|deg|درجه)\b", after, re.I):
+        after_raw = t[m.end():]
+        after = after_raw.lstrip()
+        if n is not None and not re.match(r"^[.,]\d", after_raw) and not re.match(r"^(?:mm|میلی\s*متر|میلیمتر|میلی|میل|deg|درجه)\b", after, re.I):
             out.append({"value": _feature_name(m.group(1), n), "surface": m.group(0), "pos": m.start()})
     dedup = []
     seen = set()
@@ -251,6 +259,8 @@ def extract_parts(text: str):
     # Named-part positions: grammar around a capital/identifier token.
     pats = [
         r"\b([A-Za-z][A-Za-z0-9_.-]*)\s+(?:رو|را)\b",
+        r"\b([A-Za-z][A-Za-z0-9_.-]*)\s+(?:رنگش|متریالش|اسمش)\b",
+        r"(?:از|برای)\s+([A-Za-z][A-Za-z0-9_.-]*)\b",
         r"(?:رنگ|color)\s+([A-Za-z][A-Za-z0-9_.-]*)\b",
         r"description\s+(?:پارت\s+)?([A-Za-z][A-Za-z0-9_.-]*)\b",
         r"linear\s+pattern\s+([A-Za-z][A-Za-z0-9_.-]*)\b",
@@ -258,7 +268,11 @@ def extract_parts(text: str):
     for pat in pats:
         for m in re.finditer(pat, t, re.I):
             val = m.group(1)
-            if val.lower() not in {"color", "part", "pattern", "description"}:
+            if val.lower() not in {
+                "color", "part", "pattern", "description", "feature", "body", "fillet",
+                "extrude", "draft", "sketch", "plane", "document", "viewer", "selection",
+                "edge", "face", "studio", "rollback"
+            }:
                 out.append({"value": val[0].upper() + val[1:] if val.lower() in {"cap", "bracket"} else val,
                             "surface": val, "pos": m.start(1)})
 
@@ -283,6 +297,7 @@ def extract_name_tail(text: str):
         m = re.search(pat, s, re.I)
         if m:
             v = m.group(1).strip(" ،,.;؛")
+            v = re.sub(r"\s+(?:بساز|درست\s+کن|ایجاد\s+کن)$", "", v, flags=re.I).strip()
             if v:
                 return v
     return None
@@ -308,6 +323,10 @@ def extract_candidate_index(text: str):
     for w, n in mp.items():
         if f"نفر {w}" in t:
             return n
+    bare = {"اولی":1,"دومی":2,"سومی":3,"چهارمی":4}
+    for w,n in bare.items():
+        if re.search(rf"(?<!\w){re.escape(w)}(?!\w)", t):
+            return n
     return None
 
 def extract_relation(text: str):
@@ -320,22 +339,22 @@ def extract_relation(text: str):
 
 def extract_visibility(text: str, ctx: dict):
     t = low(text)
-    if has_any(t, ["نشون نده", "نشان نده", "نمایش نده", "show نده", "دیگه نشون نده"]):
+    if has_any(t, ["نشون نده", "نشان نده", "نمایش نده", "show نده", "دیگه نشون نده", "دیده نشه", "دیده نشود"]):
         return False
     if has_any(t, ["مخفی", "قایم", "پنهان", "hide"]):
         return False
     if has_any(t, ["نشون بده", "نشان بده", "نشونش بده", "نشانش بده", "نمایش بده", "show"]):
         return True
-    if has_any(t, ["دوباره بیار", "دوباره برگردونش", "بیارش"]) and ctx.get("last_part"):
+    if has_any(t, ["دوباره بیار", "دوباره برگردونش", "بیارش", "برگردون توی دید", "برگردون تو دید"]) and ctx.get("last_part"):
         return True
     return None
 
 def extract_suppressed(text: str, ctx: dict):
     t = low(text)
-    if has_any(t, ["خاموش", "suppress"]):
-        return True
     if has_any(t, ["روشن", "unsuppress"]):
         return False
+    if "خاموش" in t or re.search(r"(?<!un)\bsuppress\b", t):
+        return True
     if has_any(t, ["برش گردون", "برگردونش", "دوباره برش گردون"]) and ctx.get("last_action") == "suppress":
         return False
     return None
@@ -378,7 +397,8 @@ def is_design_language(text: str):
         "قوی تر", "قوی‌تر", "استحکام", "سبک تر", "سبک‌تر", "تزریق پلاستیک",
         "اضافی", "تولیدش راحت", "تولیدش ساده", "وزنشو کم", "وزنش رو کم",
         "سفت بمونه", "زیباتر", "بهترش کن", "طراحی رو درست", "طراحی را درست",
-        "تولید راحت", "تولیدش راحت",
+        "تولید راحت", "تولیدش راحت", "قالب گیری", "به درد نمی", "هرچی اضافه",
+        "اضافه ست", "اضافه است",
     ]
     return has_any(t, terms)
 
@@ -482,14 +502,20 @@ def build_evidence(text: str, ctx: dict | None = None):
 
     # Camera evidence.
     action = None
-    if has_any(t, ["زوم", "zoom"]):
+    direction = None
+    if has_any(t, ["نزدیک تر", "نزدیک‌تر"]):
+        action = "zoom"
+        direction = "in"
+    elif has_any(t, ["دورتر"]):
+        action = "zoom"
+        direction = "out"
+    elif has_any(t, ["زوم", "zoom"]):
         action = "zoom"
     elif has_any(t, ["pan", "پن ", "نما رو", "صفحه رو", "هل بده"]):
         action = "pan"
     elif has_any(t, ["بچرخ", "rotate", "ساعتگرد", "پادساعتگرد"]) or (has_any(t, ["مدل", "مدلو"]) and has_any(t, ["راست", "چپ", "بالا", "پایین"])):
         action = "orbit"
 
-    direction = None
     if "پادساعتگرد" in t:
         direction = "counterclockwise"
     elif "ساعتگرد" in t:
@@ -505,7 +531,7 @@ def build_evidence(text: str, ctx: dict | None = None):
 
     last_move = ctx.get("last_move") or {}
     correction = has_any(t, ["زیادی شد", "برش گردون", "برگرد", "برگردون"])
-    more = has_any(t, ["بیشتر", "یه ذره همون طرف", "همون طرف", "باز یه ذره"])
+    more = has_any(t, ["بیشتر", "یه ذره همون طرف", "همون طرف", "باز یه ذره", "همونجوری", "همون جوری", "یه ذره دیگه"])
     if last_move and correction and ctx.get("last_action") != "suppress":
         opp = {
             "left": "right", "right": "left", "up": "down", "down": "up",
@@ -652,7 +678,7 @@ def _has_new_edge_cue(ev):
     return has_any(ev["low"], ["جدید", "خالی", "new", "empty", "بدون انتخاب", "فعلاً بدون"])
 
 def _is_delete(ev):
-    return has_any(ev["low"], ["حذف کن", "پاک کن", "بنداز دور", "delete", "remove"])
+    return has_any(ev["low"], ["حذف کن", "حذفش کن", "پاک کن", "پاکش کن", "بنداز دور", "delete", "remove"])
 
 def _name_cue(ev):
     return has_any(ev["low"], ["اسم", "rename"])
@@ -684,7 +710,7 @@ def _top_cue(ev):
     return has_any(ev["low"], ["top view", "از بالا"])
 
 def _inspect_cue(ev):
-    return has_any(ev["low"], ["چی انتخاب", "وضعیت ویور", "viewer", "سشن", "session", "چند نفر تو این سشن"])
+    return has_any(ev["low"], ["چی انتخاب", "وضعیت ویور", "viewer", "سشن", "session", "چند نفر تو این سشن", "select شده"])
 
 def _follow_cue(ev):
     return has_any(ev["low"], ["فالو", "follow"])
@@ -729,7 +755,7 @@ def reflex_decision(ev):
 
     feats_text = items(ev, "feature", "text")
     parts_text = items(ev, "part", "text")
-    if _is_delete(ev) and has_any(ev["low"], ["آخرین فیچر", "آخرین فیچرو", "اولین فیچر", "اولین فیچرو"]):
+    if _is_delete(ev) and has_any(ev["low"], ["آخرین فیچر", "آخرین فیچرو", "اولین فیچر", "اولین فیچرو", "آخرین feature", "اولین feature"]):
         return "act", "feature_delete"
     if items(ev, "relation") and (len(feats_text) >= 2 or (len(feats_text) == 1 and context_item(ev, "feature"))):
         return "act", "feature_reorder"
@@ -837,7 +863,7 @@ def compile_intent(intent, ev, model_used=False):
         return accept("view.move", args, prov, intent, model_used)
 
     if intent == "fit":
-        selection = has_any(t, ["همین انتخاب", "روی همین انتخاب", "selection"])
+        selection = has_any(t, ["انتخاب", "selection"])
         if selection and ev["selection_count"] <= 0:
             return reject("fit-selection-ungrounded", intent, model_used=model_used)
         return accept("view.fit", {"action": "fit_selection" if selection else "fit"},
@@ -853,7 +879,7 @@ def compile_intent(intent, ev, model_used=False):
         mode = "state"
         if has_any(t, ["سشن", "session", "چند نفر", "کسایی", "کسانی"]):
             mode = "collaboration"
-        elif has_any(t, ["انتخاب", "selection", "چی انتخاب"]):
+        elif has_any(t, ["انتخاب", "selection", "چی انتخاب", "select شده"]):
             mode = "selection"
         return accept("viewer.inspect", {"mode": mode}, {"mode": "text:inspect-semantics"}, intent, model_used)
 
@@ -1058,7 +1084,7 @@ def compile_intent(intent, ev, model_used=False):
             key = "before_feature" if rel["value"] == "before" else "after_feature"
             return accept("rollback.set", {key: tx[0]["value"]},
                           {key: _prov(tx[0]), "placement": _prov(rel)}, intent, model_used)
-        if "آخر" in t:
+        if "آخر" in t or "ته" in t:
             return accept("rollback.set", {"position": "end"}, {"position": "text:end"}, intent, model_used)
         if "اول" in t:
             return accept("rollback.set", {"position": "start"}, {"position": "text:start"}, intent, model_used)
