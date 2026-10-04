@@ -12,6 +12,18 @@
     "reason": "clarification"
   },
   {
+    "id": "v15_pro_0001",
+    "category": "professional_out_of_contract",
+    "text": "لطفاً این sketch رو dimension کن که width پنجاه و height سی باشه؟",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
     "id": "v15_pro_0005",
     "category": "professional_out_of_contract",
     "text": "خب این feature رو mirror کن نسبت به Front plane",
@@ -63,6 +75,18 @@
     "id": "v15_pro_0015",
     "category": "professional_out_of_contract",
     "text": "آروم Sketch 4 رو fully constrain کن",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0016",
+    "category": "professional_out_of_contract",
+    "text": "دقیقاً این sketch رو dimension کن که width پنجاه و height سی باشه",
     "outcome": "route_mismatch",
     "compiled": {
       "route": "ask",
@@ -132,6 +156,18 @@
     "reason": "clarification"
   },
   {
+    "id": "v15_pro_0031",
+    "category": "professional_out_of_contract",
+    "text": "ممنون می‌شم این sketch رو dimension کن که width پنجاه و height سی باشه لطفاً",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
     "id": "v15_pro_0035",
     "category": "professional_out_of_contract",
     "text": "آروم این feature رو mirror کن نسبت به Front plane، مرسی لطفاً",
@@ -183,6 +219,18 @@
     "id": "v15_pro_0045",
     "category": "professional_out_of_contract",
     "text": "خب Sketch 4 رو fully constrain کن اگه میشه",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0046",
+    "category": "professional_out_of_contract",
+    "text": "این sketch رو dimension کن که width پنجاه و height سی باشه؛ اگه میشه",
     "outcome": "route_mismatch",
     "compiled": {
       "route": "ask",
@@ -252,6 +300,18 @@
     "reason": "clarification"
   },
   {
+    "id": "v15_pro_0061",
+    "category": "professional_out_of_contract",
+    "text": "خب این sketch رو dimension کن که width پنجاه و height سی باشه همین الان",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
     "id": "v15_pro_0065",
     "category": "professional_out_of_contract",
     "text": "الان این feature رو mirror کن نسبت به Front plane؟ همین الان",
@@ -303,6 +363,18 @@
     "id": "v15_pro_0075",
     "category": "professional_out_of_contract",
     "text": "آروم Sketch 4 رو fully constrain کن، مرسی همین الان",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0076",
+    "category": "professional_out_of_contract",
+    "text": "میشه این sketch رو dimension کن که width پنجاه و height سی باشه؟ همین الان",
     "outcome": "route_mismatch",
     "compiled": {
       "route": "ask",
@@ -372,6 +444,18 @@
     "reason": "clarification"
   },
   {
+    "id": "v15_pro_0091",
+    "category": "professional_out_of_contract",
+    "text": "ممنون می‌شم این sketch رو dimension کن که width پنجاه و height سی باشه، مرسی برای من",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
     "id": "v15_pro_0095",
     "category": "professional_out_of_contract",
     "text": "آروم این feature رو mirror کن نسبت به Front plane برای من",
@@ -423,6 +507,18 @@
     "id": "v15_pro_0105",
     "category": "professional_out_of_contract",
     "text": "الان Sketch 4 رو fully constrain کن؟ ممنون",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0106",
+    "category": "professional_out_of_contract",
+    "text": "می‌خوام این sketch رو dimension کن که width پنجاه و height سی باشه ممنون",
     "outcome": "route_mismatch",
     "compiled": {
       "route": "ask",
@@ -492,6 +588,18 @@
     "reason": "clarification"
   },
   {
+    "id": "v15_pro_0121",
+    "category": "professional_out_of_contract",
+    "text": "لطفاً این sketch رو dimension کن که width پنجاه و height سی باشه؟ بی‌زحمت",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
     "id": "v15_pro_0125",
     "category": "professional_out_of_contract",
     "text": "خب این feature رو mirror کن نسبت به Front plane بی‌زحمت",
@@ -543,6 +651,18 @@
     "id": "v15_pro_0135",
     "category": "professional_out_of_contract",
     "text": "آروم Sketch 4 رو fully constrain کن بی‌زحمت",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0136",
+    "category": "professional_out_of_contract",
+    "text": "دقیقاً این sketch رو dimension کن که width پنجاه و height سی باشه بی‌زحمت",
     "outcome": "route_mismatch",
     "compiled": {
       "route": "ask",
@@ -612,6 +732,18 @@
     "reason": "clarification"
   },
   {
+    "id": "v15_pro_0151",
+    "category": "professional_out_of_contract",
+    "text": "ممنون می‌شم این sketch رو dimension کن که width پنجاه و height سی باشه فعلاً",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
     "id": "v15_pro_0155",
     "category": "professional_out_of_contract",
     "text": "آروم این feature رو mirror کن نسبت به Front plane، مرسی فعلاً",
@@ -663,6 +795,18 @@
     "id": "v15_pro_0165",
     "category": "professional_out_of_contract",
     "text": "خب Sketch 4 رو fully constrain کن یه لحظه",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0166",
+    "category": "professional_out_of_contract",
+    "text": "این sketch رو dimension کن که width پنجاه و height سی باشه؛ یه لحظه",
     "outcome": "route_mismatch",
     "compiled": {
       "route": "ask",
@@ -732,6 +876,18 @@
     "reason": "clarification"
   },
   {
+    "id": "v15_pro_0181",
+    "category": "professional_out_of_contract",
+    "text": "خب این sketch رو dimension کن که width پنجاه و height سی باشه و تموم",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
     "id": "v15_pro_0185",
     "category": "professional_out_of_contract",
     "text": "الان این feature رو mirror کن نسبت به Front plane؟ و تموم",
@@ -783,6 +939,18 @@
     "id": "v15_pro_0195",
     "category": "professional_out_of_contract",
     "text": "آروم Sketch 4 رو fully constrain کن، مرسی و تموم",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0196",
+    "category": "professional_out_of_contract",
+    "text": "میشه این sketch رو dimension کن که width پنجاه و height سی باشه؟ و تموم",
     "outcome": "route_mismatch",
     "compiled": {
       "route": "ask",
