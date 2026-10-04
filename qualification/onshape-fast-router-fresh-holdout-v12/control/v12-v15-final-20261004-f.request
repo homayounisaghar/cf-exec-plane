@@ -1,0 +1,8 @@
+{
+  "request_id": "onshape-fast-router-v12-v15-final-20261004-f",
+  "source_repo": "homayounisaghar/capability-fabric",
+  "source_ref": "work/onshape-fast-router-v15-hardening",
+  "source_head": "19af066da67cc2b56e41b6680d2fe5aff2682243",
+  "purpose": "final exact V12 regression for V15 fundamental hardening candidate",
+  "production_effects": false
+}
