@@ -98,8 +98,8 @@
         "op": null,
         "args": {}
       },
-      "reason": "new-edge-ungrounded",
-      "intent": "add_edge_feature",
+      "reason": "selection-ungrounded",
+      "intent": "edge_on_selection",
       "action_families": [
         "edge_fillet"
       ]
