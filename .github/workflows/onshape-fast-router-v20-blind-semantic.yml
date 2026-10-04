@@ -56,7 +56,7 @@ jobs:
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           GROQ_API_KEY_BACKUP: ${{ secrets.GROQ_API_KEY_BACKUP }}
-          GENERATOR_MODEL: openai/gpt-oss-120b
+          GENERATOR_MODEL: qwen/qwen3.6-27b
           JUDGE_MODEL: openai/gpt-oss-20b
         run: |
           set -eu
