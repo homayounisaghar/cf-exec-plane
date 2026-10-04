@@ -3,10 +3,10 @@ import argparse, json, os
 from llm_client import get_client
 
 GENERATOR_PREFS=[
-    "openai/gpt-oss-20b",
+    "allam-2-7b",
 ]
 JUDGE_PREFS=[
-    "openai/gpt-oss-safeguard-20b",
+    "openai/gpt-oss-20b",
 ]
 
 def main():
