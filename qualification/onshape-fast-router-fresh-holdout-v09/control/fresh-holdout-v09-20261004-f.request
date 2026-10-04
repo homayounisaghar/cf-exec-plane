@@ -1,0 +1,7 @@
+{
+  "request_id": "fresh-holdout-v09-20261004-f",
+  "frozen_cases": 100,
+  "frozen_holdout_commit": "d87d590a4cfc429742bc5ea5d292a9a4f3940356",
+  "router_source_head": "9061927695bc172946789d9648b647f9add262a6",
+  "purpose": "provider-backed-regression-after-generic-semantic-hardening"
+}
