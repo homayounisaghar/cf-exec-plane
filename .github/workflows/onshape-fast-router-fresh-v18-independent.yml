@@ -1,0 +1,102 @@
+name: Onshape Fast Router Fresh V18 Independent
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - qualification/onshape-fast-router-fresh-v18-independent/control/*.request
+
+permissions:
+  contents: write
+
+concurrency:
+  group: onshape-fast-router-fresh-v18-independent
+  cancel-in-progress: false
+
+jobs:
+  qualify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Syntax gate
+        run: |
+          python -m py_compile qualification/onshape-fast-router-fresh-v18-independent/evidence_v06.py
+          python -m py_compile qualification/onshape-fast-router-fresh-v18-independent/evidence_architecture_selftest.py
+          python -m py_compile qualification/onshape-fast-router-fresh-v18-independent/fresh_holdout_v18_independent_10000.py
+          python -m py_compile qualification/onshape-fast-router-fresh-v18-independent/score_v18_independent.py
+      - name: Pre-score scope filter and freeze
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/artifacts/onshape-fast-router-fresh-v18-independent"
+          cd qualification/onshape-fast-router-fresh-v18-independent
+          python - <<'PY'
+          import hashlib, importlib.util, json, pathlib, re, unicodedata
+          from collections import Counter
+          from fresh_holdout_v18_independent_10000 import CANDIDATES, CASES, FILTERED, FAMILY_COUNTS
+          def norm(s):
+              s=unicodedata.normalize('NFKC',s).replace('\u200c',' ')
+              return re.sub(r'\s+',' ',s).strip().lower()
+          assert len(CANDIDATES)==10000
+          assert len(CASES)==9800
+          assert len(FILTERED)==200
+          assert all(c.get('scope')=='apprentice' for c in CASES)
+          assert all(c.get('scope')!='apprentice' for c in FILTERED)
+          assert len({norm(c['text']) for c in CANDIDATES})==10000
+          assert len({norm(c['text']) for c in CASES})==9800
+          def load(path,name):
+              spec=importlib.util.spec_from_file_location(name,path)
+              mod=importlib.util.module_from_spec(spec); spec.loader.exec_module(mod)
+              return mod
+          root=pathlib.Path('..').resolve()
+          v17=load(root/'onshape-fast-router-fresh-v17-independent'/'fresh_holdout_v17_independent_10000.py','v17_cmp')
+          v16=load(root/'onshape-fast-router-fresh-v16-filtered'/'fresh_holdout_v16_filtered_10000.py','v16_cmp')
+          v15=load(root/'onshape-fast-router-divergent-v15-10000'/'fresh_holdout_v15_10000.py','v15_cmp')
+          current={norm(c['text']) for c in CASES}
+          overlap17=current & {norm(c['text']) for c in v17.CASES}
+          overlap16=current & {norm(c['text']) for c in v16.CASES}
+          overlap15=current & {norm(c['text']) for c in v15.CASES}
+          assert not overlap17, list(overlap17)[:20]
+          assert not overlap16, list(overlap16)[:20]
+          assert not overlap15, list(overlap15)[:20]
+          blob='\n'.join(json.dumps(c,ensure_ascii=False,sort_keys=True,separators=(',',':')) for c in CASES)+'\n'
+          digest=hashlib.sha256(blob.encode('utf-8')).hexdigest()
+          reasons=Counter(c.get('filter_reason') for c in FILTERED)
+          report={'candidate_cases':len(CANDIDATES),'scored_cases':len(CASES),
+                  'filtered_cases':len(FILTERED),'filter_reasons':dict(reasons),
+                  'candidate_family_counts':FAMILY_COUNTS,
+                  'normalized_overlap_with_v15':0,'normalized_overlap_with_v16':0,
+                  'normalized_overlap_with_v17':0,'filter_independent_of_router':True}
+          out=pathlib.Path('../../artifacts/onshape-fast-router-fresh-v18-independent')
+          (out/'filter-report.json').write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8')
+          (out/'freeze.json').write_text(json.dumps({'cases':len(CASES),'sha256':digest},indent=2),encoding='utf-8')
+          (out/'corpus.jsonl').write_text(blob,encoding='utf-8')
+          print(json.dumps({'filter':report,'freeze':{'cases':len(CASES),'sha256':digest}},ensure_ascii=False))
+          PY
+      - name: Architecture selftest
+        run: |
+          cd qualification/onshape-fast-router-fresh-v18-independent
+          python evidence_architecture_selftest.py > "$GITHUB_WORKSPACE/artifacts/onshape-fast-router-fresh-v18-independent/architecture-selftest.json"
+      - name: Score frozen filtered corpus
+        run: |
+          cd qualification/onshape-fast-router-fresh-v18-independent
+          OUT_DIR="$GITHUB_WORKSPACE/artifacts/onshape-fast-router-fresh-v18-independent" python score_v18_independent.py
+      - name: Publish direct readback
+        if: always()
+        run: |
+          src="artifacts/onshape-fast-router-fresh-v18-independent"
+          dst="reports/onshape-fast-router-fresh-v18-independent"
+          mkdir -p "$dst"
+          for f in filter-report.json freeze.json architecture-selftest.json summary.json failures.json; do test -f "$src/$f" && cp "$src/$f" "$dst/$f" || true; done
+          printf '{"run_id":"%s","head_sha":"%s"}\n' "$GITHUB_RUN_ID" "$GITHUB_SHA" > "$dst/latest-meta.json"
+          if test -f "$src/summary.json"; then rm -f "$dst/latest-error.json"; else printf '{"state":"NO_SUMMARY"}\n' > "$dst/latest-error.json"; fi
+          git config user.name "cf-exec-plane"
+          git config user.email "actions@users.noreply.github.com"
+          git add "$dst"
+          git commit -m "Report: fresh V18 independent qualification" || exit 0
+          for i in 1 2 3; do git pull --rebase origin main && git push origin HEAD:main && break || sleep $((i*3)); done
