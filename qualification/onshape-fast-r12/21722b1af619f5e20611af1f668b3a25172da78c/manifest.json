@@ -1,0 +1,27 @@
+{
+  "schema": "capability-fabric.deploy.v1",
+  "sequence": 190,
+  "release_id": "onshape-vps-fast-r100-direct-orbit1-paa-storage-r190-chat-file-audio1",
+  "compose_file": "compose.yaml",
+  "health_file": "health.sh",
+  "health_timeout_seconds": 180,
+  "files": {
+    "browser.js": "8f76a0e50fee449787c0cfaf483d8abf6eabc7a9020c88655ff620ccdcfa0637",
+    "capability-fabric-onshape-server.service": "e810d312838a4b857870b2e0126c020e01b28ceaae1ddb9cfd66c3d29993f9f7",
+    "compose.yaml": "545b0a2e06d32c5372c4506d9f9fafc548cf363e7b9e25ff82f807a11f4d5bdd",
+    "core.js": "8e331914df5127292dd5e2259d864c74e7eff7a53ebf71c8f51c102bedf0c58c",
+    "gateway.js": "1b41efb503f082d80d5da4b26bdd698aa4d23923a722de84a7b9fd32cf8a3b6c",
+    "health.sh": "6c81f4b1afe6931806ca8006157a92a754dd9c332d5e042b24dcd1d0595c0160",
+    "onshape-agent.js": "cb68aa715c7fc42ac02755c562e1b16e2b59244be2e058eb2517808bb90e014f",
+    "onshape-agent.test.mjs": "1ab7db1cd5c2c238d9e8ae412ca02b287300101197721a61775bd7432a17b95e",
+    "onshape-request.cjs": "2351bff7878764178f1c6b53e570e3930e82cb3a923f4b91b2a1eda32780be4d",
+    "package.json": "8dec4ff0845de0710034144bd96da433fed96216412ea031f516285f0c79763a",
+    "release-closure.json": "509049c633f883610ef9670e7a9810b96c8760da3c1a15951be33faeaa0c69cc",
+    "server.js": "309e607f4f740b727a3fdeb7b3e1fadb536b8ac21e06d511d371457adc087f75",
+    "telegram-ingress.mjs": "d2bba5f282a4521a1d49b8f9892289acd72b0574366fe05032218454b4a54834",
+    "paa-search-preload.mjs": "755d5e1c478a9a3996763479d33d89607d05616aa4045bedffe75195ae204d15"
+  },
+  "images": [
+    "mcr.microsoft.com/playwright:v1.62.1-resolute@sha256:aebd85bce8056dcdc2269853fd94ea432b6a201da4f0ef125b509489ecd52ddb"
+  ]
+}
