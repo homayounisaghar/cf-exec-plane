@@ -1,6 +1,6 @@
 {
-  "pass": true,
-  "stage": "complete",
+  "pass": false,
+  "stage": "generated_fidelity",
   "generator_model": "qwen/qwen3.8-27b",
   "judge_model": "openai/gpt-oss-20b",
   "direct_a": [
@@ -332,27 +332,27 @@
   "generated": [
     [
       "cal_hide",
-      "لطفا Part 12 رو از ویوپورت مخفی کن."
+      "Part 12 رو توی ویوپورت مخفی کن."
     ],
     [
       "cal_radius",
-      "رادیوس Fillet 7 رو دقیقاً روی 2 mm تنظیم کن."
+      "شعاع Fillet 7 رو دقیقاً روی 2 mm تنظیم کن."
     ],
     [
       "cal_cond",
-      "اگه Part 3 الان مخفی هست، فقط اون رو نشون بده."
+      "اگه Part 3 الان مخفی باشه، فقط اون رو نشون بده."
     ],
     [
       "cal_amb",
-      "یکی از Part 4 یا Part 7 رو مخفی کن، نمی‌دونم کدومش مد نظرته."
+      "یکی از Part 4 یا Part 7 رو مخفی کن."
     ],
     [
       "cal_inspect",
-      "انتخاب رو پاک نکن، فقط یه گزارش فقط‌خواندنی از آیتم‌های انتخاب‌شده بده."
+      "پاک کردن انتخاب رو لغو کن؛ فقط یه گزارش فقط‌خواندنی از ۲ آیتم انتخابی بده."
     ],
     [
       "cal_suppress",
-      "Extrude 9 رو ساپرس کن."
+      "Extrude 9 رو سرکوب کن."
     ],
     [
       "cal_part_delete",
@@ -360,7 +360,7 @@
     ],
     [
       "cal_zoom_correct",
-      "زوم‌این رو لغو کن، به جای اون زوم‌اوت بزن."
+      "زوم‌این رو لغو کن و به جایش زوم‌اوت بزن."
     ]
   ],
   "generated_a": [
@@ -445,19 +445,17 @@
     },
     {
       "id": "cal_inspect",
-      "ok": true,
-      "reason": "ok",
+      "ok": false,
+      "reason": "route",
       "parsed": {
         "scenario_id": "cal_inspect",
-        "route": "do",
-        "op": "viewer.inspect",
-        "args": {
-          "mode": "selection"
-        },
+        "route": "ask",
+        "op": null,
+        "args": {},
         "flags": {
           "ambiguous": false,
           "conditional": false,
-          "multi_effect": false,
+          "multi_effect": true,
           "invalid_quantity": false,
           "negated_only": false
         }
@@ -506,20 +504,17 @@
     },
     {
       "id": "cal_zoom_correct",
-      "ok": true,
-      "reason": "ok",
+      "ok": false,
+      "reason": "route",
       "parsed": {
         "scenario_id": "cal_zoom_correct",
-        "route": "do",
-        "op": "view.move",
-        "args": {
-          "action": "zoom",
-          "direction": "out"
-        },
+        "route": "ask",
+        "op": null,
+        "args": {},
         "flags": {
           "ambiguous": false,
           "conditional": false,
-          "multi_effect": false,
+          "multi_effect": true,
           "invalid_quantity": false,
           "negated_only": false
         }
@@ -669,20 +664,17 @@
     },
     {
       "id": "cal_zoom_correct",
-      "ok": true,
-      "reason": "ok",
+      "ok": false,
+      "reason": "route",
       "parsed": {
         "scenario_id": "cal_zoom_correct",
-        "route": "do",
-        "op": "view.move",
-        "args": {
-          "action": "zoom",
-          "direction": "out"
-        },
+        "route": "ask",
+        "op": null,
+        "args": {},
         "flags": {
           "ambiguous": false,
           "conditional": false,
-          "multi_effect": false,
+          "multi_effect": true,
           "invalid_quantity": false,
           "negated_only": false
         }
@@ -701,69 +693,69 @@
         "rejected_prediction_tokens": null
       },
       "prompt_tokens_details": null,
-      "queue_time": 0.178408418,
-      "prompt_time": 0.063909602,
-      "completion_time": 1.026946332,
-      "total_time": 1.090855934
+      "queue_time": 0.245412575,
+      "prompt_time": 0.051291956,
+      "completion_time": 1.075529113,
+      "total_time": 1.126821069
     },
     {
-      "completion_tokens": 737,
+      "completion_tokens": 750,
       "prompt_tokens": 1037,
-      "total_tokens": 1774,
+      "total_tokens": 1787,
       "completion_tokens_details": {
         "accepted_prediction_tokens": null,
         "audio_tokens": null,
-        "reasoning_tokens": 299,
+        "reasoning_tokens": 312,
         "rejected_prediction_tokens": null
       },
       "prompt_tokens_details": null,
-      "queue_time": 0.069623846,
-      "prompt_time": 0.063320802,
-      "completion_time": 0.771423031,
-      "total_time": 0.834743833
+      "queue_time": 0.004223861,
+      "prompt_time": 0.055276912,
+      "completion_time": 0.819319806,
+      "total_time": 0.874596718
     },
     {
-      "completion_tokens": 339,
+      "completion_tokens": 329,
       "prompt_tokens": 745,
-      "total_tokens": 1084,
+      "total_tokens": 1074,
       "completion_tokens_details": null,
       "prompt_tokens_details": null,
-      "queue_time": 0.087475995,
-      "prompt_time": 0.051095226,
-      "completion_time": 0.644451493,
-      "total_time": 0.695546719
+      "queue_time": 0.095907101,
+      "prompt_time": 0.05454706,
+      "completion_time": 0.632802094,
+      "total_time": 0.687349154
     },
     {
-      "completion_tokens": 805,
-      "prompt_tokens": 1063,
-      "total_tokens": 1868,
+      "completion_tokens": 935,
+      "prompt_tokens": 1050,
+      "total_tokens": 1985,
       "completion_tokens_details": {
         "accepted_prediction_tokens": null,
         "audio_tokens": null,
-        "reasoning_tokens": 367,
+        "reasoning_tokens": 509,
         "rejected_prediction_tokens": null
       },
       "prompt_tokens_details": null,
-      "queue_time": 0.191158042,
-      "prompt_time": 0.062968725,
-      "completion_time": 0.912527787,
-      "total_time": 0.975496512
+      "queue_time": 0.138639226,
+      "prompt_time": 0.061609021,
+      "completion_time": 1.0592403,
+      "total_time": 1.120849321
     },
     {
-      "completion_tokens": 732,
-      "prompt_tokens": 1074,
-      "total_tokens": 1806,
+      "completion_tokens": 664,
+      "prompt_tokens": 1061,
+      "total_tokens": 1725,
       "completion_tokens_details": {
         "accepted_prediction_tokens": null,
         "audio_tokens": null,
-        "reasoning_tokens": 294,
+        "reasoning_tokens": 234,
         "rejected_prediction_tokens": null
       },
       "prompt_tokens_details": null,
-      "queue_time": 0.003193094,
-      "prompt_time": 0.057850809,
-      "completion_time": 0.844218765,
-      "total_time": 0.902069574
+      "queue_time": 0.031666503,
+      "prompt_time": 0.062418581,
+      "completion_time": 0.773876311,
+      "total_time": 0.836294892
     }
   ]
 }
