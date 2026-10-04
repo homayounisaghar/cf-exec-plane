@@ -1,0 +1,9 @@
+{
+  "request_id": "v15-final-hardening-stable10-20261004-1024",
+  "corpus_sha256": "04137cbf8eb0e85933a356d5837c77431e94cde7f0f4772f6f0b797d646f452a",
+  "source_head": "19af066da67cc2b56e41b6680d2fe5aff2682243",
+  "source_file_sha": "25edc8580421d79b6d77f24aad3a4c1c3472a30a",
+  "batch_size": 10,
+  "production_effects": false,
+  "purpose": "stable-batch rerun of unchanged frozen V15-10000 on final foundational hardening candidate"
+}
