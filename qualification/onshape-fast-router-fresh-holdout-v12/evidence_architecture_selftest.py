@@ -250,6 +250,74 @@ def main():
     assert_eq(c,{"route":"do","op":"documented.updateDocumentAttributes","args":{"new_name":"top delete archive 21"}},"document-name-persian")
     checks.append("document-name-persian")
 
+    c,ev=compiled("همین edge رو 0.8 mm bevel کن",{"selection_count":1,"selection_types":["edge"]})
+    assert_eq(c,{"route":"do","op":"feature.from_selection","args":{"feature_type":"chamfer","amount":"0.8 mm"}},"bevel-alias")
+    checks.append("bevel-alias")
+
+    c,ev=compiled("Draft 5 angle 8 degrees")
+    assert_eq(c,{"route":"do","op":"feature.parameter.set","args":{"feature_name":"Draft 5","parameter":"angle","amount":"8 deg"}},"degrees-alias")
+    checks.append("degrees-alias")
+
+    c,ev=compiled("participantها رو بگو")
+    assert_eq(c,{"route":"do","op":"viewer.inspect","args":{"mode":"collaboration"}},"participant-not-pan")
+    checks.append("participant-not-pan")
+
+    c,ev=compiled("صفحه الان چه وضعیه")
+    assert_eq(c,{"route":"do","op":"viewer.inspect","args":{"mode":"state"}},"state-colloquial")
+    checks.append("state-colloquial")
+
+    c,ev=compiled("شعاع Fillet 4 رو ۳٫۵ mm کن")
+    assert_eq(c,{"route":"do","op":"feature.parameter.set","args":{"feature_name":"Fillet 4","parameter":"radius","amount":"3.5 mm"}},"persian-decimal-separator")
+    checks.append("persian-decimal-separator")
+
+    c,ev=compiled("اکسترود 7 دیپث ده میل")
+    assert_eq(c,{"route":"do","op":"feature.parameter.set","args":{"feature_name":"Extrude 7","parameter":"depth","amount":"10 mm"}},"spoken-depth-alias")
+    checks.append("spoken-depth-alias")
+
+    c,ev=compiled("فیلِت 8 ریدیوس دو میل")
+    assert_eq(c,{"route":"do","op":"feature.parameter.set","args":{"feature_name":"Fillet 8","parameter":"radius","amount":"2 mm"}},"spoken-radius-alias")
+    checks.append("spoken-radius-alias")
+
+    c,ev=compiled("نما رو ببر روی top")
+    assert_eq(c,{"route":"do","op":"view.standard","args":{"view":"top"}},"top-view-colloquial")
+    checks.append("top-view-colloquial")
+
+    c,ev=compiled("follow participant",{"collaborator_count":2})
+    assert_eq(c,{"route":"do","op":"view.follow","args":{}},"follow-participant")
+    checks.append("follow-participant")
+
+    c,ev=compiled("camera رو به چپ ببر")
+    assert_eq(c,{"route":"do","op":"view.move","args":{"action":"orbit","direction":"left"}},"camera-orbit-colloquial")
+    checks.append("camera-orbit-colloquial")
+
+    c,ev=compiled("viewport رو یکم ببر راست")
+    assert_eq(c,{"route":"do","op":"view.move","args":{"action":"pan","direction":"right"}},"viewport-pan")
+    checks.append("viewport-pan")
+
+    c,ev=compiled("delete کن Part 5 رو")
+    assert_eq(c,{"route":"do","op":"feature.delete_part","args":{"part_name":"Part 5"}},"english-part-delete")
+    checks.append("english-part-delete")
+
+    c,ev=compiled("move Fillet 12 before Sketch 32")
+    assert_eq(c,{"route":"do","op":"feature.reorder","args":{"source_feature":"Fillet 12","target_feature":"Sketch 32","placement":"before"}},"english-reorder")
+    checks.append("english-reorder")
+
+    c,ev=compiled("rollback after Extrude 5")
+    assert_eq(c,{"route":"do","op":"rollback.set","args":{"after_feature":"Extrude 5"}},"english-rollback")
+    checks.append("english-rollback")
+
+    c,ev=compiled("Extrude 4 فعلاً غیرفعال باشه")
+    assert_eq(c,{"route":"do","op":"feature.patch","args":{"feature_name":"Extrude 4","suppressed":True}},"suppression-colloquial")
+    checks.append("suppression-colloquial")
+
+    c,ev=compiled("Extrude 4 دوباره فعال باشه")
+    assert_eq(c,{"route":"do","op":"feature.patch","args":{"feature_name":"Extrude 4","suppressed":False}},"unsuppression-colloquial")
+    checks.append("unsuppression-colloquial")
+
+    c,ev=compiled("part 9 material titanium")
+    assert_eq(c,{"route":"do","op":"metadata.property.set","args":{"part_name":"Part 9","property":"material","value":"titanium"}},"bare-material-order")
+    checks.append("bare-material-order")
+
     # Explicit payload that is not compatible with the selected operation must never disappear.
     ev=e.extract_evidence("Part 5 رو مخفی کن با اسم Foo",{})
     post=e.accept("part.visibility",{"part_name":"Part 5","visible":False},{})
