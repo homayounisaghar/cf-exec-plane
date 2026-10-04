@@ -350,6 +350,14 @@ def main():
     assert_eq(c,{"route":"do","op":"part.visibility","args":{"part_name":"Part 6","visible":False}},"hide-loanword")
     checks.append("hide-loanword")
 
+    c,ev=compiled("نام Fillet 2 رو بذار fit hide corner 26")
+    assert_eq(c,{"route":"do","op":"feature.patch","args":{"feature_name":"Fillet 2","new_name":"fit hide corner 26"}},"persian-name-synonym-feature-rename")
+    checks.append("persian-name-synonym-feature-rename")
+
+    c,ev=compiled("نام Part 3 رو بذار selection follow")
+    assert_eq(c,{"route":"do","op":"documented.updateWVEPMetadata","args":{"part_name":"Part 3","property":"name","value":"selection follow"}},"persian-name-synonym-part-rename")
+    checks.append("persian-name-synonym-part-rename")
+
     # Metamorphic invariants: neutral conversational envelopes must preserve semantics.
     envelope_bases=[
         ("Part 5 رو مخفی کن",{},{"route":"do","op":"part.visibility","args":{"part_name":"Part 5","visible":False}}),
