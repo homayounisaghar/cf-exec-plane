@@ -1,7 +1,7 @@
 Traceback (most recent call last):
   File "/home/runner/work/cf-exec-plane/cf-exec-plane/qualification/onshape-fast-router-divergent-v15-10000/freeze_gate.py", line 3, in <module>
     from fresh_holdout_v15_10000 import CASES, FAMILY_COUNTS, DIVERGENCE_AXES
-  File "/home/runner/work/cf-exec-plane/cf-exec-plane/qualification/onshape-fast-router-divergent-v15-10000/fresh_holdout_v15_10000.py", line 471, in <module>
-    assert len(set(ids))==10000, "duplicate ids"
-           ^^^^^^^^^^^^^^^^^^^^
-AssertionError: duplicate ids
+  File "/home/runner/work/cf-exec-plane/cf-exec-plane/qualification/onshape-fast-router-divergent-v15-10000/fresh_holdout_v15_10000.py", line 473, in <module>
+    assert len(set(texts))==10000, (len(texts),len(set(texts)))
+           ^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: (10000, 9303)
