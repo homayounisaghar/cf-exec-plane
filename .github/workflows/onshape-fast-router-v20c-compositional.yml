@@ -8,7 +8,7 @@ permissions:
   contents: write
 concurrency:
   group: onshape-fast-router-v20c-compositional
-  cancel-in-progress: false
+  cancel-in-progress: true
 jobs:
   qualify:
     runs-on: ubuntu-latest

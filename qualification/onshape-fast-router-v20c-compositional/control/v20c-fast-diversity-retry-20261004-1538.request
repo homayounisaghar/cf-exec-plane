@@ -1,0 +1,7 @@
+{
+  "request_id": "v20c-fast-diversity-retry-20261004-1538",
+  "reason": "replace expensive broad-trigram pair retrieval with equivalent long-ngram candidate retrieval before LCCS",
+  "candidate_commit": "54580b67a9a61d2463ec3b9ced7a801707bb242b",
+  "fresh_status": "unscored-unfrozen",
+  "production_effects": false
+}

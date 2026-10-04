@@ -82,19 +82,28 @@ def main():
     exact=[S[i]["scenario_id"] for i,n in enumerate(norms) if n in prior_norms]
     if exact: raise SystemExit(f"prior exact overlap count={len(exact)} examples={exact[:10]}")
 
-    trig=defaultdict(set)
-    for idx,(_,_,_,tt) in enumerate(priors):
-        if len(tt)>=3:
-            for j in range(len(tt)-2): trig[tuple(tt[j:j+3])].add(idx)
+    long_idx=defaultdict(set); short_idx=defaultdict(set)
+    for idx,(_,_,_,pt) in enumerate(priors):
+        if len(pt)>=8:
+            for j in range(len(pt)-4):
+                long_idx[tuple(pt[j:j+5])].add(idx)
+        else:
+            for j in range(max(0,len(pt)-2)):
+                short_idx[tuple(pt[j:j+3])].add(idx)
     vals=[]; violations=[]; nearest=[]
     for s in S:
         sid=s["scenario_id"]; tt=toks(rm[sid]["text"]); cand=set()
+        for j in range(max(0,len(tt)-4)):
+            cand.update(long_idx.get(tuple(tt[j:j+5]),()))
         for j in range(max(0,len(tt)-2)):
-            cand.update(trig.get(tuple(tt[j:j+3]),()))
+            cand.update(short_idx.get(tuple(tt[j:j+3]),()))
         best=0.0; meta=None
         for idx in cand:
             name,pid,ptext,pt=priors[idx]
             den=min(len(tt),len(pt))
+            needed=(7*den+9)//10
+            if needed>=5 and not any(tuple(tt[k:k+5]) in {tuple(pt[z:z+5]) for z in range(max(0,len(pt)-4))} for k in range(max(0,len(tt)-4))):
+                continue
             ratio=lccs(tt,pt)/den if den else 0.0
             if ratio>best: best=ratio; meta=(name,pid)
         vals.append(best)
