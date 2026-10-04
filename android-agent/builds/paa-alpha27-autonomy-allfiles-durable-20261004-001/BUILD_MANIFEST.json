@@ -1,0 +1,21 @@
+{
+  "schema": "capability-fabric.android-standard-app-output.v1",
+  "requestId": "paa-alpha27-autonomy-allfiles-durable-20261004-001",
+  "projectId": "personal-android-agent",
+  "checkoutRef": "db005127bf795cf7e010042b6ae149f0bbaf4d57",
+  "application": {
+    "packageId": "com.homayounisaghar.androidagent",
+    "versionName": "0.1.0-alpha27",
+    "versionCode": 27
+  },
+  "expectedSigner": {
+    "alias": "personal_android_agent_line3",
+    "certificateSha256": "e5b102356f271078a3d03e982782c3776e3d9f301c1b24c0e7194f06e5a001fa"
+  },
+  "result": "SUCCESS",
+  "artifact": {
+    "file": "personal-android-agent-release-unsigned.apk",
+    "sha256": "26c57dfad10d57bdf037892eeb05c3f169848bd5b46fe59005876f900fffcf10",
+    "installable": false
+  }
+}
