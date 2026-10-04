@@ -144,7 +144,7 @@
       "d": "a",
       "i": "camera_move"
     },
-    "model_latency_ms": 732.3439339999993,
+    "model_latency_ms": 606.0816060000036,
     "outcome": "correct"
   },
   {
@@ -1778,7 +1778,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 732.3439339999993,
+    "model_latency_ms": 606.0816060000036,
     "outcome": "correct"
   },
   {
@@ -2725,7 +2725,7 @@
       "d": "a",
       "i": "edge_on_selection"
     },
-    "model_latency_ms": 732.3439339999993,
+    "model_latency_ms": 606.0816060000036,
     "outcome": "correct"
   },
   {
@@ -3184,7 +3184,7 @@
       "d": "a",
       "i": "feature_parameter"
     },
-    "model_latency_ms": 732.3439339999993,
+    "model_latency_ms": 606.0816060000036,
     "outcome": "correct"
   },
   {
@@ -3648,8 +3648,8 @@
       "relation": null,
       "relative": null,
       "property": "name",
-      "property_value": "نرم",
-      "name_value": "نرم",
+      "property_value": "نرم کن",
+      "name_value": "نرم کن",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -3673,7 +3673,7 @@
         "op": "feature.patch",
         "args": {
           "feature_name": "Fillet 1",
-          "new_name": "نرم"
+          "new_name": "نرم کن"
         }
       },
       "provenance": {
@@ -3681,7 +3681,7 @@
         "name": "text-span"
       }
     },
-    "outcome": "wrong_material_accepted"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -5286,7 +5286,7 @@
       "d": "a",
       "i": "add_pattern"
     },
-    "model_latency_ms": 732.3439339999993,
+    "model_latency_ms": 606.0816060000036,
     "outcome": "correct"
   },
   {
@@ -6814,7 +6814,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 732.3439339999993,
+    "model_latency_ms": 606.0816060000036,
     "outcome": "correct"
   },
   {
@@ -6879,7 +6879,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 732.3439339999993,
+    "model_latency_ms": 606.0816060000036,
     "outcome": "correct"
   },
   {
@@ -6940,10 +6940,11 @@
       }
     },
     "model_choice": {
+      "id": "syn_esc_08",
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 732.3439339999993,
+    "model_latency_ms": 606.0816060000036,
     "outcome": "correct"
   },
   {
