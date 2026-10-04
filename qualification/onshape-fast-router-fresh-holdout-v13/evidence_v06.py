@@ -74,13 +74,13 @@ def has_any(t, xs):
 _LEADING_ENVELOPE_RE=re.compile(
     r"^(?:(?:لطفاً|لطفا|بی\s*زحمت|بی‌زحمت|اگه میشه|اگر میشه|میشه|الان|یه لحظه|برای من|فقط|"
     r"خب[،,]?|باشه[،,]?|ممنون می شم|ممنون می‌شم|زحمت میشه|وقتی آماده ای|وقتی آماده‌ای|"
-    r"سریع|آروم|دقیقاً|دقیقا|فعلاً|فعلا|اول از همه|اگه امکانش هست[،,]?|می‌خوام)\s+)+",
+    r"سریع|آروم|دقیقاً|دقیقا|فعلاً|فعلا|اول از همه|اگه امکانش هست[،,]?|می‌خوام|می خوام)\s+)+",
     re.I,
 )
 _TRAILING_ENVELOPE_RE=re.compile(
     r"(?:[،,؛;]\s*)?(?:لطفاً|لطفا|بی\s*زحمت|بی‌زحمت|اگه میشه|اگر میشه|مرسی|ممنون|"
     r"همین الان|برای من|فعلاً|فعلا|یه لحظه|و تموم|ممنون ازت|مرسی ازت|اگه اوکیه|"
-    r"اگر امکانش هست|وقتی فرصت داری|لطف می‌کنی|لطفاً انجامش بده|خواهشاً|لطف داری)\s*$",
+    r"اگر امکانش هست|اگه زحمتی نیست|اگر زحمتی نیست|وقتی فرصت داری|لطف می‌کنی|لطف می کنی|لطفاً انجامش بده|خواهشاً|لطف داری)\s*$",
     re.I,
 )
 
@@ -155,11 +155,20 @@ def has_conditional_or_exception(text):
         has_any(t,["به جز","به‌جز","مگر اینکه","در صورتی که","به شرط"])
     )
 
+_DEPENDENT_EFFECT_RE=re.compile(
+    r"(?:\b(?:show|hide|fit|zoom|pan|follow|clear|inspect|suppress|unsuppress|delete)\b|"
+    r"حذف|پاک|مخفی|نشون|نشان|فیت|زوم|فالو|بگو|گزارش)",
+    re.I,
+)
+
 def has_dependent_sequence(text):
     t=low(text)
     if not has_any(t,["قبل از","بعد از","before","after"]):
         return False
-    return len(_ACTION_MARKER_RE.findall(t)) >= 2
+    # rollback/reorder use before/after as a target relation inside one operation.
+    if "rollback" in t:
+        return False
+    return len(_DEPENDENT_EFFECT_RE.findall(t)) >= 2
 
 def parse_int_words(s):
     """Parse one canonical Persian cardinal phrase. Return None on non-cardinal composition.
@@ -533,6 +542,7 @@ def extract_literal_payloads(text):
         r"(?:(?:اسم|نام)\s+.+?\s+رو\s+بذار)\s+(.+?)(?:\s+بساز)?$",
         r"(?:عوض کن به)\s+(.+)$",
         r"\brename\s+document\s+to\s+(.+)$",
+        r"\brename\s+کن\s+به\s+(.+)$",
         r"\bdocument\s+name\s*=\s*(.+)$",
         r"\bnew\s+part\s+studio\s*:\s*(.+)$",
         r"\brename\s+.+?\s+to\s+(.+)$",
@@ -835,13 +845,13 @@ def extract_evidence(text, ctx=None):
 
     feature_target=bool(fs or ctx.get("last_feature"))
     part_target=bool(ps or ctx.get("last_part"))
-    named_feature_context = bool(fs) and (relation is not None or has_any(cue_t,["اسم","rename","پاک","حذف","بنداز دور"]))
+    named_feature_context = bool(fs) and (relation is not None or has_any(cue_t,["اسم","نام","rename","پاک","حذف","بنداز دور"]))
     edge_effect_context = (ctx.get("selection_count",0)>0 or has_any(cue_t,["لبه","انتخاب","selected"]) or has_any(cue_t,["جدید","خالی","بدون انتخاب"]))
     cue("edge_fillet", has_any(cue_t,["فیلت","fillet","فیلِت"]) and edge_effect_context and not named_feature_context)
     cue("edge_chamfer", has_any(cue_t,["پخ","چمفر","chamfer","bevel"]) and edge_effect_context and not named_feature_context)
     cue("part_visibility", visibility is not None and part_target)
     cue("part_property", prop is not None and part_target)
-    cue("feature_rename", name_value is not None and feature_target and has_any(cue_t,["اسم","rename"]))
+    cue("feature_rename", name_value is not None and feature_target and has_any(cue_t,["اسم","نام","rename"]))
     cue("delete", delete_cue and (feature_target or part_target) and not clear_selection)
     cue("reorder", relation is not None and len(fs)>=1 and "rollback" not in cue_t)
     cue("rollback", "rollback" in cue_t)
@@ -857,7 +867,7 @@ def extract_evidence(text, ctx=None):
     cue("follow", has_any(cue_t,["فالو","follow","دنبال کن"]) or (has_any(cue_t,["طرف مقابل","دومی","نفر دوم"]) and "بگیر" in cue_t))
     cue("camera", camera_action is not None)
     cue("create_part_studio", has_any(cue_t,["part studio","پارت استودیو"]) and has_any(cue_t,["بساز","جدید","new"]))
-    cue("rename_document", has_any(cue_t,["داکیومنت","document"]) and has_any(cue_t,["اسم","rename","بشه","بذار"]))
+    cue("rename_document", has_any(cue_t,["داکیومنت","document"]) and has_any(cue_t,["اسم","نام","rename","بشه","بذار"]))
 
     # Clause/scope layer: quantities cannot create fake conjunctions and cancelled
     # clauses cannot create fake effects. Two independent imperative clauses fail closed.
@@ -1003,7 +1013,7 @@ def direct_intent(case, ev):
 
     if ev.get("parameter_hint")=="flip direction" and choose_feature(ev):
         return ("act","feature_parameter")
-    if has_any(t,["اسم","rename"]) and choose_feature(ev):
+    if has_any(t,["اسم","نام","rename"]) and choose_feature(ev):
         return ("act","feature_rename")
     if ev.get("delete_position") and ev.get("feature_word") and ev.get("delete_cue"):
         return ("act","feature_delete")
@@ -1049,7 +1059,7 @@ def direct_intent(case, ev):
     # Generic missing-grounding shapes fail closed locally.
     if choose_feature(ev) and first_quantity(ev) and not has_any(t,["شعاع","radius","عمق","depth","زاویه","angle","flip direction"]) and not str(choose_feature(ev)).lower().startswith("fillet"):
         return ("ask",None)
-    if (choose_part(ev) or ev.get("context_part")) and has_any(t,["اسم","rename"]) and not ev.get("name_value"):
+    if (choose_part(ev) or ev.get("context_part")) and has_any(t,["اسم","نام","rename"]) and not ev.get("name_value"):
         return ("ask",None)
     if has_any(t,["plane","صفحه مرجع"]) and has_any(t,["right","left","top","front"]) and not has_any(t,["به اسم","اسمش","called","named"]):
         return ("ask",None)
