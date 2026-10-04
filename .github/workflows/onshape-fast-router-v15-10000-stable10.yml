@@ -1,0 +1,69 @@
+name: Onshape Fast Router V15 10000 Stable10
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - qualification/onshape-fast-router-divergent-v15-10000/stable-control/*.request
+
+permissions:
+  contents: write
+
+concurrency:
+  group: onshape-fast-router-v15-10000-stable10
+  cancel-in-progress: false
+
+jobs:
+  qualify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Verify frozen corpus
+        run: |
+          mkdir -p artifacts/onshape-fast-router-divergent-v15-10000-stable10
+          cd qualification/onshape-fast-router-divergent-v15-10000
+          OUT_PATH="${{ github.workspace }}/artifacts/onshape-fast-router-divergent-v15-10000-stable10/pre-score-manifest.json" python freeze_gate.py
+      - name: Architecture selftest
+        run: |
+          cd qualification/onshape-fast-router-divergent-v15-10000
+          python evidence_architecture_selftest.py > "${{ github.workspace }}/artifacts/onshape-fast-router-divergent-v15-10000-stable10/architecture-selftest.json"
+      - name: Run unchanged V15 with stable model batching
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          BATCH_SIZE: '10'
+          MAX_BATCH_RETRIES: '2'
+          OUT_DIR: ${{ github.workspace }}/artifacts/onshape-fast-router-divergent-v15-10000-stable10
+        run: |
+          set -o pipefail
+          cd qualification/onshape-fast-router-divergent-v15-10000
+          python run_v15_10000.py 2>&1 | tee "${{ github.workspace }}/artifacts/onshape-fast-router-divergent-v15-10000-stable10/run.log"
+      - name: Analyze failures
+        if: always()
+        env:
+          OUT_DIR: ${{ github.workspace }}/artifacts/onshape-fast-router-divergent-v15-10000-stable10
+        run: |
+          test -f "$OUT_DIR/rows.json" && python qualification/onshape-fast-router-divergent-v15-10000/analyze_report.py || true
+      - name: Publish compact readback
+        if: always()
+        run: |
+          src="artifacts/onshape-fast-router-divergent-v15-10000-stable10"
+          dst="reports/onshape-fast-router-divergent-v15-10000-stable10"
+          mkdir -p "$dst"
+          for f in pre-score-manifest.json architecture-selftest.json corpus-manifest.json failure-analysis.json run.log summary.json; do
+            test -f "$src/$f" && cp "$src/$f" "$dst/$f" || true
+          done
+          if test -f "$src/summary.json"; then rm -f "$dst/latest-error.json"; else printf '{"state":"NO_SUMMARY"}\n' > "$dst/latest-error.json"; fi
+          printf '{"run_id":"%s","head_sha":"%s"}\n' "$GITHUB_RUN_ID" "$GITHUB_SHA" > "$dst/latest-meta.json"
+          git config user.name "cf-exec-plane"
+          git config user.email "actions@users.noreply.github.com"
+          git add "$dst"
+          git commit -m "Report: V15 10000 stable10" || exit 0
+          git pull --rebase origin main
+          git push origin HEAD:main
