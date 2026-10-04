@@ -1,0 +1,6 @@
+{
+  "request_id": "v15-arch-selftest-20261004-i",
+  "source_head": "b795ce3f3f14937681ffca085f50f9ff4ccc9d5a",
+  "selftest_head": "4e4f3163872ff82430a711bdbd345333721e2bdf",
+  "production_effects": false
+}
