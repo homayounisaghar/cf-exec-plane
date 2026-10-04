@@ -1,0 +1,307 @@
+{
+  "checks": 18,
+  "passed": 18,
+  "results": [
+    {
+      "name": "quantity-equivalence-2.5",
+      "ok": true,
+      "detail": [
+        "2.5 mm",
+        "2.5 mm",
+        "2.5 mm"
+      ]
+    },
+    {
+      "name": "spoken-hundredths",
+      "ok": true,
+      "detail": [
+        {
+          "id": "q1",
+          "value": 1.25,
+          "unit": "mm",
+          "text": "یک و بیست و پنج صدم میلی",
+          "span": [
+            3,
+            27
+          ]
+        }
+      ]
+    },
+    {
+      "name": "bare-fraction-edge-mm",
+      "ok": true,
+      "detail": [
+        {
+          "id": "q1",
+          "value": 0.8,
+          "unit": "mm",
+          "text": "هشت دهم",
+          "span": [
+            3,
+            10
+          ],
+          "implicit_unit": true
+        }
+      ]
+    },
+    {
+      "name": "fillet-amount-not-feature-name",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "name": "spoken-feature-name",
+      "ok": true,
+      "detail": [
+        {
+          "id": "f1",
+          "name": "Fillet 2",
+          "span": [
+            0,
+            7
+          ]
+        }
+      ]
+    },
+    {
+      "name": "visibility-negation",
+      "ok": true,
+      "detail": [
+        {
+          "accepted": true,
+          "reason": "ok",
+          "compiled": {
+            "route": "do",
+            "op": "part.visibility",
+            "args": {
+              "part_name": "Part 7",
+              "visible": true
+            }
+          },
+          "provenance": {
+            "part": "text/context",
+            "state": "text-negation-aware"
+          }
+        },
+        {
+          "accepted": true,
+          "reason": "ok",
+          "compiled": {
+            "route": "do",
+            "op": "part.visibility",
+            "args": {
+              "part_name": "Part 7",
+              "visible": false
+            }
+          },
+          "provenance": {
+            "part": "text/context",
+            "state": "text-negation-aware"
+          }
+        }
+      ]
+    },
+    {
+      "name": "flip-direction-boolean",
+      "ok": true,
+      "detail": [
+        {
+          "accepted": true,
+          "reason": "ok",
+          "compiled": {
+            "route": "do",
+            "op": "feature.parameter.set",
+            "args": {
+              "feature_name": "Extrude 1",
+              "parameter": "flip direction",
+              "value": true
+            }
+          },
+          "provenance": {
+            "feature": "text/context",
+            "value": "text"
+          }
+        },
+        {
+          "accepted": true,
+          "reason": "ok",
+          "compiled": {
+            "route": "do",
+            "op": "feature.parameter.set",
+            "args": {
+              "feature_name": "Extrude 1",
+              "parameter": "flip direction",
+              "value": false
+            }
+          },
+          "provenance": {
+            "feature": "text/context",
+            "value": "text"
+          }
+        }
+      ]
+    },
+    {
+      "name": "relative-add-subtract",
+      "ok": true,
+      "detail": [
+        {
+          "accepted": true,
+          "reason": "ok",
+          "compiled": {
+            "route": "do",
+            "op": "feature.parameter.set",
+            "args": {
+              "feature_name": "Fillet 2",
+              "parameter": "radius",
+              "amount": "5 mm"
+            }
+          },
+          "provenance": {
+            "feature": "text/context",
+            "delta": "q1",
+            "current": "verified-context",
+            "operator": "add"
+          }
+        },
+        {
+          "accepted": true,
+          "reason": "ok",
+          "compiled": {
+            "route": "do",
+            "op": "feature.parameter.set",
+            "args": {
+              "feature_name": "Fillet 2",
+              "parameter": "radius",
+              "amount": "3.5 mm"
+            }
+          },
+          "provenance": {
+            "feature": "text/context",
+            "delta": "q1",
+            "current": "verified-context",
+            "operator": "subtract"
+          }
+        }
+      ]
+    },
+    {
+      "name": "unspecified-extrude-fail-closed",
+      "ok": true,
+      "detail": {
+        "accepted": false,
+        "reason": "feature-parameter-ungrounded",
+        "compiled": {
+          "route": "ask",
+          "op": null,
+          "args": {}
+        }
+      }
+    },
+    {
+      "name": "multi-action-residue",
+      "ok": true,
+      "detail": [
+        [
+          "hide_show",
+          "color"
+        ],
+        {
+          "accepted": false,
+          "reason": "semantic-residue-multi-action",
+          "compiled": {
+            "route": "ask",
+            "op": null,
+            "args": {}
+          }
+        }
+      ]
+    },
+    {
+      "name": "rollback-single-action",
+      "ok": true,
+      "detail": [
+        [
+          "rollback"
+        ],
+        "act",
+        "rollback"
+      ]
+    },
+    {
+      "name": "camera-inverse",
+      "ok": true,
+      "detail": {
+        "accepted": true,
+        "reason": "ok",
+        "compiled": {
+          "route": "do",
+          "op": "view.move",
+          "args": {
+            "action": "orbit",
+            "direction": "left"
+          }
+        },
+        "provenance": {
+          "direction": "text/context",
+          "magnitude": null
+        }
+      }
+    },
+    {
+      "name": "fit-selection",
+      "ok": true,
+      "detail": {
+        "accepted": true,
+        "reason": "ok",
+        "compiled": {
+          "route": "do",
+          "op": "view.fit",
+          "args": {
+            "action": "fit_selection"
+          }
+        },
+        "provenance": {
+          "target": "text/context"
+        }
+      }
+    },
+    {
+      "name": "part-studio-name-clean",
+      "ok": true,
+      "detail": "rough shell"
+    },
+    {
+      "name": "rename-without-value",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "design:وزنشو کم کن ولی سفت بمونه",
+      "ok": true,
+      "detail": [
+        "think",
+        null,
+        true
+      ]
+    },
+    {
+      "name": "design:جوری تغییرش بده که قالب گیری راحت تر شه",
+      "ok": true,
+      "detail": [
+        "think",
+        null,
+        true
+      ]
+    },
+    {
+      "name": "design:فیچرهای به دردنخور رو جمع کن",
+      "ok": true,
+      "detail": [
+        "think",
+        null,
+        true
+      ]
+    }
+  ]
+}

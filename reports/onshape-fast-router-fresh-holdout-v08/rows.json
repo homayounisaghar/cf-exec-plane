@@ -39,6 +39,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "مدل رو یه خورده به راست بچرخون",
       "design": false,
       "unsupported": false,
       "camera_action": "orbit",
@@ -110,6 +111,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "یکم rotate left",
       "design": false,
       "unsupported": false,
       "camera_action": "orbit",
@@ -181,6 +183,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "یه ذره ساعتگرد",
       "design": false,
       "unsupported": false,
       "camera_action": "orbit",
@@ -252,6 +255,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "پادساعتگرد بچرخونش",
       "design": false,
       "unsupported": false,
       "camera_action": "orbit",
@@ -335,6 +339,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "45 درجه سمت راست بچرخون",
       "design": false,
       "unsupported": false,
       "camera_action": "orbit",
@@ -407,6 +412,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "نما رو بکش پایین",
       "design": false,
       "unsupported": false,
       "camera_action": "pan",
@@ -478,6 +484,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "pan left کن",
       "design": false,
       "unsupported": false,
       "camera_action": "pan",
@@ -549,6 +556,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "یه کم zoom in",
       "design": false,
       "unsupported": false,
       "camera_action": "zoom",
@@ -620,6 +628,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "زوم اوت کن",
       "design": false,
       "unsupported": false,
       "camera_action": "zoom",
@@ -690,6 +699,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "کل قطعه رو توی کادر جا بده",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -767,6 +777,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "روی چیزایی که انتخاب کردم fit کن",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -812,7 +823,7 @@
         }
       ]
     },
-    "source": "model_intent",
+    "source": "evidence_reflex",
     "decision": "act",
     "intent": "top_view",
     "evidence": {
@@ -835,6 +846,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "نمای بالا رو بیار",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -842,7 +854,7 @@
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
-      "top_view": false,
+      "top_view": true,
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
@@ -862,12 +874,6 @@
         "view": "text"
       }
     },
-    "model_choice": {
-      "id": "v08_c12",
-      "d": "a",
-      "i": "top_view"
-    },
-    "model_latency_ms": 1129.9641890000025,
     "outcome": "correct"
   },
   {
@@ -884,7 +890,7 @@
         }
       ]
     },
-    "source": "model_intent",
+    "source": "evidence_reflex",
     "decision": "act",
     "intent": "clear_selection",
     "evidence": {
@@ -907,6 +913,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "selection رو پاک کن",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -915,7 +922,7 @@
       "fit_all": false,
       "fit_selection": false,
       "top_view": false,
-      "clear_selection": false,
+      "clear_selection": true,
       "edge_kind": null,
       "multi_action": false,
       "action_cues": [
@@ -932,12 +939,6 @@
       },
       "provenance": {}
     },
-    "model_choice": {
-      "id": "v08_c13",
-      "d": "a",
-      "i": "clear_selection"
-    },
-    "model_latency_ms": 1129.9641890000025,
     "outcome": "correct"
   },
   {
@@ -952,9 +953,9 @@
         }
       ]
     },
-    "source": "model_intent",
-    "decision": "act",
-    "intent": "camera_move",
+    "source": "evidence_reflex",
+    "decision": "ask",
+    "intent": null,
     "evidence": {
       "text": "نمای front رو بده",
       "quantities": [],
@@ -975,6 +976,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "نمای front رو بده",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -990,19 +992,13 @@
     },
     "post": {
       "accepted": false,
-      "reason": "camera-ungrounded",
+      "reason": "clarification",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       }
     },
-    "model_choice": {
-      "id": "v08_c14",
-      "d": "a",
-      "i": "camera_move"
-    },
-    "model_latency_ms": 1129.9641890000025,
     "outcome": "correct"
   },
   {
@@ -1044,6 +1040,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "الان چی انتخاب کردم؟",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -1089,7 +1086,7 @@
         }
       ]
     },
-    "source": "model_intent",
+    "source": "evidence_reflex",
     "decision": "act",
     "intent": "inspect",
     "evidence": {
@@ -1112,6 +1109,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "وضعیت viewer الان چطوره",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -1139,12 +1137,6 @@
         "mode": "text"
       }
     },
-    "model_choice": {
-      "id": "v08_i02",
-      "d": "a",
-      "i": "inspect"
-    },
-    "model_latency_ms": 1129.9641890000025,
     "outcome": "correct"
   },
   {
@@ -1186,6 +1178,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "ببین توی سشن چند نفریم",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -1254,6 +1247,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "طرف مقابلم رو فالو کن",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -1299,7 +1293,7 @@
         }
       ]
     },
-    "source": "model_intent",
+    "source": "evidence_reflex",
     "decision": "act",
     "intent": "follow",
     "evidence": {
@@ -1322,6 +1316,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "نفر دوم رو دنبال کن",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -1349,12 +1344,6 @@
         "candidate": "text/context"
       }
     },
-    "model_choice": {
-      "id": "v08_i05",
-      "d": "a",
-      "i": "follow"
-    },
-    "model_latency_ms": 1129.9641890000025,
     "outcome": "correct"
   },
   {
@@ -1371,7 +1360,7 @@
         }
       ]
     },
-    "source": "model_intent",
+    "source": "evidence_reflex",
     "decision": "act",
     "intent": "follow",
     "evidence": {
@@ -1394,6 +1383,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "یکی از اون دوتا رو دنبال کن",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -1416,12 +1406,6 @@
         "args": {}
       }
     },
-    "model_choice": {
-      "id": "v08_i06",
-      "d": "a",
-      "i": "follow"
-    },
-    "model_latency_ms": 1129.9641890000025,
     "outcome": "correct"
   },
   {
@@ -1484,6 +1468,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "روی این لبه ها فیلت یک میل",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -1576,6 +1561,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "این انتخاب رو چمفر دو میل کن",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -1670,6 +1656,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "پخ یک و هفتاد و پنج صدم میلی روی همینا",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -1772,6 +1759,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "فیلت چهار دهم روی انتخاب",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -1866,6 +1854,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "فیلت 2.5 میلی روی این دوتا",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -1958,6 +1947,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "پخ نیم میل روی همین انتخاب",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -2036,6 +2026,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "این انتخاب رو chamfer کن",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -2110,6 +2101,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "سه میل فیلت بزن",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -2185,6 +2177,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "یه fillet خالی شش میل بساز",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -2269,6 +2262,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "یه پخ جدید نیم میل بدون لبه بساز",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -2367,6 +2361,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "دو میل فیلت کن بعد یک میل پخ",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -2437,6 +2432,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "فیلت کن و بعد مخفیش کن",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -2525,6 +2521,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "fillet 2 شعاعش بشه 8 میل",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -2619,6 +2616,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "عمق extrude 5 رو پانزده میل بذار",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -2664,9 +2662,9 @@
         }
       ]
     },
-    "source": "model_intent",
-    "decision": "act",
-    "intent": "feature_parameter",
+    "source": "evidence_reflex",
+    "decision": "ask",
+    "intent": null,
     "evidence": {
       "text": "Extrude 5 رو پانزده میل کن",
       "quantities": [
@@ -2707,6 +2705,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "extrude 5 رو پانزده میل کن",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -2722,19 +2721,13 @@
     },
     "post": {
       "accepted": false,
-      "reason": "feature-parameter-ungrounded",
+      "reason": "clarification",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       }
     },
-    "model_choice": {
-      "id": "v08_f03",
-      "d": "a",
-      "i": "feature_parameter"
-    },
-    "model_latency_ms": 1129.9641890000025,
     "outcome": "correct"
   },
   {
@@ -2749,9 +2742,9 @@
         }
       ]
     },
-    "source": "model_intent",
-    "decision": "act",
-    "intent": "feature_parameter",
+    "source": "evidence_reflex",
+    "decision": "ask",
+    "intent": null,
     "evidence": {
       "text": "Draft 3 رو روی 9 درجه بذار",
       "quantities": [
@@ -2792,6 +2785,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "draft 3 رو روی 9 درجه بذار",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -2807,19 +2801,13 @@
     },
     "post": {
       "accepted": false,
-      "reason": "feature-parameter-ungrounded",
+      "reason": "clarification",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       }
     },
-    "model_choice": {
-      "id": "v08_f04",
-      "d": "a",
-      "i": "feature_parameter"
-    },
-    "model_latency_ms": 1129.9641890000025,
     "outcome": "correct"
   },
   {
@@ -2883,6 +2871,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "زاویه draft 3 رو نه درجه کن",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -2975,6 +2964,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "این فیلت رو دو میل بیشترش کن",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -3068,6 +3058,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "این فیلت رو یک میل کمتر کن",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -3144,6 +3135,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "این اکسترود رو یه کم بیشتر کن",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -3217,6 +3209,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "extrude 6 رو خاموش کن",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -3297,6 +3290,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "extrude 6 رو unsuppress کن",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -3377,6 +3371,7 @@
       "property": "name",
       "property_value": "نرم کن",
       "name_value": "نرم کن",
+      "cue_text": "اسم fillet 7 رو بذار       ",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -3449,6 +3444,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "آخرین فیچر رو حذف کن",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -3528,6 +3524,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "extrude 7 رو پاک کن",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -3609,6 +3606,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "flip direction برای extrude 2 off باشه",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -3690,6 +3688,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "part 3 رو hide کن",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -3772,6 +3771,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "part 3 رو دوباره show کن",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -3854,6 +3854,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "cap رو نشون نده",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -3937,6 +3938,7 @@
       "property": "color",
       "property_value": "green",
       "name_value": null,
+      "cue_text": "cap رو سبز کن",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -4022,6 +4024,7 @@
       "property": "color",
       "property_value": "black",
       "name_value": null,
+      "cue_text": "part 6 رو مشکی کن",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -4107,6 +4110,7 @@
       "property": "name",
       "property_value": "cover",
       "name_value": "cover",
+      "cue_text": "اسم part 8 بشه      ",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -4192,6 +4196,7 @@
       "property": "material",
       "property_value": "Aluminum",
       "name_value": null,
+      "cue_text": "متریال part 4 رو آلومینیوم کن",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -4275,6 +4280,7 @@
       "property": "description",
       "property_value": "outer cover",
       "name_value": null,
+      "cue_text": "description part 4 رو بذار outer cover",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -4356,6 +4362,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "part 9 رو حذف کن",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -4428,6 +4435,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "همین پارت رو پاک کن",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -4503,6 +4511,7 @@
       "property": "color",
       "property_value": "blue",
       "name_value": null,
+      "cue_text": "part 3 رو آبی کن و قایمش کن",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -4544,9 +4553,9 @@
         }
       ]
     },
-    "source": "model_intent",
-    "decision": "act",
-    "intent": "part_property",
+    "source": "evidence_reflex",
+    "decision": "ask",
+    "intent": null,
     "evidence": {
       "text": "اسم همین پارت رو عوض کن",
       "quantities": [],
@@ -4567,6 +4576,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "اسم همین پارت رو عوض کن",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -4582,19 +4592,13 @@
     },
     "post": {
       "accepted": false,
-      "reason": "part-property-ungrounded",
+      "reason": "clarification",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       }
     },
-    "model_choice": {
-      "id": "v08_p12",
-      "d": "a",
-      "i": "part_property"
-    },
-    "model_latency_ms": 1129.9641890000025,
     "outcome": "correct"
   },
   {
@@ -4636,6 +4640,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "یه صفحه مرجع خالی بساز",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -4707,6 +4712,7 @@
       "property": "name",
       "property_value": "datum side",
       "name_value": "datum side",
+      "cue_text": "یه plane به اسم            بساز",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -4752,9 +4758,9 @@
         }
       ]
     },
-    "source": "model_intent",
-    "decision": "act",
-    "intent": "add_plane",
+    "source": "evidence_reflex",
+    "decision": "ask",
+    "intent": null,
     "evidence": {
       "text": "plane روی Right درست کن",
       "quantities": [],
@@ -4775,6 +4781,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "plane روی right درست کن",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -4790,19 +4797,13 @@
     },
     "post": {
       "accepted": false,
-      "reason": "plane-reference-needs-provider-shape",
+      "reason": "clarification",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       }
     },
-    "model_choice": {
-      "id": "v08_d03",
-      "d": "a",
-      "i": "add_plane"
-    },
-    "model_latency_ms": 1129.9641890000025,
     "outcome": "correct"
   },
   {
@@ -4867,6 +4868,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "part 2 رو linear pattern چهار تایی با فاصله 12 میل کن",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -4915,7 +4917,7 @@
         }
       ]
     },
-    "source": "model_intent",
+    "source": "evidence_reflex",
     "decision": "ask",
     "intent": null,
     "evidence": {
@@ -4958,6 +4960,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "part 2 رو چهارتا کن هر دوازده میل",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -4973,15 +4976,14 @@
     },
     "post": {
       "accepted": false,
-      "reason": "api-failure",
+      "reason": "clarification",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       }
     },
-    "error": "HTTP 429: {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01m40md9dfev0vsx6yved4nm6y` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199902, Requested 2473. Please try again in 17m6s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
-    "outcome": "api_failure"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -5041,6 +5043,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "fillet 3 رو بالای extrude 6 ببر",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -5134,6 +5137,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "extrude 6 رو زیر sketch 4 بذار",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -5217,6 +5221,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "rollback قبل extrude 4",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -5287,6 +5292,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "rollback رو ببر آخر",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -5336,7 +5342,7 @@
     },
     "source": "evidence_reflex",
     "decision": "act",
-    "intent": "fit",
+    "intent": "create_part_studio",
     "evidence": {
       "text": "یه Part Studio بساز به اسم fit test",
       "quantities": [],
@@ -5357,12 +5363,13 @@
       "property": "name",
       "property_value": "fit test",
       "name_value": "fit test",
+      "cue_text": "یه part studio بساز به اسم         ",
       "design": false,
       "unsupported": false,
       "camera_action": null,
       "camera_direction": null,
       "camera_inverse": false,
-      "fit_all": true,
+      "fit_all": false,
       "fit_selection": false,
       "top_view": false,
       "clear_selection": false,
@@ -5377,16 +5384,16 @@
       "reason": "ok",
       "compiled": {
         "route": "do",
-        "op": "view.fit",
+        "op": "documented.createPartStudio",
         "args": {
-          "action": "fit"
+          "new_name": "fit test"
         }
       },
       "provenance": {
-        "target": "text/context"
+        "name": "text-span"
       }
     },
-    "outcome": "wrong_reversible_accepted"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -5427,6 +5434,7 @@
       "property": "name",
       "property_value": "shell final",
       "name_value": "shell final",
+      "cue_text": "اسم document بشه            ",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -5497,6 +5505,7 @@
       "property": "name",
       "property_value": "shell archive",
       "name_value": "shell archive",
+      "cue_text": "rename document to              ",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -5540,8 +5549,8 @@
         }
       ]
     },
-    "source": "model_intent",
-    "decision": "ask",
+    "source": "evidence_reflex",
+    "decision": "think",
     "intent": null,
     "evidence": {
       "text": "این قسمت رو طوری بهتر کن که محکم تر باشه",
@@ -5563,7 +5572,8 @@
       "property": null,
       "property_value": null,
       "name_value": null,
-      "design": false,
+      "cue_text": "این قسمت رو طوری بهتر کن که محکم تر باشه",
+      "design": true,
       "unsupported": false,
       "camera_action": null,
       "camera_direction": null,
@@ -5578,15 +5588,14 @@
     },
     "post": {
       "accepted": false,
-      "reason": "api-failure",
+      "reason": "design-escalation",
       "compiled": {
-        "route": "ask",
+        "route": "think",
         "op": null,
         "args": {}
       }
     },
-    "error": "HTTP 429: {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01m40md9dfev0vsx6yved4nm6y` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199902, Requested 2473. Please try again in 17m6s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
-    "outcome": "api_failure"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -5600,8 +5609,8 @@
         }
       ]
     },
-    "source": "model_intent",
-    "decision": "ask",
+    "source": "evidence_reflex",
+    "decision": "think",
     "intent": null,
     "evidence": {
       "text": "وزن قطعه رو کم کن ولی ضعیف نشه",
@@ -5623,7 +5632,8 @@
       "property": null,
       "property_value": null,
       "name_value": null,
-      "design": false,
+      "cue_text": "وزن قطعه رو کم کن ولی ضعیف نشه",
+      "design": true,
       "unsupported": false,
       "camera_action": null,
       "camera_direction": null,
@@ -5638,15 +5648,14 @@
     },
     "post": {
       "accepted": false,
-      "reason": "api-failure",
+      "reason": "design-escalation",
       "compiled": {
-        "route": "ask",
+        "route": "think",
         "op": null,
         "args": {}
       }
     },
-    "error": "HTTP 429: {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01m40md9dfev0vsx6yved4nm6y` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199902, Requested 2473. Please try again in 17m6s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
-    "outcome": "api_failure"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -5660,8 +5669,8 @@
         }
       ]
     },
-    "source": "model_intent",
-    "decision": "ask",
+    "source": "evidence_reflex",
+    "decision": "think",
     "intent": null,
     "evidence": {
       "text": "برای تولید انبوه مناسب ترش کن",
@@ -5683,7 +5692,8 @@
       "property": null,
       "property_value": null,
       "name_value": null,
-      "design": false,
+      "cue_text": "برای تولید انبوه مناسب ترش کن",
+      "design": true,
       "unsupported": false,
       "camera_action": null,
       "camera_direction": null,
@@ -5698,15 +5708,14 @@
     },
     "post": {
       "accepted": false,
-      "reason": "api-failure",
+      "reason": "design-escalation",
       "compiled": {
-        "route": "ask",
+        "route": "think",
         "op": null,
         "args": {}
       }
     },
-    "error": "HTTP 429: {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01m40md9dfev0vsx6yved4nm6y` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199902, Requested 2473. Please try again in 17m6s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
-    "outcome": "api_failure"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -5720,8 +5729,8 @@
         }
       ]
     },
-    "source": "model_intent",
-    "decision": "ask",
+    "source": "evidence_reflex",
+    "decision": "think",
     "intent": null,
     "evidence": {
       "text": "فیچرهای غیرضروری رو تمیز کن",
@@ -5743,7 +5752,8 @@
       "property": null,
       "property_value": null,
       "name_value": null,
-      "design": false,
+      "cue_text": "فیچرهای غیرضروری رو تمیز کن",
+      "design": true,
       "unsupported": false,
       "camera_action": null,
       "camera_direction": null,
@@ -5758,15 +5768,14 @@
     },
     "post": {
       "accepted": false,
-      "reason": "api-failure",
+      "reason": "design-escalation",
       "compiled": {
-        "route": "ask",
+        "route": "think",
         "op": null,
         "args": {}
       }
     },
-    "error": "HTTP 429: {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01m40md9dfev0vsx6yved4nm6y` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199902, Requested 2473. Please try again in 17m6s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
-    "outcome": "api_failure"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -5780,7 +5789,7 @@
         }
       ]
     },
-    "source": "model_intent",
+    "source": "evidence_reflex",
     "decision": "ask",
     "intent": null,
     "evidence": {
@@ -5803,6 +5812,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "اون رو حذف کن",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -5820,15 +5830,14 @@
     },
     "post": {
       "accepted": false,
-      "reason": "api-failure",
+      "reason": "clarification",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       }
     },
-    "error": "HTTP 429: {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01m40md9dfev0vsx6yved4nm6y` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199902, Requested 2473. Please try again in 17m6s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
-    "outcome": "api_failure"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -5843,8 +5852,8 @@
       ]
     },
     "source": "model_intent",
-    "decision": "ask",
-    "intent": null,
+    "decision": "act",
+    "intent": "edge_on_selection",
     "evidence": {
       "text": "نیم میلش کن",
       "quantities": [],
@@ -5865,6 +5874,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "نیم میلش کن",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -5880,15 +5890,20 @@
     },
     "post": {
       "accepted": false,
-      "reason": "api-failure",
+      "reason": "selection-ungrounded",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       }
     },
-    "error": "HTTP 429: {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01m40md9dfev0vsx6yved4nm6y` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199902, Requested 2473. Please try again in 17m6s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
-    "outcome": "api_failure"
+    "model_choice": {
+      "id": "v08_x06",
+      "d": "a",
+      "i": "edge_on_selection"
+    },
+    "model_latency_ms": 478.7262920000011,
+    "outcome": "correct"
   },
   {
     "case": {
@@ -5902,7 +5917,7 @@
         }
       ]
     },
-    "source": "model_intent",
+    "source": "evidence_reflex",
     "decision": "ask",
     "intent": null,
     "evidence": {
@@ -5925,6 +5940,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "همون کاری که قبلا کردی اینجا هم بکن",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -5940,15 +5956,14 @@
     },
     "post": {
       "accepted": false,
-      "reason": "api-failure",
+      "reason": "clarification",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       }
     },
-    "error": "HTTP 429: {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01m40md9dfev0vsx6yved4nm6y` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199902, Requested 2473. Please try again in 17m6s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
-    "outcome": "api_failure"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -5962,7 +5977,7 @@
         }
       ]
     },
-    "source": "model_intent",
+    "source": "evidence_reflex",
     "decision": "ask",
     "intent": null,
     "evidence": {
@@ -5985,8 +6000,9 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "فایل step بده",
       "design": false,
-      "unsupported": false,
+      "unsupported": true,
       "camera_action": null,
       "camera_direction": null,
       "camera_inverse": false,
@@ -6000,15 +6016,14 @@
     },
     "post": {
       "accepted": false,
-      "reason": "api-failure",
+      "reason": "clarification",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       }
     },
-    "error": "HTTP 429: {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01m40md9dfev0vsx6yved4nm6y` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199902, Requested 2473. Please try again in 17m6s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
-    "outcome": "api_failure"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -6045,6 +6060,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "share کن با تیم",
       "design": false,
       "unsupported": true,
       "camera_action": null,
@@ -6104,6 +6120,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
+      "cue_text": "داکیومنت رو public کن",
       "design": false,
       "unsupported": true,
       "camera_action": null,
