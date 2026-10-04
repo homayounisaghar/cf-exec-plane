@@ -1,0 +1,151 @@
+name: Onshape Fast Router V20 Blind Semantic
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - qualification/onshape-fast-router-v20-blind-semantic/control/*.request
+
+permissions:
+  contents: write
+
+concurrency:
+  group: onshape-fast-router-v20-blind-semantic
+  cancel-in-progress: false
+
+jobs:
+  qualify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install model client
+        run: python -m pip install "openai>=1.50,<3"
+
+      - name: Syntax gate
+        run: |
+          python -m py_compile qualification/onshape-fast-router-v20-blind-semantic/scenario_builder.py
+          python -m py_compile qualification/onshape-fast-router-v20-blind-semantic/llm_client.py
+          python -m py_compile qualification/onshape-fast-router-v20-blind-semantic/generate_utterances.py
+          python -m py_compile qualification/onshape-fast-router-v20-blind-semantic/judge_utterances.py
+          python -m py_compile qualification/onshape-fast-router-v20-blind-semantic/fidelity_round.py
+          python -m py_compile qualification/onshape-fast-router-v20-blind-semantic/diversity_freeze.py
+          python -m py_compile qualification/onshape-fast-router-v20-blind-semantic/score_v20.py
+          python -m py_compile qualification/onshape-fast-router-v20-blind-semantic/evidence_v06.py
+          python -m py_compile qualification/onshape-fast-router-v20-blind-semantic/evidence_architecture_selftest.py
+
+      - name: Build structured scenario universe and pre-language scope filter
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/artifacts/onshape-fast-router-v20-blind-semantic"
+          python qualification/onshape-fast-router-v20-blind-semantic/scenario_builder.py             --out-dir "$GITHUB_WORKSPACE/artifacts/onshape-fast-router-v20-blind-semantic"
+
+      - name: Require model credential
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: test -n "$GROQ_API_KEY"
+
+      - name: Blind realization and dual semantic fidelity
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GROQ_API_KEY_BACKUP: ${{ secrets.GROQ_API_KEY_BACKUP }}
+          GENERATOR_MODEL: openai/gpt-oss-120b
+          JUDGE_MODEL: openai/gpt-oss-20b
+        run: |
+          set -eu
+          ART="$GITHUB_WORKSPACE/artifacts/onshape-fast-router-v20-blind-semantic"
+          Q="$GITHUB_WORKSPACE/qualification/onshape-fast-router-v20-blind-semantic"
+          input="$ART/language-input-attempt1.jsonl"
+          prior=""
+          last_accepted=""
+          for round in 1 2 3; do
+            if ! test -s "$input"; then break; fi
+            sand="$RUNNER_TEMP/v20-round-$round"
+            rm -rf "$sand"; mkdir -p "$sand"
+            cp "$Q/llm_client.py" "$Q/generate_utterances.py" "$Q/judge_utterances.py" "$sand/"
+            cp "$input" "$sand/input.jsonl"
+            (
+              cd "$sand"
+              python generate_utterances.py --input input.jsonl --output generated.jsonl --attempt "$round" --batch-size 100
+              python judge_utterances.py --input generated.jsonl --output judge-a.jsonl --variant A --batch-size 100
+              python judge_utterances.py --input generated.jsonl --output judge-b.jsonl --variant B --batch-size 100
+            )
+            cp "$sand/generated.jsonl" "$ART/generated-round-$round.jsonl"
+            cp "$sand/judge-a.jsonl" "$ART/judge-a-round-$round.jsonl"
+            cp "$sand/judge-b.jsonl" "$ART/judge-b-round-$round.jsonl"
+            next="$ART/language-input-attempt$((round+1)).jsonl"
+            accepted="$ART/accepted-round-$round.jsonl"
+            args=""
+            if test -n "$prior"; then args="--prior-accepted $prior"; fi
+            python "$Q/fidelity_round.py"               --scenarios "$ART/apprentice-scenarios.jsonl"               --generated "$ART/generated-round-$round.jsonl"               --judge-a "$ART/judge-a-round-$round.jsonl"               --judge-b "$ART/judge-b-round-$round.jsonl"               --round "$round"               --accepted-out "$accepted"               --retry-out "$next"               --report-out "$ART/fidelity-round-$round.json"               $args
+            prior="$accepted"
+            last_accepted="$accepted"
+            input="$next"
+          done
+          test -n "$last_accepted"
+          cp "$last_accepted" "$ART/accepted-final.jsonl"
+          if test -s "$input"; then
+            echo "::error::V20 semantic fidelity unresolved after 3 attempts"
+            exit 4
+          fi
+          test "$(wc -l < "$ART/accepted-final.jsonl")" -eq 9800
+
+      - name: Diversity gate and immutable freeze
+        run: |
+          ART="$GITHUB_WORKSPACE/artifacts/onshape-fast-router-v20-blind-semantic"
+          python qualification/onshape-fast-router-v20-blind-semantic/diversity_freeze.py             --scenarios "$ART/apprentice-scenarios.jsonl"             --accepted "$ART/accepted-final.jsonl"             --qualification-root "$GITHUB_WORKSPACE/qualification"             --out-dir "$ART"             --round-reports "$ART"/fidelity-round-*.json
+
+      - name: Architecture selftest
+        run: |
+          ART="$GITHUB_WORKSPACE/artifacts/onshape-fast-router-v20-blind-semantic"
+          cd qualification/onshape-fast-router-v20-blind-semantic
+          python evidence_architecture_selftest.py > "$ART/architecture-selftest.json"
+
+      - name: Single blind score
+        run: |
+          set -eu
+          ART="$GITHUB_WORKSPACE/artifacts/onshape-fast-router-v20-blind-semantic"
+          if test -f "$GITHUB_WORKSPACE/reports/onshape-fast-router-v20-blind-semantic/first-score.lock"; then
+            KIND=REGRESSION_ONLY
+          else
+            KIND=FRESH_FIRST_SCORE
+          fi
+          echo "$KIND" > "$ART/evidence-kind.txt"
+          EVIDENCE_KIND="$KIND" python qualification/onshape-fast-router-v20-blind-semantic/score_v20.py             --corpus "$ART/frozen-corpus.jsonl"             --freeze "$ART/freeze.json"             --out-dir "$ART"
+
+      - name: Publish direct readback
+        if: always()
+        run: |
+          set -eu
+          src="artifacts/onshape-fast-router-v20-blind-semantic"
+          dst="reports/onshape-fast-router-v20-blind-semantic"
+          mkdir -p "$dst"
+          for f in scenario-universe.jsonl apprentice-scenarios.jsonl scope-filter.json                    accepted-final.jsonl frozen-corpus.jsonl fidelity-report.json diversity-report.json                    freeze.json architecture-selftest.json summary.json failures.json evidence-kind.txt                    fidelity-round-1.json fidelity-round-2.json fidelity-round-3.json; do
+            test -f "$src/$f" && cp "$src/$f" "$dst/$f" || true
+          done
+          printf '{"run_id":"%s","head_sha":"%s"}\n' "$GITHUB_RUN_ID" "$GITHUB_SHA" > "$dst/latest-meta.json"
+          if test -f "$src/summary.json" && test "$(cat "$src/evidence-kind.txt" 2>/dev/null || true)" = "FRESH_FIRST_SCORE"; then
+            printf '{"run_id":"%s","head_sha":"%s"}\n' "$GITHUB_RUN_ID" "$GITHUB_SHA" > "$dst/first-score.lock"
+          fi
+          if test -f "$src/summary.json"; then rm -f "$dst/latest-error.json"; else printf '{"state":"NO_SUMMARY"}\n' > "$dst/latest-error.json"; fi
+          git config user.name "cf-exec-plane"
+          git config user.email "actions@users.noreply.github.com"
+          git add "$dst"
+          git commit -m "Report: V20 blind semantic qualification" || exit 0
+          for i in 1 2 3; do git pull --rebase origin main && git push origin HEAD:main && break || sleep $((i*3)); done
+
+      - name: Upload V20 evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: onshape-fast-router-v20-${{ github.run_id }}
+          path: artifacts/onshape-fast-router-v20-blind-semantic/
+          if-no-files-found: warn
+          retention-days: 30
