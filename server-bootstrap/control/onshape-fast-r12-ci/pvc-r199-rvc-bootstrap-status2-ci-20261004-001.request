@@ -1,0 +1,4 @@
+request_id=pvc-r199-rvc-bootstrap-status2-ci-20261004-001
+candidate_commit=f50cacbe7bbeec1ad4158b26aeff00ca7f6fdba6
+expected_sequence=199
+expected_release=onshape-vps-fast-r100-direct-orbit1-paa-storage-r199-rvc-bootstrap-status2
