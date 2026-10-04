@@ -1,0 +1,6 @@
+{
+  "request_id": "v16-frozen-hardening-r2-20261004",
+  "source_head": "cbd9e0678242e66212ffba399174ec1072d05253",
+  "frozen_corpus_sha256": "fddeb56f107a7c4eb6e26c105e9c85ff8c8adccb0f126166199a736f28e50657",
+  "production_effects": false
+}
