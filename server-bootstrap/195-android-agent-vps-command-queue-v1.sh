@@ -33,7 +33,9 @@ import time
 from datetime import datetime, timezone, timedelta
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import parse_qs, urlparse
+from urllib.error import HTTPError
+from urllib.parse import parse_qs, quote, urlparse
+from urllib.request import urlopen
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec, padding
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
@@ -206,14 +208,23 @@ def status(request_id):
             "seq":row[0],"action":row[1],"created_at_ms":row[2],"expires_at_ms":row[3],
             "receipt":None}
     try:
-        ic=sqlite3.connect("file:"+INGEST_DB+"?mode=ro",uri=True,timeout=2)
-        try:
-            rr=ic.execute("SELECT payload_json FROM receipts WHERE command_id=?",(request_id,)).fetchone()
-        finally:
-            ic.close()
-        if rr: result["receipt"]=json.loads(rr[0])
-    except Exception:
-        pass
+        receipt_url="http://127.0.0.1:8792/local/v1/receipts?command_id="+quote(request_id,safe="")
+        with urlopen(receipt_url,timeout=2) as response:
+            raw=response.read(262144)
+            if response.read(1):
+                raise ValueError("receipt_response_size")
+        value=json.loads(raw)
+        if value.get("schema")!="personal-android-agent.ingest-receipt-read.v1":
+            raise ValueError("receipt_schema")
+        payload=value.get("payload")
+        if not isinstance(payload,dict):
+            raise ValueError("receipt_payload")
+        result["receipt"]=payload
+    except HTTPError as e:
+        if e.code!=404:
+            result["receipt_lookup_error"]="http_"+str(e.code)
+    except Exception as e:
+        result["receipt_lookup_error"]=e.__class__.__name__
     result["state"]="COMPLETED" if result["receipt"] else ("EXPIRED" if row[3]<int(time.time()*1000) else "PENDING")
     return result
 
