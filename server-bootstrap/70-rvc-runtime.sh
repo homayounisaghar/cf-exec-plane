@@ -3,12 +3,6 @@ set -euo pipefail
 umask 022
 
 [[ "$(id -u)" -eq 0 ]] || { echo "RVC_RUNTIME_REQUIRES_ROOT" >&2; exit 10; }
-. /etc/os-release
-[[ "${ID:-}" == "ubuntu" && "${VERSION_ID:-}" == "24.04" ]] || {
-  echo "RVC_RUNTIME_UNSUPPORTED_OS id=${ID:-unknown} version=${VERSION_ID:-unknown}" >&2
-  exit 11
-}
-
 RVC_COMMIT="81eed5e8f68b6bed1789f682fe78cdd324495afc"
 HUBERT_REVISION="1be9d36ece685661920e1a7cb36eb0437c1e5581"
 RMVPE_REVISION="0d7ebae452fb102c695b08f4e6f546be00603425"
@@ -28,6 +22,85 @@ unit_dst=/etc/systemd/system/capability-fabric-rvc-worker.service
 
 [[ -f "$worker_src" && -f "$unit_src" ]] || { echo "RVC_BOOTSTRAP_BUNDLE_INCOMPLETE" >&2; exit 12; }
 
+status_file="$root/bootstrap-status.json"
+tmpdir=''
+CURRENT_STAGE="bootstrap_prepare"
+BOOTSTRAP_OK=0
+
+write_status() {
+  local state="$1" stage="$2" detail="${3:-}"
+  python3 - "$status_file" "$state" "$stage" "$detail" "$RVC_COMMIT" <<'PY'
+import json,os,sys,tempfile
+from datetime import datetime,timezone
+path,state,stage,detail,commit=sys.argv[1:]
+os.makedirs(os.path.dirname(path),exist_ok=True)
+payload={
+  "schema":"capability-fabric.rvc-bootstrap-status.v1",
+  "state":state,
+  "stage":stage,
+  "detail":detail[:500],
+  "rvc_commit":commit,
+  "updated_at":datetime.now(timezone.utc).isoformat(),
+}
+fd,tmp=tempfile.mkstemp(prefix=".bootstrap-status.",dir=os.path.dirname(path),text=True)
+try:
+    with os.fdopen(fd,"w",encoding="utf-8") as out:
+        json.dump(payload,out,separators=(",",":"))
+        out.write("\n")
+    os.chmod(tmp,0o644)
+    os.replace(tmp,path)
+finally:
+    try:
+        if os.path.exists(tmp): os.unlink(tmp)
+    except OSError:
+        pass
+PY
+}
+
+cleanup_bootstrap() {
+  [[ -z "$tmpdir" ]] || rm -rf "$tmpdir"
+  if [[ -n "${incoming:-}" && -e "$incoming" && "$BOOTSTRAP_OK" != 1 ]]; then
+    rm -rf "$incoming"
+  fi
+}
+
+on_exit() {
+  local rc=$?
+  cleanup_bootstrap
+  if [[ "$rc" -ne 0 ]]; then
+    write_status "FAILED" "$CURRENT_STAGE" "exit_code=$rc"
+  elif [[ "$BOOTSTRAP_OK" != 1 ]]; then
+    write_status "FAILED" "$CURRENT_STAGE" "bootstrap exited before ready marker"
+  fi
+}
+trap on_exit EXIT
+
+command -v python3 >/dev/null 2>&1 || { echo "RVC_SYSTEM_PYTHON_REQUIRED" >&2; exit 13; }
+
+if ! id -u cf-rvc >/dev/null 2>&1; then
+  useradd --system --home-dir /nonexistent --shell /usr/sbin/nologin cf-rvc
+fi
+install -d -m 0755 -o root -g root "$root" "$releases"
+install -d -m 0750 -o root -g cf-rvc "$models"
+install -d -m 0755 -o root -g root /usr/local/libexec
+write_status "RUNNING" "$CURRENT_STAGE" "installing supervisor"
+
+install -m 0755 -o root -g root "$worker_src" "$worker_dst"
+install -m 0644 -o root -g root "$unit_src" "$unit_dst"
+systemctl daemon-reload
+systemctl enable capability-fabric-rvc-worker.service >/dev/null
+systemctl restart capability-fabric-rvc-worker.service
+
+CURRENT_STAGE="os_check"
+write_status "RUNNING" "$CURRENT_STAGE" "validating host OS"
+. /etc/os-release
+[[ "${ID:-}" == "ubuntu" && "${VERSION_ID:-}" == "24.04" ]] || {
+  echo "RVC_RUNTIME_UNSUPPORTED_OS id=${ID:-unknown} version=${VERSION_ID:-unknown}" >&2
+  exit 11
+}
+
+CURRENT_STAGE="apt_dependencies"
+write_status "RUNNING" "$CURRENT_STAGE" "installing OS prerequisites"
 export DEBIAN_FRONTEND=noninteractive
 apt-get update
 apt-get install -y --no-install-recommends \
@@ -35,24 +108,17 @@ apt-get install -y --no-install-recommends \
   python3.12 python3.12-venv python3.12-dev \
   libsndfile1 libportaudio2
 
-if ! id -u cf-rvc >/dev/null 2>&1; then
-  useradd --system --home-dir /nonexistent --shell /usr/sbin/nologin cf-rvc
-fi
-
-install -d -m 0755 -o root -g root "$root" "$releases"
-install -d -m 0750 -o root -g cf-rvc "$models"
-install -d -m 0755 -o root -g root /usr/local/libexec
-
 if [[ -e "$release" ]]; then
   [[ -f "$release/.cf-rvc-runtime.json" ]] || {
     echo "RVC_RELEASE_COLLISION existing release lacks marker" >&2
     exit 20
   }
 else
+  CURRENT_STAGE="rvc_source"
+  write_status "RUNNING" "$CURRENT_STAGE" "downloading pinned RVC source"
   rm -rf "$incoming"
   install -d -m 0755 -o root -g root "$incoming"
   tmpdir="$(mktemp -d)"
-  trap 'rm -rf "$tmpdir" "$incoming"' EXIT
 
   curl -fL --retry 5 --retry-delay 2 --connect-timeout 15 \
     "https://codeload.github.com/RVC-Project/Retrieval-based-Voice-Conversion-WebUI/tar.gz/$RVC_COMMIT" \
@@ -63,6 +129,8 @@ else
     exit 21
   }
 
+  CURRENT_STAGE="python_environment"
+  write_status "RUNNING" "$CURRENT_STAGE" "creating pinned CPU Python environment"
   python3.12 -m venv "$incoming/.venv"
   "$incoming/.venv/bin/python" -m pip install --upgrade "pip>=24,<26" "setuptools>=75,<81" "wheel>=0.45,<1"
 
@@ -73,6 +141,8 @@ else
     "$tmpdir/requirements.txt"
   "$incoming/.venv/bin/python" -m pip install --no-cache-dir -r "$tmpdir/requirements.txt"
 
+  CURRENT_STAGE="inference_assets"
+  write_status "RUNNING" "$CURRENT_STAGE" "downloading pinned HuBERT and RMVPE assets"
   install -d -m 0755 "$incoming/assets/hubert_base" "$incoming/assets/rmvpe"
   curl -fL --retry 5 --retry-delay 2 --connect-timeout 15 \
     "https://huggingface.co/lj1995/VoiceConversionWebUI/resolve/$HUBERT_REVISION/hubert_base/config.json" \
@@ -104,6 +174,8 @@ print(json.dumps({
 PY
   )
 
+  CURRENT_STAGE="runtime_finalize"
+  write_status "RUNNING" "$CURRENT_STAGE" "finalizing immutable runtime release"
   cat > "$incoming/.cf-rvc-runtime.json" <<EOF
 {
   "schema": "capability-fabric.rvc-runtime.v1",
@@ -117,17 +189,16 @@ EOF
   chown -R root:root "$incoming"
   chmod -R go-w "$incoming"
   mv "$incoming" "$release"
-  trap 'rm -rf "$tmpdir"' EXIT
-  rm -rf "$tmpdir"
+  tmpdir=''
 fi
 
+CURRENT_STAGE="runtime_activate"
+write_status "RUNNING" "$CURRENT_STAGE" "activating pinned runtime"
 ln -sfn "$release" "$current"
-install -m 0755 -o root -g root "$worker_src" "$worker_dst"
-install -m 0644 -o root -g root "$unit_src" "$unit_dst"
-systemctl daemon-reload
-systemctl enable capability-fabric-rvc-worker.service >/dev/null
 systemctl restart capability-fabric-rvc-worker.service
 
+CURRENT_STAGE="runtime_verify"
+write_status "RUNNING" "$CURRENT_STAGE" "verifying loopback supervisor and runtime"
 status=''
 for _ in $(seq 1 60); do
   status="$(curl -fsS --max-time 3 http://127.0.0.1:8794/status 2>/dev/null || true)"
@@ -160,6 +231,9 @@ if ss -lnt | awk '$4 ~ /^(0\.0\.0\.0|\[::\]|\*):8794$/ {bad=1} END{exit bad?0:1}
   exit 31
 fi
 
+CURRENT_STAGE="complete"
+write_status "READY" "$CURRENT_STAGE" "runtime ready; owner model intentionally separate"
+BOOTSTRAP_OK=1
 printf 'CF_RVC_RUNTIME=ready\n'
 printf 'CF_RVC_COMMIT=%s\n' "$RVC_COMMIT"
 printf 'CF_RVC_LOOPBACK_ONLY=pass\n'
