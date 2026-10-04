@@ -779,9 +779,9 @@ def extract_evidence(text, ctx=None):
         visibility=True
     elif part_visibility_target and (re.search(r"(?:نشون|نشان)\s+نده",cue_t) or "نشون نده" in cue_t or "نشان نده" in cue_t):
         visibility=False
-    elif part_visibility_target and has_any(cue_t,["مخفی","قایم","پنهان","hide","هاید","نامرئی","invisible","قایم بشه","نمایش رو ببند","نمایش را ببند","نشونش نده","نشانش نده","از جلوی چشم بردار","از نما بردار","از توی نما بردار","دیده نشه","دیده نشود","نمایش داده نشود","نمایش داده نشه","نمایش را خاموش","نمایش رو خاموش"]):
+    elif part_visibility_target and (has_any(cue_t,["مخفی","قایم","پنهان","hide","هاید","نامرئی","invisible","قایم بشه","نمایش رو ببند","نمایش را ببند","نشونش نده","نشانش نده","از جلوی چشم بردار","از نما بردار","از توی نما بردار","دیده نشه","دیده نشود","نمایش داده نشود","نمایش داده نشه","نمایش را خاموش","نمایش رو خاموش"]) or re.search(r"نمایش\s+(?:Part\s+\d+|پارت\s+\S+)\s+(?:را|رو)\s+ببند",cue_t,re.I)):
         visibility=False
-    elif part_visibility_target and has_any(cue_t,["نشون بده","نشان بده","نشونش بده","نشانش بده","show","visible","مرئی","نمایش رو باز","نمایش را باز","پیدا باشه","پیدا باشد","به دید برگردان","به دید برگردون","دوباره بیار","دوباره توی viewport بیار","برگردونش توی نما","برگردون تو نما","برگردون توی نما","نمایش داده شود","نمایش داده بشه","نمایش را روشن","نمایش رو روشن"]):
+    elif part_visibility_target and (has_any(cue_t,["نشون بده","نشان بده","نشونش بده","نشانش بده","show","visible","مرئی","نمایش رو باز","نمایش را باز","پیدا باشه","پیدا باشد","به دید برگردان","به دید برگردون","دوباره بیار","دوباره توی viewport بیار","برگردونش توی نما","برگردون تو نما","برگردون توی نما","نمایش داده شود","نمایش داده بشه","نمایش را روشن","نمایش رو روشن"]) or re.search(r"نمایش\s+(?:Part\s+\d+|پارت\s+\S+)\s+(?:را|رو)\s+باز\s+کن",cue_t,re.I)):
         visibility=True
     elif part_visibility_target and has_any(cue_t,["دیده بشه","دیده بشود","دیده شه","دوباره دیده"]):
         visibility=True
@@ -875,11 +875,11 @@ def extract_evidence(text, ctx=None):
     elif camera_action and re.search(r"\b(left|چپ)\b",cue_t): camera_direction="left"
     elif camera_action and re.search(r"\b(up|بالا)\b",cue_t): camera_direction="up"
     elif camera_action and re.search(r"\b(down|پایین)\b",cue_t): camera_direction="down"
-    if has_any(cue_t,["زیادی شد","برش گردون","برگرد","عقب تر","عقب‌تر","برعکس کن","وارونه کن","خلاف همون حرکت","خلافش","خلاف جهت قبلی","جهت قبلی رو برعکس","جهت آخرین حرکت","آخرین حرکت دوربین رو برگردون","برعکس آخرین مسیر","جهت مخالف","حرکت قبل را در جهت مخالف"]):
+    if has_any(cue_t,["زیادی شد","برش گردون","برگرد","عقب تر","عقب‌تر","برعکس کن","وارونه کن","خلاف همون حرکت","خلاف حرکت قبلی","خلاف حرکت قبل","خلافش","خلاف جهت قبلی","جهت قبلی رو برعکس","جهت آخرین حرکت","آخرین حرکت دوربین رو برگردون","برعکس آخرین مسیر","جهت مخالف","حرکت قبل را در جهت مخالف"]):
         camera_inverse=True
     if camera_action=="zoom":
-        zoom_out=has_any(cue_t,["دورتر شو","دور تر شو","دور شو","دورترش کن","دور ترش کن","دورتر برو","ازش دور شو","ازش دورتر شو","از مدل فاصله بگیر","فاصله دید رو بیشتر","فاصله بیشتری بگیرد","فاصله دوربین با قطعه بیشتر","بزرگنمایی را کمتر","بزرگ نمایی رو کم","ریزتر","اوت","out","بیرون"])
-        zoom_in=has_any(cue_t,["نزدیک تر شو","نزدیک‌تر شو","نزدیک شو","نزدیک‌ترش کن","نزدیک ترش کن","نزدیک‌تر شود","نزدیک تر شود","فاصله دید رو کمتر","فاصله دوربین با قطعه کمتر","بزرگنمایی را بیشتر","بزرگ نمایی رو زیاد","درشت‌تر","داخل","zoom in"])
+        zoom_out=has_any(cue_t,["دورتر شو","دور تر شو","دور شو","دورترش کن","دور ترش کن","دورتر برو","ازش دور شو","ازش دورتر شو","از مدل فاصله بگیر","فاصله دید رو بیشتر","فاصله بیشتری بگیرد","فاصله دوربین با قطعه بیشتر","بزرگنمایی را کمتر","بزرگ نمایی رو کم","ریزتر","ریز تر","اوت","out","بیرون"])
+        zoom_in=has_any(cue_t,["نزدیک تر شو","نزدیک‌تر شو","نزدیک شو","نزدیک‌ترش کن","نزدیک ترش کن","نزدیک‌تر شود","نزدیک تر شود","فاصله دید رو کمتر","فاصله دوربین با قطعه کمتر","بزرگنمایی را بیشتر","بزرگ نمایی رو زیاد","درشت‌تر","درشت تر","داخل","zoom in"])
         if zoom_out and zoom_in:
             camera_direction=None
         elif zoom_out:
@@ -898,7 +898,7 @@ def extract_evidence(text, ctx=None):
         camera_direction=lm.get("direction")
 
     fit_selection_cue = has_any(cue_t,[
-        "انتخاب","selection","انتخابم","همین انتخاب","انتخاب ها","انتخاب‌ها","چیزای انتخاب","چیزهای انتخاب","چیزهای انتخاب شده","چیزهای انتخاب‌شده"
+        "انتخاب","selection","انتخابم","همین انتخاب","انتخاب ها","انتخاب‌ها","چیزای انتخاب","چیزهای انتخاب","چیزایی که گرفتم","چیزهایی که گرفتم","چیزهای گرفته شده","چیزهای انتخاب شده","چیزهای انتخاب‌شده"
     ])
     fit_all_cue = has_any(cue_t,[
         "کل مدل","همه مدل","کلش","همه اش","همه‌اش","همه چی","همه‌چی","کل چیزی که داریم","همه هندسه","تمام مدل","همه قطعه","همهٔ قطعه","کل هندسه"
@@ -962,7 +962,7 @@ def extract_evidence(text, ctx=None):
     parameter_hint=None
     feature_target_present=bool(fs or ctx.get("last_feature"))
     if feature_target_present:
-        if re.search(r"(?:flip\s+direction|جهت\s+flip|flip\s+جهت|جهت\s+برعکس|گزینه\s+flip|\bflip\b)",cue_t,re.I): parameter_hint="flip direction"
+        if re.search(r"(?:flip\s+direction|جهت\s+flip|flip\s+جهت|جهت\s+(?:برعکس|معکوس)|گزینه\s+flip|\bflip\b)",cue_t,re.I): parameter_hint="flip direction"
         elif has_any(cue_t,["عمق","depth","دیپث"]): parameter_hint="depth"
         elif has_any(cue_t,["زاویه","angle"]): parameter_hint="angle"
         elif has_any(cue_t,["شعاع","radius","ریدیوس"]): parameter_hint="radius"
@@ -1052,12 +1052,12 @@ def extract_evidence(text, ctx=None):
     cue("inspect", inspect_target is not None)
     follow_cue = (
         has_any(cue_t,["فالو","follow","دنبال کن","دنبال‌کردن","دنبال کردن","دنبال","sync","سینک"]) or
-        (has_any(cue_t,["طرف مقابل","دومی","نفر دوم","participant مقابل","همکار روبرو","همکار دوم","همکار دیگر","اون یکی همکار","آن یکی همکار","نفر دیگه","نفر دیگر"]) and has_any(cue_t,["بگیر","وصل کن","وصل شو","دنبال","sync","سینک"]))
+        (has_any(cue_t,["طرف مقابل","دومی","نفر دوم","participant مقابل","همکار روبرو","همکار دوم","همکار دیگر","اون یکی همکار","آن یکی همکار","نفر دیگه","نفر دیگر","دید نفر مقابل","دوربین همکار"]) and has_any(cue_t,["بگیر","وصل کن","وصل شو","وصل","ببر","دنبال","sync","سینک"]))
     )
     cue("follow", follow_cue)
     cue("camera", camera_action is not None)
     part_studio_create = has_any(cue_t,["part studio","پارت استودیو"]) and has_any(cue_t,["بساز","جدید","new","create","تازه","ایجاد","اضافه","workspace","محیط","تب"])
-    document_rename = has_any(cue_t,["داکیومنت","document","سند"]) and name_value is not None and rename_cue
+    document_rename = has_any(cue_t,["داکیومنت","document","سند","فایل فعلی","اسم فایل"]) and name_value is not None and rename_cue
     cue("create_part_studio", part_studio_create)
     cue("rename_document", document_rename)
 
