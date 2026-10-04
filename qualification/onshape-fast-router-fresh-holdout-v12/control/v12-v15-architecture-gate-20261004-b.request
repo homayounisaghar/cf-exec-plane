@@ -1,0 +1,8 @@
+{
+  "request_id": "onshape-fast-router-v12-v15-architecture-gate-20261004-b",
+  "source_repo": "homayounisaghar/capability-fabric",
+  "source_ref": "work/onshape-fast-router-v15-hardening",
+  "source_head": "2997269f00e86bd9582f06354cc88f697371e51a",
+  "purpose": "post-selftest V12 regression gate for V15 architecture hardening",
+  "production_effects": false
+}
