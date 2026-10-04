@@ -51,6 +51,12 @@ def main():
     assert_eq(c,{"route":"do","op":"viewer.selection.clear","args":{}},"clear-selection-semantic")
     checks.append("clear-selection-semantic")
 
+    c,ev=compiled("همین چیزی که موس روشه رو انتخاب کن")
+    assert_eq(ev.get("selection_action"),"select","selection-mutation-typed")
+    assert_eq(ev.get("inspect_target"),None,"selection-mutation-not-inspect")
+    assert_eq(c,{"route":"ask","op":None,"args":{}},"selection-mutation-fails-closed")
+    checks.append("selection-mutation-vs-inspect")
+
     for text,want in [
         ("یه ذره خلاف عقربه ها بچرخون",("view.move",{"action":"orbit","direction":"counterclockwise"})),
         ("یه قدم ازش دور شو",("view.move",{"action":"zoom","direction":"out"})),
