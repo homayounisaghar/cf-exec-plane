@@ -34,10 +34,43 @@ jobs:
           python -m py_compile qualification/onshape-fast-router-evidence-v06/fresh_holdout_v08.py
           python -m py_compile qualification/onshape-fast-router-evidence-v06/run_v08.py
           python -m py_compile qualification/onshape-fast-router-evidence-v06/invariants_v08.py
+          python -m py_compile qualification/onshape-fast-router-evidence-v06/fresh_holdout_v09.py
+          python -m py_compile qualification/onshape-fast-router-evidence-v06/run_v09.py
       - name: Require Groq credential
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
         run: test -n "$GROQ_API_KEY"
+      - name: Run fresh frozen holdout v09
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          BATCH_SIZE: '10'
+          MAX_BATCH_RETRIES: '8'
+          OUT_DIR: ${{ github.workspace }}/artifacts/onshape-fast-router-fresh-holdout-v09
+        run: |
+          cd qualification/onshape-fast-router-evidence-v06
+          python run_v09.py
+
+      - name: Publish v09 direct readback
+        if: always()
+        run: |
+          set -eu
+          src="artifacts/onshape-fast-router-fresh-holdout-v09"
+          dst="reports/onshape-fast-router-fresh-holdout-v09"
+          mkdir -p "$dst"
+          if test -f "$src/summary.json"; then
+            cp "$src/summary.json" "$dst/summary.json"
+            cp "$src/rows.json" "$dst/rows.json"
+          else
+            printf '{"state":"NO_SUMMARY"}\n' > "$dst/latest-error.json"
+          fi
+          printf '{"run_id":"%s","head_sha":"%s","via":"v06-proven-pipeline"}\n' "$GITHUB_RUN_ID" "$GITHUB_SHA" > "$dst/latest-meta.json"
+          git config user.name "cf-exec-plane"
+          git config user.email "actions@users.noreply.github.com"
+          git add "$dst"
+          git commit -m "Report: Onshape fresh holdout v09 via v06 pipeline" || exit 0
+          git pull --rebase origin main
+          git push origin HEAD:main
+
       - name: Run v06 qualification
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
