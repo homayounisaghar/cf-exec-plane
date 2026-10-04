@@ -1,1 +1,1502 @@
-[]
+[
+  {
+    "id": "v17_sup_0003",
+    "category": "suppress",
+    "text": "اگه می‌تونی regeneration برای Extrude 6 فعلاً خاموش باشد",
+    "expected": [
+      {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 6",
+          "suppressed": true
+        }
+      }
+    ],
+    "compiled": {
+      "route": "do",
+      "op": "feature.patch",
+      "args": {
+        "feature_name": "Extrude 6",
+        "suppressed": false
+      }
+    },
+    "outcome": "wrong_material_accepted",
+    "effect_ok": false,
+    "reason": "ok",
+    "action_families": [
+      "feature_suppression"
+    ],
+    "quantity_issues": []
+  },
+  {
+    "id": "v17_sup_0007",
+    "category": "suppress",
+    "text": "برای من regeneration برای Extrude 10 فعلاً خاموش باشد",
+    "expected": [
+      {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 10",
+          "suppressed": true
+        }
+      }
+    ],
+    "compiled": {
+      "route": "do",
+      "op": "feature.patch",
+      "args": {
+        "feature_name": "Extrude 10",
+        "suppressed": false
+      }
+    },
+    "outcome": "wrong_material_accepted",
+    "effect_ok": false,
+    "reason": "ok",
+    "action_families": [
+      "feature_suppression"
+    ],
+    "quantity_issues": []
+  },
+  {
+    "id": "v17_sup_0011",
+    "category": "suppress",
+    "text": "حالا regeneration برای Extrude 14 فعلاً خاموش باشد؛ ممنون",
+    "expected": [
+      {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 14",
+          "suppressed": true
+        }
+      }
+    ],
+    "compiled": {
+      "route": "do",
+      "op": "feature.patch",
+      "args": {
+        "feature_name": "Extrude 14",
+        "suppressed": false
+      }
+    },
+    "outcome": "wrong_material_accepted",
+    "effect_ok": false,
+    "reason": "ok",
+    "action_families": [
+      "feature_suppression"
+    ],
+    "quantity_issues": []
+  },
+  {
+    "id": "v17_sup_0015",
+    "category": "suppress",
+    "text": "فقط regeneration برای Extrude 18 فعلاً خاموش باشد؛ ممنون",
+    "expected": [
+      {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 18",
+          "suppressed": true
+        }
+      }
+    ],
+    "compiled": {
+      "route": "do",
+      "op": "feature.patch",
+      "args": {
+        "feature_name": "Extrude 18",
+        "suppressed": false
+      }
+    },
+    "outcome": "wrong_material_accepted",
+    "effect_ok": false,
+    "reason": "ok",
+    "action_families": [
+      "feature_suppression"
+    ],
+    "quantity_issues": []
+  },
+  {
+    "id": "v17_sup_0019",
+    "category": "suppress",
+    "text": "ببین regeneration برای Extrude 22 فعلاً خاموش باشد؛ ممنون",
+    "expected": [
+      {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 22",
+          "suppressed": true
+        }
+      }
+    ],
+    "compiled": {
+      "route": "do",
+      "op": "feature.patch",
+      "args": {
+        "feature_name": "Extrude 22",
+        "suppressed": false
+      }
+    },
+    "outcome": "wrong_material_accepted",
+    "effect_ok": false,
+    "reason": "ok",
+    "action_families": [
+      "feature_suppression"
+    ],
+    "quantity_issues": []
+  },
+  {
+    "id": "v17_sup_0023",
+    "category": "suppress",
+    "text": "اگه می‌تونی regeneration برای Extrude 26 فعلاً خاموش باشد لطفاً",
+    "expected": [
+      {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 26",
+          "suppressed": true
+        }
+      }
+    ],
+    "compiled": {
+      "route": "do",
+      "op": "feature.patch",
+      "args": {
+        "feature_name": "Extrude 26",
+        "suppressed": false
+      }
+    },
+    "outcome": "wrong_material_accepted",
+    "effect_ok": false,
+    "reason": "ok",
+    "action_families": [
+      "feature_suppression"
+    ],
+    "quantity_issues": []
+  },
+  {
+    "id": "v17_sup_0027",
+    "category": "suppress",
+    "text": "برای من regeneration برای Extrude 30 فعلاً خاموش باشد لطفاً",
+    "expected": [
+      {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 30",
+          "suppressed": true
+        }
+      }
+    ],
+    "compiled": {
+      "route": "do",
+      "op": "feature.patch",
+      "args": {
+        "feature_name": "Extrude 30",
+        "suppressed": false
+      }
+    },
+    "outcome": "wrong_material_accepted",
+    "effect_ok": false,
+    "reason": "ok",
+    "action_families": [
+      "feature_suppression"
+    ],
+    "quantity_issues": []
+  },
+  {
+    "id": "v17_sup_0031",
+    "category": "suppress",
+    "text": "حالا regeneration برای Extrude 34 فعلاً خاموش باشد، همین",
+    "expected": [
+      {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 34",
+          "suppressed": true
+        }
+      }
+    ],
+    "compiled": {
+      "route": "do",
+      "op": "feature.patch",
+      "args": {
+        "feature_name": "Extrude 34",
+        "suppressed": false
+      }
+    },
+    "outcome": "wrong_material_accepted",
+    "effect_ok": false,
+    "reason": "ok",
+    "action_families": [
+      "feature_suppression"
+    ],
+    "quantity_issues": []
+  },
+  {
+    "id": "v17_sup_0035",
+    "category": "suppress",
+    "text": "فقط regeneration برای Extrude 38 فعلاً خاموش باشد، همین",
+    "expected": [
+      {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 38",
+          "suppressed": true
+        }
+      }
+    ],
+    "compiled": {
+      "route": "do",
+      "op": "feature.patch",
+      "args": {
+        "feature_name": "Extrude 38",
+        "suppressed": false
+      }
+    },
+    "outcome": "wrong_material_accepted",
+    "effect_ok": false,
+    "reason": "ok",
+    "action_families": [
+      "feature_suppression"
+    ],
+    "quantity_issues": []
+  },
+  {
+    "id": "v17_sup_0039",
+    "category": "suppress",
+    "text": "ببین regeneration برای Extrude 42 فعلاً خاموش باشد، همین",
+    "expected": [
+      {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 42",
+          "suppressed": true
+        }
+      }
+    ],
+    "compiled": {
+      "route": "do",
+      "op": "feature.patch",
+      "args": {
+        "feature_name": "Extrude 42",
+        "suppressed": false
+      }
+    },
+    "outcome": "wrong_material_accepted",
+    "effect_ok": false,
+    "reason": "ok",
+    "action_families": [
+      "feature_suppression"
+    ],
+    "quantity_issues": []
+  },
+  {
+    "id": "v17_sup_0043",
+    "category": "suppress",
+    "text": "اگه می‌تونی regeneration برای Extrude 46 فعلاً خاموش باشد، باشه؟",
+    "expected": [
+      {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 46",
+          "suppressed": true
+        }
+      }
+    ],
+    "compiled": {
+      "route": "do",
+      "op": "feature.patch",
+      "args": {
+        "feature_name": "Extrude 46",
+        "suppressed": false
+      }
+    },
+    "outcome": "wrong_material_accepted",
+    "effect_ok": false,
+    "reason": "ok",
+    "action_families": [
+      "feature_suppression"
+    ],
+    "quantity_issues": []
+  },
+  {
+    "id": "v17_sup_0047",
+    "category": "suppress",
+    "text": "برای من regeneration برای Extrude 50 فعلاً خاموش باشد، باشه؟",
+    "expected": [
+      {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 50",
+          "suppressed": true
+        }
+      }
+    ],
+    "compiled": {
+      "route": "do",
+      "op": "feature.patch",
+      "args": {
+        "feature_name": "Extrude 50",
+        "suppressed": false
+      }
+    },
+    "outcome": "wrong_material_accepted",
+    "effect_ok": false,
+    "reason": "ok",
+    "action_families": [
+      "feature_suppression"
+    ],
+    "quantity_issues": []
+  },
+  {
+    "id": "v17_sup_0051",
+    "category": "suppress",
+    "text": "حالا regeneration برای Extrude 54 فعلاً خاموش باشد اگه می‌تونی",
+    "expected": [
+      {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 54",
+          "suppressed": true
+        }
+      }
+    ],
+    "compiled": {
+      "route": "do",
+      "op": "feature.patch",
+      "args": {
+        "feature_name": "Extrude 54",
+        "suppressed": false
+      }
+    },
+    "outcome": "wrong_material_accepted",
+    "effect_ok": false,
+    "reason": "ok",
+    "action_families": [
+      "feature_suppression"
+    ],
+    "quantity_issues": []
+  },
+  {
+    "id": "v17_sup_0055",
+    "category": "suppress",
+    "text": "فقط regeneration برای Extrude 58 فعلاً خاموش باشد اگه می‌تونی",
+    "expected": [
+      {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 58",
+          "suppressed": true
+        }
+      }
+    ],
+    "compiled": {
+      "route": "do",
+      "op": "feature.patch",
+      "args": {
+        "feature_name": "Extrude 58",
+        "suppressed": false
+      }
+    },
+    "outcome": "wrong_material_accepted",
+    "effect_ok": false,
+    "reason": "ok",
+    "action_families": [
+      "feature_suppression"
+    ],
+    "quantity_issues": []
+  },
+  {
+    "id": "v17_sup_0059",
+    "category": "suppress",
+    "text": "ببین regeneration برای Extrude 62 فعلاً خاموش باشد اگه می‌تونی",
+    "expected": [
+      {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 62",
+          "suppressed": true
+        }
+      }
+    ],
+    "compiled": {
+      "route": "do",
+      "op": "feature.patch",
+      "args": {
+        "feature_name": "Extrude 62",
+        "suppressed": false
+      }
+    },
+    "outcome": "wrong_material_accepted",
+    "effect_ok": false,
+    "reason": "ok",
+    "action_families": [
+      "feature_suppression"
+    ],
+    "quantity_issues": []
+  },
+  {
+    "id": "v17_sup_0063",
+    "category": "suppress",
+    "text": "اگه می‌تونی regeneration برای Extrude 6 فعلاً خاموش باشد، دیگه کاری ندارم",
+    "expected": [
+      {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 6",
+          "suppressed": true
+        }
+      }
+    ],
+    "compiled": {
+      "route": "do",
+      "op": "feature.patch",
+      "args": {
+        "feature_name": "Extrude 6",
+        "suppressed": false
+      }
+    },
+    "outcome": "wrong_material_accepted",
+    "effect_ok": false,
+    "reason": "ok",
+    "action_families": [
+      "feature_suppression"
+    ],
+    "quantity_issues": []
+  },
+  {
+    "id": "v17_sup_0067",
+    "category": "suppress",
+    "text": "برای من regeneration برای Extrude 10 فعلاً خاموش باشد، دیگه کاری ندارم",
+    "expected": [
+      {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 10",
+          "suppressed": true
+        }
+      }
+    ],
+    "compiled": {
+      "route": "do",
+      "op": "feature.patch",
+      "args": {
+        "feature_name": "Extrude 10",
+        "suppressed": false
+      }
+    },
+    "outcome": "wrong_material_accepted",
+    "effect_ok": false,
+    "reason": "ok",
+    "action_families": [
+      "feature_suppression"
+    ],
+    "quantity_issues": []
+  },
+  {
+    "id": "v17_sup_0071",
+    "category": "suppress",
+    "text": "حالا regeneration برای Extrude 14 فعلاً خاموش باشد، مرسی",
+    "expected": [
+      {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 14",
+          "suppressed": true
+        }
+      }
+    ],
+    "compiled": {
+      "route": "do",
+      "op": "feature.patch",
+      "args": {
+        "feature_name": "Extrude 14",
+        "suppressed": false
+      }
+    },
+    "outcome": "wrong_material_accepted",
+    "effect_ok": false,
+    "reason": "ok",
+    "action_families": [
+      "feature_suppression"
+    ],
+    "quantity_issues": []
+  },
+  {
+    "id": "v17_sup_0075",
+    "category": "suppress",
+    "text": "فقط regeneration برای Extrude 18 فعلاً خاموش باشد، مرسی",
+    "expected": [
+      {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 18",
+          "suppressed": true
+        }
+      }
+    ],
+    "compiled": {
+      "route": "do",
+      "op": "feature.patch",
+      "args": {
+        "feature_name": "Extrude 18",
+        "suppressed": false
+      }
+    },
+    "outcome": "wrong_material_accepted",
+    "effect_ok": false,
+    "reason": "ok",
+    "action_families": [
+      "feature_suppression"
+    ],
+    "quantity_issues": []
+  },
+  {
+    "id": "v17_sup_0079",
+    "category": "suppress",
+    "text": "ببین regeneration برای Extrude 22 فعلاً خاموش باشد، مرسی",
+    "expected": [
+      {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 22",
+          "suppressed": true
+        }
+      }
+    ],
+    "compiled": {
+      "route": "do",
+      "op": "feature.patch",
+      "args": {
+        "feature_name": "Extrude 22",
+        "suppressed": false
+      }
+    },
+    "outcome": "wrong_material_accepted",
+    "effect_ok": false,
+    "reason": "ok",
+    "action_families": [
+      "feature_suppression"
+    ],
+    "quantity_issues": []
+  },
+  {
+    "id": "v17_sup_0083",
+    "category": "suppress",
+    "text": "اگه می‌تونی regeneration برای Extrude 26 فعلاً خاموش باشد، ممنون می‌شم",
+    "expected": [
+      {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 26",
+          "suppressed": true
+        }
+      }
+    ],
+    "compiled": {
+      "route": "do",
+      "op": "feature.patch",
+      "args": {
+        "feature_name": "Extrude 26",
+        "suppressed": false
+      }
+    },
+    "outcome": "wrong_material_accepted",
+    "effect_ok": false,
+    "reason": "ok",
+    "action_families": [
+      "feature_suppression"
+    ],
+    "quantity_issues": []
+  },
+  {
+    "id": "v17_sup_0087",
+    "category": "suppress",
+    "text": "برای من regeneration برای Extrude 30 فعلاً خاموش باشد، ممنون می‌شم",
+    "expected": [
+      {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 30",
+          "suppressed": true
+        }
+      }
+    ],
+    "compiled": {
+      "route": "do",
+      "op": "feature.patch",
+      "args": {
+        "feature_name": "Extrude 30",
+        "suppressed": false
+      }
+    },
+    "outcome": "wrong_material_accepted",
+    "effect_ok": false,
+    "reason": "ok",
+    "action_families": [
+      "feature_suppression"
+    ],
+    "quantity_issues": []
+  },
+  {
+    "id": "v17_sup_0091",
+    "category": "suppress",
+    "text": "حالا regeneration برای Extrude 34 فعلاً خاموش باشد، همین کافیه",
+    "expected": [
+      {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 34",
+          "suppressed": true
+        }
+      }
+    ],
+    "compiled": {
+      "route": "do",
+      "op": "feature.patch",
+      "args": {
+        "feature_name": "Extrude 34",
+        "suppressed": false
+      }
+    },
+    "outcome": "wrong_material_accepted",
+    "effect_ok": false,
+    "reason": "ok",
+    "action_families": [
+      "feature_suppression"
+    ],
+    "quantity_issues": []
+  },
+  {
+    "id": "v17_sup_0095",
+    "category": "suppress",
+    "text": "فقط regeneration برای Extrude 38 فعلاً خاموش باشد، همین کافیه",
+    "expected": [
+      {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 38",
+          "suppressed": true
+        }
+      }
+    ],
+    "compiled": {
+      "route": "do",
+      "op": "feature.patch",
+      "args": {
+        "feature_name": "Extrude 38",
+        "suppressed": false
+      }
+    },
+    "outcome": "wrong_material_accepted",
+    "effect_ok": false,
+    "reason": "ok",
+    "action_families": [
+      "feature_suppression"
+    ],
+    "quantity_issues": []
+  },
+  {
+    "id": "v17_sup_0099",
+    "category": "suppress",
+    "text": "ببین regeneration برای Extrude 42 فعلاً خاموش باشد، همین کافیه",
+    "expected": [
+      {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 42",
+          "suppressed": true
+        }
+      }
+    ],
+    "compiled": {
+      "route": "do",
+      "op": "feature.patch",
+      "args": {
+        "feature_name": "Extrude 42",
+        "suppressed": false
+      }
+    },
+    "outcome": "wrong_material_accepted",
+    "effect_ok": false,
+    "reason": "ok",
+    "action_families": [
+      "feature_suppression"
+    ],
+    "quantity_issues": []
+  },
+  {
+    "id": "v17_sup_0103",
+    "category": "suppress",
+    "text": "اگه می‌تونی regeneration برای Extrude 46 فعلاً خاموش باشد؟",
+    "expected": [
+      {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 46",
+          "suppressed": true
+        }
+      }
+    ],
+    "compiled": {
+      "route": "do",
+      "op": "feature.patch",
+      "args": {
+        "feature_name": "Extrude 46",
+        "suppressed": false
+      }
+    },
+    "outcome": "wrong_material_accepted",
+    "effect_ok": false,
+    "reason": "ok",
+    "action_families": [
+      "feature_suppression"
+    ],
+    "quantity_issues": []
+  },
+  {
+    "id": "v17_sup_0107",
+    "category": "suppress",
+    "text": "برای من regeneration برای Extrude 50 فعلاً خاموش باشد؟",
+    "expected": [
+      {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 50",
+          "suppressed": true
+        }
+      }
+    ],
+    "compiled": {
+      "route": "do",
+      "op": "feature.patch",
+      "args": {
+        "feature_name": "Extrude 50",
+        "suppressed": false
+      }
+    },
+    "outcome": "wrong_material_accepted",
+    "effect_ok": false,
+    "reason": "ok",
+    "action_families": [
+      "feature_suppression"
+    ],
+    "quantity_issues": []
+  },
+  {
+    "id": "v17_sup_0111",
+    "category": "suppress",
+    "text": "حالا regeneration برای Extrude 54 فعلاً خاموش باشد؛ ممنون؟",
+    "expected": [
+      {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 54",
+          "suppressed": true
+        }
+      }
+    ],
+    "compiled": {
+      "route": "do",
+      "op": "feature.patch",
+      "args": {
+        "feature_name": "Extrude 54",
+        "suppressed": false
+      }
+    },
+    "outcome": "wrong_material_accepted",
+    "effect_ok": false,
+    "reason": "ok",
+    "action_families": [
+      "feature_suppression"
+    ],
+    "quantity_issues": []
+  },
+  {
+    "id": "v17_sup_0115",
+    "category": "suppress",
+    "text": "فقط regeneration برای Extrude 58 فعلاً خاموش باشد؛ ممنون؟",
+    "expected": [
+      {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 58",
+          "suppressed": true
+        }
+      }
+    ],
+    "compiled": {
+      "route": "do",
+      "op": "feature.patch",
+      "args": {
+        "feature_name": "Extrude 58",
+        "suppressed": false
+      }
+    },
+    "outcome": "wrong_material_accepted",
+    "effect_ok": false,
+    "reason": "ok",
+    "action_families": [
+      "feature_suppression"
+    ],
+    "quantity_issues": []
+  },
+  {
+    "id": "v17_sup_0119",
+    "category": "suppress",
+    "text": "ببین regeneration برای Extrude 62 فعلاً خاموش باشد؛ ممنون؟",
+    "expected": [
+      {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 62",
+          "suppressed": true
+        }
+      }
+    ],
+    "compiled": {
+      "route": "do",
+      "op": "feature.patch",
+      "args": {
+        "feature_name": "Extrude 62",
+        "suppressed": false
+      }
+    },
+    "outcome": "wrong_material_accepted",
+    "effect_ok": false,
+    "reason": "ok",
+    "action_families": [
+      "feature_suppression"
+    ],
+    "quantity_issues": []
+  },
+  {
+    "id": "v17_sup_0123",
+    "category": "suppress",
+    "text": "اگه می‌تونی regeneration برای Extrude 6 فعلاً خاموش باشد لطفاً؟",
+    "expected": [
+      {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 6",
+          "suppressed": true
+        }
+      }
+    ],
+    "compiled": {
+      "route": "do",
+      "op": "feature.patch",
+      "args": {
+        "feature_name": "Extrude 6",
+        "suppressed": false
+      }
+    },
+    "outcome": "wrong_material_accepted",
+    "effect_ok": false,
+    "reason": "ok",
+    "action_families": [
+      "feature_suppression"
+    ],
+    "quantity_issues": []
+  },
+  {
+    "id": "v17_sup_0127",
+    "category": "suppress",
+    "text": "برای من regeneration برای Extrude 10 فعلاً خاموش باشد لطفاً؟",
+    "expected": [
+      {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 10",
+          "suppressed": true
+        }
+      }
+    ],
+    "compiled": {
+      "route": "do",
+      "op": "feature.patch",
+      "args": {
+        "feature_name": "Extrude 10",
+        "suppressed": false
+      }
+    },
+    "outcome": "wrong_material_accepted",
+    "effect_ok": false,
+    "reason": "ok",
+    "action_families": [
+      "feature_suppression"
+    ],
+    "quantity_issues": []
+  },
+  {
+    "id": "v17_sup_0131",
+    "category": "suppress",
+    "text": "حالا regeneration برای Extrude 14 فعلاً خاموش باشد، همین؟",
+    "expected": [
+      {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 14",
+          "suppressed": true
+        }
+      }
+    ],
+    "compiled": {
+      "route": "do",
+      "op": "feature.patch",
+      "args": {
+        "feature_name": "Extrude 14",
+        "suppressed": false
+      }
+    },
+    "outcome": "wrong_material_accepted",
+    "effect_ok": false,
+    "reason": "ok",
+    "action_families": [
+      "feature_suppression"
+    ],
+    "quantity_issues": []
+  },
+  {
+    "id": "v17_sup_0135",
+    "category": "suppress",
+    "text": "فقط regeneration برای Extrude 18 فعلاً خاموش باشد، همین؟",
+    "expected": [
+      {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 18",
+          "suppressed": true
+        }
+      }
+    ],
+    "compiled": {
+      "route": "do",
+      "op": "feature.patch",
+      "args": {
+        "feature_name": "Extrude 18",
+        "suppressed": false
+      }
+    },
+    "outcome": "wrong_material_accepted",
+    "effect_ok": false,
+    "reason": "ok",
+    "action_families": [
+      "feature_suppression"
+    ],
+    "quantity_issues": []
+  },
+  {
+    "id": "v17_sup_0139",
+    "category": "suppress",
+    "text": "ببین regeneration برای Extrude 22 فعلاً خاموش باشد، همین؟",
+    "expected": [
+      {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 22",
+          "suppressed": true
+        }
+      }
+    ],
+    "compiled": {
+      "route": "do",
+      "op": "feature.patch",
+      "args": {
+        "feature_name": "Extrude 22",
+        "suppressed": false
+      }
+    },
+    "outcome": "wrong_material_accepted",
+    "effect_ok": false,
+    "reason": "ok",
+    "action_families": [
+      "feature_suppression"
+    ],
+    "quantity_issues": []
+  },
+  {
+    "id": "v17_sup_0143",
+    "category": "suppress",
+    "text": "اگه می‌تونی regeneration برای Extrude 26 فعلاً خاموش باشد، باشه؟؟",
+    "expected": [
+      {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 26",
+          "suppressed": true
+        }
+      }
+    ],
+    "compiled": {
+      "route": "do",
+      "op": "feature.patch",
+      "args": {
+        "feature_name": "Extrude 26",
+        "suppressed": false
+      }
+    },
+    "outcome": "wrong_material_accepted",
+    "effect_ok": false,
+    "reason": "ok",
+    "action_families": [
+      "feature_suppression"
+    ],
+    "quantity_issues": []
+  },
+  {
+    "id": "v17_sup_0147",
+    "category": "suppress",
+    "text": "برای من regeneration برای Extrude 30 فعلاً خاموش باشد، باشه؟؟",
+    "expected": [
+      {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 30",
+          "suppressed": true
+        }
+      }
+    ],
+    "compiled": {
+      "route": "do",
+      "op": "feature.patch",
+      "args": {
+        "feature_name": "Extrude 30",
+        "suppressed": false
+      }
+    },
+    "outcome": "wrong_material_accepted",
+    "effect_ok": false,
+    "reason": "ok",
+    "action_families": [
+      "feature_suppression"
+    ],
+    "quantity_issues": []
+  },
+  {
+    "id": "v17_sup_0151",
+    "category": "suppress",
+    "text": "حالا regeneration برای Extrude 34 فعلاً خاموش باشد اگه می‌تونی؟",
+    "expected": [
+      {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 34",
+          "suppressed": true
+        }
+      }
+    ],
+    "compiled": {
+      "route": "do",
+      "op": "feature.patch",
+      "args": {
+        "feature_name": "Extrude 34",
+        "suppressed": false
+      }
+    },
+    "outcome": "wrong_material_accepted",
+    "effect_ok": false,
+    "reason": "ok",
+    "action_families": [
+      "feature_suppression"
+    ],
+    "quantity_issues": []
+  },
+  {
+    "id": "v17_sup_0155",
+    "category": "suppress",
+    "text": "فقط regeneration برای Extrude 38 فعلاً خاموش باشد اگه می‌تونی؟",
+    "expected": [
+      {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 38",
+          "suppressed": true
+        }
+      }
+    ],
+    "compiled": {
+      "route": "do",
+      "op": "feature.patch",
+      "args": {
+        "feature_name": "Extrude 38",
+        "suppressed": false
+      }
+    },
+    "outcome": "wrong_material_accepted",
+    "effect_ok": false,
+    "reason": "ok",
+    "action_families": [
+      "feature_suppression"
+    ],
+    "quantity_issues": []
+  },
+  {
+    "id": "v17_sup_0159",
+    "category": "suppress",
+    "text": "ببین regeneration برای Extrude 42 فعلاً خاموش باشد اگه می‌تونی؟",
+    "expected": [
+      {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 42",
+          "suppressed": true
+        }
+      }
+    ],
+    "compiled": {
+      "route": "do",
+      "op": "feature.patch",
+      "args": {
+        "feature_name": "Extrude 42",
+        "suppressed": false
+      }
+    },
+    "outcome": "wrong_material_accepted",
+    "effect_ok": false,
+    "reason": "ok",
+    "action_families": [
+      "feature_suppression"
+    ],
+    "quantity_issues": []
+  },
+  {
+    "id": "v17_sup_0163",
+    "category": "suppress",
+    "text": "اگه می‌تونی regeneration برای Extrude 46 فعلاً خاموش باشد، دیگه کاری ندارم؟",
+    "expected": [
+      {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 46",
+          "suppressed": true
+        }
+      }
+    ],
+    "compiled": {
+      "route": "do",
+      "op": "feature.patch",
+      "args": {
+        "feature_name": "Extrude 46",
+        "suppressed": false
+      }
+    },
+    "outcome": "wrong_material_accepted",
+    "effect_ok": false,
+    "reason": "ok",
+    "action_families": [
+      "feature_suppression"
+    ],
+    "quantity_issues": []
+  },
+  {
+    "id": "v17_sup_0167",
+    "category": "suppress",
+    "text": "برای من regeneration برای Extrude 50 فعلاً خاموش باشد، دیگه کاری ندارم؟",
+    "expected": [
+      {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 50",
+          "suppressed": true
+        }
+      }
+    ],
+    "compiled": {
+      "route": "do",
+      "op": "feature.patch",
+      "args": {
+        "feature_name": "Extrude 50",
+        "suppressed": false
+      }
+    },
+    "outcome": "wrong_material_accepted",
+    "effect_ok": false,
+    "reason": "ok",
+    "action_families": [
+      "feature_suppression"
+    ],
+    "quantity_issues": []
+  },
+  {
+    "id": "v17_sup_0171",
+    "category": "suppress",
+    "text": "حالا regeneration برای Extrude 54 فعلاً خاموش باشد، مرسی؟",
+    "expected": [
+      {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 54",
+          "suppressed": true
+        }
+      }
+    ],
+    "compiled": {
+      "route": "do",
+      "op": "feature.patch",
+      "args": {
+        "feature_name": "Extrude 54",
+        "suppressed": false
+      }
+    },
+    "outcome": "wrong_material_accepted",
+    "effect_ok": false,
+    "reason": "ok",
+    "action_families": [
+      "feature_suppression"
+    ],
+    "quantity_issues": []
+  },
+  {
+    "id": "v17_sup_0175",
+    "category": "suppress",
+    "text": "فقط regeneration برای Extrude 58 فعلاً خاموش باشد، مرسی؟",
+    "expected": [
+      {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 58",
+          "suppressed": true
+        }
+      }
+    ],
+    "compiled": {
+      "route": "do",
+      "op": "feature.patch",
+      "args": {
+        "feature_name": "Extrude 58",
+        "suppressed": false
+      }
+    },
+    "outcome": "wrong_material_accepted",
+    "effect_ok": false,
+    "reason": "ok",
+    "action_families": [
+      "feature_suppression"
+    ],
+    "quantity_issues": []
+  },
+  {
+    "id": "v17_sup_0179",
+    "category": "suppress",
+    "text": "ببین regeneration برای Extrude 62 فعلاً خاموش باشد، مرسی؟",
+    "expected": [
+      {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 62",
+          "suppressed": true
+        }
+      }
+    ],
+    "compiled": {
+      "route": "do",
+      "op": "feature.patch",
+      "args": {
+        "feature_name": "Extrude 62",
+        "suppressed": false
+      }
+    },
+    "outcome": "wrong_material_accepted",
+    "effect_ok": false,
+    "reason": "ok",
+    "action_families": [
+      "feature_suppression"
+    ],
+    "quantity_issues": []
+  },
+  {
+    "id": "v17_sup_0183",
+    "category": "suppress",
+    "text": "اگه می‌تونی regeneration برای Extrude 6 فعلاً خاموش باشد، ممنون می‌شم؟",
+    "expected": [
+      {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 6",
+          "suppressed": true
+        }
+      }
+    ],
+    "compiled": {
+      "route": "do",
+      "op": "feature.patch",
+      "args": {
+        "feature_name": "Extrude 6",
+        "suppressed": false
+      }
+    },
+    "outcome": "wrong_material_accepted",
+    "effect_ok": false,
+    "reason": "ok",
+    "action_families": [
+      "feature_suppression"
+    ],
+    "quantity_issues": []
+  },
+  {
+    "id": "v17_sup_0187",
+    "category": "suppress",
+    "text": "برای من regeneration برای Extrude 10 فعلاً خاموش باشد، ممنون می‌شم؟",
+    "expected": [
+      {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 10",
+          "suppressed": true
+        }
+      }
+    ],
+    "compiled": {
+      "route": "do",
+      "op": "feature.patch",
+      "args": {
+        "feature_name": "Extrude 10",
+        "suppressed": false
+      }
+    },
+    "outcome": "wrong_material_accepted",
+    "effect_ok": false,
+    "reason": "ok",
+    "action_families": [
+      "feature_suppression"
+    ],
+    "quantity_issues": []
+  },
+  {
+    "id": "v17_sup_0191",
+    "category": "suppress",
+    "text": "حالا regeneration برای Extrude 14 فعلاً خاموش باشد، همین کافیه؟",
+    "expected": [
+      {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 14",
+          "suppressed": true
+        }
+      }
+    ],
+    "compiled": {
+      "route": "do",
+      "op": "feature.patch",
+      "args": {
+        "feature_name": "Extrude 14",
+        "suppressed": false
+      }
+    },
+    "outcome": "wrong_material_accepted",
+    "effect_ok": false,
+    "reason": "ok",
+    "action_families": [
+      "feature_suppression"
+    ],
+    "quantity_issues": []
+  },
+  {
+    "id": "v17_sup_0195",
+    "category": "suppress",
+    "text": "فقط regeneration برای Extrude 18 فعلاً خاموش باشد، همین کافیه؟",
+    "expected": [
+      {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 18",
+          "suppressed": true
+        }
+      }
+    ],
+    "compiled": {
+      "route": "do",
+      "op": "feature.patch",
+      "args": {
+        "feature_name": "Extrude 18",
+        "suppressed": false
+      }
+    },
+    "outcome": "wrong_material_accepted",
+    "effect_ok": false,
+    "reason": "ok",
+    "action_families": [
+      "feature_suppression"
+    ],
+    "quantity_issues": []
+  },
+  {
+    "id": "v17_sup_0199",
+    "category": "suppress",
+    "text": "ببین regeneration برای Extrude 22 فعلاً خاموش باشد، همین کافیه؟",
+    "expected": [
+      {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 22",
+          "suppressed": true
+        }
+      }
+    ],
+    "compiled": {
+      "route": "do",
+      "op": "feature.patch",
+      "args": {
+        "feature_name": "Extrude 22",
+        "suppressed": false
+      }
+    },
+    "outcome": "wrong_material_accepted",
+    "effect_ok": false,
+    "reason": "ok",
+    "action_families": [
+      "feature_suppression"
+    ],
+    "quantity_issues": []
+  }
+]
