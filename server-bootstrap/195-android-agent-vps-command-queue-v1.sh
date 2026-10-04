@@ -130,6 +130,25 @@ def validate(req):
     elif action=="storage.stat":
         if set(p)!={"path"}: raise ValueError("storage_stat_parameters")
         path_value(p["path"],False)
+    elif action=="storage.search":
+        if set(p)!={"directory","query","alternate_queries","extension","recursive","limit"}:
+            raise ValueError("storage_search_parameters")
+        path_value(p["directory"],True)
+        if not isinstance(p["query"],str) or len(p["query"])>180:
+            raise ValueError("query")
+        if not isinstance(p["alternate_queries"],list) or len(p["alternate_queries"])>8:
+            raise ValueError("alternate_queries")
+        for item in p["alternate_queries"]:
+            if not isinstance(item,str) or not 1<=len(item)<=180:
+                raise ValueError("alternate_queries")
+        if not isinstance(p["extension"],str) or not re.fullmatch(r"\.?[A-Za-z0-9]{0,16}",p["extension"]):
+            raise ValueError("extension")
+        if not isinstance(p["recursive"],bool):
+            raise ValueError("recursive")
+        if not isinstance(p["limit"],int) or isinstance(p["limit"],bool) or not 1<=p["limit"]<=100:
+            raise ValueError("limit")
+        if not p["query"].strip() and not p["extension"].strip(".") and not p["alternate_queries"]:
+            raise ValueError("search_query_required")
     elif action=="storage.file.save_from_url":
         if set(p)!={"url","sha256","size_bytes","directory","filename","mime"}: raise ValueError("storage_save_parameters")
         https_url(p["url"],r"/mcp/telegram-file/")
@@ -351,8 +370,12 @@ PY
 bad="$(curl --silent -X POST -H 'Content-Type: application/json' --data '{"request_id":"paa-storage-negative-20261004-001","action":"raw.shell","parameters":{},"ttl_seconds":300}' http://127.0.0.1:8793/local/v1/publish)"
 [[ "$bad" == *'action_not_admitted'* ]]
 
+bad_search="$(curl --silent -X POST -H 'Content-Type: application/json' --data '{"request_id":"paa-search-negative-20261004-001","action":"storage.search","parameters":{"directory":"Download","query":"","alternate_queries":[],"extension":"","recursive":true,"limit":25},"ttl_seconds":300}' http://127.0.0.1:8793/local/v1/publish)"
+[[ "$bad_search" == *'search_query_required'* ]]
+
 printf 'CF_PAA_COMMAND_QUEUE_BEGIN\n'
 printf 'SERVICE=%s\n' "$(systemctl is-active capability-fabric-paa-command-queue.service)"
 printf 'PUBLIC_QUEUE=PASS\n'
 printf 'RAW_SHELL_NEGATIVE=PASS\n'
+printf 'STORAGE_SEARCH_VALIDATOR=PASS\n'
 printf 'CF_PAA_COMMAND_QUEUE_END\n'
