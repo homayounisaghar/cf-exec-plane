@@ -4,20 +4,19 @@
   "cases": 9800,
   "deterministic_cases": 9800,
   "fallback_cases": 0,
-  "exact_correct": 9760,
-  "exact_accuracy": 0.9959183673469387,
-  "effect_correct": 9760,
-  "effect_accuracy": 0.9959183673469387,
-  "effect_errors": 40,
+  "exact_correct": 9800,
+  "exact_accuracy": 1.0,
+  "effect_correct": 9800,
+  "effect_accuracy": 1.0,
+  "effect_errors": 0,
   "severe_accepted_effect_errors": 0,
   "wrong_material_accepted": 0,
   "false_execute": 0,
   "wrong_reversible_accepted": 0,
-  "conservative_escalations": 40,
+  "conservative_escalations": 0,
   "route_mismatch": 0,
   "outcomes": {
-    "correct": 9760,
-    "conservative_escalation": 40
+    "correct": 9800
   },
   "by_category": {
     "ambiguous_target_safe_ask": {
@@ -93,8 +92,7 @@
       "correct": 200
     },
     "negation_correction": {
-      "correct": 160,
-      "conservative_escalation": 40
+      "correct": 200
     },
     "new_chamfer": {
       "correct": 200
@@ -169,83 +167,7 @@
       "correct": 200
     }
   },
-  "failure_reason_counts": {
-    "negation_correction": {
-      "clarification": 40
-    }
-  },
-  "representative_failures": {
-    "negation_correction": [
-      {
-        "id": "v18_neg_0001",
-        "text": "راستی، zoom in نکن؛ برعکس دورتر برو",
-        "expected": [
-          {
-            "route": "do",
-            "op": "view.move",
-            "args": {
-              "action": "zoom",
-              "direction": "out"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "clarification",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_neg_0006",
-        "text": "ممکنه zoom in نکن؛ برعکس دورتر برو",
-        "expected": [
-          {
-            "route": "do",
-            "op": "view.move",
-            "args": {
-              "action": "zoom",
-              "direction": "out"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "clarification",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_neg_0011",
-        "text": "راستی، zoom in نکن؛ برعکس دورتر برو، لطف کردی",
-        "expected": [
-          {
-            "route": "do",
-            "op": "view.move",
-            "args": {
-              "action": "zoom",
-              "direction": "out"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "clarification",
-        "action_families": [],
-        "quantity_issues": []
-      }
-    ]
-  },
-  "wall_seconds": 3.5856852900000007
+  "failure_reason_counts": {},
+  "representative_failures": {},
+  "wall_seconds": 7.102870878999994
 }
