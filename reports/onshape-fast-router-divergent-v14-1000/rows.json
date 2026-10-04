@@ -2286,8 +2286,8 @@
       ]
     },
     "source": "model_intent",
-    "decision": "ask",
-    "intent": null,
+    "decision": "act",
+    "intent": "camera_move",
     "evidence": {
       "text": "مدل به سمت چپ بره، فعلا",
       "quantities": [],
@@ -2341,16 +2341,29 @@
       "action_cues": []
     },
     "post": {
-      "accepted": false,
-      "reason": "api-failure",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
-      }
+        "route": "do",
+        "op": "view.move",
+        "args": {
+          "action": "orbit",
+          "direction": "left"
+        }
+      },
+      "provenance": {
+        "direction": "text/context",
+        "magnitude": null
+      },
+      "consumed_evidence_count": 1
     },
-    "error": "HTTP 413: {\"error\":{\"message\":\"Request too large for model `openai/gpt-oss-20b` in organization `org_01m42mez6kefrvppzev3m9g3c4` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Requested 9810, please reduce your message size and try again. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
-    "outcome": "api_failure"
+    "model_choice": {
+      "id": "v14_orbit_025",
+      "d": "a",
+      "i": "camera_move"
+    },
+    "model_latency_ms": 1136.201477,
+    "outcome": "correct"
   },
   {
     "case": {
@@ -2375,8 +2388,8 @@
       ]
     },
     "source": "model_intent",
-    "decision": "ask",
-    "intent": null,
+    "decision": "act",
+    "intent": "camera_move",
     "evidence": {
       "text": "مدل به سمت راست بره، فعلا",
       "quantities": [],
@@ -2430,16 +2443,29 @@
       "action_cues": []
     },
     "post": {
-      "accepted": false,
-      "reason": "api-failure",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
-      }
+        "route": "do",
+        "op": "view.move",
+        "args": {
+          "action": "orbit",
+          "direction": "right"
+        }
+      },
+      "provenance": {
+        "direction": "text/context",
+        "magnitude": null
+      },
+      "consumed_evidence_count": 1
     },
-    "error": "HTTP 413: {\"error\":{\"message\":\"Request too large for model `openai/gpt-oss-20b` in organization `org_01m42mez6kefrvppzev3m9g3c4` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Requested 9810, please reduce your message size and try again. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
-    "outcome": "api_failure"
+    "model_choice": {
+      "id": "v14_orbit_026",
+      "d": "a",
+      "i": "camera_move"
+    },
+    "model_latency_ms": 1136.201477,
+    "outcome": "correct"
   },
   {
     "case": {
@@ -2656,8 +2682,8 @@
       ]
     },
     "source": "model_intent",
-    "decision": "ask",
-    "intent": null,
+    "decision": "act",
+    "intent": "camera_move",
     "evidence": {
       "text": "مدل به سمت چپ بره، سریع",
       "quantities": [],
@@ -2711,16 +2737,29 @@
       "action_cues": []
     },
     "post": {
-      "accepted": false,
-      "reason": "api-failure",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
-      }
+        "route": "do",
+        "op": "view.move",
+        "args": {
+          "action": "orbit",
+          "direction": "left"
+        }
+      },
+      "provenance": {
+        "direction": "text/context",
+        "magnitude": null
+      },
+      "consumed_evidence_count": 1
     },
-    "error": "HTTP 413: {\"error\":{\"message\":\"Request too large for model `openai/gpt-oss-20b` in organization `org_01m42mez6kefrvppzev3m9g3c4` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Requested 9810, please reduce your message size and try again. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
-    "outcome": "api_failure"
+    "model_choice": {
+      "id": "v14_orbit_029",
+      "d": "a",
+      "i": "camera_move"
+    },
+    "model_latency_ms": 1136.201477,
+    "outcome": "correct"
   },
   {
     "case": {
@@ -2745,8 +2784,8 @@
       ]
     },
     "source": "model_intent",
-    "decision": "ask",
-    "intent": null,
+    "decision": "act",
+    "intent": "camera_move",
     "evidence": {
       "text": "مدل به سمت راست بره، سریع",
       "quantities": [],
@@ -2800,16 +2839,29 @@
       "action_cues": []
     },
     "post": {
-      "accepted": false,
-      "reason": "api-failure",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
-      }
+        "route": "do",
+        "op": "view.move",
+        "args": {
+          "action": "orbit",
+          "direction": "right"
+        }
+      },
+      "provenance": {
+        "direction": "text/context",
+        "magnitude": null
+      },
+      "consumed_evidence_count": 1
     },
-    "error": "HTTP 413: {\"error\":{\"message\":\"Request too large for model `openai/gpt-oss-20b` in organization `org_01m42mez6kefrvppzev3m9g3c4` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Requested 9810, please reduce your message size and try again. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
-    "outcome": "api_failure"
+    "model_choice": {
+      "id": "v14_orbit_030",
+      "d": "a",
+      "i": "camera_move"
+    },
+    "model_latency_ms": 1136.201477,
+    "outcome": "correct"
   },
   {
     "case": {
@@ -51748,8 +51800,8 @@
       ]
     },
     "source": "model_intent",
-    "decision": "ask",
-    "intent": null,
+    "decision": "act",
+    "intent": "part_property",
     "evidence": {
       "text": "Part 10 رو blue کن",
       "quantities": [],
@@ -51813,15 +51865,20 @@
     },
     "post": {
       "accepted": false,
-      "reason": "api-failure",
+      "reason": "part-property-ungrounded",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       }
     },
-    "error": "HTTP 413: {\"error\":{\"message\":\"Request too large for model `openai/gpt-oss-20b` in organization `org_01m42mez6kefrvppzev3m9g3c4` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Requested 9810, please reduce your message size and try again. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
-    "outcome": "api_failure"
+    "model_choice": {
+      "id": "v14_color_009",
+      "d": "a",
+      "i": "part_property"
+    },
+    "model_latency_ms": 1136.201477,
+    "outcome": "conservative_escalation"
   },
   {
     "case": {
@@ -51846,8 +51903,8 @@
       ]
     },
     "source": "model_intent",
-    "decision": "ask",
-    "intent": null,
+    "decision": "act",
+    "intent": "part_property",
     "evidence": {
       "text": "Part 11 رو green کن",
       "quantities": [],
@@ -51911,15 +51968,20 @@
     },
     "post": {
       "accepted": false,
-      "reason": "api-failure",
+      "reason": "part-property-ungrounded",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       }
     },
-    "error": "HTTP 413: {\"error\":{\"message\":\"Request too large for model `openai/gpt-oss-20b` in organization `org_01m42mez6kefrvppzev3m9g3c4` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Requested 9810, please reduce your message size and try again. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
-    "outcome": "api_failure"
+    "model_choice": {
+      "id": "v14_color_010",
+      "d": "a",
+      "i": "part_property"
+    },
+    "model_latency_ms": 1136.201477,
+    "outcome": "conservative_escalation"
   },
   {
     "case": {
@@ -55706,8 +55768,8 @@
       ]
     },
     "source": "model_intent",
-    "decision": "ask",
-    "intent": null,
+    "decision": "act",
+    "intent": "add_plane",
     "evidence": {
       "text": "یه صفحه مرجع به اسم datum hide fit 2 بساز",
       "quantities": [],
@@ -55778,15 +55840,20 @@
     },
     "post": {
       "accepted": false,
-      "reason": "api-failure",
+      "reason": "plane-create-not-explicit",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       }
     },
-    "error": "HTTP 413: {\"error\":{\"message\":\"Request too large for model `openai/gpt-oss-20b` in organization `org_01m42mez6kefrvppzev3m9g3c4` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Requested 9810, please reduce your message size and try again. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
-    "outcome": "api_failure"
+    "model_choice": {
+      "id": "v14_plane_named_002",
+      "d": "a",
+      "i": "add_plane"
+    },
+    "model_latency_ms": 1136.201477,
+    "outcome": "conservative_escalation"
   },
   {
     "case": {
@@ -55923,8 +55990,8 @@
       ]
     },
     "source": "model_intent",
-    "decision": "ask",
-    "intent": null,
+    "decision": "act",
+    "intent": "add_plane",
     "evidence": {
       "text": "یه صفحه مرجع به اسم datum hide fit 4 بساز",
       "quantities": [],
@@ -55995,15 +56062,20 @@
     },
     "post": {
       "accepted": false,
-      "reason": "api-failure",
+      "reason": "plane-create-not-explicit",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       }
     },
-    "error": "HTTP 413: {\"error\":{\"message\":\"Request too large for model `openai/gpt-oss-20b` in organization `org_01m42mez6kefrvppzev3m9g3c4` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Requested 9810, please reduce your message size and try again. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
-    "outcome": "api_failure"
+    "model_choice": {
+      "id": "v14_plane_named_004",
+      "d": "a",
+      "i": "add_plane"
+    },
+    "model_latency_ms": 1136.201477,
+    "outcome": "conservative_escalation"
   },
   {
     "case": {
@@ -56140,8 +56212,8 @@
       ]
     },
     "source": "model_intent",
-    "decision": "ask",
-    "intent": null,
+    "decision": "act",
+    "intent": "add_plane",
     "evidence": {
       "text": "یه صفحه مرجع به اسم datum hide fit 6 بساز",
       "quantities": [],
@@ -56212,15 +56284,20 @@
     },
     "post": {
       "accepted": false,
-      "reason": "api-failure",
+      "reason": "plane-create-not-explicit",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       }
     },
-    "error": "HTTP 413: {\"error\":{\"message\":\"Request too large for model `openai/gpt-oss-20b` in organization `org_01m42mez6kefrvppzev3m9g3c4` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Requested 9810, please reduce your message size and try again. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
-    "outcome": "api_failure"
+    "model_choice": {
+      "id": "v14_plane_named_006",
+      "d": "a",
+      "i": "add_plane"
+    },
+    "model_latency_ms": 1136.201477,
+    "outcome": "conservative_escalation"
   },
   {
     "case": {
@@ -56357,8 +56434,8 @@
       ]
     },
     "source": "model_intent",
-    "decision": "ask",
-    "intent": null,
+    "decision": "act",
+    "intent": "add_plane",
     "evidence": {
       "text": "یه صفحه مرجع به اسم datum hide fit 8 بساز",
       "quantities": [],
@@ -56429,15 +56506,20 @@
     },
     "post": {
       "accepted": false,
-      "reason": "api-failure",
+      "reason": "plane-create-not-explicit",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       }
     },
-    "error": "HTTP 413: {\"error\":{\"message\":\"Request too large for model `openai/gpt-oss-20b` in organization `org_01m42mez6kefrvppzev3m9g3c4` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Requested 9810, please reduce your message size and try again. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
-    "outcome": "api_failure"
+    "model_choice": {
+      "id": "v14_plane_named_008",
+      "d": "a",
+      "i": "add_plane"
+    },
+    "model_latency_ms": 1136.201477,
+    "outcome": "conservative_escalation"
   },
   {
     "case": {
@@ -56574,8 +56656,8 @@
       ]
     },
     "source": "model_intent",
-    "decision": "ask",
-    "intent": null,
+    "decision": "act",
+    "intent": "add_plane",
     "evidence": {
       "text": "یه صفحه مرجع به اسم datum hide fit 10 بساز",
       "quantities": [],
@@ -56646,15 +56728,20 @@
     },
     "post": {
       "accepted": false,
-      "reason": "api-failure",
+      "reason": "plane-create-not-explicit",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       }
     },
-    "error": "HTTP 413: {\"error\":{\"message\":\"Request too large for model `openai/gpt-oss-20b` in organization `org_01m42mez6kefrvppzev3m9g3c4` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Requested 9810, please reduce your message size and try again. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
-    "outcome": "api_failure"
+    "model_choice": {
+      "id": "v14_plane_named_010",
+      "d": "a",
+      "i": "add_plane"
+    },
+    "model_latency_ms": 957.6019900000006,
+    "outcome": "conservative_escalation"
   },
   {
     "case": {
@@ -56791,8 +56878,8 @@
       ]
     },
     "source": "model_intent",
-    "decision": "ask",
-    "intent": null,
+    "decision": "act",
+    "intent": "add_plane",
     "evidence": {
       "text": "یه صفحه مرجع به اسم datum hide fit 12 بساز",
       "quantities": [],
@@ -56863,15 +56950,20 @@
     },
     "post": {
       "accepted": false,
-      "reason": "api-failure",
+      "reason": "plane-create-not-explicit",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       }
     },
-    "error": "HTTP 413: {\"error\":{\"message\":\"Request too large for model `openai/gpt-oss-20b` in organization `org_01m42mez6kefrvppzev3m9g3c4` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Requested 9810, please reduce your message size and try again. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
-    "outcome": "api_failure"
+    "model_choice": {
+      "id": "v14_plane_named_012",
+      "d": "a",
+      "i": "add_plane"
+    },
+    "model_latency_ms": 957.6019900000006,
+    "outcome": "conservative_escalation"
   },
   {
     "case": {
@@ -57008,8 +57100,8 @@
       ]
     },
     "source": "model_intent",
-    "decision": "ask",
-    "intent": null,
+    "decision": "act",
+    "intent": "add_plane",
     "evidence": {
       "text": "یه صفحه مرجع به اسم datum hide fit 14 بساز",
       "quantities": [],
@@ -57080,15 +57172,20 @@
     },
     "post": {
       "accepted": false,
-      "reason": "api-failure",
+      "reason": "plane-create-not-explicit",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       }
     },
-    "error": "HTTP 413: {\"error\":{\"message\":\"Request too large for model `openai/gpt-oss-20b` in organization `org_01m42mez6kefrvppzev3m9g3c4` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Requested 9810, please reduce your message size and try again. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
-    "outcome": "api_failure"
+    "model_choice": {
+      "id": "v14_plane_named_014",
+      "d": "a",
+      "i": "add_plane"
+    },
+    "model_latency_ms": 957.6019900000006,
+    "outcome": "conservative_escalation"
   },
   {
     "case": {
@@ -57225,8 +57322,8 @@
       ]
     },
     "source": "model_intent",
-    "decision": "ask",
-    "intent": null,
+    "decision": "act",
+    "intent": "add_plane",
     "evidence": {
       "text": "یه صفحه مرجع به اسم datum hide fit 16 بساز",
       "quantities": [],
@@ -57297,15 +57394,20 @@
     },
     "post": {
       "accepted": false,
-      "reason": "api-failure",
+      "reason": "plane-create-not-explicit",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       }
     },
-    "error": "HTTP 413: {\"error\":{\"message\":\"Request too large for model `openai/gpt-oss-20b` in organization `org_01m42mez6kefrvppzev3m9g3c4` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Requested 9810, please reduce your message size and try again. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
-    "outcome": "api_failure"
+    "model_choice": {
+      "id": "v14_plane_named_016",
+      "d": "a",
+      "i": "add_plane"
+    },
+    "model_latency_ms": 957.6019900000006,
+    "outcome": "conservative_escalation"
   },
   {
     "case": {
@@ -57442,8 +57544,8 @@
       ]
     },
     "source": "model_intent",
-    "decision": "ask",
-    "intent": null,
+    "decision": "act",
+    "intent": "add_plane",
     "evidence": {
       "text": "یه صفحه مرجع به اسم datum hide fit 18 بساز",
       "quantities": [],
@@ -57514,15 +57616,20 @@
     },
     "post": {
       "accepted": false,
-      "reason": "api-failure",
+      "reason": "plane-create-not-explicit",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       }
     },
-    "error": "HTTP 413: {\"error\":{\"message\":\"Request too large for model `openai/gpt-oss-20b` in organization `org_01m42mez6kefrvppzev3m9g3c4` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Requested 9810, please reduce your message size and try again. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
-    "outcome": "api_failure"
+    "model_choice": {
+      "id": "v14_plane_named_018",
+      "d": "a",
+      "i": "add_plane"
+    },
+    "model_latency_ms": 957.6019900000006,
+    "outcome": "conservative_escalation"
   },
   {
     "case": {
@@ -57659,8 +57766,8 @@
       ]
     },
     "source": "model_intent",
-    "decision": "ask",
-    "intent": null,
+    "decision": "act",
+    "intent": "add_plane",
     "evidence": {
       "text": "یه صفحه مرجع به اسم datum hide fit 20 بساز",
       "quantities": [],
@@ -57731,15 +57838,20 @@
     },
     "post": {
       "accepted": false,
-      "reason": "api-failure",
+      "reason": "plane-create-not-explicit",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       }
     },
-    "error": "HTTP 413: {\"error\":{\"message\":\"Request too large for model `openai/gpt-oss-20b` in organization `org_01m42mez6kefrvppzev3m9g3c4` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Requested 9810, please reduce your message size and try again. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
-    "outcome": "api_failure"
+    "model_choice": {
+      "id": "v14_plane_named_020",
+      "d": "a",
+      "i": "add_plane"
+    },
+    "model_latency_ms": 957.6019900000006,
+    "outcome": "conservative_escalation"
   },
   {
     "case": {
@@ -61018,15 +61130,19 @@
     },
     "post": {
       "accepted": false,
-      "reason": "api-failure",
+      "reason": "clarification",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       }
     },
-    "error": "HTTP 413: {\"error\":{\"message\":\"Request too large for model `openai/gpt-oss-20b` in organization `org_01m42mez6kefrvppzev3m9g3c4` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Requested 9810, please reduce your message size and try again. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
-    "outcome": "api_failure"
+    "model_choice": {
+      "d": "q",
+      "i": null
+    },
+    "model_latency_ms": 957.6019900000006,
+    "outcome": "conservative_escalation"
   },
   {
     "case": {
@@ -61135,15 +61251,19 @@
     },
     "post": {
       "accepted": false,
-      "reason": "api-failure",
+      "reason": "clarification",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       }
     },
-    "error": "HTTP 413: {\"error\":{\"message\":\"Request too large for model `openai/gpt-oss-20b` in organization `org_01m42mez6kefrvppzev3m9g3c4` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Requested 9810, please reduce your message size and try again. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
-    "outcome": "api_failure"
+    "model_choice": {
+      "d": "q",
+      "i": null
+    },
+    "model_latency_ms": 957.6019900000006,
+    "outcome": "conservative_escalation"
   },
   {
     "case": {
@@ -61252,15 +61372,19 @@
     },
     "post": {
       "accepted": false,
-      "reason": "api-failure",
+      "reason": "clarification",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       }
     },
-    "error": "HTTP 413: {\"error\":{\"message\":\"Request too large for model `openai/gpt-oss-20b` in organization `org_01m42mez6kefrvppzev3m9g3c4` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Requested 9810, please reduce your message size and try again. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
-    "outcome": "api_failure"
+    "model_choice": {
+      "d": "q",
+      "i": null
+    },
+    "model_latency_ms": 957.6019900000006,
+    "outcome": "conservative_escalation"
   },
   {
     "case": {
@@ -61369,15 +61493,19 @@
     },
     "post": {
       "accepted": false,
-      "reason": "api-failure",
+      "reason": "clarification",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       }
     },
-    "error": "HTTP 413: {\"error\":{\"message\":\"Request too large for model `openai/gpt-oss-20b` in organization `org_01m42mez6kefrvppzev3m9g3c4` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Requested 9810, please reduce your message size and try again. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
-    "outcome": "api_failure"
+    "model_choice": {
+      "d": "q",
+      "i": null
+    },
+    "model_latency_ms": 957.6019900000006,
+    "outcome": "conservative_escalation"
   },
   {
     "case": {
@@ -61493,7 +61621,7 @@
         "args": {}
       }
     },
-    "error": "HTTP 413: {\"error\":{\"message\":\"Request too large for model `openai/gpt-oss-20b` in organization `org_01m42mez6kefrvppzev3m9g3c4` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Requested 9810, please reduce your message size and try again. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
+    "error": "HTTP 429: {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01m42mez6kefrvppzev3m9g3c4` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Used 3667, Requested 4455. Please try again in 915ms. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
     "outcome": "api_failure"
   },
   {
@@ -61610,7 +61738,7 @@
         "args": {}
       }
     },
-    "error": "HTTP 413: {\"error\":{\"message\":\"Request too large for model `openai/gpt-oss-20b` in organization `org_01m42mez6kefrvppzev3m9g3c4` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Requested 9810, please reduce your message size and try again. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
+    "error": "HTTP 429: {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01m42mez6kefrvppzev3m9g3c4` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Used 3667, Requested 4455. Please try again in 915ms. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
     "outcome": "api_failure"
   },
   {
@@ -61727,7 +61855,7 @@
         "args": {}
       }
     },
-    "error": "HTTP 413: {\"error\":{\"message\":\"Request too large for model `openai/gpt-oss-20b` in organization `org_01m42mez6kefrvppzev3m9g3c4` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Requested 9810, please reduce your message size and try again. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
+    "error": "HTTP 429: {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01m42mez6kefrvppzev3m9g3c4` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Used 3667, Requested 4455. Please try again in 915ms. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
     "outcome": "api_failure"
   },
   {
@@ -61844,7 +61972,7 @@
         "args": {}
       }
     },
-    "error": "HTTP 413: {\"error\":{\"message\":\"Request too large for model `openai/gpt-oss-20b` in organization `org_01m42mez6kefrvppzev3m9g3c4` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Requested 9810, please reduce your message size and try again. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
+    "error": "HTTP 429: {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01m42mez6kefrvppzev3m9g3c4` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Used 3667, Requested 4455. Please try again in 915ms. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
     "outcome": "api_failure"
   },
   {
@@ -61961,7 +62089,7 @@
         "args": {}
       }
     },
-    "error": "HTTP 413: {\"error\":{\"message\":\"Request too large for model `openai/gpt-oss-20b` in organization `org_01m42mez6kefrvppzev3m9g3c4` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Requested 9810, please reduce your message size and try again. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
+    "error": "HTTP 429: {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01m42mez6kefrvppzev3m9g3c4` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Used 3667, Requested 4455. Please try again in 915ms. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
     "outcome": "api_failure"
   },
   {
@@ -61989,8 +62117,8 @@
       ]
     },
     "source": "model_intent",
-    "decision": "act",
-    "intent": "add_pattern",
+    "decision": "ask",
+    "intent": null,
     "evidence": {
       "text": "از Part 21 5 copies خطی با فاصله 11.5 mm بساز",
       "quantities": [
@@ -62071,20 +62199,15 @@
     },
     "post": {
       "accepted": false,
-      "reason": "pattern-not-explicit",
+      "reason": "api-failure",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       }
     },
-    "model_choice": {
-      "id": "v14_pat_020",
-      "d": "a",
-      "i": "add_pattern"
-    },
-    "model_latency_ms": 712.099619,
-    "outcome": "conservative_escalation"
+    "error": "HTTP 429: {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01m42mez6kefrvppzev3m9g3c4` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Used 3667, Requested 4455. Please try again in 915ms. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
+    "outcome": "api_failure"
   },
   {
     "case": {
@@ -90378,20 +90501,15 @@
     },
     "post": {
       "accepted": false,
-      "reason": "clarification",
+      "reason": "api-failure",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       }
     },
-    "model_choice": {
-      "id": "v14_ask_007",
-      "d": "q",
-      "i": null
-    },
-    "model_latency_ms": 712.099619,
-    "outcome": "correct"
+    "error": "HTTP 429: {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01m42mez6kefrvppzev3m9g3c4` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Used 3667, Requested 4455. Please try again in 915ms. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
+    "outcome": "api_failure"
   },
   {
     "case": {
@@ -91216,20 +91334,15 @@
     },
     "post": {
       "accepted": false,
-      "reason": "clarification",
+      "reason": "api-failure",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       }
     },
-    "model_choice": {
-      "id": "v14_ask_017",
-      "d": "q",
-      "i": null
-    },
-    "model_latency_ms": 712.099619,
-    "outcome": "correct"
+    "error": "HTTP 429: {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01m42mez6kefrvppzev3m9g3c4` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Used 3667, Requested 4455. Please try again in 915ms. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
+    "outcome": "api_failure"
   },
   {
     "case": {
@@ -92054,20 +92167,15 @@
     },
     "post": {
       "accepted": false,
-      "reason": "clarification",
+      "reason": "api-failure",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       }
     },
-    "model_choice": {
-      "id": "v14_ask_027",
-      "d": "q",
-      "i": null
-    },
-    "model_latency_ms": 712.099619,
-    "outcome": "correct"
+    "error": "HTTP 429: {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01m42mez6kefrvppzev3m9g3c4` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Used 3667, Requested 4455. Please try again in 915ms. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
+    "outcome": "api_failure"
   },
   {
     "case": {
@@ -92892,20 +93000,15 @@
     },
     "post": {
       "accepted": false,
-      "reason": "clarification",
+      "reason": "api-failure",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       }
     },
-    "model_choice": {
-      "id": "v14_ask_037",
-      "d": "q",
-      "i": null
-    },
-    "model_latency_ms": 712.099619,
-    "outcome": "correct"
+    "error": "HTTP 429: {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01m42mez6kefrvppzev3m9g3c4` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Used 3667, Requested 4455. Please try again in 915ms. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
+    "outcome": "api_failure"
   },
   {
     "case": {
@@ -97753,7 +97856,7 @@
       "d": "a",
       "i": "part_visibility"
     },
-    "model_latency_ms": 712.099619,
+    "model_latency_ms": 495.1843529999991,
     "outcome": "correct"
   },
   {
@@ -98062,7 +98165,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 712.099619,
+    "model_latency_ms": 495.1843529999991,
     "outcome": "correct"
   },
   {
@@ -98722,7 +98825,7 @@
       "d": "a",
       "i": "part_visibility"
     },
-    "model_latency_ms": 712.099619,
+    "model_latency_ms": 495.1843529999991,
     "outcome": "correct"
   },
   {
@@ -99031,7 +99134,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 712.099619,
+    "model_latency_ms": 495.1843529999991,
     "outcome": "correct"
   },
   {
@@ -99691,7 +99794,7 @@
       "d": "a",
       "i": "part_visibility"
     },
-    "model_latency_ms": 712.099619,
+    "model_latency_ms": 495.1843529999991,
     "outcome": "correct"
   },
   {
@@ -100000,7 +100103,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 712.099619,
+    "model_latency_ms": 495.1843529999991,
     "outcome": "correct"
   },
   {
@@ -100660,7 +100763,7 @@
       "d": "a",
       "i": "part_visibility"
     },
-    "model_latency_ms": 712.099619,
+    "model_latency_ms": 495.1843529999991,
     "outcome": "correct"
   },
   {
@@ -100969,7 +101072,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 712.099619,
+    "model_latency_ms": 495.1843529999991,
     "outcome": "correct"
   },
   {
