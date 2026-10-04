@@ -1,0 +1,19 @@
+{
+  "fallback_cases": 713,
+  "by_category": {
+    "context_camera": 96,
+    "create_part_studio": 100,
+    "design_judgment": 100,
+    "feature_rename": 5,
+    "fit_all": 50,
+    "fit_selection": 50,
+    "part_delete": 50,
+    "part_text_meta": 25,
+    "professional_out_of_contract": 28,
+    "quantity_invalid": 20,
+    "rename_document": 50,
+    "rollback": 50,
+    "unsupported_precise": 39,
+    "unsuppress": 50
+  }
+}
