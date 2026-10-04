@@ -1,0 +1,8 @@
+{
+  "request_id": "fresh-holdout-v08-20261004-c",
+  "frozen_cases": 80,
+  "frozen_holdout_commit": "89f1e86a8c5393280a019602309fffa4a730fa24",
+  "router_source_head": "2bd17ebd6e47b9c3ad9465555fe029aea94da0ea",
+  "invariants_commit": "f536df24da80a679f2428a33b0d1c21c9848aea6",
+  "reason": "artifact-directory-fix-only"
+}
