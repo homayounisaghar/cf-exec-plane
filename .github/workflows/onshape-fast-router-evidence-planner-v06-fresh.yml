@@ -1,0 +1,64 @@
+name: Onshape Fast Router Evidence Planner V06 Fresh Holdout
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - qualification/onshape-fast-router-evidence-planner-v06-fresh/control/*.request
+
+permissions:
+  contents: write
+
+concurrency:
+  group: onshape-fast-router-evidence-planner-v06-fresh
+  cancel-in-progress: false
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Syntax gate
+        run: |
+          python -m py_compile qualification/onshape-fast-router-evidence-planner-v06-fresh/evidence_router.py
+          python -m py_compile qualification/onshape-fast-router-evidence-planner-v06-fresh/fresh_holdout_v06.py
+          python -m py_compile qualification/onshape-fast-router-evidence-planner-v06-fresh/run_fresh.py
+
+      - name: Require Groq credential
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: test -n "$GROQ_API_KEY"
+
+      - name: Run first-score frozen holdout
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          BATCH_SIZE: '12'
+          MAX_BATCH_RETRIES: '8'
+          OUT_DIR: ${{ github.workspace }}/artifacts/onshape-fast-router-evidence-planner-v06-fresh
+        run: |
+          cd qualification/onshape-fast-router-evidence-planner-v06-fresh
+          python run_fresh.py
+
+      - name: Publish direct readback report
+        if: always()
+        run: |
+          set -eu
+          report_dir="reports/onshape-fast-router-evidence-planner-v06-fresh"
+          mkdir -p "$report_dir"
+          cp artifacts/onshape-fast-router-evidence-planner-v06-fresh/*.json "$report_dir/"
+          printf '{"run_id":"%s","head_sha":"%s"}\n' "$GITHUB_RUN_ID" "$GITHUB_SHA" > "$report_dir/latest-meta.json"
+          git config user.name "cf-exec-plane"
+          git config user.email "actions@users.noreply.github.com"
+          git add "$report_dir"
+          git commit -m "Report: Onshape evidence planner v06 fresh holdout" || exit 0
+          git pull --rebase origin main
+          git push origin HEAD:main
