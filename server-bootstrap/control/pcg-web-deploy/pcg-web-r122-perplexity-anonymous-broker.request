@@ -1,0 +1,4 @@
+request_id=pcg-web-r122-perplexity-anonymous-broker
+candidate_commit=8d4ca51adfead81bbb9651535518a6dcafe97d7b
+expected_sequence=122
+expected_release=pcg-web-stage6-perplexity-anonymous-broker-r122
