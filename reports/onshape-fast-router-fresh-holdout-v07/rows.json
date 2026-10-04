@@ -184,7 +184,7 @@
       "design": false,
       "unsupported": false,
       "camera_action": "orbit",
-      "camera_direction": null,
+      "camera_direction": "clockwise",
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
@@ -195,15 +195,22 @@
       "action_cues": []
     },
     "post": {
-      "accepted": false,
-      "reason": "camera-ungrounded",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
+        "route": "do",
+        "op": "view.move",
+        "args": {
+          "action": "orbit",
+          "direction": "clockwise"
+        }
+      },
+      "provenance": {
+        "direction": "text/context",
+        "magnitude": null
       }
     },
-    "outcome": "conservative_escalation"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -222,9 +229,9 @@
         }
       ]
     },
-    "source": "model_intent",
-    "decision": "ask",
-    "intent": null,
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "camera_move",
     "evidence": {
       "text": "counterclockwise یه کوچولو",
       "quantities": [],
@@ -247,8 +254,8 @@
       "name_value": null,
       "design": false,
       "unsupported": false,
-      "camera_action": null,
-      "camera_direction": null,
+      "camera_action": "orbit",
+      "camera_direction": "counterclockwise",
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
@@ -259,21 +266,22 @@
       "action_cues": []
     },
     "post": {
-      "accepted": false,
-      "reason": "clarification",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
+        "route": "do",
+        "op": "view.move",
+        "args": {
+          "action": "orbit",
+          "direction": "counterclockwise"
+        }
+      },
+      "provenance": {
+        "direction": "text/context",
+        "magnitude": null
       }
     },
-    "model_choice": {
-      "id": "v07_cam_04",
-      "d": "q",
-      "i": null
-    },
-    "model_latency_ms": 887.0894060000012,
-    "outcome": "conservative_escalation"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -902,9 +910,9 @@
         }
       ]
     },
-    "source": "model_intent",
-    "decision": "ask",
-    "intent": null,
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "camera_move",
     "evidence": {
       "text": "نه برش گردون",
       "quantities": [],
@@ -943,21 +951,22 @@
       "action_cues": []
     },
     "post": {
-      "accepted": false,
-      "reason": "clarification",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
+        "route": "do",
+        "op": "view.move",
+        "args": {
+          "action": "orbit",
+          "direction": "left"
+        }
+      },
+      "provenance": {
+        "direction": "text/context",
+        "magnitude": null
       }
     },
-    "model_choice": {
-      "id": "v07_cam_13",
-      "d": "q",
-      "i": null
-    },
-    "model_latency_ms": 887.0894060000012,
-    "outcome": "conservative_escalation"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -1030,7 +1039,7 @@
       "d": "a",
       "i": "fit"
     },
-    "model_latency_ms": 887.0894060000012,
+    "model_latency_ms": 862.7280769999857,
     "outcome": "correct"
   },
   {
@@ -1179,7 +1188,7 @@
       "d": "a",
       "i": "top_view"
     },
-    "model_latency_ms": 887.0894060000012,
+    "model_latency_ms": 862.7280769999857,
     "outcome": "correct"
   },
   {
@@ -1247,7 +1256,7 @@
       "d": "a",
       "i": "clear_selection"
     },
-    "model_latency_ms": 887.0894060000012,
+    "model_latency_ms": 862.7280769999857,
     "outcome": "correct"
   },
   {
@@ -1325,7 +1334,7 @@
         }
       ]
     },
-    "source": "model_intent",
+    "source": "evidence_reflex",
     "decision": "act",
     "intent": "inspect",
     "evidence": {
@@ -1368,20 +1377,14 @@
         "route": "do",
         "op": "viewer.inspect",
         "args": {
-          "mode": "state"
+          "mode": "selection"
         }
       },
       "provenance": {
         "mode": "text"
       }
     },
-    "model_choice": {
-      "id": "v07_ins_01",
-      "d": "a",
-      "i": "inspect"
-    },
-    "model_latency_ms": 887.0894060000012,
-    "outcome": "wrong_reversible_accepted"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -1454,7 +1457,7 @@
       "d": "a",
       "i": "inspect"
     },
-    "model_latency_ms": 887.0894060000012,
+    "model_latency_ms": 862.7280769999857,
     "outcome": "correct"
   },
   {
@@ -1784,7 +1787,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 887.0894060000012,
+    "model_latency_ms": 862.7280769999857,
     "outcome": "correct"
   },
   {
@@ -1847,10 +1850,11 @@
       }
     },
     "model_choice": {
+      "id": "v07_ins_08",
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 887.0894060000012,
+    "model_latency_ms": 862.7280769999857,
     "outcome": "correct"
   },
   {
@@ -3258,8 +3262,8 @@
       ]
     },
     "source": "model_intent",
-    "decision": "ask",
-    "intent": null,
+    "decision": "act",
+    "intent": "feature_parameter",
     "evidence": {
       "text": "Extrude 2 رو بیست میل کن",
       "quantities": [
@@ -3315,7 +3319,7 @@
     },
     "post": {
       "accepted": false,
-      "reason": "clarification",
+      "reason": "feature-parameter-ungrounded",
       "compiled": {
         "route": "ask",
         "op": null,
@@ -3323,10 +3327,11 @@
       }
     },
     "model_choice": {
-      "d": "q",
-      "i": null
+      "id": "v07_feat_03",
+      "d": "a",
+      "i": "feature_parameter"
     },
-    "model_latency_ms": 887.0894060000012,
+    "model_latency_ms": 862.7280769999857,
     "outcome": "correct"
   },
   {
@@ -3571,7 +3576,7 @@
       "visibility": null,
       "suppressed": null,
       "relation": null,
-      "relative": null,
+      "relative": "subtract",
       "property": null,
       "property_value": null,
       "name_value": null,
@@ -3597,16 +3602,17 @@
         "args": {
           "feature_name": "Fillet 2",
           "parameter": "radius",
-          "amount": "0.5 mm"
+          "amount": "3.5 mm"
         }
       },
       "provenance": {
         "feature": "text/context",
-        "value": "q1",
-        "parameter": "text/type"
+        "delta": "q1",
+        "current": "verified-context",
+        "operator": "subtract"
       }
     },
-    "outcome": "wrong_material_accepted"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -4142,7 +4148,7 @@
       "d": "a",
       "i": "feature_delete"
     },
-    "model_latency_ms": 806.8484900000001,
+    "model_latency_ms": 862.7280769999857,
     "outcome": "correct"
   },
   {
@@ -4369,7 +4375,7 @@
         "args": {
           "feature_name": "Extrude 4",
           "parameter": "flip direction",
-          "value": true
+          "value": false
         }
       },
       "provenance": {
@@ -4377,7 +4383,7 @@
         "value": "text"
       }
     },
-    "outcome": "wrong_material_accepted"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -4971,7 +4977,7 @@
         }
       ]
     },
-    "source": "model_intent",
+    "source": "evidence_reflex",
     "decision": "act",
     "intent": "part_property",
     "evidence": {
@@ -5000,9 +5006,9 @@
       "suppressed": null,
       "relation": null,
       "relative": null,
-      "property": null,
-      "property_value": null,
-      "name_value": null,
+      "property": "name",
+      "property_value": "shell",
+      "name_value": "shell",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -5014,24 +5020,29 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [
+        "rename"
+      ]
     },
     "post": {
-      "accepted": false,
-      "reason": "part-property-ungrounded",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
+        "route": "do",
+        "op": "documented.updateWVEPMetadata",
+        "args": {
+          "part_name": "Part 5",
+          "property": "name",
+          "value": "shell"
+        }
+      },
+      "provenance": {
+        "part": "text/context",
+        "property": "text",
+        "value": "text-span"
       }
     },
-    "model_choice": {
-      "id": "v07_part_08",
-      "d": "a",
-      "i": "part_property"
-    },
-    "model_latency_ms": 806.8484900000001,
-    "outcome": "conservative_escalation"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -5435,9 +5446,9 @@
         }
       ]
     },
-    "source": "evidence_reflex",
+    "source": "model_intent",
     "decision": "act",
-    "intent": "part_property",
+    "intent": "feature_rename",
     "evidence": {
       "text": "اسمش رو عوض کن",
       "quantities": [],
@@ -5455,9 +5466,9 @@
       "suppressed": null,
       "relation": null,
       "relative": null,
-      "property": "name",
-      "property_value": "رو عوض کن",
-      "name_value": "رو عوض کن",
+      "property": null,
+      "property_value": null,
+      "name_value": null,
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -5469,29 +5480,24 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": [
-        "rename"
-      ]
+      "action_cues": []
     },
     "post": {
-      "accepted": true,
-      "reason": "ok",
+      "accepted": false,
+      "reason": "feature-rename-ungrounded",
       "compiled": {
-        "route": "do",
-        "op": "documented.updateWVEPMetadata",
-        "args": {
-          "part_name": "Part 2",
-          "property": "name",
-          "value": "رو عوض کن"
-        }
-      },
-      "provenance": {
-        "part": "text/context",
-        "property": "text",
-        "value": "text-span"
+        "route": "ask",
+        "op": null,
+        "args": {}
       }
     },
-    "outcome": "false_execute"
+    "model_choice": {
+      "id": "v07_part_14",
+      "d": "a",
+      "i": "feature_rename"
+    },
+    "model_latency_ms": 862.7280769999857,
+    "outcome": "correct"
   },
   {
     "case": {
@@ -5975,7 +5981,7 @@
       "d": "a",
       "i": "add_pattern"
     },
-    "model_latency_ms": 806.8484900000001,
+    "model_latency_ms": 862.7280769999857,
     "outcome": "correct"
   },
   {
@@ -6884,8 +6890,8 @@
       "relation": null,
       "relative": null,
       "property": "name",
-      "property_value": "rough shell بساز",
-      "name_value": "rough shell بساز",
+      "property_value": "rough shell",
+      "name_value": "rough shell",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -6908,14 +6914,14 @@
         "route": "do",
         "op": "documented.createPartStudio",
         "args": {
-          "new_name": "rough shell بساز"
+          "new_name": "rough shell"
         }
       },
       "provenance": {
         "name": "text-span"
       }
     },
-    "outcome": "wrong_material_accepted"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -6953,9 +6959,9 @@
       "suppressed": null,
       "relation": null,
       "relative": null,
-      "property": null,
-      "property_value": null,
-      "name_value": null,
+      "property": "name",
+      "property_value": "case rev2",
+      "name_value": "case rev2",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -6967,18 +6973,25 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [
+        "rename"
+      ]
     },
     "post": {
-      "accepted": false,
-      "reason": "document-name-ungrounded",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
+        "route": "do",
+        "op": "documented.updateDocumentAttributes",
+        "args": {
+          "new_name": "case rev2"
+        }
+      },
+      "provenance": {
+        "name": "text-span"
       }
     },
-    "outcome": "conservative_escalation"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -7121,8 +7134,8 @@
         }
       ]
     },
-    "source": "model_intent",
-    "decision": "ask",
+    "source": "evidence_reflex",
+    "decision": "think",
     "intent": null,
     "evidence": {
       "text": "سبکش کن ولی مقاومتش کم نشه",
@@ -7144,7 +7157,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
-      "design": false,
+      "design": true,
       "unsupported": false,
       "camera_action": null,
       "camera_direction": null,
@@ -7159,20 +7172,14 @@
     },
     "post": {
       "accepted": false,
-      "reason": "clarification",
+      "reason": "design-escalation",
       "compiled": {
-        "route": "ask",
+        "route": "think",
         "op": null,
         "args": {}
       }
     },
-    "model_choice": {
-      "id": "v07_esc_02",
-      "d": "q",
-      "i": null
-    },
-    "model_latency_ms": 806.8484900000001,
-    "outcome": "route_mismatch"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -7186,8 +7193,8 @@
         }
       ]
     },
-    "source": "model_intent",
-    "decision": "ask",
+    "source": "evidence_reflex",
+    "decision": "think",
     "intent": null,
     "evidence": {
       "text": "جوری تغییرش بده که قالب گیری راحت تر شه",
@@ -7209,7 +7216,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
-      "design": false,
+      "design": true,
       "unsupported": false,
       "camera_action": null,
       "camera_direction": null,
@@ -7224,20 +7231,14 @@
     },
     "post": {
       "accepted": false,
-      "reason": "clarification",
+      "reason": "design-escalation",
       "compiled": {
-        "route": "ask",
+        "route": "think",
         "op": null,
         "args": {}
       }
     },
-    "model_choice": {
-      "id": "v07_esc_03",
-      "d": "q",
-      "i": null
-    },
-    "model_latency_ms": 806.8484900000001,
-    "outcome": "route_mismatch"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -7251,8 +7252,8 @@
         }
       ]
     },
-    "source": "model_intent",
-    "decision": "ask",
+    "source": "evidence_reflex",
+    "decision": "think",
     "intent": null,
     "evidence": {
       "text": "فیچرهای به دردنخور رو جمع کن",
@@ -7274,7 +7275,7 @@
       "property": null,
       "property_value": null,
       "name_value": null,
-      "design": false,
+      "design": true,
       "unsupported": false,
       "camera_action": null,
       "camera_direction": null,
@@ -7289,20 +7290,14 @@
     },
     "post": {
       "accepted": false,
-      "reason": "clarification",
+      "reason": "design-escalation",
       "compiled": {
-        "route": "ask",
+        "route": "think",
         "op": null,
         "args": {}
       }
     },
-    "model_choice": {
-      "id": "v07_esc_04",
-      "d": "q",
-      "i": null
-    },
-    "model_latency_ms": 806.8484900000001,
-    "outcome": "route_mismatch"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -7317,8 +7312,8 @@
       ]
     },
     "source": "model_intent",
-    "decision": "act",
-    "intent": "feature_delete",
+    "decision": "ask",
+    "intent": null,
     "evidence": {
       "text": "اون یکی رو پاک کن",
       "quantities": [],
@@ -7356,7 +7351,7 @@
     },
     "post": {
       "accepted": false,
-      "reason": "delete-feature-ungrounded",
+      "reason": "clarification",
       "compiled": {
         "route": "ask",
         "op": null,
@@ -7365,10 +7360,10 @@
     },
     "model_choice": {
       "id": "v07_esc_05",
-      "d": "a",
-      "i": "feature_delete"
+      "d": "q",
+      "i": null
     },
-    "model_latency_ms": 806.8484900000001,
+    "model_latency_ms": 457.0516869999892,
     "outcome": "correct"
   },
   {
@@ -7433,7 +7428,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 806.8484900000001,
+    "model_latency_ms": 457.0516869999892,
     "outcome": "correct"
   },
   {
@@ -7498,7 +7493,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 806.8484900000001,
+    "model_latency_ms": 457.0516869999892,
     "outcome": "correct"
   },
   {
@@ -7563,7 +7558,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 806.8484900000001,
+    "model_latency_ms": 457.0516869999892,
     "outcome": "correct"
   },
   {
