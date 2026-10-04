@@ -1,0 +1,7 @@
+{
+  "request_id": "fresh-holdout-v11-20261004-c",
+  "frozen_cases": 100,
+  "frozen_holdout_commit": "a6e39fb52ed700170fbe25162b076482b55152a1",
+  "router_source_head": "7addff6131bc0a3117b8404d8ce3d185ece872cb",
+  "purpose": "v11-regression-final-closeout"
+}
