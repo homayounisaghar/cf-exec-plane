@@ -1,6 +1,6 @@
 from __future__ import annotations
 import hashlib, json, os
-from fresh_holdout_v15_10000 import CASES, FAMILY_COUNTS, DIVERGENCE_AXES
+from fresh_holdout_v15_10000 import CASES, FAMILY_COUNTS, DIVERGENCE_AXES, SURFACE_DEDUP_COUNT
 
 def digest():
     payload=json.dumps(CASES,ensure_ascii=False,sort_keys=True,separators=(",",":")).encode("utf-8")
@@ -19,6 +19,7 @@ def main():
         "family_counts":FAMILY_COUNTS,
         "divergence_axes":DIVERGENCE_AXES,
         "corpus_sha256":digest(),
+        "surface_dedup_count":SURFACE_DEDUP_COUNT,
         "status":"frozen_pre_score",
     }
     path=os.environ.get("OUT_PATH","pre-score-manifest.json")
