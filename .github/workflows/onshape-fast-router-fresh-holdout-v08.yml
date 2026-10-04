@@ -11,7 +11,7 @@ permissions:
 
 concurrency:
   group: onshape-fast-router-fresh-holdout-v08
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   qualify:
