@@ -128,13 +128,13 @@ def core(s):
     if fam=="flip_direction":
         return f"پارامتر flip direction در {a['feature_name']} را روی {'true' if a['value'] else 'false'} بگذار"
     if fam=="suppress":
-        return f"feature موجود {a['feature_name']} را suppress کن"
+        return f"محاسبهٔ {a['feature_name']} را در regeneration موقتاً غیرفعال کن و آن feature را در حالت suppress قرار بده"
     if fam=="unsuppress":
         return f"feature موجود {a['feature_name']} را از حالت suppress خارج کن"
     if fam=="feature_rename":
         return f"نام feature {a['feature_name']} را دقیقاً به {a['new_name']} تغییر بده"
     if fam=="feature_delete":
-        return f"feature موجود {a['feature_name']} را از feature tree حذف کن"
+        return f"ورودی {a['feature_name']} را از history مدل بردار تا دیگر در درخت ویژگی‌ها وجود نداشته باشد"
     if fam=="part_hide":
         return f"{a['part_name']} را در viewport نامرئی کن"
     if fam=="part_show":
@@ -150,13 +150,14 @@ def core(s):
     if fam=="part_rename":
         return f"نام خود part یعنی {a['part_name']} را دقیقاً به {a['value']} تغییر بده"
     if fam=="plane_named":
-        return f"یک reference plane تازه بساز و نام آن را دقیقاً {a['name']} بگذار"
+        return f"یک صفحهٔ مرجع جدید به مدل اضافه کن که label آن دقیقاً {a['name']} باشد"
     if fam=="plane_plain":
         return "یک reference plane تازه بدون نام سفارشی ایجاد کن"
     if fam=="linear_pattern":
         return f"از {a['part_name']} یک linear pattern با {a['copies']} نسخه و فاصله {a['distance']} بساز"
     if fam=="feature_reorder":
-        return f"در feature tree، {a['source_feature']} را {('قبل از' if a['placement']=='before' else 'بعد از')} {a['target_feature']} قرار بده"
+        relation="پیش‌تر از" if a["placement"]=="before" else "پس‌تر از"
+        return f"جایگاه {a['source_feature']} را در history طوری عوض کن که {relation} {a['target_feature']} قرار بگیرد"
     if fam=="rollback":
         if "before_feature" in a:
             return f"rollback bar را بلافاصله قبل از {a['before_feature']} قرار بده"
@@ -179,11 +180,11 @@ def core(s):
         return f"radius مربوط به {a['feature_name']} را به اندازه {delta} {direction} کن تا مقدار نهایی دقیقاً {a['amount']} شود"
     if fam=="negation_correction":
         m=i%5
-        if m==0: return "Part 8 را hide نکن؛ برعکس visible نگهش دار"
-        if m==1: return "zoom in نکن؛ به‌جایش zoom out انجام بده"
-        if m==2: return "Top view را فعال نکن؛ در عوض selection فعلی را کامل clear کن"
-        if m==3: return "Fillet 7 را حذف نکن؛ هیچ عمل جایگزین دیگری هم درخواست نمی‌کنم"
-        return "selection را clear نکن؛ فقط بدون تغییرش بگو چه چیزهایی selected هستند"
+        if m==0: return "دستور مخفی‌سازی Part 8 را لغو کن؛ نتیجهٔ مثبت موردنظر این است که Part 8 قابل‌دیدن بماند"
+        if m==1: return "حرکت نزدیک‌شدن دوربین را انجام نده؛ اثر جایگزین باید دورشدن view از مدل باشد"
+        if m==2: return "تغییر نما به Top را کنار بگذار؛ تنها اثر مثبت موردنظر خالی‌کردن گزینش فعلی است"
+        if m==3: return "برای Fillet 7 فقط ممنوعیت حذف را بیان می‌کنم و هیچ اقدام مثبت دیگری نمی‌خواهم"
+        return "پاک‌کردن گزینش را لغو کن؛ به‌جایش فقط محتویات گزینش فعلی را به‌صورت read-only اعلام کن"
     if fam=="multi_action_safe_ask":
         return [
           "هم Part 6 را hide کن و هم نمای استاندارد Top را فعال کن",

@@ -1,0 +1,14 @@
+{
+  "request_id": "v20c-close-diversity-five-families-20261004-1543",
+  "reason": "rewrite only five families identified by frozen pre-score similarity diagnostic; threshold unchanged and router remains unexposed",
+  "families": [
+    "plane_named",
+    "negation_correction",
+    "feature_reorder",
+    "suppress",
+    "feature_delete"
+  ],
+  "candidate_commit": "54580b67a9a61d2463ec3b9ced7a801707bb242b",
+  "fresh_status": "unscored-unfrozen",
+  "production_effects": false
+}
