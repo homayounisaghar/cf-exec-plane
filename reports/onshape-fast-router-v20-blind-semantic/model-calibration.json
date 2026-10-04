@@ -1,0 +1,264 @@
+{
+  "pass": false,
+  "stage": "direct_judge",
+  "generator_model": "openai/gpt-oss-20b",
+  "judge_model": "openai/gpt-oss-safeguard-20b",
+  "direct_a": [
+    {
+      "id": "cal_hide",
+      "ok": true,
+      "reason": "ok",
+      "parsed": {
+        "scenario_id": "cal_hide",
+        "route": "do",
+        "op": "part.visibility",
+        "args": {
+          "part_name": "Part 12",
+          "visible": false
+        },
+        "flags": {
+          "ambiguous": false,
+          "conditional": false,
+          "multi_effect": false,
+          "invalid_quantity": false,
+          "negated_only": false
+        }
+      }
+    },
+    {
+      "id": "cal_radius",
+      "ok": false,
+      "reason": "missing"
+    },
+    {
+      "id": "cal_cond",
+      "ok": false,
+      "reason": "missing"
+    },
+    {
+      "id": "cal_amb",
+      "ok": false,
+      "reason": "missing"
+    },
+    {
+      "id": "cal_inspect",
+      "ok": false,
+      "reason": "missing"
+    },
+    {
+      "id": "cal_suppress",
+      "ok": false,
+      "reason": "missing"
+    },
+    {
+      "id": "cal_part_delete",
+      "ok": false,
+      "reason": "missing"
+    },
+    {
+      "id": "cal_zoom_correct",
+      "ok": false,
+      "reason": "missing"
+    }
+  ],
+  "direct_b": [
+    {
+      "id": "cal_hide",
+      "ok": false,
+      "reason": "args",
+      "parsed": {
+        "scenario_id": "cal_hide",
+        "route": "do",
+        "op": "part.visibility",
+        "args": {
+          "part_name": "12",
+          "visible": false
+        },
+        "flags": {
+          "ambiguous": false,
+          "conditional": false,
+          "multi_effect": false,
+          "invalid_quantity": false,
+          "negated_only": false
+        }
+      }
+    },
+    {
+      "id": "cal_radius",
+      "ok": false,
+      "reason": "args",
+      "parsed": {
+        "scenario_id": "cal_radius",
+        "route": "do",
+        "op": "feature.parameter.set",
+        "args": {
+          "feature_name": "Fillet 7",
+          "parameter": "radius",
+          "amount": "N mm",
+          "value": "2"
+        },
+        "flags": {
+          "ambiguous": false,
+          "conditional": false,
+          "multi_effect": false,
+          "invalid_quantity": false,
+          "negated_only": false
+        }
+      }
+    },
+    {
+      "id": "cal_cond",
+      "ok": true,
+      "reason": "ok",
+      "parsed": {
+        "scenario_id": "cal_cond",
+        "route": "ask",
+        "op": null,
+        "args": {},
+        "flags": {
+          "ambiguous": false,
+          "conditional": true,
+          "multi_effect": false,
+          "invalid_quantity": false,
+          "negated_only": false
+        }
+      }
+    },
+    {
+      "id": "cal_amb",
+      "ok": false,
+      "reason": "flags",
+      "parsed": {
+        "scenario_id": "cal_amb",
+        "route": "ask",
+        "op": null,
+        "args": {},
+        "flags": {
+          "ambiguous": false,
+          "conditional": false,
+          "multi_effect": true,
+          "invalid_quantity": false,
+          "negated_only": false
+        }
+      }
+    },
+    {
+      "id": "cal_inspect",
+      "ok": true,
+      "reason": "ok",
+      "parsed": {
+        "scenario_id": "cal_inspect",
+        "route": "do",
+        "op": "viewer.inspect",
+        "args": {
+          "mode": "selection"
+        },
+        "flags": {
+          "ambiguous": false,
+          "conditional": false,
+          "multi_effect": false,
+          "invalid_quantity": false,
+          "negated_only": false
+        }
+      }
+    },
+    {
+      "id": "cal_suppress",
+      "ok": true,
+      "reason": "ok",
+      "parsed": {
+        "scenario_id": "cal_suppress",
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 9",
+          "suppressed": true,
+          "new_name": null
+        },
+        "flags": {
+          "ambiguous": false,
+          "conditional": false,
+          "multi_effect": false,
+          "invalid_quantity": false,
+          "negated_only": false
+        }
+      }
+    },
+    {
+      "id": "cal_part_delete",
+      "ok": false,
+      "reason": "args",
+      "parsed": {
+        "scenario_id": "cal_part_delete",
+        "route": "do",
+        "op": "feature.delete_part",
+        "args": {
+          "part_name": "15"
+        },
+        "flags": {
+          "ambiguous": false,
+          "conditional": false,
+          "multi_effect": false,
+          "invalid_quantity": false,
+          "negated_only": false
+        }
+      }
+    },
+    {
+      "id": "cal_zoom_correct",
+      "ok": false,
+      "reason": "route",
+      "parsed": {
+        "scenario_id": "cal_zoom_correct",
+        "route": "ask",
+        "op": null,
+        "args": {},
+        "flags": {
+          "ambiguous": false,
+          "conditional": false,
+          "multi_effect": false,
+          "invalid_quantity": true,
+          "negated_only": false
+        }
+      }
+    }
+  ],
+  "usage": [
+    {
+      "completion_tokens": 900,
+      "prompt_tokens": 812,
+      "total_tokens": 1712,
+      "completion_tokens_details": {
+        "accepted_prediction_tokens": null,
+        "audio_tokens": null,
+        "reasoning_tokens": 827,
+        "rejected_prediction_tokens": null
+      },
+      "prompt_tokens_details": null,
+      "queue_time": 0.058736889,
+      "prompt_time": 0.043736903,
+      "completion_time": 0.926377239,
+      "total_time": 0.970114142
+    },
+    {
+      "completion_tokens": 839,
+      "prompt_tokens": 823,
+      "total_tokens": 1662,
+      "completion_tokens_details": {
+        "accepted_prediction_tokens": null,
+        "audio_tokens": null,
+        "reasoning_tokens": 404,
+        "rejected_prediction_tokens": null
+      },
+      "prompt_tokens_details": {
+        "audio_tokens": null,
+        "cache_write_tokens": null,
+        "cached_tokens": 512
+      },
+      "queue_time": 0.058824291,
+      "prompt_time": 0.018455237,
+      "completion_time": 0.872910806,
+      "total_time": 0.891366043
+    }
+  ]
+}
