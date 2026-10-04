@@ -602,14 +602,23 @@ def extract_evidence(text, ctx=None):
     top_view = has_any(cue_t,["از بالا","top view","نمای بالا"]) or bool(
         re.search(r"(?:نمای|نما)\s+top\b|\btop\s+(?:view|نما)",cue_t,re.I)
     )
-    clear_selection = has_any(cue_t,["انتخاب رو پاک","انتخاب را پاک","selection رو پاک","selection را پاک","selection رو خالی","selection را خالی","selection فعلی رو صفر","انتخابارو ول کن","انتخاب ها رو ول کن"]) or bool(re.search(r"(?:هر چی|هرچی).*(?:انتخاب|selection).*(?:پاک|خالی)",cue_t))
+    clear_selection = (
+        has_any(cue_t,["انتخاب رو پاک","انتخاب را پاک","selection رو پاک","selection را پاک","selection رو خالی","selection را خالی","selection فعلی رو صفر","انتخابارو ول کن","انتخاب ها رو ول کن"]) or
+        bool(re.search(r"(?:هر چی|هرچی).*(?:انتخاب|selection).*(?:پاک|خالی)",cue_t)) or
+        bool(re.search(r"(?:انتخاب|selection).*?(?:کامل\s+)?(?:پاک|خالی)(?:\s+کن)?",cue_t))
+    )
 
     collaboration_cue = has_any(cue_t,["سشن","session","چند نفر","کسایی","کسانی","کیا","وصلن","چند نفریم"])
-    selection_cue = has_any(cue_t,["انتخاب","selection","سلکت","select","دستمه","گرفتم"]) or bool(
-        re.search(r"(?:چی|چه چیزی).*?(?:دست|گرفت|انتخاب|سلکت)",cue_t)
+    # A selection mention is a referent, not an inspect request.  Inspection needs
+    # independent interrogative/state evidence; this prevents "fillet this selection"
+    # from being hijacked into viewer.inspect.
+    selection_inspect_cue = (
+        has_any(cue_t,["چی انتخاب","چی انتخابه","چی انتخاب شده","چی سلکت","چی دستمه","چی گرفتم"]) or
+        bool(re.search(r"(?:چی|چه چیزی).*?(?:دست|گرفت|انتخاب|سلکت)",cue_t)) or
+        bool(re.search(r"(?:انتخاب|selection|سلکت).*?(?:چیه|چی هست|چی شده)",cue_t))
     )
     state_cue = has_any(cue_t,["وضعیت ویور","viewer state","وضعیت صفحه"]) or ("وضعیت" in cue_t and "viewer" in cue_t)
-    inspect_target = "collaboration" if collaboration_cue else ("selection" if selection_cue else ("state" if state_cue else None))
+    inspect_target = "collaboration" if collaboration_cue else ("selection" if selection_inspect_cue else ("state" if state_cue else None))
 
     parameter_hint=None
     if "flip direction" in cue_t: parameter_hint="flip direction"
