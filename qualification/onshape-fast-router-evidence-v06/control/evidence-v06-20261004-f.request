@@ -1,0 +1,7 @@
+{
+  "request_id": "evidence-v06-20261004-f",
+  "source_head": "2bd17ebd6e47b9c3ad9465555fe029aea94da0ea",
+  "fresh_holdout_commit": "89f1e86a8c5393280a019602309fffa4a730fa24",
+  "invariants_commit": "f536df24da80a679f2428a33b0d1c21c9848aea6",
+  "reason": "run-v08-through-proven-v06-execution-pipeline"
+}
