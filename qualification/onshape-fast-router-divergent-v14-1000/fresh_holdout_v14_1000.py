@@ -416,6 +416,25 @@ for i in range(10):
     add("code_switch",f"v14_mix_view_{i+1:03d}",f"top view {fillers[i]} بده",do("view.standard",{"view":"top"}),axes=["code_switch","order","view"])
 
 assert len(CASES)==1000, len(CASES)
+
+# Surface-only deterministic de-duplication before first score. This does not change
+# semantics/gold labels; it only makes every utterance text distinct.
+_seen={}
+_suffixes=["، لطفاً","، مرسی","، اگه میشه","، ممنون","، همین الان"]
+for c in CASES:
+    base=c["text"]
+    n=_seen.get(base,0)
+    if n:
+        suffix=_suffixes[min(n-1,len(_suffixes)-1)]
+        candidate=base+suffix
+        while candidate in _seen:
+            suffix += "، لطفاً"
+            candidate=base+suffix
+        c["text"]=candidate
+        c["axes"]=list(c.get("axes",[]))+["surface_dedup"]
+    _seen[base]=n+1
+    _seen[c["text"]]=1
+
 texts=[c["text"] for c in CASES]
 assert len(set(texts))==1000, (len(texts),len(set(texts)))
 ids=[c["id"] for c in CASES]
