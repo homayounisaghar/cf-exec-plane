@@ -22,7 +22,7 @@ unit_dst=/etc/systemd/system/capability-fabric-rvc-worker.service
 
 [[ -f "$worker_src" && -f "$unit_src" ]] || { echo "RVC_BOOTSTRAP_BUNDLE_INCOMPLETE" >&2; exit 12; }
 
-status_file="$root/bootstrap-status.json"
+status_file=/var/lib/capability-fabric/onshape/agent/rvc-bootstrap-status.json
 tmpdir=''
 CURRENT_STAGE="bootstrap_prepare"
 BOOTSTRAP_OK=0
