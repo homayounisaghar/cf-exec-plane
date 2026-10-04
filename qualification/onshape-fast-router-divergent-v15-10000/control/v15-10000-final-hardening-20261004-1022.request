@@ -1,0 +1,11 @@
+{
+  "request_id": "v15-10000-final-hardening-20261004-1022",
+  "corpus_sha256": "04137cbf8eb0e85933a356d5837c77431e94cde7f0f4772f6f0b797d646f452a",
+  "source_repo": "homayounisaghar/capability-fabric",
+  "source_ref": "work/onshape-fast-router-v15-hardening",
+  "source_head": "19af066da67cc2b56e41b6680d2fe5aff2682243",
+  "source_file_sha": "25edc8580421d79b6d77f24aad3a4c1c3472a30a",
+  "selftest_file_sha": "196e5e6e3e062b2326476afeed1b8886311e0b62",
+  "purpose": "rerun unchanged frozen V15-10000 on final foundational hardening candidate",
+  "production_effects": false
+}
