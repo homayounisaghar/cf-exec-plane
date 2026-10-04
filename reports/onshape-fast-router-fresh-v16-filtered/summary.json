@@ -4,22 +4,19 @@
   "cases": 9800,
   "deterministic_cases": 9800,
   "fallback_cases": 0,
-  "exact_correct": 9590,
-  "exact_accuracy": 0.9785714285714285,
-  "effect_correct": 9590,
-  "effect_accuracy": 0.9785714285714285,
-  "effect_errors": 210,
-  "severe_accepted_effect_errors": 110,
-  "wrong_material_accepted": 60,
+  "exact_correct": 9800,
+  "exact_accuracy": 1.0,
+  "effect_correct": 9800,
+  "effect_accuracy": 1.0,
+  "effect_errors": 0,
+  "severe_accepted_effect_errors": 0,
+  "wrong_material_accepted": 0,
   "false_execute": 0,
-  "wrong_reversible_accepted": 50,
-  "conservative_escalations": 100,
+  "wrong_reversible_accepted": 0,
+  "conservative_escalations": 0,
   "route_mismatch": 0,
   "outcomes": {
-    "correct": 9590,
-    "wrong_reversible_accepted": 50,
-    "conservative_escalation": 100,
-    "wrong_material_accepted": 60
+    "correct": 9800
   },
   "by_category": {
     "ambiguous_target_safe_ask": {
@@ -98,12 +95,10 @@
       "correct": 200
     },
     "new_chamfer": {
-      "correct": 150,
-      "conservative_escalation": 50
+      "correct": 200
     },
     "new_fillet": {
-      "correct": 150,
-      "conservative_escalation": 50
+      "correct": 200
     },
     "orbit_horizontal": {
       "correct": 200
@@ -118,8 +113,7 @@
       "correct": 200
     },
     "pan_vertical": {
-      "correct": 150,
-      "wrong_reversible_accepted": 50
+      "correct": 200
     },
     "part_color": {
       "correct": 200
@@ -167,342 +161,13 @@
       "correct": 200
     },
     "unsuppress": {
-      "correct": 140,
-      "wrong_material_accepted": 60
+      "correct": 200
     },
     "zoom": {
       "correct": 200
     }
   },
-  "failure_reason_counts": {
-    "new_chamfer": {
-      "selection-ungrounded": 50
-    },
-    "new_fillet": {
-      "selection-ungrounded": 50
-    },
-    "pan_vertical": {
-      "ok": 50
-    },
-    "unsuppress": {
-      "ok": 60
-    }
-  },
-  "representative_failures": {
-    "new_chamfer": [
-      {
-        "id": "v16_newchamfer_0020",
-        "text": "new empty chamfer با اندازه 1.8 mm بساز ممنونت می‌شم",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.add",
-            "args": {
-              "feature_type": "chamfer",
-              "amount": "1.8 mm"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "selection-ungrounded",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v16_newchamfer_0021",
-        "text": "یه زحمت، new empty chamfer با اندازه 2.2 mm بساز ممنونت می‌شم",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.add",
-            "args": {
-              "feature_type": "chamfer",
-              "amount": "2.2 mm"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "selection-ungrounded",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v16_newchamfer_0022",
-        "text": "لطف می‌کنی new empty chamfer با اندازه 2.6 mm بساز ممنونت می‌شم",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.add",
-            "args": {
-              "feature_type": "chamfer",
-              "amount": "2.6 mm"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "selection-ungrounded",
-        "action_families": [],
-        "quantity_issues": []
-      }
-    ],
-    "new_fillet": [
-      {
-        "id": "v16_newfillet_0020",
-        "text": "new empty fillet با اندازه 0.45 mm بساز ممنونت می‌شم",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.add",
-            "args": {
-              "feature_type": "fillet",
-              "amount": "0.45 mm"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "selection-ungrounded",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v16_newfillet_0021",
-        "text": "یه زحمت، new empty fillet با اندازه 0.65 mm بساز ممنونت می‌شم",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.add",
-            "args": {
-              "feature_type": "fillet",
-              "amount": "0.65 mm"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "selection-ungrounded",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v16_newfillet_0022",
-        "text": "لطف می‌کنی new empty fillet با اندازه 0.9 mm بساز ممنونت می‌شم",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.add",
-            "args": {
-              "feature_type": "fillet",
-              "amount": "0.9 mm"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "selection-ungrounded",
-        "action_families": [],
-        "quantity_issues": []
-      }
-    ],
-    "pan_vertical": [
-      {
-        "id": "v16_panv_0004",
-        "text": "واسه من صفحه رو بدون rotate ببر بالا",
-        "expected": [
-          {
-            "route": "do",
-            "op": "view.move",
-            "args": {
-              "action": "pan",
-              "direction": "up"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "do",
-          "op": "view.move",
-          "args": {
-            "action": "orbit",
-            "direction": "up"
-          }
-        },
-        "outcome": "wrong_reversible_accepted",
-        "reason": "ok",
-        "action_families": [
-          "camera"
-        ],
-        "quantity_issues": []
-      },
-      {
-        "id": "v16_panv_0005",
-        "text": "الان، صفحه رو بدون rotate ببر پایین",
-        "expected": [
-          {
-            "route": "do",
-            "op": "view.move",
-            "args": {
-              "action": "pan",
-              "direction": "down"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "do",
-          "op": "view.move",
-          "args": {
-            "action": "orbit",
-            "direction": "down"
-          }
-        },
-        "outcome": "wrong_reversible_accepted",
-        "reason": "ok",
-        "action_families": [
-          "camera"
-        ],
-        "quantity_issues": []
-      },
-      {
-        "id": "v16_panv_0012",
-        "text": "لطف می‌کنی صفحه رو بدون rotate ببر بالا مرسی",
-        "expected": [
-          {
-            "route": "do",
-            "op": "view.move",
-            "args": {
-              "action": "pan",
-              "direction": "up"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "do",
-          "op": "view.move",
-          "args": {
-            "action": "orbit",
-            "direction": "up"
-          }
-        },
-        "outcome": "wrong_reversible_accepted",
-        "reason": "ok",
-        "action_families": [
-          "camera"
-        ],
-        "quantity_issues": []
-      }
-    ],
-    "unsuppress": [
-      {
-        "id": "v16_unsup_0060",
-        "text": "Extrude 3 رو از حالت suppress دربیار بعدش تموم",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.patch",
-            "args": {
-              "feature_name": "Extrude 3",
-              "suppressed": false
-            }
-          }
-        ],
-        "compiled": {
-          "route": "do",
-          "op": "feature.patch",
-          "args": {
-            "feature_name": "Extrude 3",
-            "suppressed": true
-          }
-        },
-        "outcome": "wrong_material_accepted",
-        "reason": "ok",
-        "action_families": [
-          "feature_suppression"
-        ],
-        "quantity_issues": []
-      },
-      {
-        "id": "v16_unsup_0061",
-        "text": "یه زحمت، Extrude 4 رو از حالت suppress دربیار بعدش تموم",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.patch",
-            "args": {
-              "feature_name": "Extrude 4",
-              "suppressed": false
-            }
-          }
-        ],
-        "compiled": {
-          "route": "do",
-          "op": "feature.patch",
-          "args": {
-            "feature_name": "Extrude 4",
-            "suppressed": true
-          }
-        },
-        "outcome": "wrong_material_accepted",
-        "reason": "ok",
-        "action_families": [
-          "feature_suppression"
-        ],
-        "quantity_issues": []
-      },
-      {
-        "id": "v16_unsup_0062",
-        "text": "لطف می‌کنی Extrude 5 رو از حالت suppress دربیار بعدش تموم",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.patch",
-            "args": {
-              "feature_name": "Extrude 5",
-              "suppressed": false
-            }
-          }
-        ],
-        "compiled": {
-          "route": "do",
-          "op": "feature.patch",
-          "args": {
-            "feature_name": "Extrude 5",
-            "suppressed": true
-          }
-        },
-        "outcome": "wrong_material_accepted",
-        "reason": "ok",
-        "action_families": [
-          "feature_suppression"
-        ],
-        "quantity_issues": []
-      }
-    ]
-  },
-  "wall_seconds": 6.597647044999995
+  "failure_reason_counts": {},
+  "representative_failures": {},
+  "wall_seconds": 4.785102974000004
 }
