@@ -106,11 +106,11 @@ def core(s):
     if fam=="clear_selection":
         return "تمام انتخاب‌های فعلی viewer را پاک کن تا selection خالی شود"
     if fam=="inspect_selection":
-        return "بدون تغییر selection گزارش بده الان چه entityهایی انتخاب شده‌اند"
+        return "وضع گزینش فعلی را فقط بخوان و اقلامی را که اکنون گرفته شده‌اند اعلام کن"
     if fam=="inspect_state":
-        return "بدون تغییر مدل وضعیت فعلی viewer و camera را گزارش بده"
+        return "پارامترهای جاری نمای سه‌بعدی و دوربین را صرفاً بخوان و اعلام کن"
     if fam=="inspect_collaboration":
-        return "فهرست collaboratorهای حاضر در session فعلی سند را گزارش بده"
+        return "افرادی را که هم‌اکنون در نشست مشترک همین سند حاضرند فهرست کن"
     if fam=="follow_pair":
         return "وقتی دو collaborator حاضرند نمای نفر دیگر را در viewer من follow کن"
     if fam=="follow_three":
