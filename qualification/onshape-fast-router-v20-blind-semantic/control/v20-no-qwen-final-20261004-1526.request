@@ -1,0 +1,11 @@
+{
+  "request_id": "v20-no-qwen-final-20261004-1526",
+  "reason": "Qwen has 1000 OTPM and cannot scale to 9800 realization; use design-compliant generator/judge model separation without Qwen",
+  "generator": "openai/gpt-oss-120b",
+  "judge_a": "openai/gpt-oss-20b",
+  "judge_b": "openai/gpt-oss-20b",
+  "judge_independence": "separate calls and role prompts",
+  "candidate_commit": "54580b67a9a61d2463ec3b9ced7a801707bb242b",
+  "fresh_status": "unscored-unfrozen",
+  "production_effects": false
+}
