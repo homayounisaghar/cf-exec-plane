@@ -1,0 +1,4 @@
+request_id=pcg-web-r126-direct-audio-transcribe-retry
+candidate_commit=28f137947ba5a8717d46d2c1bc01994387089358
+expected_sequence=126
+expected_release=pcg-web-stage6-direct-audio-transcribe-r126
