@@ -49,7 +49,7 @@ jobs:
       - name: Run frozen divergent V15 10000-case stress holdout
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-          BATCH_SIZE: '50'
+          BATCH_SIZE: '10'
           MAX_BATCH_RETRIES: '2'
           OUT_DIR: ${{ github.workspace }}/artifacts/onshape-fast-router-divergent-v15-10000
         run: |
