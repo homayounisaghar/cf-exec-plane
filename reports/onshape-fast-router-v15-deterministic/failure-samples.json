@@ -1,15 +1,15 @@
 {
   "feature_rename|conservative_escalation": [
     {
-      "id": "v15_frename_0050",
-      "text": "می‌خوام Fillet 2 رو rename کن به fit hide corner 13 اگه میشه",
+      "id": "v15_frename_0100",
+      "text": "میشه نام Fillet 2 رو بذار fit hide corner 26؟ ممنون",
       "expected": [
         {
           "route": "do",
           "op": "feature.patch",
           "args": {
             "feature_name": "Fillet 2",
-            "new_name": "fit hide corner 13"
+            "new_name": "fit hide corner 26"
           }
         }
       ],
@@ -18,22 +18,20 @@
         "op": null,
         "args": {}
       },
-      "reason": "effect-evidence-unconsumed",
-      "intent": "fit",
-      "action_families": [
-        "fit"
-      ]
+      "reason": "selection-ungrounded",
+      "intent": "edge_on_selection",
+      "action_families": []
     },
     {
-      "id": "v15_frename_0051",
-      "text": "ممنون می‌شم Fillet 3 رو rename کن به delete top corner 14، مرسی اگه میشه",
+      "id": "v15_frename_0101",
+      "text": "خب نام Fillet 3 رو بذار delete top corner 27 ممنون",
       "expected": [
         {
           "route": "do",
           "op": "feature.patch",
           "args": {
             "feature_name": "Fillet 3",
-            "new_name": "delete top corner 14"
+            "new_name": "delete top corner 27"
           }
         }
       ],
@@ -42,20 +40,20 @@
         "op": null,
         "args": {}
       },
-      "reason": "feature-rename-ungrounded",
-      "intent": "feature_rename",
+      "reason": "selection-ungrounded",
+      "intent": "edge_on_selection",
       "action_families": []
     },
     {
-      "id": "v15_frename_0052",
-      "text": "میشه Fillet 4 رو rename کن به zoom out corner 15؟ اگه میشه",
+      "id": "v15_frename_0102",
+      "text": "نام Fillet 4 رو بذار zoom out corner 28؛ ممنون",
       "expected": [
         {
           "route": "do",
           "op": "feature.patch",
           "args": {
             "feature_name": "Fillet 4",
-            "new_name": "zoom out corner 15"
+            "new_name": "zoom out corner 28"
           }
         }
       ],
@@ -64,392 +62,64 @@
         "op": null,
         "args": {}
       },
-      "reason": "feature-rename-ungrounded",
-      "intent": "feature_rename",
-      "action_families": [
-        "camera"
-      ]
-    },
-    {
-      "id": "v15_frename_0053",
-      "text": "خب Fillet 5 رو rename کن به material steel corner 16 اگه میشه",
-      "expected": [
-        {
-          "route": "do",
-          "op": "feature.patch",
-          "args": {
-            "feature_name": "Fillet 5",
-            "new_name": "material steel corner 16"
-          }
-        }
-      ],
-      "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
-      },
-      "reason": "feature-rename-ungrounded",
-      "intent": "feature_rename",
+      "reason": "selection-ungrounded",
+      "intent": "edge_on_selection",
       "action_families": []
     },
     {
-      "id": "v15_frename_0055",
-      "text": "آروم Fillet 7 رو rename کن به rollback pattern corner 18 اگه میشه",
-      "expected": [
-        {
-          "route": "do",
-          "op": "feature.patch",
-          "args": {
-            "feature_name": "Fillet 7",
-            "new_name": "rollback pattern corner 18"
-          }
-        }
-      ],
-      "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
-      },
-      "reason": "clarification",
-      "intent": null,
-      "action_families": [
-        "pattern",
-        "rollback"
-      ]
-    },
-    {
-      "id": "v15_frename_0056",
-      "text": "دقیقاً Fillet 8 رو rename کن به radius 2 mm corner 19 اگه میشه",
-      "expected": [
-        {
-          "route": "do",
-          "op": "feature.patch",
-          "args": {
-            "feature_name": "Fillet 8",
-            "new_name": "radius 2 mm corner 19"
-          }
-        }
-      ],
-      "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
-      },
-      "reason": "feature-rename-ungrounded",
-      "intent": "feature_rename",
-      "action_families": [
-        "feature_parameter"
-      ]
-    }
-  ],
-  "feature_rename|wrong_reversible_accepted": [
-    {
-      "id": "v15_frename_0054",
-      "text": "Fillet 6 رو rename کن به selection follow corner 17؛ اگه میشه",
+      "id": "v15_frename_0104",
+      "text": "میشه نام Fillet 6 رو بذار selection follow corner 30 ممنون",
       "expected": [
         {
           "route": "do",
           "op": "feature.patch",
           "args": {
             "feature_name": "Fillet 6",
-            "new_name": "selection follow corner 17"
+            "new_name": "selection follow corner 30"
           }
         }
       ],
       "compiled": {
-        "route": "do",
-        "op": "view.follow",
+        "route": "ask",
+        "op": null,
         "args": {}
       },
-      "reason": "ok",
-      "intent": "follow",
-      "action_families": [
-        "follow"
-      ]
+      "reason": "selection-ungrounded",
+      "intent": "edge_on_selection",
+      "action_families": []
     },
     {
-      "id": "v15_frename_0064",
-      "text": "میشه Fillet 16 رو rename کن به selection follow corner 27 همین الان",
+      "id": "v15_frename_0105",
+      "text": "الان نام Fillet 7 رو بذار rollback pattern corner 31؟ ممنون",
       "expected": [
         {
           "route": "do",
           "op": "feature.patch",
           "args": {
-            "feature_name": "Fillet 16",
-            "new_name": "selection follow corner 27"
+            "feature_name": "Fillet 7",
+            "new_name": "rollback pattern corner 31"
           }
         }
       ],
       "compiled": {
-        "route": "do",
-        "op": "view.follow",
+        "route": "ask",
+        "op": null,
         "args": {}
       },
-      "reason": "ok",
-      "intent": "follow",
-      "action_families": [
-        "follow"
-      ]
+      "reason": "selection-ungrounded",
+      "intent": "edge_on_selection",
+      "action_families": []
     },
     {
-      "id": "v15_frename_0074",
-      "text": "می‌خوام Fillet 26 رو rename کن به selection follow corner 0 همین الان",
+      "id": "v15_frename_0106",
+      "text": "می‌خوام نام Fillet 8 رو بذار radius 2 mm corner 32 ممنون",
       "expected": [
         {
           "route": "do",
           "op": "feature.patch",
           "args": {
-            "feature_name": "Fillet 26",
-            "new_name": "selection follow corner 0"
-          }
-        }
-      ],
-      "compiled": {
-        "route": "do",
-        "op": "view.follow",
-        "args": {}
-      },
-      "reason": "ok",
-      "intent": "follow",
-      "action_families": [
-        "follow"
-      ]
-    },
-    {
-      "id": "v15_frename_0084",
-      "text": "میشه Fillet 36 رو rename کن به selection follow corner 10؟ برای من",
-      "expected": [
-        {
-          "route": "do",
-          "op": "feature.patch",
-          "args": {
-            "feature_name": "Fillet 36",
-            "new_name": "selection follow corner 10"
-          }
-        }
-      ],
-      "compiled": {
-        "route": "do",
-        "op": "view.follow",
-        "args": {}
-      },
-      "reason": "ok",
-      "intent": "follow",
-      "action_families": [
-        "follow"
-      ]
-    },
-    {
-      "id": "v15_frename_0094",
-      "text": "Fillet 46 رو rename کن به selection follow corner 20؛ برای من",
-      "expected": [
-        {
-          "route": "do",
-          "op": "feature.patch",
-          "args": {
-            "feature_name": "Fillet 46",
-            "new_name": "selection follow corner 20"
-          }
-        }
-      ],
-      "compiled": {
-        "route": "do",
-        "op": "view.follow",
-        "args": {}
-      },
-      "reason": "ok",
-      "intent": "follow",
-      "action_families": [
-        "follow"
-      ]
-    }
-  ],
-  "part_material|wrong_material_accepted": [
-    {
-      "id": "v15_material_0050",
-      "text": "می‌خوام Steel بذار material Part 61 رو اگه میشه",
-      "expected": [
-        {
-          "route": "do",
-          "op": "metadata.property.set",
-          "args": {
-            "part_name": "Part 61",
-            "property": "material",
-            "value": "Steel"
-          }
-        }
-      ],
-      "compiled": {
-        "route": "do",
-        "op": "metadata.property.set",
-        "args": {
-          "part_name": "Part 61",
-          "property": "material",
-          "value": "می خوام Steel"
-        }
-      },
-      "reason": "ok",
-      "intent": "part_property",
-      "action_families": [
-        "part_property"
-      ]
-    },
-    {
-      "id": "v15_material_0058",
-      "text": "می‌خوام PLA بذار material Part 9 رو اگه میشه",
-      "expected": [
-        {
-          "route": "do",
-          "op": "metadata.property.set",
-          "args": {
-            "part_name": "Part 9",
-            "property": "material",
-            "value": "PLA"
-          }
-        }
-      ],
-      "compiled": {
-        "route": "do",
-        "op": "metadata.property.set",
-        "args": {
-          "part_name": "Part 9",
-          "property": "material",
-          "value": "می خوام PLA"
-        }
-      },
-      "reason": "ok",
-      "intent": "part_property",
-      "action_families": [
-        "part_property"
-      ]
-    },
-    {
-      "id": "v15_material_0066",
-      "text": "می‌خوام Brass بذار material Part 17 رو همین الان",
-      "expected": [
-        {
-          "route": "do",
-          "op": "metadata.property.set",
-          "args": {
-            "part_name": "Part 17",
-            "property": "material",
-            "value": "Brass"
-          }
-        }
-      ],
-      "compiled": {
-        "route": "do",
-        "op": "metadata.property.set",
-        "args": {
-          "part_name": "Part 17",
-          "property": "material",
-          "value": "می خوام Brass"
-        }
-      },
-      "reason": "ok",
-      "intent": "part_property",
-      "action_families": [
-        "part_property"
-      ]
-    },
-    {
-      "id": "v15_material_0074",
-      "text": "می‌خوام Nylon بذار material Part 25 رو همین الان",
-      "expected": [
-        {
-          "route": "do",
-          "op": "metadata.property.set",
-          "args": {
-            "part_name": "Part 25",
-            "property": "material",
-            "value": "Nylon"
-          }
-        }
-      ],
-      "compiled": {
-        "route": "do",
-        "op": "metadata.property.set",
-        "args": {
-          "part_name": "Part 25",
-          "property": "material",
-          "value": "می خوام Nylon"
-        }
-      },
-      "reason": "ok",
-      "intent": "part_property",
-      "action_families": [
-        "part_property"
-      ]
-    },
-    {
-      "id": "v15_material_0082",
-      "text": "می‌خوام ABS بذار material Part 33 رو برای من",
-      "expected": [
-        {
-          "route": "do",
-          "op": "metadata.property.set",
-          "args": {
-            "part_name": "Part 33",
-            "property": "material",
-            "value": "ABS"
-          }
-        }
-      ],
-      "compiled": {
-        "route": "do",
-        "op": "metadata.property.set",
-        "args": {
-          "part_name": "Part 33",
-          "property": "material",
-          "value": "می خوام ABS"
-        }
-      },
-      "reason": "ok",
-      "intent": "part_property",
-      "action_families": [
-        "part_property"
-      ]
-    },
-    {
-      "id": "v15_material_0090",
-      "text": "می‌خوام Steel بذار material Part 41 رو برای من",
-      "expected": [
-        {
-          "route": "do",
-          "op": "metadata.property.set",
-          "args": {
-            "part_name": "Part 41",
-            "property": "material",
-            "value": "Steel"
-          }
-        }
-      ],
-      "compiled": {
-        "route": "do",
-        "op": "metadata.property.set",
-        "args": {
-          "part_name": "Part 41",
-          "property": "material",
-          "value": "می خوام Steel"
-        }
-      },
-      "reason": "ok",
-      "intent": "part_property",
-      "action_families": [
-        "part_property"
-      ]
-    }
-  ],
-  "rollback|conservative_escalation": [
-    {
-      "id": "v15_rollback_0000",
-      "text": "rollback رو قبل از Extrude 2 بذار",
-      "expected": [
-        {
-          "route": "do",
-          "op": "rollback.set",
-          "args": {
-            "before_feature": "Extrude 2"
+            "feature_name": "Fillet 8",
+            "new_name": "radius 2 mm corner 32"
           }
         }
       ],
@@ -458,177 +128,9 @@
         "op": null,
         "args": {}
       },
-      "reason": "clarification",
-      "intent": null,
-      "action_families": [
-        "rollback"
-      ]
-    },
-    {
-      "id": "v15_rollback_0001",
-      "text": "لطفاً rollback رو بعد از Extrude 3 بذار؟",
-      "expected": [
-        {
-          "route": "do",
-          "op": "rollback.set",
-          "args": {
-            "after_feature": "Extrude 3"
-          }
-        }
-      ],
-      "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
-      },
-      "reason": "clarification",
-      "intent": null,
-      "action_families": [
-        "rollback"
-      ]
-    },
-    {
-      "id": "v15_rollback_0008",
-      "text": "فقط rollback رو قبل از Extrude 10 بذار",
-      "expected": [
-        {
-          "route": "do",
-          "op": "rollback.set",
-          "args": {
-            "before_feature": "Extrude 10"
-          }
-        }
-      ],
-      "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
-      },
-      "reason": "clarification",
-      "intent": null,
-      "action_families": [
-        "rollback"
-      ]
-    },
-    {
-      "id": "v15_rollback_0009",
-      "text": "خب، rollback رو بعد از Extrude 11 بذار؟",
-      "expected": [
-        {
-          "route": "do",
-          "op": "rollback.set",
-          "args": {
-            "after_feature": "Extrude 11"
-          }
-        }
-      ],
-      "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
-      },
-      "reason": "clarification",
-      "intent": null,
-      "action_families": [
-        "rollback"
-      ]
-    },
-    {
-      "id": "v15_rollback_0016",
-      "text": "دقیقاً rollback رو قبل از Extrude 18 بذار",
-      "expected": [
-        {
-          "route": "do",
-          "op": "rollback.set",
-          "args": {
-            "before_feature": "Extrude 18"
-          }
-        }
-      ],
-      "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
-      },
-      "reason": "clarification",
-      "intent": null,
-      "action_families": [
-        "rollback"
-      ]
-    },
-    {
-      "id": "v15_rollback_0017",
-      "text": "فعلاً rollback رو بعد از Extrude 19 بذار؟",
-      "expected": [
-        {
-          "route": "do",
-          "op": "rollback.set",
-          "args": {
-            "after_feature": "Extrude 19"
-          }
-        }
-      ],
-      "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
-      },
-      "reason": "clarification",
-      "intent": null,
-      "action_families": [
-        "rollback"
-      ]
-    }
-  ],
-  "noisy_language|conservative_escalation": [
-    {
-      "id": "v15_noisy_0090",
-      "text": "zoom out kon اگه زحمتی نیست",
-      "expected": [
-        {
-          "route": "do",
-          "op": "view.move",
-          "args": {
-            "action": "zoom",
-            "direction": "out"
-          }
-        }
-      ],
-      "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
-      },
-      "reason": "clarification",
-      "intent": null,
-      "action_families": [
-        "camera"
-      ]
-    },
-    {
-      "id": "v15_noisy_0095",
-      "text": "اکسترود 7 دیپث ده میل اگه زحمتی نیست",
-      "expected": [
-        {
-          "route": "do",
-          "op": "feature.parameter.set",
-          "args": {
-            "feature_name": "Extrude 7",
-            "parameter": "depth",
-            "amount": "10 mm"
-          }
-        }
-      ],
-      "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
-      },
-      "reason": "clarification",
-      "intent": null,
-      "action_families": [
-        "feature_parameter"
-      ]
+      "reason": "selection-ungrounded",
+      "intent": "edge_on_selection",
+      "action_families": []
     }
   ],
   "professional_out_of_contract|route_mismatch": [

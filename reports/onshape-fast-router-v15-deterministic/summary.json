@@ -2,19 +2,17 @@
   "cases": 10000,
   "deterministic_cases": 9287,
   "fallback_cases": 713,
-  "deterministic_correct": 9067,
-  "deterministic_accuracy": 0.9763109723269086,
-  "wrong_material_accepted": 7,
+  "deterministic_correct": 9176,
+  "deterministic_accuracy": 0.9880478087649402,
+  "wrong_material_accepted": 0,
   "false_execute": 0,
-  "wrong_reversible_accepted": 5,
-  "severe_accepted_effect_errors": 12,
-  "conservative_escalations": 142,
+  "wrong_reversible_accepted": 0,
+  "severe_accepted_effect_errors": 0,
+  "conservative_escalations": 45,
   "route_mismatch": 66,
   "outcomes": {
-    "correct": 9067,
-    "conservative_escalation": 142,
-    "wrong_reversible_accepted": 5,
-    "wrong_material_accepted": 7,
+    "correct": 9176,
+    "conservative_escalation": 45,
     "route_mismatch": 66
   },
   "by_category": {
@@ -58,9 +56,8 @@
       "correct": 200
     },
     "feature_rename": {
-      "correct": 100,
-      "conservative_escalation": 90,
-      "wrong_reversible_accepted": 5
+      "correct": 150,
+      "conservative_escalation": 45
     },
     "fit_all": {
       "correct": 150
@@ -105,8 +102,7 @@
       "correct": 200
     },
     "noisy_language": {
-      "correct": 198,
-      "conservative_escalation": 2
+      "correct": 200
     },
     "orbit": {
       "correct": 200
@@ -124,8 +120,7 @@
       "correct": 200
     },
     "part_material": {
-      "correct": 193,
-      "wrong_material_accepted": 7
+      "correct": 200
     },
     "part_show": {
       "correct": 200
@@ -153,8 +148,7 @@
       "correct": 200
     },
     "rollback": {
-      "conservative_escalation": 50,
-      "correct": 100
+      "correct": 150
     },
     "selection_ambiguous": {
       "correct": 200
