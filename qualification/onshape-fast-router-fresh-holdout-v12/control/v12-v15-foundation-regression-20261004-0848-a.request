@@ -1,0 +1,8 @@
+{
+  "request_id": "v12-v15-foundation-regression-20261004-0848-a",
+  "source_repo": "homayounisaghar/capability-fabric",
+  "source_ref": "work/onshape-fast-router-v15-hardening",
+  "source_head": "b795ce3f3f14937681ffca085f50f9ff4ccc9d5a",
+  "purpose": "regression gate for V15 foundational language hardening",
+  "production_effects": false
+}
