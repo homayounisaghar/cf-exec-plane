@@ -1,0 +1,10 @@
+{
+  "schema": "cf.onshape.fast-router-fresh-holdout-v09",
+  "private_source_repo": "homayounisaghar/capability-fabric",
+  "private_source_ref": "experiment/onshape-fast-router-fresh-holdout-v09",
+  "frozen_holdout_commit": "d87d590a4cfc429742bc5ea5d292a9a4f3940356",
+  "router_source_head": "ce8ff3845db6e788c83a3dd37478dce4fe9a899e",
+  "cases": 100,
+  "production_effects": false,
+  "note": "Fresh synthetic colloquial Persian holdout frozen before first score."
+}
