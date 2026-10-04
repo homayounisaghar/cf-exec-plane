@@ -1,0 +1,45 @@
+name: Onshape Fast Router V15 Freeze Diagnostic
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - qualification/onshape-fast-router-divergent-v15-10000/analysis-control/*.request
+
+permissions:
+  contents: write
+
+jobs:
+  freeze:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Freeze-only diagnostic
+        continue-on-error: true
+        run: |
+          mkdir -p artifacts/onshape-fast-router-divergent-v15-10000-freeze
+          cd qualification/onshape-fast-router-divergent-v15-10000
+          OUT_PATH="${{ github.workspace }}/artifacts/onshape-fast-router-divergent-v15-10000-freeze/pre-score-manifest.json" python freeze_gate.py > "${{ github.workspace }}/artifacts/onshape-fast-router-divergent-v15-10000-freeze/stdout.log" 2> "${{ github.workspace }}/artifacts/onshape-fast-router-divergent-v15-10000-freeze/stderr.log" || true
+      - name: Publish diagnostic
+        if: always()
+        run: |
+          src="artifacts/onshape-fast-router-divergent-v15-10000-freeze"
+          dst="reports/onshape-fast-router-divergent-v15-10000-freeze"
+          mkdir -p "$dst"
+          for f in pre-score-manifest.json stdout.log stderr.log; do
+            test -f "$src/$f" && cp "$src/$f" "$dst/$f" || true
+          done
+          printf '{"run_id":"%s","head_sha":"%s"}\n' "$GITHUB_RUN_ID" "$GITHUB_SHA" > "$dst/latest-meta.json"
+          git config user.name "cf-exec-plane"
+          git config user.email "actions@users.noreply.github.com"
+          git add "$dst"
+          git commit -m "Report: V15 freeze diagnostic" || exit 0
+          git pull --rebase origin main
+          git push origin HEAD:main
