@@ -1,0 +1,7 @@
+{
+  "request_id": "onshape-fast-router-v15-deterministic-hardening-20261004-c",
+  "corpus_sha256": "04137cbf8eb0e85933a356d5837c77431e94cde7f0f4772f6f0b797d646f452a",
+  "source_head": "19af066da67cc2b56e41b6680d2fe5aff2682243",
+  "statistical_role": "regression_only",
+  "production_effects": false
+}
