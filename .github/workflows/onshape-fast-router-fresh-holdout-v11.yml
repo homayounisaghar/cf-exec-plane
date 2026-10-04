@@ -1,0 +1,66 @@
+name: Onshape Fast Router Fresh Holdout V11
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - qualification/onshape-fast-router-fresh-holdout-v11/control/*.request
+
+permissions:
+  contents: write
+
+concurrency:
+  group: onshape-fast-router-fresh-holdout-v11
+  cancel-in-progress: false
+
+jobs:
+  qualify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Syntax gate
+        run: |
+          python -m py_compile qualification/onshape-fast-router-fresh-holdout-v11/evidence_v06.py
+          python -m py_compile qualification/onshape-fast-router-fresh-holdout-v11/fresh_holdout_v11.py
+          python -m py_compile qualification/onshape-fast-router-fresh-holdout-v11/run_v11.py
+      - name: Require Groq credential
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: test -n "$GROQ_API_KEY"
+      - name: Run fresh frozen holdout v11
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          BATCH_SIZE: '10'
+          MAX_BATCH_RETRIES: '2'
+          OUT_DIR: ${{ github.workspace }}/artifacts/onshape-fast-router-fresh-holdout-v11
+        run: |
+          cd qualification/onshape-fast-router-fresh-holdout-v11
+          python run_v11.py
+      - name: Publish direct readback
+        if: always()
+        run: |
+          set -eu
+          src="artifacts/onshape-fast-router-fresh-holdout-v11"
+          dst="reports/onshape-fast-router-fresh-holdout-v11"
+          mkdir -p "$dst"
+          if test -f "$src/summary.json"; then
+            cp "$src/summary.json" "$dst/summary.json"
+            cp "$src/rows.json" "$dst/rows.json"
+            rm -f "$dst/latest-error.json"
+          else
+            printf '{"state":"NO_SUMMARY"}\n' > "$dst/latest-error.json"
+          fi
+          printf '{"run_id":"%s","head_sha":"%s"}\n' "$GITHUB_RUN_ID" "$GITHUB_SHA" > "$dst/latest-meta.json"
+          git config user.name "cf-exec-plane"
+          git config user.email "actions@users.noreply.github.com"
+          git add "$dst"
+          git commit -m "Report: Onshape fresh holdout v11" || exit 0
+          git pull --rebase origin main
+          git push origin HEAD:main
