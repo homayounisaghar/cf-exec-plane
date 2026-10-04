@@ -1,0 +1,7 @@
+{
+  "request_id": "evidence-v06-20261004-a",
+  "source_ref": "experiment/onshape-fast-router-evidence-v06",
+  "source_head": "71621c61016b7dbc38caaab1ca5dc69ff86dad95",
+  "known_cases": 120,
+  "synthetic_cases": 96
+}
