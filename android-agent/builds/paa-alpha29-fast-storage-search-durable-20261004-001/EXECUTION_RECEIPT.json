@@ -1,0 +1,8 @@
+{
+  "schema": "capability-fabric.android-standard-app-receipt.v1",
+  "requestId": "paa-alpha29-fast-storage-search-durable-20261004-001",
+  "projectId": "personal-android-agent",
+  "checkoutRef": "845a409aae81d535adf3f9ea96875cce0f62573b",
+  "operation": "unit-test-and-build-signing-kit",
+  "result": "SUCCESS"
+}

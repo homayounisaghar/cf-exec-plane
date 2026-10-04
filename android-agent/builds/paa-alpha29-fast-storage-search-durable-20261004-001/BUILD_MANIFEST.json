@@ -1,0 +1,21 @@
+{
+  "schema": "capability-fabric.android-standard-app-output.v1",
+  "requestId": "paa-alpha29-fast-storage-search-durable-20261004-001",
+  "projectId": "personal-android-agent",
+  "checkoutRef": "845a409aae81d535adf3f9ea96875cce0f62573b",
+  "application": {
+    "packageId": "com.homayounisaghar.androidagent",
+    "versionName": "0.1.0-alpha29",
+    "versionCode": 29
+  },
+  "expectedSigner": {
+    "alias": "personal_android_agent_line3",
+    "certificateSha256": "e5b102356f271078a3d03e982782c3776e3d9f301c1b24c0e7194f06e5a001fa"
+  },
+  "result": "SUCCESS",
+  "artifact": {
+    "file": "personal-android-agent-release-unsigned.apk",
+    "sha256": "c0fcfe275027cb7b12b8bf6d7d300303342a62e26905bfa9de51d5c3c4ce74f8",
+    "installable": false
+  }
+}
