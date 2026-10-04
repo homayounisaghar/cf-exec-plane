@@ -1,0 +1,7 @@
+{
+  "request_id": "v09c-20261004-a",
+  "frozen_holdout_commit": "d87d590a4cfc429742bc5ea5d292a9a4f3940356",
+  "router_source_head": "ce8ff3845db6e788c83a3dd37478dce4fe9a899e",
+  "cases": 100,
+  "max_batch_retries": 1
+}
