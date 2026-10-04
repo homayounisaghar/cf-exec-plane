@@ -1,0 +1,11 @@
+{
+  "request_id": "v20-fast-complete-20261004-1519",
+  "reason": "owner requested completion; methodology unchanged; accelerate via bounded complete-batch retries and parallel independent judges",
+  "generator_batch_size": 64,
+  "judge_batch_size": 64,
+  "judges_parallel": true,
+  "incomplete_batch_retry": true,
+  "candidate_commit": "54580b67a9a61d2463ec3b9ced7a801707bb242b",
+  "fresh_status": "unscored-unfrozen",
+  "production_effects": false
+}

@@ -11,7 +11,7 @@ permissions:
 
 concurrency:
   group: onshape-fast-router-v20-blind-semantic
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   qualify:
@@ -88,9 +88,13 @@ jobs:
             cp "$input" "$sand/input.jsonl"
             (
               cd "$sand"
-              python generate_utterances.py --input input.jsonl --output generated.jsonl --attempt "$round" --batch-size 16
-              python judge_utterances.py --input generated.jsonl --output judge-a.jsonl --variant A --batch-size 20
-              python judge_utterances.py --input generated.jsonl --output judge-b.jsonl --variant B --batch-size 20
+              python generate_utterances.py --input input.jsonl --output generated.jsonl --attempt "$round" --batch-size 64
+              python judge_utterances.py --input generated.jsonl --output judge-a.jsonl --variant A --batch-size 64 &
+              pid_a=$!
+              python judge_utterances.py --input generated.jsonl --output judge-b.jsonl --variant B --batch-size 64 &
+              pid_b=$!
+              wait "$pid_a"
+              wait "$pid_b"
             )
             cp "$sand/generated.jsonl" "$ART/generated-round-$round.jsonl"
             cp "$sand/judge-a.jsonl" "$ART/judge-a-round-$round.jsonl"

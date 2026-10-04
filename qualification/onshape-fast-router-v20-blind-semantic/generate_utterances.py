@@ -25,36 +25,43 @@ def main():
     model=os.environ.get("GENERATOR_MODEL","openai/gpt-oss-120b")
     client=get_client("GROQ_API_KEY")
     src=read_jsonl(a.input); out=[]; usage=[]
-    for batch in chunks(src,a.batch_size):
-        payload=[]
-        for r in batch:
-            payload.append({
-                "id":r["scenario_id"],
-                "meaning":r["semantic_description"],
-                "context":r.get("context",{}),
-                "flags":r.get("expected_flags",{}),
-                "style":r.get("realization_constraints",{}).get("style_bucket"),
-                "preserve_literals":r.get("realization_constraints",{}).get("preserve_literals",[]),
-                "constraints":{k:v for k,v in r.get("realization_constraints",{}).items()
-                               if k not in {"style_bucket","preserve_literals","language"}},
-            })
-        data,u=chat_json(client,model,SYSTEM,
-            json.dumps({"attempt":a.attempt,"items":payload},ensure_ascii=False,separators=(",",":")),
-            temperature=0.7,max_tokens=max(1600,120*len(batch)))
-        items=data.get("items") if isinstance(data,dict) else None
-        if not isinstance(items,list): raise RuntimeError("generator missing items")
-        got={str(x.get("id")):x for x in items if isinstance(x,dict)}
-        ids=[x["scenario_id"] for x in batch]
-        if set(got)!=set(ids):
-            raise RuntimeError(f"generator id mismatch missing={sorted(set(ids)-set(got))[:5]} extra={sorted(set(got)-set(ids))[:5]}")
+    for batch_no,batch in enumerate(chunks(src,a.batch_size),1):
         byid={x["scenario_id"]:x for x in batch}
-        for sid in ids:
-            utt=str(got[sid].get("utterance","")).strip()
-            if not utt: raise RuntimeError(f"empty utterance {sid}")
-            s=byid[sid]
-            missing=[lit for lit in s.get("realization_constraints",{}).get("preserve_literals",[]) if lit not in utt]
-            out.append({"scenario_id":sid,"family":s["family"],"text":utt,"context":s.get("context",{}),"missing_literals":missing})
-        usage.append(u)
+        pending=dict(byid); collected={}
+        for subtry in range(1,5):
+            if not pending: break
+            payload=[]
+            for r in pending.values():
+                payload.append({
+                    "id":r["scenario_id"],
+                    "meaning":r["semantic_description"],
+                    "context":r.get("context",{}),
+                    "flags":r.get("expected_flags",{}),
+                    "style":r.get("realization_constraints",{}).get("style_bucket"),
+                    "preserve_literals":r.get("realization_constraints",{}).get("preserve_literals",[]),
+                    "constraints":{k:v for k,v in r.get("realization_constraints",{}).items()
+                                   if k not in {"style_bucket","preserve_literals","language"}},
+                })
+            data,u=chat_json(client,model,SYSTEM,
+                json.dumps({"attempt":a.attempt,"subtry":subtry,"items":payload},ensure_ascii=False,separators=(",",":")),
+                temperature=0.7,max_tokens=min(8000,max(1800,95*len(payload))))
+            usage.append(u)
+            items=data.get("items") if isinstance(data,dict) else None
+            if not isinstance(items,list): items=[]
+            got={str(x.get("id")):x for x in items if isinstance(x,dict) and str(x.get("id")) in pending}
+            for sid,x in got.items():
+                utt=str(x.get("utterance","")).strip()
+                if not utt: continue
+                s=pending[sid]
+                missing=[lit for lit in s.get("realization_constraints",{}).get("preserve_literals",[]) if lit not in utt]
+                if missing: continue
+                collected[sid]={"scenario_id":sid,"family":s["family"],"text":utt,"context":s.get("context",{}),"missing_literals":[]}
+            pending={sid:s for sid,s in pending.items() if sid not in collected}
+        if pending:
+            raise RuntimeError(f"generator unresolved after retries batch={batch_no} missing={sorted(pending)[:10]}")
+        for r in batch:
+            out.append(collected[r["scenario_id"]])
+        print(json.dumps({"progress":"generator","batch":batch_no,"emitted":len(out)},ensure_ascii=False),flush=True)
     write_jsonl(a.output,out)
     print(json.dumps({"attempt":a.attempt,"model":model,"cases":len(out),"batches":len(usage),"usage":usage},ensure_ascii=False))
 
