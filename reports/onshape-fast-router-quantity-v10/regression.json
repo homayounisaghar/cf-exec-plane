@@ -1,0 +1,202 @@
+{
+  "architecture": "canonical Persian quantity grammar/AST + provenance + fail-closed partial-parse guard",
+  "suites": [
+    {
+      "suite": "known120",
+      "cases": 120,
+      "deterministic_cases": 114,
+      "fallback_cases": 6,
+      "deterministic_exact": 114,
+      "deterministic_unsafe": 0,
+      "unsafe_rows": []
+    },
+    {
+      "suite": "synthetic96",
+      "cases": 96,
+      "deterministic_cases": 92,
+      "fallback_cases": 4,
+      "deterministic_exact": 91,
+      "deterministic_unsafe": 0,
+      "unsafe_rows": []
+    },
+    {
+      "suite": "fresh_v07",
+      "cases": 100,
+      "deterministic_cases": 94,
+      "fallback_cases": 6,
+      "deterministic_exact": 93,
+      "deterministic_unsafe": 0,
+      "unsafe_rows": []
+    },
+    {
+      "suite": "fresh_v08",
+      "cases": 80,
+      "deterministic_cases": 79,
+      "fallback_cases": 1,
+      "deterministic_exact": 79,
+      "deterministic_unsafe": 0,
+      "unsafe_rows": []
+    },
+    {
+      "suite": "fresh_v09",
+      "cases": 100,
+      "deterministic_cases": 78,
+      "fallback_cases": 22,
+      "deterministic_exact": 71,
+      "deterministic_unsafe": 0,
+      "unsafe_rows": []
+    }
+  ],
+  "v09_critical_numeric_cases": [
+    {
+      "id": "v09_d07",
+      "text": "یه fillet خالی دو و دو دهم میل بساز",
+      "outcome": "correct",
+      "compiled": {
+        "route": "do",
+        "op": "feature.add",
+        "args": {
+          "feature_type": "fillet",
+          "amount": "2.2 mm"
+        }
+      },
+      "quantities": [
+        {
+          "id": "q1",
+          "value": 2.2,
+          "unit": "mm",
+          "text": "دو و دو دهم میل",
+          "span": [
+            15,
+            30
+          ],
+          "ast": {
+            "value": 2.2,
+            "kind": "whole_plus_fraction",
+            "source": "دو و دو دهم",
+            "whole": 2,
+            "numerator": 2,
+            "denominator": 10
+          },
+          "provenance": "canonical_quantity_grammar"
+        }
+      ],
+      "quantity_issues": []
+    },
+    {
+      "id": "v09_e01",
+      "text": "روی همین انتخاب فیلت یک و دو دهم میل بزن",
+      "outcome": "correct",
+      "compiled": {
+        "route": "do",
+        "op": "feature.from_selection",
+        "args": {
+          "feature_type": "fillet",
+          "amount": "1.2 mm"
+        }
+      },
+      "quantities": [
+        {
+          "id": "q1",
+          "value": 1.2,
+          "unit": "mm",
+          "text": "یک و دو دهم میل",
+          "span": [
+            21,
+            36
+          ],
+          "ast": {
+            "value": 1.2,
+            "kind": "whole_plus_fraction",
+            "source": "یک و دو دهم",
+            "whole": 1,
+            "numerator": 2,
+            "denominator": 10
+          },
+          "provenance": "canonical_quantity_grammar"
+        }
+      ],
+      "quantity_issues": []
+    },
+    {
+      "id": "v09_e02",
+      "text": "لبه های انتخابی رو هفتاد و پنج صدم میل پخ بزن",
+      "outcome": "correct",
+      "compiled": {
+        "route": "do",
+        "op": "feature.from_selection",
+        "args": {
+          "feature_type": "chamfer",
+          "amount": "0.75 mm"
+        }
+      },
+      "quantities": [
+        {
+          "id": "q1",
+          "value": 0.75,
+          "unit": "mm",
+          "text": "هفتاد و پنج صدم میل",
+          "span": [
+            19,
+            38
+          ],
+          "ast": {
+            "value": 0.75,
+            "kind": "fraction",
+            "source": "هفتاد و پنج صدم",
+            "numerator": 75,
+            "denominator": 100
+          },
+          "provenance": "canonical_quantity_grammar"
+        }
+      ],
+      "quantity_issues": []
+    },
+    {
+      "id": "v09_e14",
+      "text": "همین لبه ها رو پخ یک میل و نیم",
+      "outcome": "correct",
+      "compiled": {
+        "route": "do",
+        "op": "feature.from_selection",
+        "args": {
+          "feature_type": "chamfer",
+          "amount": "1.5 mm"
+        }
+      },
+      "quantities": [
+        {
+          "id": "q1",
+          "value": 1.5,
+          "unit": "mm",
+          "text": "یک میل و نیم",
+          "span": [
+            18,
+            30
+          ],
+          "ast": {
+            "value": 1.5,
+            "kind": "unit_then_fraction",
+            "source": "یک میل و نیم",
+            "base": {
+              "value": 1.0,
+              "kind": "cardinal",
+              "source": "یک",
+              "cardinal": 1
+            },
+            "post_fraction": {
+              "value": 0.5,
+              "kind": "half",
+              "source": "نیم"
+            }
+          },
+          "provenance": "canonical_quantity_grammar"
+        }
+      ],
+      "quantity_issues": []
+    }
+  ],
+  "v09_critical_failures": [],
+  "deterministic_unsafe_total": 0,
+  "pass": true
+}
