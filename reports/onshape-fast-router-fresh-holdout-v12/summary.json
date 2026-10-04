@@ -19,11 +19,11 @@
   "routine_expected_do": 69,
   "routine_auto_accepted": 69,
   "routine_correct": 69,
-  "provider_prompt_tokens": 2243,
-  "provider_completion_tokens": 276,
-  "model_batch_p50_ms": 606.1626409999974,
-  "model_batch_p95_ms": 606.1626409999974,
-  "wall_seconds": 0.6399983340000119,
+  "provider_prompt_tokens": 2462,
+  "provider_completion_tokens": 258,
+  "model_batch_p50_ms": 765.2897060000043,
+  "model_batch_p95_ms": 765.2897060000043,
+  "wall_seconds": 0.8232172129999995,
   "outcomes": {
     "correct": 100
   }

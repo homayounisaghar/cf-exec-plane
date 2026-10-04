@@ -21,6 +21,7 @@
     "intent": "camera_move",
     "evidence": {
       "text": "یه کم مدل رو بنداز سمت راست",
+      "core_text": "یه کم مدل رو بنداز سمت راست",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -69,6 +70,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 0,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [],
       "action_families": []
     },
@@ -94,7 +99,7 @@
       "d": "a",
       "i": "camera_move"
     },
-    "model_latency_ms": 606.1626409999974,
+    "model_latency_ms": 765.2897060000043,
     "outcome": "correct"
   },
   {
@@ -119,6 +124,7 @@
     "intent": "camera_move",
     "evidence": {
       "text": "یکم rotate کن به چپ",
+      "core_text": "یکم rotate کن به چپ",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -167,6 +173,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "camera"
       ],
@@ -215,6 +225,7 @@
     "intent": "camera_move",
     "evidence": {
       "text": "یه ذره با جهت عقربه ها بچرخون",
+      "core_text": "یه ذره با جهت عقربه ها بچرخون",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -263,6 +274,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "camera"
       ],
@@ -311,6 +326,7 @@
     "intent": "camera_move",
     "evidence": {
       "text": "یه ذره خلاف عقربه ها بچرخون",
+      "core_text": "یه ذره خلاف عقربه ها بچرخون",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -359,6 +375,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "camera"
       ],
@@ -408,6 +428,7 @@
     "intent": "camera_move",
     "evidence": {
       "text": "بیست و پنج درجه سمت چپ بچرخون",
+      "core_text": "بیست و پنج درجه سمت چپ بچرخون",
       "quantities": [
         {
           "id": "q1",
@@ -474,6 +495,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "camera"
       ],
@@ -524,6 +549,7 @@
     "intent": "camera_move",
     "evidence": {
       "text": "ربع دور به راست ببرش",
+      "core_text": "ربع دور به راست ببرش",
       "quantities": [
         {
           "id": "q1",
@@ -589,6 +615,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "camera"
       ],
@@ -638,6 +668,7 @@
     "intent": "camera_move",
     "evidence": {
       "text": "نما رو کمی بکش سمت چپ",
+      "core_text": "نما رو کمی بکش سمت چپ",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -686,6 +717,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "camera"
       ],
@@ -734,6 +769,7 @@
     "intent": "camera_move",
     "evidence": {
       "text": "صفحه رو یه خورده بکش بالا",
+      "core_text": "صفحه رو یه خورده بکش بالا",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -782,6 +818,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "camera"
       ],
@@ -830,6 +870,7 @@
     "intent": "camera_move",
     "evidence": {
       "text": "pan down یه کوچولو",
+      "core_text": "pan down یه کوچولو",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -878,6 +919,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "camera"
       ],
@@ -926,6 +971,7 @@
     "intent": "camera_move",
     "evidence": {
       "text": "یه قدم زوم کن داخل",
+      "core_text": "یه قدم زوم کن داخل",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -974,6 +1020,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "camera"
       ],
@@ -1022,6 +1072,7 @@
     "intent": "camera_move",
     "evidence": {
       "text": "یه قدم ازش دور شو",
+      "core_text": "یه قدم ازش دور شو",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -1070,6 +1121,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 0,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "camera"
       ],
@@ -1117,6 +1172,7 @@
     "intent": "fit",
     "evidence": {
       "text": "کل مدل رو جوری بیار که کامل دیده بشه",
+      "core_text": "کل مدل رو جوری بیار که کامل دیده بشه",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -1165,6 +1221,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 0,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "fit"
       ],
@@ -1216,6 +1276,7 @@
     "intent": "fit_selection",
     "evidence": {
       "text": "فقط انتخابم رو تو صفحه جا بده",
+      "core_text": "انتخابم رو تو صفحه جا بده",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -1254,7 +1315,7 @@
       "pattern_explicit": false,
       "edge_new_explicit": false,
       "copy_count": null,
-      "cue_text": "فقط انتخابم رو تو صفحه جا بده",
+      "cue_text": "انتخابم رو تو صفحه جا بده",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -1267,6 +1328,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "fit"
       ],
@@ -1312,6 +1377,7 @@
     "intent": "top_view",
     "evidence": {
       "text": "نمای top رو بده",
+      "core_text": "نمای top رو بده",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -1360,6 +1426,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "standard_view"
       ],
@@ -1403,6 +1473,7 @@
     "intent": "clear_selection",
     "evidence": {
       "text": "selection رو کامل خالی کن",
+      "core_text": "selection رو کامل خالی کن",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -1451,6 +1522,10 @@
       "clear_selection": true,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "clear_selection"
       ],
@@ -1488,6 +1563,7 @@
     "intent": null,
     "evidence": {
       "text": "نمای جلو رو نشون بده",
+      "core_text": "نمای جلو رو نشون بده",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -1536,6 +1612,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [],
       "action_families": []
     },
@@ -1553,7 +1633,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 606.1626409999974,
+    "model_latency_ms": 765.2897060000043,
     "outcome": "correct"
   },
   {
@@ -1573,6 +1653,7 @@
     "intent": null,
     "evidence": {
       "text": "یه نمای سه بعدی استاندارد بده",
+      "core_text": "یه نمای سه بعدی استاندارد بده",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -1621,6 +1702,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [],
       "action_families": []
     },
@@ -1638,7 +1723,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 606.1626409999974,
+    "model_latency_ms": 765.2897060000043,
     "outcome": "correct"
   },
   {
@@ -1667,6 +1752,7 @@
     "intent": "fit_selection",
     "evidence": {
       "text": "همین انتخابم توی صفحه کامل معلوم باشه",
+      "core_text": "همین انتخابم توی صفحه کامل معلوم باشه",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -1717,6 +1803,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 0,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "fit"
       ],
@@ -1762,6 +1852,7 @@
     "intent": "inspect",
     "evidence": {
       "text": "الان چی انتخاب کردم؟",
+      "core_text": "چی انتخاب کردم",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -1797,7 +1888,7 @@
       "pattern_explicit": false,
       "edge_new_explicit": false,
       "copy_count": null,
-      "cue_text": "الان چی انتخاب کردم؟",
+      "cue_text": "چی انتخاب کردم",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -1810,6 +1901,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 0,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "inspect"
       ],
@@ -1855,6 +1950,7 @@
     "intent": "inspect",
     "evidence": {
       "text": "بگو چی الان دستمه",
+      "core_text": "بگو چی الان دستمه",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -1903,6 +1999,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 0,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "inspect"
       ],
@@ -1948,6 +2048,7 @@
     "intent": "inspect",
     "evidence": {
       "text": "وضعیت خود viewer رو چک کن",
+      "core_text": "وضعیت خود viewer رو چک کن",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -1996,6 +2097,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "inspect"
       ],
@@ -2041,6 +2146,7 @@
     "intent": "inspect",
     "evidence": {
       "text": "ببین الان چند نفر وصل هستن",
+      "core_text": "ببین الان چند نفر وصل هستن",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -2089,6 +2195,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 0,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "inspect"
       ],
@@ -2134,6 +2244,7 @@
     "intent": "inspect",
     "evidence": {
       "text": "توی این session چند نفریم؟",
+      "core_text": "توی این session چند نفریم",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -2169,7 +2280,7 @@
       "pattern_explicit": false,
       "edge_new_explicit": false,
       "copy_count": null,
-      "cue_text": "توی این session چند نفریم؟",
+      "cue_text": "توی این session چند نفریم",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -2182,6 +2293,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 0,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "inspect"
       ],
@@ -2227,6 +2342,7 @@
     "intent": "follow",
     "evidence": {
       "text": "اون طرف مقابلم رو دنبال کن",
+      "core_text": "اون طرف مقابلم رو دنبال کن",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -2275,6 +2391,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "follow"
       ],
@@ -2320,6 +2440,7 @@
     "intent": "follow",
     "evidence": {
       "text": "نفر دوم رو follow کن",
+      "core_text": "نفر دوم رو follow کن",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -2368,6 +2489,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "follow"
       ],
@@ -2411,6 +2536,7 @@
     "intent": "follow",
     "evidence": {
       "text": "یکی از سه نفر رو follow کن",
+      "core_text": "یکی از سه نفر رو follow کن",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -2459,6 +2585,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "follow"
       ],
@@ -2494,6 +2624,7 @@
     "intent": null,
     "evidence": {
       "text": "همین چیزی که موس روشه رو انتخاب کن",
+      "core_text": "همین چیزی که موس روشه رو انتخاب کن",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -2542,6 +2673,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "selection_select"
       ],
@@ -2577,6 +2712,7 @@
     "intent": null,
     "evidence": {
       "text": "یه لبه از سمت راست بردار",
+      "core_text": "یه لبه از سمت راست بردار",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -2625,6 +2761,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 0,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [],
       "action_families": []
     },
@@ -2642,7 +2782,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 606.1626409999974,
+    "model_latency_ms": 765.2897060000043,
     "outcome": "correct"
   },
   {
@@ -2673,6 +2813,7 @@
     "intent": "edge_on_selection",
     "evidence": {
       "text": "روی این لبه ها فیلت یک و چهار دهم میل بزن",
+      "core_text": "روی این لبه ها فیلت یک و چهار دهم میل بزن",
       "quantities": [
         {
           "id": "q1",
@@ -2744,6 +2885,10 @@
       "clear_selection": false,
       "edge_kind": "fillet",
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "edge_fillet"
       ],
@@ -2798,6 +2943,7 @@
     "intent": "edge_on_selection",
     "evidence": {
       "text": "این انتخاب رو پنجاه و پنج صدم میل پخ کن",
+      "core_text": "این انتخاب رو پنجاه و پنج صدم میل پخ کن",
       "quantities": [
         {
           "id": "q1",
@@ -2867,6 +3013,10 @@
       "clear_selection": false,
       "edge_kind": "chamfer",
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "edge_chamfer"
       ],
@@ -2922,6 +3072,7 @@
     "intent": "edge_on_selection",
     "evidence": {
       "text": "همین دوتا لبه رو دو میل و نیم فیلت کن",
+      "core_text": "همین دوتا لبه رو دو میل و نیم فیلت کن",
       "quantities": [
         {
           "id": "q1",
@@ -3001,6 +3152,10 @@
       "clear_selection": false,
       "edge_kind": "fillet",
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "edge_fillet"
       ],
@@ -3055,6 +3210,7 @@
     "intent": "edge_on_selection",
     "evidence": {
       "text": "پخ یک ممیز شش میل روی همین انتخاب",
+      "core_text": "پخ یک ممیز شش میل روی همین انتخاب",
       "quantities": [
         {
           "id": "q1",
@@ -3126,6 +3282,10 @@
       "clear_selection": false,
       "edge_kind": "chamfer",
       "multi_action": false,
+      "effect_clause_count": 0,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "edge_chamfer"
       ],
@@ -3181,6 +3341,7 @@
     "intent": "edge_on_selection",
     "evidence": {
       "text": "فیلت دو و چهل صدم میلی روی اینا",
+      "core_text": "فیلت دو و چهل صدم میلی روی اینا",
       "quantities": [
         {
           "id": "q1",
@@ -3252,6 +3413,10 @@
       "clear_selection": false,
       "edge_kind": "fillet",
       "multi_action": false,
+      "effect_clause_count": 0,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "edge_fillet"
       ],
@@ -3306,6 +3471,7 @@
     "intent": "edge_on_selection",
     "evidence": {
       "text": "پخ شش دهم روی انتخاب فعلی",
+      "core_text": "پخ شش دهم روی انتخاب فعلی",
       "quantities": [
         {
           "id": "q1",
@@ -3376,6 +3542,10 @@
       "clear_selection": false,
       "edge_kind": "chamfer",
       "multi_action": false,
+      "effect_clause_count": 0,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "edge_chamfer"
       ],
@@ -3431,6 +3601,7 @@
     "intent": "edge_on_selection",
     "evidence": {
       "text": "روی این لبه ها 1.25 mm fillet بزن",
+      "core_text": "روی این لبه ها 1.25 mm fillet بزن",
       "quantities": [
         {
           "id": "q1",
@@ -3499,6 +3670,10 @@
       "clear_selection": false,
       "edge_kind": "fillet",
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "edge_fillet"
       ],
@@ -3553,6 +3728,7 @@
     "intent": "edge_on_selection",
     "evidence": {
       "text": "پخ نیم میلی روی همین لبه",
+      "core_text": "پخ نیم میلی روی همین لبه",
       "quantities": [
         {
           "id": "q1",
@@ -3620,6 +3796,10 @@
       "clear_selection": false,
       "edge_kind": "chamfer",
       "multi_action": false,
+      "effect_clause_count": 0,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "edge_chamfer"
       ],
@@ -3666,6 +3846,7 @@
     "intent": "edge_on_selection",
     "evidence": {
       "text": "سه میل فیلت بزن",
+      "core_text": "سه میل فیلت بزن",
       "quantities": [
         {
           "id": "q1",
@@ -3732,6 +3913,10 @@
       "clear_selection": false,
       "edge_kind": "fillet",
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [],
       "action_families": []
     },
@@ -3769,6 +3954,7 @@
     "intent": "edge_on_selection",
     "evidence": {
       "text": "روی انتخاب فعلی پخ بزن",
+      "core_text": "روی انتخاب فعلی پخ بزن",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -3820,6 +4006,10 @@
       "clear_selection": false,
       "edge_kind": "chamfer",
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "edge_chamfer"
       ],
@@ -3860,6 +4050,7 @@
     "intent": "add_edge_feature",
     "evidence": {
       "text": "یه fillet خالی دو و نیم میل درست کن",
+      "core_text": "یه fillet خالی دو و نیم میل درست کن",
       "quantities": [
         {
           "id": "q1",
@@ -3926,6 +4117,10 @@
       "clear_selection": false,
       "edge_kind": "fillet",
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "edge_fillet"
       ],
@@ -3974,6 +4169,7 @@
     "intent": "add_edge_feature",
     "evidence": {
       "text": "یه chamfer جدید شش دهم میل بدون انتخاب بساز",
+      "core_text": "یه chamfer جدید شش دهم میل بدون انتخاب بساز",
       "quantities": [
         {
           "id": "q1",
@@ -4041,6 +4237,10 @@
       "clear_selection": false,
       "edge_kind": "chamfer",
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "edge_chamfer"
       ],
@@ -4090,6 +4290,7 @@
     "intent": null,
     "evidence": {
       "text": "اول دو میل فیلت بعد یه میل پخ",
+      "core_text": "اول دو میل فیلت بعد یه میل پخ",
       "quantities": [
         {
           "id": "q1",
@@ -4176,6 +4377,10 @@
       "clear_selection": false,
       "edge_kind": "chamfer",
       "multi_action": true,
+      "effect_clause_count": 0,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "edge_fillet",
         "edge_chamfer"
@@ -4219,6 +4424,7 @@
     "intent": null,
     "evidence": {
       "text": "فیلتش کن و همزمان سبزش کن",
+      "core_text": "فیلتش کن و همزمان سبزش کن",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -4270,7 +4476,7 @@
       "pattern_explicit": false,
       "edge_new_explicit": false,
       "copy_count": null,
-      "cue_text": "فیلتش کن و همزمان    ش کن",
+      "cue_text": "فیلتش کن و همزمان ش کن",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -4283,6 +4489,10 @@
       "clear_selection": false,
       "edge_kind": "fillet",
       "multi_action": true,
+      "effect_clause_count": 2,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "edge_fillet",
         "part_property"
@@ -4326,6 +4536,7 @@
     "intent": null,
     "evidence": {
       "text": "دو میل radius روی این لبه ها بده",
+      "core_text": "دو میل radius روی این لبه ها بده",
       "quantities": [
         {
           "id": "q1",
@@ -4395,6 +4606,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [],
       "action_families": []
     },
@@ -4431,6 +4646,7 @@
     "intent": "edge_on_selection",
     "evidence": {
       "text": "چمفر سه",
+      "core_text": "چمفر سه",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -4481,6 +4697,10 @@
       "clear_selection": false,
       "edge_kind": "chamfer",
       "multi_action": false,
+      "effect_clause_count": 0,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "edge_chamfer"
       ],
@@ -4526,6 +4746,7 @@
     "intent": "edge_on_selection",
     "evidence": {
       "text": "پخ دو ممیز پنج میل روی انتخاب",
+      "core_text": "پخ دو ممیز پنج میل روی انتخاب",
       "quantities": [
         {
           "id": "q1",
@@ -4597,6 +4818,10 @@
       "clear_selection": false,
       "edge_kind": "chamfer",
       "multi_action": false,
+      "effect_clause_count": 0,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "edge_chamfer"
       ],
@@ -4646,6 +4871,7 @@
     "intent": "add_edge_feature",
     "evidence": {
       "text": "یه فیلت خالی 0.25 میلی بساز",
+      "core_text": "یه فیلت خالی 0.25 میلی بساز",
       "quantities": [
         {
           "id": "q1",
@@ -4711,6 +4937,10 @@
       "clear_selection": false,
       "edge_kind": "fillet",
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "edge_fillet"
       ],
@@ -4760,6 +4990,7 @@
     "intent": "feature_parameter",
     "evidence": {
       "text": "radius Fillet 4 رو پنج میل کن",
+      "core_text": "radius Fillet 4 رو پنج میل کن",
       "quantities": [
         {
           "id": "q1",
@@ -4835,6 +5066,10 @@
       "clear_selection": false,
       "edge_kind": "fillet",
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "feature_parameter"
       ],
@@ -4886,6 +5121,7 @@
     "intent": "feature_parameter",
     "evidence": {
       "text": "عمق Extrude 6 رو شانزده میل کن",
+      "core_text": "عمق Extrude 6 رو شانزده میل کن",
       "quantities": [
         {
           "id": "q1",
@@ -4961,6 +5197,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "feature_parameter"
       ],
@@ -5006,6 +5246,7 @@
     "intent": null,
     "evidence": {
       "text": "Extrude 6 رو شانزده میل کن",
+      "core_text": "Extrude 6 رو شانزده میل کن",
       "quantities": [
         {
           "id": "q1",
@@ -5081,6 +5322,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [],
       "action_families": []
     },
@@ -5118,6 +5363,7 @@
     "intent": "feature_parameter",
     "evidence": {
       "text": "زاویه Draft 4 رو هشت درجه کن",
+      "core_text": "زاویه Draft 4 رو هشت درجه کن",
       "quantities": [
         {
           "id": "q1",
@@ -5193,6 +5439,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "feature_parameter"
       ],
@@ -5238,6 +5488,7 @@
     "intent": "feature_parameter",
     "evidence": {
       "text": "زاویه Extrude 6 رو هشت درجه کن",
+      "core_text": "زاویه Extrude 6 رو هشت درجه کن",
       "quantities": [
         {
           "id": "q1",
@@ -5313,6 +5564,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "feature_parameter"
       ],
@@ -5348,6 +5603,7 @@
     "intent": "feature_parameter",
     "evidence": {
       "text": "عمق Draft 4 رو ده میل کن",
+      "core_text": "عمق Draft 4 رو ده میل کن",
       "quantities": [
         {
           "id": "q1",
@@ -5423,6 +5679,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "feature_parameter"
       ],
@@ -5458,6 +5718,7 @@
     "intent": "feature_parameter",
     "evidence": {
       "text": "شعاع Extrude 6 رو چهار میل کن",
+      "core_text": "شعاع Extrude 6 رو چهار میل کن",
       "quantities": [
         {
           "id": "q1",
@@ -5533,6 +5794,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "feature_parameter"
       ],
@@ -5579,6 +5844,7 @@
     "intent": "feature_parameter",
     "evidence": {
       "text": "این فیلت رو یک و نیم میل بیشتر کن",
+      "core_text": "این فیلت رو یک و نیم میل بیشتر کن",
       "quantities": [
         {
           "id": "q1",
@@ -5647,6 +5913,10 @@
       "clear_selection": false,
       "edge_kind": "fillet",
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [],
       "action_families": []
     },
@@ -5700,6 +5970,7 @@
     "intent": "feature_parameter",
     "evidence": {
       "text": "این فیلت رو پنجاه صدم میل کمتر کن",
+      "core_text": "این فیلت رو پنجاه صدم میل کمتر کن",
       "quantities": [
         {
           "id": "q1",
@@ -5769,6 +6040,10 @@
       "clear_selection": false,
       "edge_kind": "fillet",
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [],
       "action_families": []
     },
@@ -5816,6 +6091,7 @@
     "intent": "feature_parameter",
     "evidence": {
       "text": "این اکسترود رو یه مقدار بیشتر کن",
+      "core_text": "این اکسترود رو یه مقدار بیشتر کن",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -5866,6 +6142,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [],
       "action_families": []
     },
@@ -5902,6 +6182,7 @@
     "intent": "feature_suppressed",
     "evidence": {
       "text": "Extrude 7 رو suppress کن",
+      "core_text": "Extrude 7 رو suppress کن",
       "quantities": [],
       "quantity_issues": [],
       "features": [
@@ -5959,6 +6240,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "feature_suppression"
       ],
@@ -6007,6 +6292,7 @@
     "intent": "feature_suppressed",
     "evidence": {
       "text": "Extrude 7 رو برگردون روشن",
+      "core_text": "Extrude 7 رو برگردون روشن",
       "quantities": [],
       "quantity_issues": [],
       "features": [
@@ -6064,6 +6350,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "feature_suppression"
       ],
@@ -6112,6 +6402,7 @@
     "intent": "feature_rename",
     "evidence": {
       "text": "اسم Fillet 8 بشه soft corner",
+      "core_text": "اسم Fillet 8 بشه soft corner",
       "quantities": [],
       "quantity_issues": [],
       "features": [
@@ -6170,7 +6461,7 @@
       "pattern_explicit": false,
       "edge_new_explicit": false,
       "copy_count": null,
-      "cue_text": "اسم fillet 8 بشه            ",
+      "cue_text": "اسم fillet 8 بشه",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -6183,6 +6474,10 @@
       "clear_selection": false,
       "edge_kind": "fillet",
       "multi_action": false,
+      "effect_clause_count": 0,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "feature_rename"
       ],
@@ -6230,6 +6525,7 @@
     "intent": "feature_delete",
     "evidence": {
       "text": "Fillet 9 رو حذف کن",
+      "core_text": "Fillet 9 رو حذف کن",
       "quantities": [],
       "quantity_issues": [],
       "features": [
@@ -6287,6 +6583,10 @@
       "clear_selection": false,
       "edge_kind": "fillet",
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "delete"
       ],
@@ -6332,6 +6632,7 @@
     "intent": "feature_delete",
     "evidence": {
       "text": "آخرین آیتم درخت فیچر رو پاک کن",
+      "core_text": "آخرین آیتم درخت فیچر رو پاک کن",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -6380,6 +6681,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [],
       "action_families": []
     },
@@ -6421,6 +6726,7 @@
     "intent": "feature_delete",
     "evidence": {
       "text": "اولین feature رو بنداز دور",
+      "core_text": "اولین feature رو بنداز دور",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -6469,6 +6775,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 0,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [],
       "action_families": []
     },
@@ -6512,6 +6822,7 @@
     "intent": "feature_parameter",
     "evidence": {
       "text": "flip direction برای Extrude 2 رو true کن",
+      "core_text": "flip direction برای Extrude 2 رو true کن",
       "quantities": [],
       "quantity_issues": [],
       "features": [
@@ -6569,6 +6880,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "feature_parameter"
       ],
@@ -6613,6 +6928,7 @@
     "intent": "feature_parameter",
     "evidence": {
       "text": "flip direction برای Draft 2 رو روشن کن",
+      "core_text": "flip direction برای Draft 2 رو روشن کن",
       "quantities": [],
       "quantity_issues": [],
       "features": [
@@ -6670,6 +6986,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "feature_parameter"
       ],
@@ -6710,6 +7030,7 @@
     "intent": "part_visibility",
     "evidence": {
       "text": "Part 5 رو از نما بردار",
+      "core_text": "Part 5 رو از نما بردار",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -6767,6 +7088,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 0,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "part_visibility"
       ],
@@ -6815,6 +7140,7 @@
     "intent": "part_visibility",
     "evidence": {
       "text": "Part 5 دیگه دیده نشه",
+      "core_text": "Part 5 دیگه دیده نشه",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -6872,6 +7198,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 0,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "part_visibility"
       ],
@@ -6923,6 +7253,7 @@
     "intent": "part_visibility",
     "evidence": {
       "text": "همون پارت رو دوباره بیار توی نما",
+      "core_text": "همون پارت رو دوباره بیار توی نما",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -6971,6 +7302,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 0,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "part_visibility"
       ],
@@ -7019,6 +7354,7 @@
     "intent": "part_visibility",
     "evidence": {
       "text": "Bracket رو show کن",
+      "core_text": "Bracket رو show کن",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -7076,6 +7412,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "part_visibility"
       ],
@@ -7125,6 +7465,7 @@
     "intent": "part_property",
     "evidence": {
       "text": "Part 3 رو زرد کن",
+      "core_text": "Part 3 رو زرد کن",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -7183,7 +7524,7 @@
       "pattern_explicit": false,
       "edge_new_explicit": false,
       "copy_count": null,
-      "cue_text": "part 3 رو     کن",
+      "cue_text": "part 3 رو کن",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -7196,6 +7537,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "part_property"
       ],
@@ -7247,6 +7592,7 @@
     "intent": "part_property",
     "evidence": {
       "text": "Bracket رو سیاه کن",
+      "core_text": "Bracket رو سیاه کن",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -7305,7 +7651,7 @@
       "pattern_explicit": false,
       "edge_new_explicit": false,
       "copy_count": null,
-      "cue_text": "bracket رو      کن",
+      "cue_text": "bracket رو کن",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -7318,6 +7664,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "part_property"
       ],
@@ -7369,6 +7719,7 @@
     "intent": "part_property",
     "evidence": {
       "text": "اسم Part 7 بشه inner frame",
+      "core_text": "اسم Part 7 بشه inner frame",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -7427,7 +7778,7 @@
       "pattern_explicit": false,
       "edge_new_explicit": false,
       "copy_count": null,
-      "cue_text": "اسم part 7 بشه            ",
+      "cue_text": "اسم part 7 بشه",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -7440,6 +7791,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 0,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "part_property"
       ],
@@ -7491,6 +7846,7 @@
     "intent": "part_property",
     "evidence": {
       "text": "متریال Part 4 رو آلومینیوم کن",
+      "core_text": "متریال Part 4 رو آلومینیوم کن",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -7549,7 +7905,7 @@
       "pattern_explicit": false,
       "edge_new_explicit": false,
       "copy_count": null,
-      "cue_text": "متریال part 4 رو           کن",
+      "cue_text": "متریال part 4 رو کن",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -7562,6 +7918,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "part_property"
       ],
@@ -7613,6 +7973,7 @@
     "intent": "part_property",
     "evidence": {
       "text": "Part 6 رو فولاد متریال بده",
+      "core_text": "Part 6 رو فولاد متریال بده",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -7671,7 +8032,7 @@
       "pattern_explicit": false,
       "edge_new_explicit": false,
       "copy_count": null,
-      "cue_text": "part 6 رو       متریال بده",
+      "cue_text": "part 6 رو متریال بده",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -7684,6 +8045,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "part_property"
       ],
@@ -7735,6 +8100,7 @@
     "intent": "part_property",
     "evidence": {
       "text": "description Part 7 رو بذار frame trial",
+      "core_text": "description Part 7 رو بذار frame trial",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -7793,7 +8159,7 @@
       "pattern_explicit": false,
       "edge_new_explicit": false,
       "copy_count": null,
-      "cue_text": "description part 7 رو بذار            ",
+      "cue_text": "description part 7 رو بذار",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -7806,6 +8172,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "part_property"
       ],
@@ -7855,6 +8225,7 @@
     "intent": "part_delete",
     "evidence": {
       "text": "Part 10 رو حذف کن",
+      "core_text": "Part 10 رو حذف کن",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -7912,6 +8283,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "delete"
       ],
@@ -7959,6 +8334,7 @@
     "intent": "part_delete",
     "evidence": {
       "text": "همین پارت آخری رو پاک کن",
+      "core_text": "همین پارت آخری رو پاک کن",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -8007,6 +8383,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "delete"
       ],
@@ -8048,6 +8428,7 @@
     "intent": null,
     "evidence": {
       "text": "Part 3 رو قرمز کن و مخفیش کن",
+      "core_text": "Part 3 رو قرمز کن و مخفیش کن",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -8106,7 +8487,7 @@
       "pattern_explicit": false,
       "edge_new_explicit": false,
       "copy_count": null,
-      "cue_text": "part 3 رو      کن و مخفیش کن",
+      "cue_text": "part 3 رو کن و مخفیش کن",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -8119,6 +8500,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": true,
+      "effect_clause_count": 2,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "part_visibility",
         "part_property"
@@ -8158,6 +8543,7 @@
     "intent": null,
     "evidence": {
       "text": "اسم همین پارت رو عوض کن",
+      "core_text": "اسم همین پارت رو عوض کن",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -8206,6 +8592,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [],
       "action_families": []
     },
@@ -8241,6 +8631,7 @@
     "intent": "add_plane",
     "evidence": {
       "text": "یه صفحه مرجع خالی درست کن",
+      "core_text": "یه صفحه مرجع خالی درست کن",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -8289,6 +8680,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "create_plane"
       ],
@@ -8335,6 +8730,7 @@
     "intent": "add_plane",
     "evidence": {
       "text": "یه plane بساز با اسم datum bottom",
+      "core_text": "یه plane بساز با اسم datum bottom",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -8384,7 +8780,7 @@
       "pattern_explicit": false,
       "edge_new_explicit": true,
       "copy_count": null,
-      "cue_text": "یه plane بساز با اسم             ",
+      "cue_text": "یه plane بساز با اسم",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -8397,6 +8793,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "create_plane"
       ],
@@ -8439,6 +8839,7 @@
     "intent": "add_plane",
     "evidence": {
       "text": "روی Right یه plane بساز",
+      "core_text": "روی Right یه plane بساز",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -8487,6 +8888,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "create_plane"
       ],
@@ -8529,6 +8934,7 @@
     "intent": "add_pattern",
     "evidence": {
       "text": "Part 4 رو linear pattern پنج تایی با فاصله نه میل کن",
+      "core_text": "Part 4 رو linear pattern پنج تایی با فاصله نه میل کن",
       "quantities": [
         {
           "id": "q1",
@@ -8604,6 +9010,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "pattern"
       ],
@@ -8657,6 +9067,7 @@
     "intent": "add_pattern",
     "evidence": {
       "text": "از Part 3 سه تا pattern با فاصله شش و نیم میل بساز",
+      "core_text": "از Part 3 سه تا pattern با فاصله شش و نیم میل بساز",
       "quantities": [
         {
           "id": "q1",
@@ -8732,6 +9143,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "pattern"
       ],
@@ -8778,6 +9193,7 @@
     "intent": "add_pattern",
     "evidence": {
       "text": "Part 4 رو پنج نسخه کن هر نه میل",
+      "core_text": "Part 4 رو پنج نسخه کن هر نه میل",
       "quantities": [
         {
           "id": "q1",
@@ -8853,6 +9269,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [],
       "action_families": []
     },
@@ -8870,7 +9290,7 @@
       "d": "a",
       "i": "add_pattern"
     },
-    "model_latency_ms": 606.1626409999974,
+    "model_latency_ms": 765.2897060000043,
     "outcome": "correct"
   },
   {
@@ -8896,6 +9316,7 @@
     "intent": "feature_reorder",
     "evidence": {
       "text": "Fillet 4 رو بالای Extrude 7 ببر",
+      "core_text": "Fillet 4 رو بالای Extrude 7 ببر",
       "quantities": [],
       "quantity_issues": [],
       "features": [
@@ -8961,6 +9382,10 @@
       "clear_selection": false,
       "edge_kind": "fillet",
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "reorder"
       ],
@@ -9012,6 +9437,7 @@
     "intent": "feature_reorder",
     "evidence": {
       "text": "Extrude 7 رو بعد Sketch 5 بذار",
+      "core_text": "Extrude 7 رو بعد Sketch 5 بذار",
       "quantities": [],
       "quantity_issues": [],
       "features": [
@@ -9077,6 +9503,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "reorder"
       ],
@@ -9126,6 +9556,7 @@
     "intent": "rollback",
     "evidence": {
       "text": "rollback رو قبل Draft 2 بذار",
+      "core_text": "rollback رو قبل Draft 2 بذار",
       "quantities": [],
       "quantity_issues": [],
       "features": [
@@ -9183,6 +9614,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "rollback"
       ],
@@ -9228,6 +9663,7 @@
     "intent": "rollback",
     "evidence": {
       "text": "rollback رو بذار اول",
+      "core_text": "rollback رو بذار اول",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -9276,6 +9712,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "rollback"
       ],
@@ -9321,6 +9761,7 @@
     "intent": "create_part_studio",
     "evidence": {
       "text": "یه Part Studio جدید به اسم fit shell بساز",
+      "core_text": "یه Part Studio جدید به اسم fit shell بساز",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -9370,7 +9811,7 @@
       "pattern_explicit": false,
       "edge_new_explicit": true,
       "copy_count": null,
-      "cue_text": "یه part studio جدید به اسم           بساز",
+      "cue_text": "یه part studio جدید به اسم بساز",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -9383,6 +9824,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "create_part_studio"
       ],
@@ -9428,6 +9873,7 @@
     "intent": "rename_document",
     "evidence": {
       "text": "rename document to case archive",
+      "core_text": "rename document to case archive",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -9477,7 +9923,7 @@
       "pattern_explicit": false,
       "edge_new_explicit": false,
       "copy_count": null,
-      "cue_text": "rename document to             ",
+      "cue_text": "rename document to",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -9490,6 +9936,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [
         "rename_document"
       ],
@@ -9531,6 +9981,7 @@
     "intent": null,
     "evidence": {
       "text": "طراحی رو یه کم حرفه ای تر و مرتب تر کن",
+      "core_text": "طراحی رو یه کم حرفه ای تر و مرتب تر کن",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -9579,6 +10030,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [],
       "action_families": []
     },
@@ -9610,6 +10065,7 @@
     "intent": null,
     "evidence": {
       "text": "جوری تغییرش بده که برای تزریق بهتر باشه",
+      "core_text": "جوری تغییرش بده که برای تزریق بهتر باشه",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -9658,6 +10114,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [],
       "action_families": []
     },
@@ -9689,6 +10149,7 @@
     "intent": null,
     "evidence": {
       "text": "سبکش کن ولی استحکامش حفظ شه",
+      "core_text": "سبکش کن ولی استحکامش حفظ شه",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -9737,6 +10198,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [],
       "action_families": []
     },
@@ -9768,6 +10233,7 @@
     "intent": null,
     "evidence": {
       "text": "درخت فیچر رو خلوت و منطقی کن",
+      "core_text": "درخت فیچر رو خلوت و منطقی کن",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -9816,6 +10282,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [],
       "action_families": []
     },
@@ -9847,6 +10317,7 @@
     "intent": null,
     "evidence": {
       "text": "اون یکی رو پاک کن",
+      "core_text": "اون یکی رو پاک کن",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -9895,6 +10366,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [],
       "action_families": []
     },
@@ -9926,6 +10401,7 @@
     "intent": null,
     "evidence": {
       "text": "دو میلش کن",
+      "core_text": "دو میلش کن",
       "quantities": [
         {
           "id": "q1",
@@ -9992,6 +10468,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [],
       "action_families": []
     },
@@ -10023,6 +10503,7 @@
     "intent": null,
     "evidence": {
       "text": "همون عملیات قبلی رو روی اینم بزن",
+      "core_text": "همون عملیات قبلی رو روی اینم بزن",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -10071,6 +10552,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [],
       "action_families": []
     },
@@ -10088,7 +10573,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 606.1626409999974,
+    "model_latency_ms": 765.2897060000043,
     "outcome": "correct"
   },
   {
@@ -10108,6 +10593,7 @@
     "intent": null,
     "evidence": {
       "text": "یه STEP ازش خروجی بگیر",
+      "core_text": "یه STEP ازش خروجی بگیر",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -10156,6 +10642,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 0,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [],
       "action_families": []
     },
@@ -10187,6 +10677,7 @@
     "intent": null,
     "evidence": {
       "text": "با بقیه share کن",
+      "core_text": "با بقیه share کن",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -10235,6 +10726,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [],
       "action_families": []
     },
@@ -10266,6 +10761,7 @@
     "intent": null,
     "evidence": {
       "text": "این document رو public کن",
+      "core_text": "این document رو public کن",
       "quantities": [],
       "quantity_issues": [],
       "features": [],
@@ -10314,6 +10810,10 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
+      "effect_clause_count": 1,
+      "conditional": false,
+      "negated_clause_count": 0,
+      "negated_action_only": false,
       "action_cues": [],
       "action_families": []
     },
