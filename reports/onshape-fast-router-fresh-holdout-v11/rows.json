@@ -1006,7 +1006,7 @@
       "d": "a",
       "i": "fit"
     },
-    "model_latency_ms": 630.6343760000033,
+    "model_latency_ms": 833.8068859999978,
     "outcome": "correct"
   },
   {
@@ -1160,8 +1160,8 @@
       ]
     },
     "source": "model_intent",
-    "decision": "act",
-    "intent": "top_view",
+    "decision": "ask",
+    "intent": null,
     "evidence": {
       "text": "نمای جلو رو بیار",
       "quantities": [],
@@ -1200,7 +1200,7 @@
     },
     "post": {
       "accepted": false,
-      "reason": "standard-view-not-grounded",
+      "reason": "clarification",
       "compiled": {
         "route": "ask",
         "op": null,
@@ -1208,11 +1208,10 @@
       }
     },
     "model_choice": {
-      "id": "v11_c16",
-      "d": "a",
-      "i": "top_view"
+      "d": "q",
+      "i": null
     },
-    "model_latency_ms": 630.6343760000033,
+    "model_latency_ms": 833.8068859999978,
     "outcome": "correct"
   },
   {
@@ -1331,8 +1330,8 @@
       "camera_direction": null,
       "camera_inverse": false,
       "fit_all": false,
-      "fit_selection": false,
-      "fit_target": null,
+      "fit_selection": true,
+      "fit_target": "selection",
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -1349,11 +1348,10 @@
       }
     },
     "model_choice": {
-      "id": "v11_c18",
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 630.6343760000033,
+    "model_latency_ms": 833.8068859999978,
     "outcome": "conservative_escalation"
   },
   {
@@ -1978,11 +1976,10 @@
       }
     },
     "model_choice": {
-      "id": "v11_i09",
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 630.6343760000033,
+    "model_latency_ms": 833.8068859999978,
     "outcome": "correct"
   },
   {
@@ -7898,11 +7895,10 @@
       }
     },
     "model_choice": {
-      "id": "v11_x06",
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 630.6343760000033,
+    "model_latency_ms": 833.8068859999978,
     "outcome": "correct"
   },
   {
@@ -7966,11 +7962,10 @@
       }
     },
     "model_choice": {
-      "id": "v11_x07",
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 630.6343760000033,
+    "model_latency_ms": 833.8068859999978,
     "outcome": "correct"
   },
   {
