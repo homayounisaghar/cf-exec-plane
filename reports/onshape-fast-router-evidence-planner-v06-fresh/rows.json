@@ -1,0 +1,7777 @@
+[
+  {
+    "case": {
+      "category": "camera",
+      "id": "fresh_cam_01",
+      "text": "مدل رو یه کوچولو بپیچون سمت راست",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "view.move",
+          "args": {
+            "action": "orbit",
+            "direction": "right"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "مدل رو یه کوچولو بپیچون سمت راست",
+      "low": "مدل رو یه کوچولو بپیچون سمت راست",
+      "ctx": {},
+      "items": [
+        {
+          "id": "a1",
+          "kind": "action",
+          "value": "orbit",
+          "source": "text_or_context"
+        },
+        {
+          "id": "v1",
+          "kind": "direction",
+          "value": "right",
+          "source": "text_or_context"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "view.move",
+        "args": {
+          "action": "orbit",
+          "direction": "right"
+        }
+      },
+      "intent": "camera_move",
+      "provenance": {
+        "action": "text_or_context:a1",
+        "direction": "text_or_context:v1"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "camera",
+      "id": "fresh_cam_02",
+      "text": "یه خرده بچرخونش سمت چپ",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "view.move",
+          "args": {
+            "action": "orbit",
+            "direction": "left"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "یه خرده بچرخونش سمت چپ",
+      "low": "یه خرده بچرخونش سمت چپ",
+      "ctx": {},
+      "items": [
+        {
+          "id": "a1",
+          "kind": "action",
+          "value": "orbit",
+          "source": "text_or_context"
+        },
+        {
+          "id": "v1",
+          "kind": "direction",
+          "value": "left",
+          "source": "text_or_context"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "view.move",
+        "args": {
+          "action": "orbit",
+          "direction": "left"
+        }
+      },
+      "intent": "camera_move",
+      "provenance": {
+        "action": "text_or_context:a1",
+        "direction": "text_or_context:v1"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "camera",
+      "id": "fresh_cam_03",
+      "text": "نمای کارو کمی هل بده پایین",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "view.move",
+          "args": {
+            "action": "pan",
+            "direction": "down"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "نمای کارو کمی هل بده پایین",
+      "low": "نمای کارو کمی هل بده پایین",
+      "ctx": {},
+      "items": [
+        {
+          "id": "a1",
+          "kind": "action",
+          "value": "pan",
+          "source": "text_or_context"
+        },
+        {
+          "id": "v1",
+          "kind": "direction",
+          "value": "down",
+          "source": "text_or_context"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "view.move",
+        "args": {
+          "action": "pan",
+          "direction": "down"
+        }
+      },
+      "intent": "camera_move",
+      "provenance": {
+        "action": "text_or_context:a1",
+        "direction": "text_or_context:v1"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "camera",
+      "id": "fresh_cam_04",
+      "text": "صفحه رو یه ذره بکش بالا",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "view.move",
+          "args": {
+            "action": "pan",
+            "direction": "up"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "صفحه رو یه ذره بکش بالا",
+      "low": "صفحه رو یه ذره بکش بالا",
+      "ctx": {},
+      "items": [
+        {
+          "id": "a1",
+          "kind": "action",
+          "value": "pan",
+          "source": "text_or_context"
+        },
+        {
+          "id": "v1",
+          "kind": "direction",
+          "value": "up",
+          "source": "text_or_context"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "view.move",
+        "args": {
+          "action": "pan",
+          "direction": "up"
+        }
+      },
+      "intent": "camera_move",
+      "provenance": {
+        "action": "text_or_context:a1",
+        "direction": "text_or_context:v1"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "camera",
+      "id": "fresh_cam_05",
+      "text": "zoom in یه کوچولو",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "view.move",
+          "args": {
+            "action": "zoom",
+            "direction": "in"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "zoom in یه کوچولو",
+      "low": "zoom in یه کوچولو",
+      "ctx": {},
+      "items": [
+        {
+          "id": "a1",
+          "kind": "action",
+          "value": "zoom",
+          "source": "text_or_context"
+        },
+        {
+          "id": "v1",
+          "kind": "direction",
+          "value": "in",
+          "source": "text_or_context"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "view.move",
+        "args": {
+          "action": "zoom",
+          "direction": "in"
+        }
+      },
+      "intent": "camera_move",
+      "provenance": {
+        "action": "text_or_context:a1",
+        "direction": "text_or_context:v1"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "camera",
+      "id": "fresh_cam_06",
+      "text": "یه مقدار zoom out",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "view.move",
+          "args": {
+            "action": "zoom",
+            "direction": "out"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "یه مقدار zoom out",
+      "low": "یه مقدار zoom out",
+      "ctx": {},
+      "items": [
+        {
+          "id": "a1",
+          "kind": "action",
+          "value": "zoom",
+          "source": "text_or_context"
+        },
+        {
+          "id": "v1",
+          "kind": "direction",
+          "value": "out",
+          "source": "text_or_context"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "view.move",
+        "args": {
+          "action": "zoom",
+          "direction": "out"
+        }
+      },
+      "intent": "camera_move",
+      "provenance": {
+        "action": "text_or_context:a1",
+        "direction": "text_or_context:v1"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "camera",
+      "id": "fresh_cam_07",
+      "text": "چهل و پنج درجه به چپ بچرخون",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "view.move",
+          "args": {
+            "action": "orbit",
+            "direction": "left",
+            "angle_degrees": 45
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "چهل و پنج درجه به چپ بچرخون",
+      "low": "چهل و پنج درجه به چپ بچرخون",
+      "ctx": {},
+      "items": [
+        {
+          "id": "q1",
+          "kind": "quantity",
+          "value": "45 deg",
+          "source": "text",
+          "surface": "چهل و پنج درجه"
+        },
+        {
+          "id": "a1",
+          "kind": "action",
+          "value": "orbit",
+          "source": "text_or_context"
+        },
+        {
+          "id": "v1",
+          "kind": "direction",
+          "value": "left",
+          "source": "text_or_context"
+        },
+        {
+          "id": "g1",
+          "kind": "angle",
+          "value": 45.0,
+          "source": "text",
+          "surface": "چهل و پنج درجه"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "view.move",
+        "args": {
+          "action": "orbit",
+          "direction": "left",
+          "angle_degrees": 45.0
+        }
+      },
+      "intent": "camera_move",
+      "provenance": {
+        "action": "text_or_context:a1",
+        "direction": "text_or_context:v1",
+        "angle_degrees": "text:g1"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "camera",
+      "id": "fresh_cam_08",
+      "text": "نیم دور ساعتگرد بچرخون",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "view.move",
+          "args": {
+            "action": "orbit",
+            "direction": "clockwise",
+            "angle_degrees": 180
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "نیم دور ساعتگرد بچرخون",
+      "low": "نیم دور ساعتگرد بچرخون",
+      "ctx": {},
+      "items": [
+        {
+          "id": "q1",
+          "kind": "quantity",
+          "value": "180 deg",
+          "source": "text",
+          "surface": "نیم دور"
+        },
+        {
+          "id": "a1",
+          "kind": "action",
+          "value": "orbit",
+          "source": "text_or_context"
+        },
+        {
+          "id": "v1",
+          "kind": "direction",
+          "value": "clockwise",
+          "source": "text_or_context"
+        },
+        {
+          "id": "g1",
+          "kind": "angle",
+          "value": 180.0,
+          "source": "text",
+          "surface": "نیم دور"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "view.move",
+        "args": {
+          "action": "orbit",
+          "direction": "clockwise",
+          "angle_degrees": 180.0
+        }
+      },
+      "intent": "camera_move",
+      "provenance": {
+        "action": "text_or_context:a1",
+        "direction": "text_or_context:v1",
+        "angle_degrees": "text:g1"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "camera",
+      "id": "fresh_cam_09",
+      "text": "کلشو جمع کن تو کادر",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "view.fit",
+          "args": {
+            "action": "fit"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "کلشو جمع کن تو کادر",
+      "low": "کلشو جمع کن تو کادر",
+      "ctx": {},
+      "items": [],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "model",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "view.fit",
+        "args": {
+          "action": "fit"
+        }
+      },
+      "intent": "fit",
+      "provenance": {
+        "action": "text:fit-semantics"
+      },
+      "model_used": true
+    },
+    "latency_ms": 815.280878000003,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "camera",
+      "id": "fresh_cam_10",
+      "text": "انتخاب فعلی رو تو کادر جا بده",
+      "ctx": {
+        "selection_count": 1,
+        "selection_types": [
+          "face"
+        ]
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "view.fit",
+          "args": {
+            "action": "fit_selection"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "انتخاب فعلی رو تو کادر جا بده",
+      "low": "انتخاب فعلی رو تو کادر جا بده",
+      "ctx": {
+        "selection_count": 1,
+        "selection_types": [
+          "face"
+        ]
+      },
+      "items": [],
+      "selection_count": 1,
+      "selection_types": [
+        "face"
+      ],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "view.fit",
+        "args": {
+          "action": "fit"
+        }
+      },
+      "intent": "fit",
+      "provenance": {
+        "action": "text:fit-semantics"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "wrong_reversible_accepted"
+  },
+  {
+    "case": {
+      "category": "camera",
+      "id": "fresh_cam_11",
+      "text": "نمای بالا رو بیار",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "view.standard",
+          "args": {
+            "view": "top"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "نمای بالا رو بیار",
+      "low": "نمای بالا رو بیار",
+      "ctx": {},
+      "items": [
+        {
+          "id": "v1",
+          "kind": "direction",
+          "value": "up",
+          "source": "text_or_context"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "model",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "view.standard",
+        "args": {
+          "view": "top"
+        }
+      },
+      "intent": "top_view",
+      "provenance": {
+        "view": "text:top-semantics"
+      },
+      "model_used": true
+    },
+    "latency_ms": 815.280878000003,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "camera",
+      "id": "fresh_cam_12",
+      "text": "سلکشن رو خالی کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "viewer.selection.clear",
+          "args": {}
+        }
+      ]
+    },
+    "evidence": {
+      "text": "سلکشن رو خالی کن",
+      "low": "سلکشن رو خالی کن",
+      "ctx": {},
+      "items": [],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "model",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "viewer.selection.clear",
+        "args": {}
+      },
+      "intent": "clear_selection",
+      "provenance": {},
+      "model_used": true
+    },
+    "latency_ms": 815.280878000003,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "camera",
+      "id": "fresh_cam_13",
+      "text": "یه ذره دیگه همونجوری",
+      "ctx": {
+        "last_move": {
+          "action": "orbit",
+          "direction": "left",
+          "intensity": 0.25
+        }
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "view.move",
+          "args": {
+            "action": "orbit",
+            "direction": "left"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "یه ذره دیگه همونجوری",
+      "low": "یه ذره دیگه همونجوری",
+      "ctx": {
+        "last_move": {
+          "action": "orbit",
+          "direction": "left",
+          "intensity": 0.25
+        }
+      },
+      "items": [],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "model",
+    "post": {
+      "accepted": false,
+      "reason": "model-ask",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      },
+      "intent": null,
+      "provenance": {},
+      "model_used": true
+    },
+    "latency_ms": 815.280878000003,
+    "model_error": null,
+    "outcome": "conservative_escalation"
+  },
+  {
+    "case": {
+      "category": "camera",
+      "id": "fresh_cam_14",
+      "text": "نه نه برگرد، زیادی رفت",
+      "ctx": {
+        "last_move": {
+          "action": "orbit",
+          "direction": "left",
+          "intensity": 0.7
+        }
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "view.move",
+          "args": {
+            "action": "orbit",
+            "direction": "right"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "نه نه برگرد، زیادی رفت",
+      "low": "نه نه برگرد، زیادی رفت",
+      "ctx": {
+        "last_move": {
+          "action": "orbit",
+          "direction": "left",
+          "intensity": 0.7
+        }
+      },
+      "items": [
+        {
+          "id": "a1",
+          "kind": "action",
+          "value": "orbit",
+          "source": "text_or_context"
+        },
+        {
+          "id": "v1",
+          "kind": "direction",
+          "value": "right",
+          "source": "text_or_context"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "view.move",
+        "args": {
+          "action": "orbit",
+          "direction": "right"
+        }
+      },
+      "intent": "camera_move",
+      "provenance": {
+        "action": "text_or_context:a1",
+        "direction": "text_or_context:v1"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "camera",
+      "id": "fresh_cam_15",
+      "text": "همون زوم رو باز یه کم بیشتر کن",
+      "ctx": {
+        "last_move": {
+          "action": "zoom",
+          "direction": "in",
+          "intensity": 0.25
+        }
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "view.move",
+          "args": {
+            "action": "zoom",
+            "direction": "in"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "همون زوم رو باز یه کم بیشتر کن",
+      "low": "همون زوم رو باز یه کم بیشتر کن",
+      "ctx": {
+        "last_move": {
+          "action": "zoom",
+          "direction": "in",
+          "intensity": 0.25
+        }
+      },
+      "items": [
+        {
+          "id": "a1",
+          "kind": "action",
+          "value": "zoom",
+          "source": "text_or_context"
+        },
+        {
+          "id": "v1",
+          "kind": "direction",
+          "value": "in",
+          "source": "text_or_context"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": "add",
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "view.move",
+        "args": {
+          "action": "zoom",
+          "direction": "in"
+        }
+      },
+      "intent": "camera_move",
+      "provenance": {
+        "action": "text_or_context:a1",
+        "direction": "text_or_context:v1"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "camera",
+      "id": "fresh_cam_16",
+      "text": "از زومی که کردی یه کم عقب بیا",
+      "ctx": {
+        "last_move": {
+          "action": "zoom",
+          "direction": "in",
+          "intensity": 0.5
+        }
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "view.move",
+          "args": {
+            "action": "zoom",
+            "direction": "out"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "از زومی که کردی یه کم عقب بیا",
+      "low": "از زومی که کردی یه کم عقب بیا",
+      "ctx": {
+        "last_move": {
+          "action": "zoom",
+          "direction": "in",
+          "intensity": 0.5
+        }
+      },
+      "items": [
+        {
+          "id": "a1",
+          "kind": "action",
+          "value": "zoom",
+          "source": "text_or_context"
+        },
+        {
+          "id": "v1",
+          "kind": "direction",
+          "value": "out",
+          "source": "text_or_context"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "view.move",
+        "args": {
+          "action": "zoom",
+          "direction": "out"
+        }
+      },
+      "intent": "camera_move",
+      "provenance": {
+        "action": "text_or_context:a1",
+        "direction": "text_or_context:v1"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "camera",
+      "id": "fresh_cam_17",
+      "text": "نمای جلو رو بده",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "evidence": {
+      "text": "نمای جلو رو بده",
+      "low": "نمای جلو رو بده",
+      "ctx": {},
+      "items": [],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "model",
+    "post": {
+      "accepted": false,
+      "reason": "camera-evidence-missing",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      },
+      "intent": "camera_move",
+      "provenance": {},
+      "model_used": true
+    },
+    "latency_ms": 815.280878000003,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "camera",
+      "id": "fresh_cam_18",
+      "text": "یه نمای ایزومتریک بده",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "evidence": {
+      "text": "یه نمای ایزومتریک بده",
+      "low": "یه نمای ایزومتریک بده",
+      "ctx": {},
+      "items": [
+        {
+          "id": "a1",
+          "kind": "action",
+          "value": "zoom",
+          "source": "text_or_context"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": true,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": false,
+      "reason": "deterministic-ask",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      },
+      "intent": null,
+      "provenance": {},
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "camera",
+      "id": "fresh_cam_19",
+      "text": "فقط همین انتخابو فیت کن",
+      "ctx": {
+        "selection_count": 0
+      },
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "evidence": {
+      "text": "فقط همین انتخابو فیت کن",
+      "low": "فقط همین انتخابو فیت کن",
+      "ctx": {
+        "selection_count": 0
+      },
+      "items": [],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": false,
+      "reason": "fit-selection-ungrounded",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      },
+      "intent": "fit",
+      "provenance": {},
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "camera",
+      "id": "fresh_cam_20",
+      "text": "یه کم نزدیک‌ترش کن",
+      "ctx": {
+        "last_move": {
+          "action": "zoom",
+          "direction": "in",
+          "intensity": 0.2
+        }
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "view.move",
+          "args": {
+            "action": "zoom",
+            "direction": "in"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "یه کم نزدیک ترش کن",
+      "low": "یه کم نزدیک ترش کن",
+      "ctx": {
+        "last_move": {
+          "action": "zoom",
+          "direction": "in",
+          "intensity": 0.2
+        }
+      },
+      "items": [],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "model",
+    "post": {
+      "accepted": false,
+      "reason": "camera-evidence-missing",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      },
+      "intent": "camera_move",
+      "provenance": {},
+      "model_used": true
+    },
+    "latency_ms": 815.280878000003,
+    "model_error": null,
+    "outcome": "conservative_escalation"
+  },
+  {
+    "case": {
+      "category": "inspect",
+      "id": "fresh_ins_01",
+      "text": "ببین چی الان select شده",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "viewer.inspect",
+          "args": {
+            "mode": "selection"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "ببین چی الان select شده",
+      "low": "ببین چی الان select شده",
+      "ctx": {},
+      "items": [],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "model",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "viewer.inspect",
+        "args": {
+          "mode": "state"
+        }
+      },
+      "intent": "inspect",
+      "provenance": {
+        "mode": "text:inspect-semantics"
+      },
+      "model_used": true
+    },
+    "latency_ms": 815.280878000003,
+    "model_error": null,
+    "outcome": "wrong_reversible_accepted"
+  },
+  {
+    "case": {
+      "category": "inspect",
+      "id": "fresh_ins_02",
+      "text": "یه وضعیت از viewer بده",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "viewer.inspect",
+          "args": {
+            "mode": "state"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "یه وضعیت از viewer بده",
+      "low": "یه وضعیت از viewer بده",
+      "ctx": {},
+      "items": [],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "viewer.inspect",
+        "args": {
+          "mode": "state"
+        }
+      },
+      "intent": "inspect",
+      "provenance": {
+        "mode": "text:inspect-semantics"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "inspect",
+      "id": "fresh_ins_03",
+      "text": "الان چند نفریم توی session؟",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "viewer.inspect",
+          "args": {
+            "mode": "collaboration"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "الان چند نفریم توی session؟",
+      "low": "الان چند نفریم توی session؟",
+      "ctx": {},
+      "items": [],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "viewer.inspect",
+        "args": {
+          "mode": "collaboration"
+        }
+      },
+      "intent": "inspect",
+      "provenance": {
+        "mode": "text:inspect-semantics"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "inspect",
+      "id": "fresh_ins_04",
+      "text": "اون یکی آدمو follow کن",
+      "ctx": {
+        "collaborator_count": 2
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "view.follow",
+          "args": {}
+        }
+      ]
+    },
+    "evidence": {
+      "text": "اون یکی آدمو follow کن",
+      "low": "اون یکی آدمو follow کن",
+      "ctx": {
+        "collaborator_count": 2
+      },
+      "items": [],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "view.follow",
+        "args": {}
+      },
+      "intent": "follow",
+      "provenance": {},
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "inspect",
+      "id": "fresh_ins_05",
+      "text": "سومی رو فالو کن",
+      "ctx": {
+        "collaborator_count": 4
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "view.follow",
+          "args": {
+            "candidate_index": 3
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "سومی رو فالو کن",
+      "low": "سومی رو فالو کن",
+      "ctx": {
+        "collaborator_count": 4
+      },
+      "items": [],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": false,
+      "reason": "follow-ambiguous",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      },
+      "intent": "follow",
+      "provenance": {},
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "conservative_escalation"
+  },
+  {
+    "case": {
+      "category": "inspect",
+      "id": "fresh_ins_06",
+      "text": "یکی از بقیه رو فالو کن",
+      "ctx": {
+        "collaborator_count": 4
+      },
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "evidence": {
+      "text": "یکی از بقیه رو فالو کن",
+      "low": "یکی از بقیه رو فالو کن",
+      "ctx": {
+        "collaborator_count": 4
+      },
+      "items": [],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": false,
+      "reason": "follow-ambiguous",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      },
+      "intent": "follow",
+      "provenance": {},
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "inspect",
+      "id": "fresh_ins_07",
+      "text": "این وجه رو انتخاب کن",
+      "ctx": {
+        "selection_count": 0
+      },
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "evidence": {
+      "text": "این وجه رو انتخاب کن",
+      "low": "این وجه رو انتخاب کن",
+      "ctx": {
+        "selection_count": 0
+      },
+      "items": [],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "model",
+    "post": {
+      "accepted": false,
+      "reason": "model-ask",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      },
+      "intent": null,
+      "provenance": {},
+      "model_used": true
+    },
+    "latency_ms": 815.280878000003,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "inspect",
+      "id": "fresh_ins_08",
+      "text": "اون edge کناری رو هم بگیر",
+      "ctx": {
+        "selection_count": 1
+      },
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "evidence": {
+      "text": "اون edge کناری رو هم بگیر",
+      "low": "اون edge کناری رو هم بگیر",
+      "ctx": {
+        "selection_count": 1
+      },
+      "items": [],
+      "selection_count": 1,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "model",
+    "post": {
+      "accepted": false,
+      "reason": "model-ask",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      },
+      "intent": null,
+      "provenance": {},
+      "model_used": true
+    },
+    "latency_ms": 815.280878000003,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "inspect",
+      "id": "fresh_ins_09",
+      "text": "selection فعلی چیه؟",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "viewer.inspect",
+          "args": {
+            "mode": "selection"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "selection فعلی چیه؟",
+      "low": "selection فعلی چیه؟",
+      "ctx": {},
+      "items": [],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "model",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "viewer.inspect",
+        "args": {
+          "mode": "selection"
+        }
+      },
+      "intent": "inspect",
+      "provenance": {
+        "mode": "text:inspect-semantics"
+      },
+      "model_used": true
+    },
+    "latency_ms": 815.280878000003,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "inspect",
+      "id": "fresh_ins_10",
+      "text": "همه انتخابا رو clear کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "viewer.selection.clear",
+          "args": {}
+        }
+      ]
+    },
+    "evidence": {
+      "text": "همه انتخابا رو clear کن",
+      "low": "همه انتخابا رو clear کن",
+      "ctx": {},
+      "items": [],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "model",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "viewer.selection.clear",
+        "args": {}
+      },
+      "intent": "clear_selection",
+      "provenance": {},
+      "model_used": true
+    },
+    "latency_ms": 815.280878000003,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "selection",
+      "id": "fresh_sel_01",
+      "text": "روی این لبه‌ها یک و نیم میل fillet بزن",
+      "ctx": {
+        "selection_count": 2,
+        "selection_types": [
+          "edge",
+          "edge"
+        ]
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.from_selection",
+          "args": {
+            "feature_type": "fillet",
+            "amount": "1.5 mm"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "روی این لبه ها یک و نیم میل fillet بزن",
+      "low": "روی این لبه ها یک و نیم میل fillet بزن",
+      "ctx": {
+        "selection_count": 2,
+        "selection_types": [
+          "edge",
+          "edge"
+        ]
+      },
+      "items": [
+        {
+          "id": "q1",
+          "kind": "quantity",
+          "value": "1.5 mm",
+          "source": "text",
+          "surface": "یک و نیم میل"
+        }
+      ],
+      "selection_count": 2,
+      "selection_types": [
+        "edge",
+        "edge"
+      ],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [
+        "edge:fillet"
+      ],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.from_selection",
+        "args": {
+          "feature_type": "fillet",
+          "amount": "1.5 mm"
+        }
+      },
+      "intent": "edge_on_selection",
+      "provenance": {
+        "feature_type": "text:edge-kind",
+        "amount": "text:q1",
+        "selection": "context:selection"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "selection",
+      "id": "fresh_sel_02",
+      "text": "این انتخابو سه دهم میل پخ بزن",
+      "ctx": {
+        "selection_count": 2,
+        "selection_types": [
+          "edge",
+          "edge"
+        ]
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.from_selection",
+          "args": {
+            "feature_type": "chamfer",
+            "amount": "0.3 mm"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "این انتخابو سه دهم میل پخ بزن",
+      "low": "این انتخابو سه دهم میل پخ بزن",
+      "ctx": {
+        "selection_count": 2,
+        "selection_types": [
+          "edge",
+          "edge"
+        ]
+      },
+      "items": [
+        {
+          "id": "q1",
+          "kind": "quantity",
+          "value": "0.3 mm",
+          "source": "text",
+          "surface": "سه دهم میل"
+        }
+      ],
+      "selection_count": 2,
+      "selection_types": [
+        "edge",
+        "edge"
+      ],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [
+        "edge:chamfer"
+      ],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.from_selection",
+        "args": {
+          "feature_type": "chamfer",
+          "amount": "0.3 mm"
+        }
+      },
+      "intent": "edge_on_selection",
+      "provenance": {
+        "feature_type": "text:edge-kind",
+        "amount": "text:q1",
+        "selection": "context:selection"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "selection",
+      "id": "fresh_sel_03",
+      "text": "همین edgeها رو 2.2mm فیلت کن",
+      "ctx": {
+        "selection_count": 3,
+        "selection_types": [
+          "edge",
+          "edge",
+          "edge"
+        ]
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.from_selection",
+          "args": {
+            "feature_type": "fillet",
+            "amount": "2.2 mm"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "همین edgeها رو 2.2mm فیلت کن",
+      "low": "همین edgeها رو 2.2mm فیلت کن",
+      "ctx": {
+        "selection_count": 3,
+        "selection_types": [
+          "edge",
+          "edge",
+          "edge"
+        ]
+      },
+      "items": [
+        {
+          "id": "q1",
+          "kind": "quantity",
+          "value": "2.2 mm",
+          "source": "text",
+          "surface": "2.2 mm"
+        }
+      ],
+      "selection_count": 3,
+      "selection_types": [
+        "edge",
+        "edge",
+        "edge"
+      ],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [
+        "edge:fillet"
+      ],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.from_selection",
+        "args": {
+          "feature_type": "fillet",
+          "amount": "2.2 mm"
+        }
+      },
+      "intent": "edge_on_selection",
+      "provenance": {
+        "feature_type": "text:edge-kind",
+        "amount": "text:q1",
+        "selection": "context:selection"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "selection",
+      "id": "fresh_sel_04",
+      "text": "چمفر یک و هفتاد و پنج صدم میلی روی همین انتخاب",
+      "ctx": {
+        "selection_count": 2,
+        "selection_types": [
+          "edge",
+          "edge"
+        ]
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.from_selection",
+          "args": {
+            "feature_type": "chamfer",
+            "amount": "1.75 mm"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "چمفر یک و هفتاد و پنج صدم میلی روی همین انتخاب",
+      "low": "چمفر یک و هفتاد و پنج صدم میلی روی همین انتخاب",
+      "ctx": {
+        "selection_count": 2,
+        "selection_types": [
+          "edge",
+          "edge"
+        ]
+      },
+      "items": [
+        {
+          "id": "q1",
+          "kind": "quantity",
+          "value": "1.75 mm",
+          "source": "text",
+          "surface": "یک و هفتاد و پنج صدم میلی"
+        }
+      ],
+      "selection_count": 2,
+      "selection_types": [
+        "edge",
+        "edge"
+      ],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [
+        "edge:chamfer"
+      ],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.from_selection",
+        "args": {
+          "feature_type": "chamfer",
+          "amount": "1.75 mm"
+        }
+      },
+      "intent": "edge_on_selection",
+      "provenance": {
+        "feature_type": "text:edge-kind",
+        "amount": "text:q1",
+        "selection": "context:selection"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "selection",
+      "id": "fresh_sel_05",
+      "text": "روی این فیس یه پخ دو میل بده",
+      "ctx": {
+        "selection_count": 1,
+        "selection_types": [
+          "face"
+        ]
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.from_selection",
+          "args": {
+            "feature_type": "chamfer",
+            "amount": "2 mm"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "روی این فیس یه پخ دو میل بده",
+      "low": "روی این فیس یه پخ دو میل بده",
+      "ctx": {
+        "selection_count": 1,
+        "selection_types": [
+          "face"
+        ]
+      },
+      "items": [
+        {
+          "id": "q1",
+          "kind": "quantity",
+          "value": "2 mm",
+          "source": "text",
+          "surface": "دو میل"
+        }
+      ],
+      "selection_count": 1,
+      "selection_types": [
+        "face"
+      ],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [
+        "edge:chamfer"
+      ],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.from_selection",
+        "args": {
+          "feature_type": "chamfer",
+          "amount": "2 mm"
+        }
+      },
+      "intent": "edge_on_selection",
+      "provenance": {
+        "feature_type": "text:edge-kind",
+        "amount": "text:q1",
+        "selection": "context:selection"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "selection",
+      "id": "fresh_sel_06",
+      "text": "اینارو نیم میل فیلت کن",
+      "ctx": {
+        "selection_count": 2,
+        "selection_types": [
+          "edge",
+          "edge"
+        ]
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.from_selection",
+          "args": {
+            "feature_type": "fillet",
+            "amount": "0.5 mm"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "اینارو نیم میل فیلت کن",
+      "low": "اینارو نیم میل فیلت کن",
+      "ctx": {
+        "selection_count": 2,
+        "selection_types": [
+          "edge",
+          "edge"
+        ]
+      },
+      "items": [
+        {
+          "id": "q1",
+          "kind": "quantity",
+          "value": "0.5 mm",
+          "source": "text",
+          "surface": "نیم میل"
+        }
+      ],
+      "selection_count": 2,
+      "selection_types": [
+        "edge",
+        "edge"
+      ],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [
+        "edge:fillet"
+      ],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.from_selection",
+        "args": {
+          "feature_type": "fillet",
+          "amount": "0.5 mm"
+        }
+      },
+      "intent": "edge_on_selection",
+      "provenance": {
+        "feature_type": "text:edge-kind",
+        "amount": "text:q1",
+        "selection": "context:selection"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "selection",
+      "id": "fresh_sel_07",
+      "text": "همینارو یک میل chamfer",
+      "ctx": {
+        "selection_count": 2,
+        "selection_types": [
+          "edge",
+          "edge"
+        ]
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.from_selection",
+          "args": {
+            "feature_type": "chamfer",
+            "amount": "1 mm"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "همینارو یک میل chamfer",
+      "low": "همینارو یک میل chamfer",
+      "ctx": {
+        "selection_count": 2,
+        "selection_types": [
+          "edge",
+          "edge"
+        ]
+      },
+      "items": [
+        {
+          "id": "q1",
+          "kind": "quantity",
+          "value": "1 mm",
+          "source": "text",
+          "surface": "یک میل"
+        }
+      ],
+      "selection_count": 2,
+      "selection_types": [
+        "edge",
+        "edge"
+      ],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [
+        "edge:chamfer"
+      ],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.from_selection",
+        "args": {
+          "feature_type": "chamfer",
+          "amount": "1 mm"
+        }
+      },
+      "intent": "edge_on_selection",
+      "provenance": {
+        "feature_type": "text:edge-kind",
+        "amount": "text:q1",
+        "selection": "context:selection"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "selection",
+      "id": "fresh_sel_08",
+      "text": "این انتخابو فیلت بزن",
+      "ctx": {
+        "selection_count": 2,
+        "selection_types": [
+          "edge",
+          "edge"
+        ]
+      },
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "evidence": {
+      "text": "این انتخابو فیلت بزن",
+      "low": "این انتخابو فیلت بزن",
+      "ctx": {
+        "selection_count": 2,
+        "selection_types": [
+          "edge",
+          "edge"
+        ]
+      },
+      "items": [],
+      "selection_count": 2,
+      "selection_types": [
+        "edge",
+        "edge"
+      ],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [
+        "edge:fillet"
+      ],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": false,
+      "reason": "edge-evidence-missing",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      },
+      "intent": "edge_on_selection",
+      "provenance": {},
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "selection",
+      "id": "fresh_sel_09",
+      "text": "پخ دو میل بزن",
+      "ctx": {
+        "selection_count": 0
+      },
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "evidence": {
+      "text": "پخ دو میل بزن",
+      "low": "پخ دو میل بزن",
+      "ctx": {
+        "selection_count": 0
+      },
+      "items": [
+        {
+          "id": "q1",
+          "kind": "quantity",
+          "value": "2 mm",
+          "source": "text",
+          "surface": "دو میل"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": false,
+      "reason": "selection-ungrounded",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      },
+      "intent": "edge_on_selection",
+      "provenance": {},
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "selection",
+      "id": "fresh_sel_10",
+      "text": "روی همینا گردی بده یک میل",
+      "ctx": {
+        "selection_count": 2,
+        "selection_types": [
+          "edge",
+          "edge"
+        ]
+      },
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "evidence": {
+      "text": "روی همینا گردی بده یک میل",
+      "low": "روی همینا گردی بده یک میل",
+      "ctx": {
+        "selection_count": 2,
+        "selection_types": [
+          "edge",
+          "edge"
+        ]
+      },
+      "items": [
+        {
+          "id": "q1",
+          "kind": "quantity",
+          "value": "1 mm",
+          "source": "text",
+          "surface": "یک میل"
+        }
+      ],
+      "selection_count": 2,
+      "selection_types": [
+        "edge",
+        "edge"
+      ],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "model",
+    "post": {
+      "accepted": false,
+      "reason": "edge-evidence-missing",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      },
+      "intent": "edge_on_selection",
+      "provenance": {},
+      "model_used": true
+    },
+    "latency_ms": 815.280878000003,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "selection",
+      "id": "fresh_sel_11",
+      "text": "این دو تا رو فیلت و پخ کن",
+      "ctx": {
+        "selection_count": 2,
+        "selection_types": [
+          "edge",
+          "edge"
+        ]
+      },
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "evidence": {
+      "text": "این دو تا رو فیلت و پخ کن",
+      "low": "این دو تا رو فیلت و پخ کن",
+      "ctx": {
+        "selection_count": 2,
+        "selection_types": [
+          "edge",
+          "edge"
+        ]
+      },
+      "items": [
+        {
+          "id": "k1",
+          "kind": "count",
+          "value": 2,
+          "source": "text"
+        }
+      ],
+      "selection_count": 2,
+      "selection_types": [
+        "edge",
+        "edge"
+      ],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [
+        "edge:fillet",
+        "edge:chamfer"
+      ],
+      "multi_action": true,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": false,
+      "reason": "deterministic-ask",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      },
+      "intent": null,
+      "provenance": {},
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "selection",
+      "id": "fresh_sel_12",
+      "text": "اول یک میل پخ بعد دو میل فیلت",
+      "ctx": {
+        "selection_count": 2,
+        "selection_types": [
+          "edge",
+          "edge"
+        ]
+      },
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "evidence": {
+      "text": "اول یک میل پخ بعد دو میل فیلت",
+      "low": "اول یک میل پخ بعد دو میل فیلت",
+      "ctx": {
+        "selection_count": 2,
+        "selection_types": [
+          "edge",
+          "edge"
+        ]
+      },
+      "items": [
+        {
+          "id": "q1",
+          "kind": "quantity",
+          "value": "1 mm",
+          "source": "text",
+          "surface": "یک میل"
+        },
+        {
+          "id": "q2",
+          "kind": "quantity",
+          "value": "2 mm",
+          "source": "text",
+          "surface": "دو میل"
+        },
+        {
+          "id": "r1",
+          "kind": "relation",
+          "value": "after",
+          "source": "text"
+        }
+      ],
+      "selection_count": 2,
+      "selection_types": [
+        "edge",
+        "edge"
+      ],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [
+        "edge:fillet",
+        "edge:chamfer"
+      ],
+      "multi_action": true,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": false,
+      "reason": "deterministic-ask",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      },
+      "intent": null,
+      "provenance": {},
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "selection",
+      "id": "fresh_sel_13",
+      "text": "لبه‌های انتخابی رو ده صدم میلی chamfer کن",
+      "ctx": {
+        "selection_count": 2,
+        "selection_types": [
+          "edge",
+          "edge"
+        ]
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.from_selection",
+          "args": {
+            "feature_type": "chamfer",
+            "amount": "0.1 mm"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "لبه های انتخابی رو ده صدم میلی chamfer کن",
+      "low": "لبه های انتخابی رو ده صدم میلی chamfer کن",
+      "ctx": {
+        "selection_count": 2,
+        "selection_types": [
+          "edge",
+          "edge"
+        ]
+      },
+      "items": [
+        {
+          "id": "q1",
+          "kind": "quantity",
+          "value": "0.1 mm",
+          "source": "text",
+          "surface": "ده صدم میلی"
+        }
+      ],
+      "selection_count": 2,
+      "selection_types": [
+        "edge",
+        "edge"
+      ],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [
+        "edge:chamfer"
+      ],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.from_selection",
+        "args": {
+          "feature_type": "chamfer",
+          "amount": "0.1 mm"
+        }
+      },
+      "intent": "edge_on_selection",
+      "provenance": {
+        "feature_type": "text:edge-kind",
+        "amount": "text:q1",
+        "selection": "context:selection"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "selection",
+      "id": "fresh_sel_14",
+      "text": "فیلت 0.25 میل روی انتخاب فعلی",
+      "ctx": {
+        "selection_count": 1,
+        "selection_types": [
+          "edge"
+        ]
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.from_selection",
+          "args": {
+            "feature_type": "fillet",
+            "amount": "0.25 mm"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "فیلت 0.25 میل روی انتخاب فعلی",
+      "low": "فیلت 0.25 میل روی انتخاب فعلی",
+      "ctx": {
+        "selection_count": 1,
+        "selection_types": [
+          "edge"
+        ]
+      },
+      "items": [
+        {
+          "id": "q1",
+          "kind": "quantity",
+          "value": "0.25 mm",
+          "source": "text",
+          "surface": "0.25 میل"
+        },
+        {
+          "id": "f1",
+          "kind": "feature",
+          "value": "Fillet 0",
+          "source": "text",
+          "surface": "فیلت 0",
+          "meta": {
+            "pos": 0
+          }
+        }
+      ],
+      "selection_count": 1,
+      "selection_types": [
+        "edge"
+      ],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.parameter.set",
+        "args": {
+          "feature_name": "Fillet 0",
+          "parameter": "radius",
+          "amount": "0.25 mm"
+        }
+      },
+      "intent": "feature_parameter",
+      "provenance": {
+        "feature_name": "text:f1",
+        "parameter": "text:param-semantics",
+        "amount": "text:q1"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "wrong_material_accepted"
+  },
+  {
+    "case": {
+      "category": "selection",
+      "id": "fresh_sel_15",
+      "text": "همین دوتا رو چهار میل پخ بزن",
+      "ctx": {
+        "selection_count": 2,
+        "selection_types": [
+          "edge",
+          "edge"
+        ]
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.from_selection",
+          "args": {
+            "feature_type": "chamfer",
+            "amount": "4 mm"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "همین دوتا رو چهار میل پخ بزن",
+      "low": "همین دوتا رو چهار میل پخ بزن",
+      "ctx": {
+        "selection_count": 2,
+        "selection_types": [
+          "edge",
+          "edge"
+        ]
+      },
+      "items": [
+        {
+          "id": "q1",
+          "kind": "quantity",
+          "value": "4 mm",
+          "source": "text",
+          "surface": "چهار میل"
+        },
+        {
+          "id": "k1",
+          "kind": "count",
+          "value": 2,
+          "source": "text"
+        }
+      ],
+      "selection_count": 2,
+      "selection_types": [
+        "edge",
+        "edge"
+      ],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [
+        "edge:chamfer"
+      ],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.from_selection",
+        "args": {
+          "feature_type": "chamfer",
+          "amount": "4 mm"
+        }
+      },
+      "intent": "edge_on_selection",
+      "provenance": {
+        "feature_type": "text:edge-kind",
+        "amount": "text:q1",
+        "selection": "context:selection"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "selection",
+      "id": "fresh_sel_16",
+      "text": "روی انتخاب فعلی یه fillet هفت دهم بزن",
+      "ctx": {
+        "selection_count": 2,
+        "selection_types": [
+          "edge",
+          "edge"
+        ]
+      },
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "evidence": {
+      "text": "روی انتخاب فعلی یه fillet هفت دهم بزن",
+      "low": "روی انتخاب فعلی یه fillet هفت دهم بزن",
+      "ctx": {
+        "selection_count": 2,
+        "selection_types": [
+          "edge",
+          "edge"
+        ]
+      },
+      "items": [],
+      "selection_count": 2,
+      "selection_types": [
+        "edge",
+        "edge"
+      ],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [
+        "edge:fillet"
+      ],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": false,
+      "reason": "edge-evidence-missing",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      },
+      "intent": "edge_on_selection",
+      "provenance": {},
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "feature",
+      "id": "fresh_feat_01",
+      "text": "رادیوس Fillet 8 رو سه و نیم میل کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.parameter.set",
+          "args": {
+            "feature_name": "Fillet 8",
+            "parameter": "radius",
+            "amount": "3.5 mm"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "رادیوس Fillet 8 رو سه و نیم میل کن",
+      "low": "رادیوس fillet 8 رو سه و نیم میل کن",
+      "ctx": {},
+      "items": [
+        {
+          "id": "q1",
+          "kind": "quantity",
+          "value": "3.5 mm",
+          "source": "text",
+          "surface": "سه و نیم میل"
+        },
+        {
+          "id": "f1",
+          "kind": "feature",
+          "value": "Fillet 8",
+          "source": "text",
+          "surface": "Fillet 8",
+          "meta": {
+            "pos": 7
+          }
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.parameter.set",
+        "args": {
+          "feature_name": "Fillet 8",
+          "parameter": "radius",
+          "amount": "3.5 mm"
+        }
+      },
+      "intent": "feature_parameter",
+      "provenance": {
+        "feature_name": "text:f1",
+        "parameter": "text:param-semantics",
+        "amount": "text:q1"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "feature",
+      "id": "fresh_feat_02",
+      "text": "شعاع فیلت دو بشه یک و ربع میل",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "evidence": {
+      "text": "شعاع فیلت دو بشه یک و ربع میل",
+      "low": "شعاع فیلت دو بشه یک و ربع میل",
+      "ctx": {},
+      "items": [
+        {
+          "id": "q1",
+          "kind": "quantity",
+          "value": "0.25 mm",
+          "source": "text",
+          "surface": "ربع میل"
+        },
+        {
+          "id": "f1",
+          "kind": "feature",
+          "value": "Fillet 2",
+          "source": "text",
+          "surface": "فیلت دو",
+          "meta": {
+            "pos": 5
+          }
+        },
+        {
+          "id": "n1",
+          "kind": "name",
+          "value": "یک و ربع میل",
+          "source": "text"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.parameter.set",
+        "args": {
+          "feature_name": "Fillet 2",
+          "parameter": "radius",
+          "amount": "0.25 mm"
+        }
+      },
+      "intent": "feature_parameter",
+      "provenance": {
+        "feature_name": "text:f1",
+        "parameter": "text:param-semantics",
+        "amount": "text:q1"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "false_execute"
+  },
+  {
+    "case": {
+      "category": "feature",
+      "id": "fresh_feat_03",
+      "text": "عمق Extrude 3 رو بیست و پنج میل بذار",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.parameter.set",
+          "args": {
+            "feature_name": "Extrude 3",
+            "parameter": "depth",
+            "amount": "25 mm"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "عمق Extrude 3 رو بیست و پنج میل بذار",
+      "low": "عمق extrude 3 رو بیست و پنج میل بذار",
+      "ctx": {},
+      "items": [
+        {
+          "id": "q1",
+          "kind": "quantity",
+          "value": "25 mm",
+          "source": "text",
+          "surface": "بیست و پنج میل"
+        },
+        {
+          "id": "f1",
+          "kind": "feature",
+          "value": "Extrude 3",
+          "source": "text",
+          "surface": "Extrude 3",
+          "meta": {
+            "pos": 4
+          }
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.parameter.set",
+        "args": {
+          "feature_name": "Extrude 3",
+          "parameter": "depth",
+          "amount": "25 mm"
+        }
+      },
+      "intent": "feature_parameter",
+      "provenance": {
+        "feature_name": "text:f1",
+        "parameter": "text:param-semantics",
+        "amount": "text:q1"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "feature",
+      "id": "fresh_feat_04",
+      "text": "زاویه Draft 2 رو دوازده درجه کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.parameter.set",
+          "args": {
+            "feature_name": "Draft 2",
+            "parameter": "angle",
+            "amount": "12 deg"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "زاویه Draft 2 رو دوازده درجه کن",
+      "low": "زاویه draft 2 رو دوازده درجه کن",
+      "ctx": {},
+      "items": [
+        {
+          "id": "q1",
+          "kind": "quantity",
+          "value": "12 deg",
+          "source": "text",
+          "surface": "دوازده درجه"
+        },
+        {
+          "id": "f1",
+          "kind": "feature",
+          "value": "Draft 2",
+          "source": "text",
+          "surface": "Draft 2",
+          "meta": {
+            "pos": 6
+          }
+        },
+        {
+          "id": "g1",
+          "kind": "angle",
+          "value": 12.0,
+          "source": "text",
+          "surface": "دوازده درجه"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.parameter.set",
+        "args": {
+          "feature_name": "Draft 2",
+          "parameter": "angle",
+          "amount": "12 deg"
+        }
+      },
+      "intent": "feature_parameter",
+      "provenance": {
+        "feature_name": "text:f1",
+        "parameter": "text:param-semantics",
+        "amount": "text:q1"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "feature",
+      "id": "fresh_feat_05",
+      "text": "Fillet 4 رو 2.75 میلی کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.parameter.set",
+          "args": {
+            "feature_name": "Fillet 4",
+            "parameter": "radius",
+            "amount": "2.75 mm"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "Fillet 4 رو 2.75 میلی کن",
+      "low": "fillet 4 رو 2.75 میلی کن",
+      "ctx": {},
+      "items": [
+        {
+          "id": "q1",
+          "kind": "quantity",
+          "value": "2.75 mm",
+          "source": "text",
+          "surface": "2.75 میلی"
+        },
+        {
+          "id": "f1",
+          "kind": "feature",
+          "value": "Fillet 4",
+          "source": "text",
+          "surface": "Fillet 4",
+          "meta": {
+            "pos": 0
+          }
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.parameter.set",
+        "args": {
+          "feature_name": "Fillet 4",
+          "parameter": "radius",
+          "amount": "2.75 mm"
+        }
+      },
+      "intent": "feature_parameter",
+      "provenance": {
+        "feature_name": "text:f1",
+        "parameter": "text:param-semantics",
+        "amount": "text:q1"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "feature",
+      "id": "fresh_feat_06",
+      "text": "نیم میل بهش اضافه کن",
+      "ctx": {
+        "last_feature": "Fillet 4",
+        "feature_parameters": {
+          "radius": "3 mm"
+        }
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.parameter.set",
+          "args": {
+            "feature_name": "Fillet 4",
+            "parameter": "radius",
+            "amount": "3.5 mm"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "نیم میل بهش اضافه کن",
+      "low": "نیم میل بهش اضافه کن",
+      "ctx": {
+        "last_feature": "Fillet 4",
+        "feature_parameters": {
+          "radius": "3 mm"
+        }
+      },
+      "items": [
+        {
+          "id": "q1",
+          "kind": "quantity",
+          "value": "0.5 mm",
+          "source": "text",
+          "surface": "نیم میل"
+        },
+        {
+          "id": "f1",
+          "kind": "feature",
+          "value": "Fillet 4",
+          "source": "context",
+          "surface": "last_feature"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": "add",
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.parameter.set",
+        "args": {
+          "feature_name": "Fillet 4",
+          "parameter": "radius",
+          "amount": "3.5 mm"
+        }
+      },
+      "intent": "feature_parameter",
+      "provenance": {
+        "feature_name": "context:f1",
+        "parameter": "text:param-semantics",
+        "amount": [
+          "text:q1",
+          "context:feature_parameters.radius",
+          "deterministic:add"
+        ]
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "feature",
+      "id": "fresh_feat_07",
+      "text": "نیم میل ازش کم کن",
+      "ctx": {
+        "last_feature": "Fillet 4",
+        "feature_parameters": {
+          "radius": "3 mm"
+        }
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.parameter.set",
+          "args": {
+            "feature_name": "Fillet 4",
+            "parameter": "radius",
+            "amount": "2.5 mm"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "نیم میل ازش کم کن",
+      "low": "نیم میل ازش کم کن",
+      "ctx": {
+        "last_feature": "Fillet 4",
+        "feature_parameters": {
+          "radius": "3 mm"
+        }
+      },
+      "items": [
+        {
+          "id": "q1",
+          "kind": "quantity",
+          "value": "0.5 mm",
+          "source": "text",
+          "surface": "نیم میل"
+        },
+        {
+          "id": "f1",
+          "kind": "feature",
+          "value": "Fillet 4",
+          "source": "context",
+          "surface": "last_feature"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": "subtract",
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.parameter.set",
+        "args": {
+          "feature_name": "Fillet 4",
+          "parameter": "radius",
+          "amount": "2.5 mm"
+        }
+      },
+      "intent": "feature_parameter",
+      "provenance": {
+        "feature_name": "context:f1",
+        "parameter": "text:param-semantics",
+        "amount": [
+          "text:q1",
+          "context:feature_parameters.radius",
+          "deterministic:subtract"
+        ]
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "feature",
+      "id": "fresh_feat_08",
+      "text": "یه کم بزرگ‌ترش کن",
+      "ctx": {
+        "last_feature": "Fillet 4",
+        "feature_parameters": {
+          "radius": "3 mm"
+        }
+      },
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "evidence": {
+      "text": "یه کم بزرگ ترش کن",
+      "low": "یه کم بزرگ ترش کن",
+      "ctx": {
+        "last_feature": "Fillet 4",
+        "feature_parameters": {
+          "radius": "3 mm"
+        }
+      },
+      "items": [
+        {
+          "id": "f1",
+          "kind": "feature",
+          "value": "Fillet 4",
+          "source": "context",
+          "surface": "last_feature"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "model",
+    "post": {
+      "accepted": false,
+      "reason": "model-ask",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      },
+      "intent": null,
+      "provenance": {},
+      "model_used": true
+    },
+    "latency_ms": 366.34775999999647,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "feature",
+      "id": "fresh_feat_09",
+      "text": "Extrude 6 رو suppress کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.patch",
+          "args": {
+            "feature_name": "Extrude 6",
+            "suppressed": true
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "Extrude 6 رو suppress کن",
+      "low": "extrude 6 رو suppress کن",
+      "ctx": {},
+      "items": [
+        {
+          "id": "f1",
+          "kind": "feature",
+          "value": "Extrude 6",
+          "source": "text",
+          "surface": "Extrude 6",
+          "meta": {
+            "pos": 0
+          }
+        },
+        {
+          "id": "s1",
+          "kind": "state",
+          "value": {
+            "kind": "suppressed",
+            "value": true
+          },
+          "source": "text"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 6",
+          "suppressed": true
+        }
+      },
+      "intent": "feature_suppressed",
+      "provenance": {
+        "feature_name": "text:f1",
+        "suppressed": "text:s1"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "feature",
+      "id": "fresh_feat_10",
+      "text": "Extrude 6 رو unsuppress کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.patch",
+          "args": {
+            "feature_name": "Extrude 6",
+            "suppressed": false
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "Extrude 6 رو unsuppress کن",
+      "low": "extrude 6 رو unsuppress کن",
+      "ctx": {},
+      "items": [
+        {
+          "id": "f1",
+          "kind": "feature",
+          "value": "Extrude 6",
+          "source": "text",
+          "surface": "Extrude 6",
+          "meta": {
+            "pos": 0
+          }
+        },
+        {
+          "id": "s1",
+          "kind": "state",
+          "value": {
+            "kind": "suppressed",
+            "value": true
+          },
+          "source": "text"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 6",
+          "suppressed": true
+        }
+      },
+      "intent": "feature_suppressed",
+      "provenance": {
+        "feature_name": "text:f1",
+        "suppressed": "text:s1"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "wrong_material_accepted"
+  },
+  {
+    "case": {
+      "category": "feature",
+      "id": "fresh_feat_11",
+      "text": "دوباره روشنش کن",
+      "ctx": {
+        "last_feature": "Extrude 6",
+        "last_action": "suppress"
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.patch",
+          "args": {
+            "feature_name": "Extrude 6",
+            "suppressed": false
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "دوباره روشنش کن",
+      "low": "دوباره روشنش کن",
+      "ctx": {
+        "last_feature": "Extrude 6",
+        "last_action": "suppress"
+      },
+      "items": [
+        {
+          "id": "f1",
+          "kind": "feature",
+          "value": "Extrude 6",
+          "source": "context",
+          "surface": "last_feature"
+        },
+        {
+          "id": "s1",
+          "kind": "state",
+          "value": {
+            "kind": "suppressed",
+            "value": false
+          },
+          "source": "text"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 6",
+          "suppressed": false
+        }
+      },
+      "intent": "feature_suppressed",
+      "provenance": {
+        "feature_name": "context:f1",
+        "suppressed": "text:s1"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "feature",
+      "id": "fresh_feat_12",
+      "text": "اسم Fillet 2 رو بذار گوشه نرم",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.patch",
+          "args": {
+            "feature_name": "Fillet 2",
+            "new_name": "گوشه نرم"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "اسم Fillet 2 رو بذار گوشه نرم",
+      "low": "اسم fillet 2 رو بذار گوشه نرم",
+      "ctx": {},
+      "items": [
+        {
+          "id": "f1",
+          "kind": "feature",
+          "value": "Fillet 2",
+          "source": "text",
+          "surface": "Fillet 2",
+          "meta": {
+            "pos": 4
+          }
+        },
+        {
+          "id": "n1",
+          "kind": "name",
+          "value": "گوشه نرم",
+          "source": "text"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Fillet 2",
+          "new_name": "گوشه نرم"
+        }
+      },
+      "intent": "feature_rename",
+      "provenance": {
+        "feature_name": "text:f1",
+        "new_name": "text:n1"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "feature",
+      "id": "fresh_feat_13",
+      "text": "Fillet 7 رو بنداز دور",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.delete",
+          "args": {
+            "feature_name": "Fillet 7"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "Fillet 7 رو بنداز دور",
+      "low": "fillet 7 رو بنداز دور",
+      "ctx": {},
+      "items": [
+        {
+          "id": "f1",
+          "kind": "feature",
+          "value": "Fillet 7",
+          "source": "text",
+          "surface": "Fillet 7",
+          "meta": {
+            "pos": 0
+          }
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.delete",
+        "args": {
+          "feature_name": "Fillet 7"
+        }
+      },
+      "intent": "feature_delete",
+      "provenance": {
+        "feature_name": "text:f1"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "feature",
+      "id": "fresh_feat_14",
+      "text": "آخرین feature رو حذف کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.delete",
+          "args": {
+            "position": "last"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "آخرین feature رو حذف کن",
+      "low": "آخرین feature رو حذف کن",
+      "ctx": {},
+      "items": [
+        {
+          "id": "p1",
+          "kind": "part",
+          "value": "feature",
+          "source": "text",
+          "surface": "feature",
+          "meta": {
+            "pos": 6
+          }
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.delete_part",
+        "args": {
+          "part_name": "feature"
+        }
+      },
+      "intent": "part_delete",
+      "provenance": {
+        "part_name": "text:p1"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "wrong_material_accepted"
+  },
+  {
+    "case": {
+      "category": "feature",
+      "id": "fresh_feat_15",
+      "text": "اولین فیچر رو پاکش کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.delete",
+          "args": {
+            "position": "first"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "اولین فیچر رو پاکش کن",
+      "low": "اولین فیچر رو پاکش کن",
+      "ctx": {},
+      "items": [],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "model",
+    "post": {
+      "accepted": false,
+      "reason": "model-ask",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      },
+      "intent": null,
+      "provenance": {},
+      "model_used": true
+    },
+    "latency_ms": 366.34775999999647,
+    "model_error": null,
+    "outcome": "conservative_escalation"
+  },
+  {
+    "case": {
+      "category": "feature",
+      "id": "fresh_feat_16",
+      "text": "Part 5 رو پاک کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.delete_part",
+          "args": {
+            "part_name": "Part 5"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "Part 5 رو پاک کن",
+      "low": "part 5 رو پاک کن",
+      "ctx": {},
+      "items": [
+        {
+          "id": "p1",
+          "kind": "part",
+          "value": "Part 5",
+          "source": "text",
+          "surface": "Part 5",
+          "meta": {
+            "pos": 0
+          }
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.delete_part",
+        "args": {
+          "part_name": "Part 5"
+        }
+      },
+      "intent": "part_delete",
+      "provenance": {
+        "part_name": "text:p1"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "feature",
+      "id": "fresh_feat_17",
+      "text": "همین body رو حذف کن",
+      "ctx": {
+        "last_part": "Part 2"
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.delete_part",
+          "args": {
+            "part_name": "Part 2"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "همین body رو حذف کن",
+      "low": "همین body رو حذف کن",
+      "ctx": {
+        "last_part": "Part 2"
+      },
+      "items": [
+        {
+          "id": "p1",
+          "kind": "part",
+          "value": "body",
+          "source": "text",
+          "surface": "body",
+          "meta": {
+            "pos": 5
+          }
+        },
+        {
+          "id": "p2",
+          "kind": "part",
+          "value": "Part 2",
+          "source": "context",
+          "surface": "last_part"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.delete_part",
+        "args": {
+          "part_name": "body"
+        }
+      },
+      "intent": "part_delete",
+      "provenance": {
+        "part_name": "text:p1"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "wrong_material_accepted"
+  },
+  {
+    "case": {
+      "category": "feature",
+      "id": "fresh_feat_18",
+      "text": "Extrude 2 رو 8 میلی کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "evidence": {
+      "text": "Extrude 2 رو 8 میلی کن",
+      "low": "extrude 2 رو 8 میلی کن",
+      "ctx": {},
+      "items": [
+        {
+          "id": "q1",
+          "kind": "quantity",
+          "value": "8 mm",
+          "source": "text",
+          "surface": "8 میلی"
+        },
+        {
+          "id": "f1",
+          "kind": "feature",
+          "value": "Extrude 2",
+          "source": "text",
+          "surface": "Extrude 2",
+          "meta": {
+            "pos": 0
+          }
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "model",
+    "post": {
+      "accepted": false,
+      "reason": "model-ask",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      },
+      "intent": null,
+      "provenance": {},
+      "model_used": true
+    },
+    "latency_ms": 366.34775999999647,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "feature",
+      "id": "fresh_feat_19",
+      "text": "flip direction اکسترود یک رو خاموش کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.parameter.set",
+          "args": {
+            "feature_name": "Extrude 1",
+            "parameter": "flip direction",
+            "value": false
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "flip direction اکسترود یک رو خاموش کن",
+      "low": "flip direction اکسترود یک رو خاموش کن",
+      "ctx": {},
+      "items": [
+        {
+          "id": "f1",
+          "kind": "feature",
+          "value": "Extrude 1",
+          "source": "text",
+          "surface": "اکسترود یک",
+          "meta": {
+            "pos": 15
+          }
+        },
+        {
+          "id": "s1",
+          "kind": "state",
+          "value": {
+            "kind": "suppressed",
+            "value": true
+          },
+          "source": "text"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.parameter.set",
+        "args": {
+          "feature_name": "Extrude 1",
+          "parameter": "flip direction",
+          "value": false
+        }
+      },
+      "intent": "feature_parameter",
+      "provenance": {
+        "feature_name": "text:f1",
+        "parameter": "text:param-semantics",
+        "value": "text:boolean"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "feature",
+      "id": "fresh_feat_20",
+      "text": "این فیچرو یه جور دیگه تنظیم کن",
+      "ctx": {
+        "last_feature": "Extrude 1"
+      },
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "evidence": {
+      "text": "این فیچرو یه جور دیگه تنظیم کن",
+      "low": "این فیچرو یه جور دیگه تنظیم کن",
+      "ctx": {
+        "last_feature": "Extrude 1"
+      },
+      "items": [
+        {
+          "id": "f1",
+          "kind": "feature",
+          "value": "Extrude 1",
+          "source": "context",
+          "surface": "last_feature"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "model",
+    "post": {
+      "accepted": false,
+      "reason": "model-ask",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      },
+      "intent": null,
+      "provenance": {},
+      "model_used": true
+    },
+    "latency_ms": 366.34775999999647,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "part",
+      "id": "fresh_part_01",
+      "text": "Cap رو از دید قایم کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "part.visibility",
+          "args": {
+            "part_name": "Cap",
+            "visible": false
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "Cap رو از دید قایم کن",
+      "low": "cap رو از دید قایم کن",
+      "ctx": {},
+      "items": [
+        {
+          "id": "p1",
+          "kind": "part",
+          "value": "Cap",
+          "source": "text",
+          "surface": "Cap",
+          "meta": {
+            "pos": 0
+          }
+        },
+        {
+          "id": "s1",
+          "kind": "state",
+          "value": {
+            "kind": "visible",
+            "value": false
+          },
+          "source": "text"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [
+        "part:visibility"
+      ],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "part.visibility",
+        "args": {
+          "part_name": "Cap",
+          "visible": false
+        }
+      },
+      "intent": "part_visibility",
+      "provenance": {
+        "part_name": "text:p1",
+        "visible": "text:s1"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "part",
+      "id": "fresh_part_02",
+      "text": "Part 3 دیگه دیده نشه",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "part.visibility",
+          "args": {
+            "part_name": "Part 3",
+            "visible": false
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "Part 3 دیگه دیده نشه",
+      "low": "part 3 دیگه دیده نشه",
+      "ctx": {},
+      "items": [
+        {
+          "id": "p1",
+          "kind": "part",
+          "value": "Part 3",
+          "source": "text",
+          "surface": "Part 3",
+          "meta": {
+            "pos": 0
+          }
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "model",
+    "post": {
+      "accepted": false,
+      "reason": "model-ask",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      },
+      "intent": null,
+      "provenance": {},
+      "model_used": true
+    },
+    "latency_ms": 366.34775999999647,
+    "model_error": null,
+    "outcome": "conservative_escalation"
+  },
+  {
+    "case": {
+      "category": "part",
+      "id": "fresh_part_03",
+      "text": "Part 3 رو دوباره نشونش بده",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "part.visibility",
+          "args": {
+            "part_name": "Part 3",
+            "visible": true
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "Part 3 رو دوباره نشونش بده",
+      "low": "part 3 رو دوباره نشونش بده",
+      "ctx": {},
+      "items": [
+        {
+          "id": "p1",
+          "kind": "part",
+          "value": "Part 3",
+          "source": "text",
+          "surface": "Part 3",
+          "meta": {
+            "pos": 0
+          }
+        },
+        {
+          "id": "s1",
+          "kind": "state",
+          "value": {
+            "kind": "visible",
+            "value": true
+          },
+          "source": "text"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [
+        "part:visibility"
+      ],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "part.visibility",
+        "args": {
+          "part_name": "Part 3",
+          "visible": true
+        }
+      },
+      "intent": "part_visibility",
+      "provenance": {
+        "part_name": "text:p1",
+        "visible": "text:s1"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "part",
+      "id": "fresh_part_04",
+      "text": "اون پارت قبلی رو برگردون توی دید",
+      "ctx": {
+        "last_part": "Cap",
+        "last_action": "hide"
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "part.visibility",
+          "args": {
+            "part_name": "Cap",
+            "visible": true
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "اون پارت قبلی رو برگردون توی دید",
+      "low": "اون پارت قبلی رو برگردون توی دید",
+      "ctx": {
+        "last_part": "Cap",
+        "last_action": "hide"
+      },
+      "items": [
+        {
+          "id": "p1",
+          "kind": "part",
+          "value": "Cap",
+          "source": "context",
+          "surface": "last_part"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "model",
+    "post": {
+      "accepted": false,
+      "reason": "model-ask",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      },
+      "intent": null,
+      "provenance": {},
+      "model_used": true
+    },
+    "latency_ms": 366.34775999999647,
+    "model_error": null,
+    "outcome": "conservative_escalation"
+  },
+  {
+    "case": {
+      "category": "part",
+      "id": "fresh_part_05",
+      "text": "Part 1 رو مشکی کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "metadata.property.set",
+          "args": {
+            "part_name": "Part 1",
+            "property": "color",
+            "value": "black"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "Part 1 رو مشکی کن",
+      "low": "part 1 رو مشکی کن",
+      "ctx": {},
+      "items": [
+        {
+          "id": "p1",
+          "kind": "part",
+          "value": "Part 1",
+          "source": "text",
+          "surface": "Part 1",
+          "meta": {
+            "pos": 0
+          }
+        },
+        {
+          "id": "c1",
+          "kind": "color",
+          "value": "black",
+          "source": "text"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [
+        "part:color"
+      ],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "metadata.property.set",
+        "args": {
+          "part_name": "Part 1",
+          "property": "color",
+          "value": "black"
+        }
+      },
+      "intent": "part_property",
+      "provenance": {
+        "part_name": "text:p1",
+        "property": "text:property-semantics",
+        "value": "text:c1"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "part",
+      "id": "fresh_part_06",
+      "text": "Cap رنگش زرد بشه",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "metadata.property.set",
+          "args": {
+            "part_name": "Cap",
+            "property": "color",
+            "value": "yellow"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "Cap رنگش زرد بشه",
+      "low": "cap رنگش زرد بشه",
+      "ctx": {},
+      "items": [
+        {
+          "id": "c1",
+          "kind": "color",
+          "value": "yellow",
+          "source": "text"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [
+        "part:color"
+      ],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "model",
+    "post": {
+      "accepted": false,
+      "reason": "model-ask",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      },
+      "intent": null,
+      "provenance": {},
+      "model_used": true
+    },
+    "latency_ms": 366.34775999999647,
+    "model_error": null,
+    "outcome": "conservative_escalation"
+  },
+  {
+    "case": {
+      "category": "part",
+      "id": "fresh_part_07",
+      "text": "این پارتو سفید کن",
+      "ctx": {
+        "last_part": "Part 2"
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "metadata.property.set",
+          "args": {
+            "part_name": "Part 2",
+            "property": "color",
+            "value": "white"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "این پارتو سفید کن",
+      "low": "این پارتو سفید کن",
+      "ctx": {
+        "last_part": "Part 2"
+      },
+      "items": [
+        {
+          "id": "p1",
+          "kind": "part",
+          "value": "Part 2",
+          "source": "context",
+          "surface": "last_part"
+        },
+        {
+          "id": "c1",
+          "kind": "color",
+          "value": "white",
+          "source": "text"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [
+        "part:color"
+      ],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "metadata.property.set",
+        "args": {
+          "part_name": "Part 2",
+          "property": "color",
+          "value": "white"
+        }
+      },
+      "intent": "part_property",
+      "provenance": {
+        "part_name": "context:p1",
+        "property": "text:property-semantics",
+        "value": "text:c1"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "part",
+      "id": "fresh_part_08",
+      "text": "متریال Part 1 رو فولاد بذار",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "metadata.property.set",
+          "args": {
+            "part_name": "Part 1",
+            "property": "material",
+            "value": "Steel"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "متریال Part 1 رو فولاد بذار",
+      "low": "متریال part 1 رو فولاد بذار",
+      "ctx": {},
+      "items": [
+        {
+          "id": "p1",
+          "kind": "part",
+          "value": "Part 1",
+          "source": "text",
+          "surface": "Part 1",
+          "meta": {
+            "pos": 7
+          }
+        },
+        {
+          "id": "m1",
+          "kind": "material",
+          "value": "Steel",
+          "source": "text"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [
+        "part:material"
+      ],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "metadata.property.set",
+        "args": {
+          "part_name": "Part 1",
+          "property": "material",
+          "value": "Steel"
+        }
+      },
+      "intent": "part_property",
+      "provenance": {
+        "part_name": "text:p1",
+        "property": "text:property-semantics",
+        "value": "text:m1"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "part",
+      "id": "fresh_part_09",
+      "text": "متریالش آلومینیوم باشه",
+      "ctx": {
+        "last_part": "Part 2"
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "metadata.property.set",
+          "args": {
+            "part_name": "Part 2",
+            "property": "material",
+            "value": "Aluminum"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "متریالش آلومینیوم باشه",
+      "low": "متریالش آلومینیوم باشه",
+      "ctx": {
+        "last_part": "Part 2"
+      },
+      "items": [
+        {
+          "id": "p1",
+          "kind": "part",
+          "value": "Part 2",
+          "source": "context",
+          "surface": "last_part"
+        },
+        {
+          "id": "m1",
+          "kind": "material",
+          "value": "Aluminum",
+          "source": "text"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [
+        "part:material"
+      ],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "metadata.property.set",
+        "args": {
+          "part_name": "Part 2",
+          "property": "material",
+          "value": "Aluminum"
+        }
+      },
+      "intent": "part_property",
+      "provenance": {
+        "part_name": "context:p1",
+        "property": "text:property-semantics",
+        "value": "text:m1"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "part",
+      "id": "fresh_part_10",
+      "text": "اسم Part 6 رو بذار shell",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "metadata.property.set",
+          "args": {
+            "part_name": "Part 6",
+            "property": "name",
+            "value": "shell"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "اسم Part 6 رو بذار shell",
+      "low": "اسم part 6 رو بذار shell",
+      "ctx": {},
+      "items": [
+        {
+          "id": "p1",
+          "kind": "part",
+          "value": "Part 6",
+          "source": "text",
+          "surface": "Part 6",
+          "meta": {
+            "pos": 4
+          }
+        },
+        {
+          "id": "n1",
+          "kind": "name",
+          "value": "shell",
+          "source": "text"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "documented.updateWVEPMetadata",
+        "args": {
+          "part_name": "Part 6",
+          "property": "name",
+          "value": "shell"
+        }
+      },
+      "intent": "part_property",
+      "provenance": {
+        "part_name": "text:p1",
+        "property": "text:property-semantics",
+        "value": "text:n1"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "part",
+      "id": "fresh_part_11",
+      "text": "Part 2 اسمش بشه inner cover",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "metadata.property.set",
+          "args": {
+            "part_name": "Part 2",
+            "property": "name",
+            "value": "inner cover"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "Part 2 اسمش بشه inner cover",
+      "low": "part 2 اسمش بشه inner cover",
+      "ctx": {},
+      "items": [
+        {
+          "id": "p1",
+          "kind": "part",
+          "value": "Part 2",
+          "source": "text",
+          "surface": "Part 2",
+          "meta": {
+            "pos": 0
+          }
+        },
+        {
+          "id": "n1",
+          "kind": "name",
+          "value": "inner cover",
+          "source": "text"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "documented.updateWVEPMetadata",
+        "args": {
+          "part_name": "Part 2",
+          "property": "name",
+          "value": "inner cover"
+        }
+      },
+      "intent": "part_property",
+      "provenance": {
+        "part_name": "text:p1",
+        "property": "text:property-semantics",
+        "value": "text:n1"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "part",
+      "id": "fresh_part_12",
+      "text": "description پارت Cap رو بذار sample lid",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "metadata.property.set",
+          "args": {
+            "part_name": "Cap",
+            "property": "description",
+            "value": "sample lid"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "description پارت Cap رو بذار sample lid",
+      "low": "description پارت cap رو بذار sample lid",
+      "ctx": {},
+      "items": [
+        {
+          "id": "p1",
+          "kind": "part",
+          "value": "Cap",
+          "source": "text",
+          "surface": "Cap",
+          "meta": {
+            "pos": 17
+          }
+        },
+        {
+          "id": "d1",
+          "kind": "description",
+          "value": "sample lid",
+          "source": "text"
+        },
+        {
+          "id": "n1",
+          "kind": "name",
+          "value": "sample lid",
+          "source": "text"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "metadata.property.set",
+        "args": {
+          "part_name": "Cap",
+          "property": "description",
+          "value": "sample lid"
+        }
+      },
+      "intent": "part_property",
+      "provenance": {
+        "part_name": "text:p1",
+        "property": "text:property-semantics",
+        "value": "text:d1"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "part",
+      "id": "fresh_part_13",
+      "text": "قرمزش کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "evidence": {
+      "text": "قرمزش کن",
+      "low": "قرمزش کن",
+      "ctx": {},
+      "items": [],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "model",
+    "post": {
+      "accepted": false,
+      "reason": "model-ask",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      },
+      "intent": null,
+      "provenance": {},
+      "model_used": true
+    },
+    "latency_ms": 366.34775999999647,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "part",
+      "id": "fresh_part_14",
+      "text": "Part 1 رو آبی کن و قایمش کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "evidence": {
+      "text": "Part 1 رو آبی کن و قایمش کن",
+      "low": "part 1 رو آبی کن و قایمش کن",
+      "ctx": {},
+      "items": [
+        {
+          "id": "p1",
+          "kind": "part",
+          "value": "Part 1",
+          "source": "text",
+          "surface": "Part 1",
+          "meta": {
+            "pos": 0
+          }
+        },
+        {
+          "id": "s1",
+          "kind": "state",
+          "value": {
+            "kind": "visible",
+            "value": false
+          },
+          "source": "text"
+        },
+        {
+          "id": "c1",
+          "kind": "color",
+          "value": "blue",
+          "source": "text"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [
+        "part:color",
+        "part:visibility"
+      ],
+      "multi_action": true,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": false,
+      "reason": "deterministic-ask",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      },
+      "intent": null,
+      "provenance": {},
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "add",
+      "id": "fresh_add_01",
+      "text": "یه plane خالی بساز",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.add",
+          "args": {
+            "feature_type": "plane"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "یه plane خالی بساز",
+      "low": "یه plane خالی بساز",
+      "ctx": {},
+      "items": [],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.add",
+        "args": {
+          "feature_type": "plane"
+        }
+      },
+      "intent": "add_plane",
+      "provenance": {
+        "feature_type": "text:plane"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "add",
+      "id": "fresh_add_02",
+      "text": "یه plane جدید بساز اسمش datum side",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.add",
+          "args": {
+            "feature_type": "plane",
+            "name": "datum side"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "یه plane جدید بساز اسمش datum side",
+      "low": "یه plane جدید بساز اسمش datum side",
+      "ctx": {},
+      "items": [
+        {
+          "id": "n1",
+          "kind": "name",
+          "value": "datum side",
+          "source": "text"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.add",
+        "args": {
+          "feature_type": "plane",
+          "name": "datum side"
+        }
+      },
+      "intent": "add_plane",
+      "provenance": {
+        "feature_type": "text:plane",
+        "name": "text:n1"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "add",
+      "id": "fresh_add_03",
+      "text": "یه صفحه مرجع بساز به اسم datum B",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.add",
+          "args": {
+            "feature_type": "plane",
+            "name": "datum B"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "یه صفحه مرجع بساز به اسم datum B",
+      "low": "یه صفحه مرجع بساز به اسم datum b",
+      "ctx": {},
+      "items": [
+        {
+          "id": "n1",
+          "kind": "name",
+          "value": "datum B",
+          "source": "text"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.add",
+        "args": {
+          "feature_type": "plane",
+          "name": "datum B"
+        }
+      },
+      "intent": "add_plane",
+      "provenance": {
+        "feature_type": "text:plane",
+        "name": "text:n1"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "add",
+      "id": "fresh_add_04",
+      "text": "Part 1 رو پنج تایی pattern کن با فاصله دوازده میل",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.add",
+          "args": {
+            "feature_type": "linearPattern",
+            "part_name": "Part 1",
+            "copies": 5,
+            "distance": "12 mm"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "Part 1 رو پنج تایی pattern کن با فاصله دوازده میل",
+      "low": "part 1 رو پنج تایی pattern کن با فاصله دوازده میل",
+      "ctx": {},
+      "items": [
+        {
+          "id": "q1",
+          "kind": "quantity",
+          "value": "12 mm",
+          "source": "text",
+          "surface": "دوازده میل"
+        },
+        {
+          "id": "p1",
+          "kind": "part",
+          "value": "Part 1",
+          "source": "text",
+          "surface": "Part 1",
+          "meta": {
+            "pos": 0
+          }
+        },
+        {
+          "id": "k1",
+          "kind": "count",
+          "value": 5,
+          "source": "text"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.add",
+        "args": {
+          "feature_type": "linearPattern",
+          "part_name": "Part 1",
+          "copies": 5,
+          "distance": "12 mm"
+        }
+      },
+      "intent": "add_pattern",
+      "provenance": {
+        "feature_type": "text:pattern",
+        "part_name": "text:p1",
+        "copies": "text:k1",
+        "distance": "text:q1"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "add",
+      "id": "fresh_add_05",
+      "text": "linear pattern برای Part 2، سه تا، گام 6.5mm",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.add",
+          "args": {
+            "feature_type": "linearPattern",
+            "part_name": "Part 2",
+            "copies": 3,
+            "distance": "6.5 mm"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "linear pattern برای Part 2، سه تا، گام 6.5mm",
+      "low": "linear pattern برای part 2، سه تا، گام 6.5mm",
+      "ctx": {},
+      "items": [
+        {
+          "id": "q1",
+          "kind": "quantity",
+          "value": "6.5 mm",
+          "source": "text",
+          "surface": "6.5 mm"
+        },
+        {
+          "id": "p1",
+          "kind": "part",
+          "value": "Part 2",
+          "source": "text",
+          "surface": "Part 2",
+          "meta": {
+            "pos": 20
+          }
+        },
+        {
+          "id": "k1",
+          "kind": "count",
+          "value": 3,
+          "source": "text"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.add",
+        "args": {
+          "feature_type": "linearPattern",
+          "part_name": "Part 2",
+          "copies": 3,
+          "distance": "6.5 mm"
+        }
+      },
+      "intent": "add_pattern",
+      "provenance": {
+        "feature_type": "text:pattern",
+        "part_name": "text:p1",
+        "copies": "text:k1",
+        "distance": "text:q1"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "add",
+      "id": "fresh_add_06",
+      "text": "از Cap چهار copies با فاصله نه میل pattern بزن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.add",
+          "args": {
+            "feature_type": "linearPattern",
+            "part_name": "Cap",
+            "copies": 4,
+            "distance": "9 mm"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "از Cap چهار copies با فاصله نه میل pattern بزن",
+      "low": "از cap چهار copies با فاصله نه میل pattern بزن",
+      "ctx": {},
+      "items": [
+        {
+          "id": "q1",
+          "kind": "quantity",
+          "value": "9 mm",
+          "source": "text",
+          "surface": "نه میل"
+        },
+        {
+          "id": "k1",
+          "kind": "count",
+          "value": 4,
+          "source": "text"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": false,
+      "reason": "pattern-evidence-missing",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      },
+      "intent": "add_pattern",
+      "provenance": {},
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "conservative_escalation"
+  },
+  {
+    "case": {
+      "category": "add",
+      "id": "fresh_add_07",
+      "text": "Part 1 رو pattern کن با فاصله ده میل",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "evidence": {
+      "text": "Part 1 رو pattern کن با فاصله ده میل",
+      "low": "part 1 رو pattern کن با فاصله ده میل",
+      "ctx": {},
+      "items": [
+        {
+          "id": "q1",
+          "kind": "quantity",
+          "value": "10 mm",
+          "source": "text",
+          "surface": "ده میل"
+        },
+        {
+          "id": "p1",
+          "kind": "part",
+          "value": "Part 1",
+          "source": "text",
+          "surface": "Part 1",
+          "meta": {
+            "pos": 0
+          }
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": false,
+      "reason": "pattern-evidence-missing",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      },
+      "intent": "add_pattern",
+      "provenance": {},
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "add",
+      "id": "fresh_add_08",
+      "text": "Part 2 رو شش تایی pattern کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "evidence": {
+      "text": "Part 2 رو شش تایی pattern کن",
+      "low": "part 2 رو شش تایی pattern کن",
+      "ctx": {},
+      "items": [
+        {
+          "id": "p1",
+          "kind": "part",
+          "value": "Part 2",
+          "source": "text",
+          "surface": "Part 2",
+          "meta": {
+            "pos": 0
+          }
+        },
+        {
+          "id": "k1",
+          "kind": "count",
+          "value": 6,
+          "source": "text"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": false,
+      "reason": "pattern-evidence-missing",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      },
+      "intent": "add_pattern",
+      "provenance": {},
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "add",
+      "id": "fresh_add_09",
+      "text": "یه fillet خالی سه میل بساز",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.add",
+          "args": {
+            "feature_type": "fillet",
+            "amount": "3 mm"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "یه fillet خالی سه میل بساز",
+      "low": "یه fillet خالی سه میل بساز",
+      "ctx": {},
+      "items": [
+        {
+          "id": "q1",
+          "kind": "quantity",
+          "value": "3 mm",
+          "source": "text",
+          "surface": "سه میل"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.add",
+        "args": {
+          "feature_type": "fillet",
+          "amount": "3 mm"
+        }
+      },
+      "intent": "add_edge_feature",
+      "provenance": {
+        "feature_type": "text:edge-kind",
+        "amount": "text:q1"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "add",
+      "id": "fresh_add_10",
+      "text": "یه پخ جدید 1.2 میلی بساز بدون انتخاب",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.add",
+          "args": {
+            "feature_type": "chamfer",
+            "amount": "1.2 mm"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "یه پخ جدید 1.2 میلی بساز بدون انتخاب",
+      "low": "یه پخ جدید 1.2 میلی بساز بدون انتخاب",
+      "ctx": {},
+      "items": [
+        {
+          "id": "q1",
+          "kind": "quantity",
+          "value": "1.2 mm",
+          "source": "text",
+          "surface": "1.2 میلی"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.add",
+        "args": {
+          "feature_type": "chamfer",
+          "amount": "1.2 mm"
+        }
+      },
+      "intent": "add_edge_feature",
+      "provenance": {
+        "feature_type": "text:edge-kind",
+        "amount": "text:q1"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "add",
+      "id": "fresh_add_11",
+      "text": "یه فیلت جدید بساز بدون انتخاب",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "evidence": {
+      "text": "یه فیلت جدید بساز بدون انتخاب",
+      "low": "یه فیلت جدید بساز بدون انتخاب",
+      "ctx": {},
+      "items": [],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": false,
+      "reason": "new-edge-evidence-missing",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      },
+      "intent": "add_edge_feature",
+      "provenance": {},
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "add",
+      "id": "fresh_add_12",
+      "text": "یه plane روی Front بساز",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "evidence": {
+      "text": "یه plane روی Front بساز",
+      "low": "یه plane روی front بساز",
+      "ctx": {},
+      "items": [],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": false,
+      "reason": "plane-reference-unsupported-shape",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      },
+      "intent": "add_plane",
+      "provenance": {},
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "add",
+      "id": "fresh_add_13",
+      "text": "این face رو سوراخ پنج میل بزن",
+      "ctx": {
+        "selection_count": 1,
+        "selection_types": [
+          "face"
+        ]
+      },
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "evidence": {
+      "text": "این face رو سوراخ پنج میل بزن",
+      "low": "این face رو سوراخ پنج میل بزن",
+      "ctx": {
+        "selection_count": 1,
+        "selection_types": [
+          "face"
+        ]
+      },
+      "items": [
+        {
+          "id": "q1",
+          "kind": "quantity",
+          "value": "5 mm",
+          "source": "text",
+          "surface": "پنج میل"
+        },
+        {
+          "id": "p1",
+          "kind": "part",
+          "value": "face",
+          "source": "text",
+          "surface": "face",
+          "meta": {
+            "pos": 4
+          }
+        }
+      ],
+      "selection_count": 1,
+      "selection_types": [
+        "face"
+      ],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": true,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": false,
+      "reason": "deterministic-ask",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      },
+      "intent": null,
+      "provenance": {},
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "add",
+      "id": "fresh_add_14",
+      "text": "Part 1 رو mirror کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "evidence": {
+      "text": "Part 1 رو mirror کن",
+      "low": "part 1 رو mirror کن",
+      "ctx": {},
+      "items": [
+        {
+          "id": "p1",
+          "kind": "part",
+          "value": "Part 1",
+          "source": "text",
+          "surface": "Part 1",
+          "meta": {
+            "pos": 0
+          }
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": true,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": false,
+      "reason": "deterministic-ask",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      },
+      "intent": null,
+      "provenance": {},
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "order",
+      "id": "fresh_ord_01",
+      "text": "Fillet 3 رو بالاتر از Extrude 4 ببر",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.reorder",
+          "args": {
+            "source_feature": "Fillet 3",
+            "target_feature": "Extrude 4",
+            "placement": "before"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "Fillet 3 رو بالاتر از Extrude 4 ببر",
+      "low": "fillet 3 رو بالاتر از extrude 4 ببر",
+      "ctx": {},
+      "items": [
+        {
+          "id": "f1",
+          "kind": "feature",
+          "value": "Fillet 3",
+          "source": "text",
+          "surface": "Fillet 3",
+          "meta": {
+            "pos": 0
+          }
+        },
+        {
+          "id": "f2",
+          "kind": "feature",
+          "value": "Extrude 4",
+          "source": "text",
+          "surface": "Extrude 4",
+          "meta": {
+            "pos": 22
+          }
+        },
+        {
+          "id": "r1",
+          "kind": "relation",
+          "value": "before",
+          "source": "text"
+        },
+        {
+          "id": "v1",
+          "kind": "direction",
+          "value": "up",
+          "source": "text_or_context"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.reorder",
+        "args": {
+          "source_feature": "Fillet 3",
+          "target_feature": "Extrude 4",
+          "placement": "before"
+        }
+      },
+      "intent": "feature_reorder",
+      "provenance": {
+        "source_feature": "text:f1",
+        "target_feature": "text:f2",
+        "placement": "text:r1"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "order",
+      "id": "fresh_ord_02",
+      "text": "Extrude 4 رو زیر Sketch 1 بنداز",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.reorder",
+          "args": {
+            "source_feature": "Extrude 4",
+            "target_feature": "Sketch 1",
+            "placement": "after"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "Extrude 4 رو زیر Sketch 1 بنداز",
+      "low": "extrude 4 رو زیر sketch 1 بنداز",
+      "ctx": {},
+      "items": [
+        {
+          "id": "f1",
+          "kind": "feature",
+          "value": "Extrude 4",
+          "source": "text",
+          "surface": "Extrude 4",
+          "meta": {
+            "pos": 0
+          }
+        },
+        {
+          "id": "f2",
+          "kind": "feature",
+          "value": "Sketch 1",
+          "source": "text",
+          "surface": "Sketch 1",
+          "meta": {
+            "pos": 17
+          }
+        },
+        {
+          "id": "r1",
+          "kind": "relation",
+          "value": "after",
+          "source": "text"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.reorder",
+        "args": {
+          "source_feature": "Extrude 4",
+          "target_feature": "Sketch 1",
+          "placement": "after"
+        }
+      },
+      "intent": "feature_reorder",
+      "provenance": {
+        "source_feature": "text:f1",
+        "target_feature": "text:f2",
+        "placement": "text:r1"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "order",
+      "id": "fresh_ord_03",
+      "text": "این فیچر رو ببر قبل Fillet 8",
+      "ctx": {
+        "last_feature": "Extrude 2"
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.reorder",
+          "args": {
+            "source_feature": "Extrude 2",
+            "target_feature": "Fillet 8",
+            "placement": "before"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "این فیچر رو ببر قبل Fillet 8",
+      "low": "این فیچر رو ببر قبل fillet 8",
+      "ctx": {
+        "last_feature": "Extrude 2"
+      },
+      "items": [
+        {
+          "id": "f1",
+          "kind": "feature",
+          "value": "Fillet 8",
+          "source": "text",
+          "surface": "Fillet 8",
+          "meta": {
+            "pos": 20
+          }
+        },
+        {
+          "id": "f2",
+          "kind": "feature",
+          "value": "Extrude 2",
+          "source": "context",
+          "surface": "last_feature"
+        },
+        {
+          "id": "r1",
+          "kind": "relation",
+          "value": "before",
+          "source": "text"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.reorder",
+        "args": {
+          "source_feature": "Extrude 2",
+          "target_feature": "Fillet 8",
+          "placement": "before"
+        }
+      },
+      "intent": "feature_reorder",
+      "provenance": {
+        "source_feature": "context:f2",
+        "target_feature": "text:f1",
+        "placement": "text:r1"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "order",
+      "id": "fresh_ord_04",
+      "text": "rollback رو بذار قبل از Sketch 3",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "rollback.set",
+          "args": {
+            "before_feature": "Sketch 3"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "rollback رو بذار قبل از Sketch 3",
+      "low": "rollback رو بذار قبل از sketch 3",
+      "ctx": {},
+      "items": [
+        {
+          "id": "f1",
+          "kind": "feature",
+          "value": "Sketch 3",
+          "source": "text",
+          "surface": "Sketch 3",
+          "meta": {
+            "pos": 24
+          }
+        },
+        {
+          "id": "p1",
+          "kind": "part",
+          "value": "rollback",
+          "source": "text",
+          "surface": "rollback",
+          "meta": {
+            "pos": 0
+          }
+        },
+        {
+          "id": "r1",
+          "kind": "relation",
+          "value": "before",
+          "source": "text"
+        },
+        {
+          "id": "n1",
+          "kind": "name",
+          "value": "قبل از Sketch 3",
+          "source": "text"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "rollback.set",
+        "args": {
+          "before_feature": "Sketch 3"
+        }
+      },
+      "intent": "rollback",
+      "provenance": {
+        "before_feature": "text:f1",
+        "placement": "text:r1"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "order",
+      "id": "fresh_ord_05",
+      "text": "rollback رو بعد Fillet 2 بذار",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "rollback.set",
+          "args": {
+            "after_feature": "Fillet 2"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "rollback رو بعد Fillet 2 بذار",
+      "low": "rollback رو بعد fillet 2 بذار",
+      "ctx": {},
+      "items": [
+        {
+          "id": "f1",
+          "kind": "feature",
+          "value": "Fillet 2",
+          "source": "text",
+          "surface": "Fillet 2",
+          "meta": {
+            "pos": 16
+          }
+        },
+        {
+          "id": "p1",
+          "kind": "part",
+          "value": "rollback",
+          "source": "text",
+          "surface": "rollback",
+          "meta": {
+            "pos": 0
+          }
+        },
+        {
+          "id": "r1",
+          "kind": "relation",
+          "value": "after",
+          "source": "text"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "rollback.set",
+        "args": {
+          "after_feature": "Fillet 2"
+        }
+      },
+      "intent": "rollback",
+      "provenance": {
+        "after_feature": "text:f1",
+        "placement": "text:r1"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "order",
+      "id": "fresh_ord_06",
+      "text": "rollback تا ته",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "rollback.set",
+          "args": {
+            "position": "end"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "rollback تا ته",
+      "low": "rollback تا ته",
+      "ctx": {},
+      "items": [],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": false,
+      "reason": "rollback-evidence-missing",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      },
+      "intent": "rollback",
+      "provenance": {},
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "conservative_escalation"
+  },
+  {
+    "case": {
+      "category": "order",
+      "id": "fresh_ord_07",
+      "text": "rollback بره اول",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "rollback.set",
+          "args": {
+            "position": "start"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "rollback بره اول",
+      "low": "rollback بره اول",
+      "ctx": {},
+      "items": [],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "rollback.set",
+        "args": {
+          "position": "start"
+        }
+      },
+      "intent": "rollback",
+      "provenance": {
+        "position": "text:start"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "order",
+      "id": "fresh_ord_08",
+      "text": "یه Part Studio تازه بساز اسمش sandbox",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "documented.createPartStudio",
+          "args": {
+            "new_name": "sandbox"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "یه Part Studio تازه بساز اسمش sandbox",
+      "low": "یه part studio تازه بساز اسمش sandbox",
+      "ctx": {},
+      "items": [
+        {
+          "id": "n1",
+          "kind": "name",
+          "value": "sandbox",
+          "source": "text"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "documented.createPartStudio",
+        "args": {
+          "new_name": "sandbox"
+        }
+      },
+      "intent": "create_part_studio",
+      "provenance": {
+        "new_name": "text:n1"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "order",
+      "id": "fresh_ord_09",
+      "text": "یه پارت استودیو جدید به اسم تست دوم بساز",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "documented.createPartStudio",
+          "args": {
+            "new_name": "تست دوم"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "یه پارت استودیو جدید به اسم تست دوم بساز",
+      "low": "یه پارت استودیو جدید به اسم تست دوم بساز",
+      "ctx": {},
+      "items": [
+        {
+          "id": "n1",
+          "kind": "name",
+          "value": "تست دوم بساز",
+          "source": "text"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "documented.createPartStudio",
+        "args": {
+          "new_name": "تست دوم بساز"
+        }
+      },
+      "intent": "create_part_studio",
+      "provenance": {
+        "new_name": "text:n1"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "wrong_material_accepted"
+  },
+  {
+    "case": {
+      "category": "order",
+      "id": "fresh_ord_10",
+      "text": "اسم document رو بذار Housing Rev C",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "documented.updateDocumentAttributes",
+          "args": {
+            "new_name": "Housing Rev C"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "اسم document رو بذار Housing Rev C",
+      "low": "اسم document رو بذار housing rev c",
+      "ctx": {},
+      "items": [
+        {
+          "id": "p1",
+          "kind": "part",
+          "value": "document",
+          "source": "text",
+          "surface": "document",
+          "meta": {
+            "pos": 4
+          }
+        },
+        {
+          "id": "n1",
+          "kind": "name",
+          "value": "Housing Rev C",
+          "source": "text"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "documented.updateDocumentAttributes",
+        "args": {
+          "new_name": "Housing Rev C"
+        }
+      },
+      "intent": "rename_document",
+      "provenance": {
+        "new_name": "text:n1"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "order",
+      "id": "fresh_ord_11",
+      "text": "این داکیومنت اسمش بشه نمونه جدید",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "documented.updateDocumentAttributes",
+          "args": {
+            "new_name": "نمونه جدید"
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "text": "این داکیومنت اسمش بشه نمونه جدید",
+      "low": "این داکیومنت اسمش بشه نمونه جدید",
+      "ctx": {},
+      "items": [
+        {
+          "id": "n1",
+          "kind": "name",
+          "value": "نمونه جدید",
+          "source": "text"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "documented.updateDocumentAttributes",
+        "args": {
+          "new_name": "نمونه جدید"
+        }
+      },
+      "intent": "rename_document",
+      "provenance": {
+        "new_name": "text:n1"
+      },
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "order",
+      "id": "fresh_ord_12",
+      "text": "Fillet 1 رو یه جایی بالاتر ببر",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "evidence": {
+      "text": "Fillet 1 رو یه جایی بالاتر ببر",
+      "low": "fillet 1 رو یه جایی بالاتر ببر",
+      "ctx": {},
+      "items": [
+        {
+          "id": "f1",
+          "kind": "feature",
+          "value": "Fillet 1",
+          "source": "text",
+          "surface": "Fillet 1",
+          "meta": {
+            "pos": 0
+          }
+        },
+        {
+          "id": "v1",
+          "kind": "direction",
+          "value": "up",
+          "source": "text_or_context"
+        }
+      ],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": false,
+      "reason": "feature-value-missing",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      },
+      "intent": "feature_parameter",
+      "provenance": {},
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "escalation",
+      "id": "fresh_esc_01",
+      "text": "یه نسخه جمع و جورتر و حرفه‌ای‌ترش کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "think"
+        }
+      ]
+    },
+    "evidence": {
+      "text": "یه نسخه جمع و جورتر و حرفه ای ترش کن",
+      "low": "یه نسخه جمع و جورتر و حرفه ای ترش کن",
+      "ctx": {},
+      "items": [],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": true,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": false,
+      "reason": "deterministic-design",
+      "compiled": {
+        "route": "think",
+        "op": null,
+        "args": {}
+      },
+      "intent": null,
+      "provenance": {},
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "escalation",
+      "id": "fresh_esc_02",
+      "text": "سبک‌ترش کن ولی مقاومتش نریزه",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "think"
+        }
+      ]
+    },
+    "evidence": {
+      "text": "سبک ترش کن ولی مقاومتش نریزه",
+      "low": "سبک ترش کن ولی مقاومتش نریزه",
+      "ctx": {},
+      "items": [],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": true,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": false,
+      "reason": "deterministic-design",
+      "compiled": {
+        "route": "think",
+        "op": null,
+        "args": {}
+      },
+      "intent": null,
+      "provenance": {},
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "escalation",
+      "id": "fresh_esc_03",
+      "text": "برای پرینت سه بعدی بهترش کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "think"
+        }
+      ]
+    },
+    "evidence": {
+      "text": "برای پرینت سه بعدی بهترش کن",
+      "low": "برای پرینت سه بعدی بهترش کن",
+      "ctx": {},
+      "items": [],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": true,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": false,
+      "reason": "deterministic-design",
+      "compiled": {
+        "route": "think",
+        "op": null,
+        "args": {}
+      },
+      "intent": null,
+      "provenance": {},
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "escalation",
+      "id": "fresh_esc_04",
+      "text": "این گوشه رو طوری درست کن که قالب‌گیریش راحت باشه",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "think"
+        }
+      ]
+    },
+    "evidence": {
+      "text": "این گوشه رو طوری درست کن که قالب گیریش راحت باشه",
+      "low": "این گوشه رو طوری درست کن که قالب گیریش راحت باشه",
+      "ctx": {},
+      "items": [],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "model",
+    "post": {
+      "accepted": false,
+      "reason": "model-ask",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      },
+      "intent": null,
+      "provenance": {},
+      "model_used": true
+    },
+    "latency_ms": 366.34775999999647,
+    "model_error": null,
+    "outcome": "route_mismatch"
+  },
+  {
+    "case": {
+      "category": "escalation",
+      "id": "fresh_esc_05",
+      "text": "فیچرهایی که به درد نمی‌خورن رو حذف کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "think"
+        }
+      ]
+    },
+    "evidence": {
+      "text": "فیچرهایی که به درد نمی خورن رو حذف کن",
+      "low": "فیچرهایی که به درد نمی خورن رو حذف کن",
+      "ctx": {},
+      "items": [],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "model",
+    "post": {
+      "accepted": false,
+      "reason": "model-ask",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      },
+      "intent": null,
+      "provenance": {},
+      "model_used": true
+    },
+    "latency_ms": 366.34775999999647,
+    "model_error": null,
+    "outcome": "route_mismatch"
+  },
+  {
+    "case": {
+      "category": "escalation",
+      "id": "fresh_esc_06",
+      "text": "هرچی اضافه‌ست پاکش کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "think"
+        }
+      ]
+    },
+    "evidence": {
+      "text": "هرچی اضافه ست پاکش کن",
+      "low": "هرچی اضافه ست پاکش کن",
+      "ctx": {},
+      "items": [],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "model",
+    "post": {
+      "accepted": false,
+      "reason": "model-ask",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      },
+      "intent": null,
+      "provenance": {},
+      "model_used": true
+    },
+    "latency_ms": 366.34775999999647,
+    "model_error": null,
+    "outcome": "route_mismatch"
+  },
+  {
+    "case": {
+      "category": "escalation",
+      "id": "fresh_esc_07",
+      "text": "اون رو حذف کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "evidence": {
+      "text": "اون رو حذف کن",
+      "low": "اون رو حذف کن",
+      "ctx": {},
+      "items": [],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "model",
+    "post": {
+      "accepted": false,
+      "reason": "model-ask",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      },
+      "intent": null,
+      "provenance": {},
+      "model_used": true
+    },
+    "latency_ms": 366.34775999999647,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "escalation",
+      "id": "fresh_esc_08",
+      "text": "یه ذره بزرگ‌ترش کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "evidence": {
+      "text": "یه ذره بزرگ ترش کن",
+      "low": "یه ذره بزرگ ترش کن",
+      "ctx": {},
+      "items": [],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "model",
+    "post": {
+      "accepted": false,
+      "reason": "model-ask",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      },
+      "intent": null,
+      "provenance": {},
+      "model_used": true
+    },
+    "latency_ms": 328.7812319999972,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "escalation",
+      "id": "fresh_esc_09",
+      "text": "همون قبلی رو برای اینم انجام بده",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "evidence": {
+      "text": "همون قبلی رو برای اینم انجام بده",
+      "low": "همون قبلی رو برای اینم انجام بده",
+      "ctx": {},
+      "items": [],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "model",
+    "post": {
+      "accepted": false,
+      "reason": "model-ask",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      },
+      "intent": null,
+      "provenance": {},
+      "model_used": true
+    },
+    "latency_ms": 328.7812319999972,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "escalation",
+      "id": "fresh_esc_10",
+      "text": "ازش STEP خروجی بگیر",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "evidence": {
+      "text": "ازش STEP خروجی بگیر",
+      "low": "ازش step خروجی بگیر",
+      "ctx": {},
+      "items": [],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": true,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": false,
+      "reason": "deterministic-ask",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      },
+      "intent": null,
+      "provenance": {},
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "escalation",
+      "id": "fresh_esc_11",
+      "text": "یه PDF ازش بده",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "evidence": {
+      "text": "یه PDF ازش بده",
+      "low": "یه pdf ازش بده",
+      "ctx": {},
+      "items": [],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": true,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": false,
+      "reason": "deterministic-ask",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      },
+      "intent": null,
+      "provenance": {},
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "escalation",
+      "id": "fresh_esc_12",
+      "text": "این دو قطعه رو mate کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "evidence": {
+      "text": "این دو قطعه رو mate کن",
+      "low": "این دو قطعه رو mate کن",
+      "ctx": {},
+      "items": [],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": true,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": false,
+      "reason": "deterministic-ask",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      },
+      "intent": null,
+      "provenance": {},
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "escalation",
+      "id": "fresh_esc_13",
+      "text": "داکیومنتو با همه share کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "evidence": {
+      "text": "داکیومنتو با همه share کن",
+      "low": "داکیومنتو با همه share کن",
+      "ctx": {},
+      "items": [],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": true,
+      "global_destructive": false
+    },
+    "source": "reflex",
+    "post": {
+      "accepted": false,
+      "reason": "deterministic-ask",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      },
+      "intent": null,
+      "provenance": {},
+      "model_used": false
+    },
+    "latency_ms": 0.0,
+    "model_error": null,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "escalation",
+      "id": "fresh_esc_14",
+      "text": "کل مدل رو پاک کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "evidence": {
+      "text": "کل مدل رو پاک کن",
+      "low": "کل مدل رو پاک کن",
+      "ctx": {},
+      "items": [],
+      "selection_count": 0,
+      "selection_types": [],
+      "candidate_index": null,
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    },
+    "source": "model",
+    "post": {
+      "accepted": false,
+      "reason": "model-ask",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      },
+      "intent": null,
+      "provenance": {},
+      "model_used": true
+    },
+    "latency_ms": 328.7812319999972,
+    "model_error": null,
+    "outcome": "correct"
+  }
+]
