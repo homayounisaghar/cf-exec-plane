@@ -1,0 +1,13 @@
+{
+  "schema": "cf.onshape.fast-router-divergent-v14-1000",
+  "statistical_role": "fresh_stress_holdout",
+  "corpus_freeze_commit": "beb2dafe06d7909b7e213907dee44757eb1f53f2",
+  "router_source_repo": "homayounisaghar/capability-fabric",
+  "router_source_ref": "work/onshape-fast-router-evidence-v07",
+  "router_source_head": "0ef25e3dd156f42c1ca1626f52f24850516d8a7a",
+  "router_source_file_sha": "1c7f8d13d3ca67414fb2a8c995b88363f64c552e",
+  "selftest_file_sha": "0fd5e71ca0463a33a0488051c330e525fe787a64",
+  "cases": 1000,
+  "production_effects": false,
+  "note": "Fresh 1000-case divergent/adversarial synthetic stress holdout. Corpus source was committed and frozen before first score. Do not alter corpus after observing results."
+}
