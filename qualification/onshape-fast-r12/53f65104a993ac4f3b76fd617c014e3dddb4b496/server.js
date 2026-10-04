@@ -2,7 +2,7 @@ import fs from "node:fs";
 import crypto from "node:crypto";
 
 const BASE_URL = "https://raw.githubusercontent.com/homayounisaghar/cf-exec-plane/main/qualification/onshape-fast-r12/482e02726adf3a6a69687a4b165515c0596854ae/server.js";
-const BASE_SHA256 = "2d7050513c39e75eccb01cd60afc942421dcf5ecccd215eb8c6aef247b2e88ff";
+const BASE_SHA256 = "17ab8922d909080758ce1b06a48a8b7b2d8c09fdf15f88fcdc6c532b8952d62f";
 const REQUIRED_BASE_MARKERS = [
   'agent.executeIntent(args)',
   'execution_path: "mcp->semantic-contract->onshape-agent->browser-session->onshape"',
