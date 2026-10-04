@@ -1,0 +1,165 @@
+{
+  "cases_total": 10000,
+  "deterministic_cases": 10000,
+  "fallback_cases": 0,
+  "deterministic_correct": 9920,
+  "deterministic_accuracy": 0.992,
+  "wrong_material_accepted": 0,
+  "false_execute": 0,
+  "wrong_reversible_accepted": 0,
+  "conservative_escalation": 0,
+  "route_mismatch": 80,
+  "by_category": {
+    "clear_selection": {
+      "correct": 200
+    },
+    "conditional_discourse": {
+      "correct": 200
+    },
+    "context_camera": {
+      "correct": 200
+    },
+    "context_relative": {
+      "correct": 200
+    },
+    "create_part_studio": {
+      "correct": 200
+    },
+    "design_judgment": {
+      "correct": 200
+    },
+    "edge_chamfer": {
+      "correct": 200
+    },
+    "edge_fillet": {
+      "correct": 200
+    },
+    "feature_angle": {
+      "correct": 200
+    },
+    "feature_delete": {
+      "correct": 200
+    },
+    "feature_depth": {
+      "correct": 200
+    },
+    "feature_flip": {
+      "correct": 200
+    },
+    "feature_radius": {
+      "correct": 200
+    },
+    "feature_rename": {
+      "correct": 200
+    },
+    "fit_all": {
+      "correct": 200
+    },
+    "fit_selection": {
+      "correct": 200
+    },
+    "follow": {
+      "correct": 200
+    },
+    "inspect_collaboration": {
+      "correct": 200
+    },
+    "inspect_selection": {
+      "correct": 200
+    },
+    "inspect_state": {
+      "correct": 200
+    },
+    "literal_collision": {
+      "correct": 200
+    },
+    "localized_quantity_valid": {
+      "correct": 200
+    },
+    "multi_material": {
+      "correct": 200
+    },
+    "multi_mixed": {
+      "correct": 200
+    },
+    "multi_viewer": {
+      "correct": 200
+    },
+    "negation_correction": {
+      "correct": 200
+    },
+    "new_chamfer": {
+      "correct": 200
+    },
+    "new_fillet": {
+      "correct": 200
+    },
+    "noisy_language": {
+      "correct": 200
+    },
+    "orbit": {
+      "correct": 200
+    },
+    "pan": {
+      "correct": 200
+    },
+    "part_color": {
+      "correct": 200
+    },
+    "part_delete": {
+      "correct": 200
+    },
+    "part_hide": {
+      "correct": 200
+    },
+    "part_material": {
+      "correct": 200
+    },
+    "part_show": {
+      "correct": 200
+    },
+    "part_text_meta": {
+      "correct": 200
+    },
+    "pattern": {
+      "correct": 200
+    },
+    "plane": {
+      "correct": 200
+    },
+    "professional_out_of_contract": {
+      "route_mismatch": 80,
+      "correct": 120
+    },
+    "quantity_invalid": {
+      "correct": 200
+    },
+    "rename_document": {
+      "correct": 200
+    },
+    "reorder": {
+      "correct": 200
+    },
+    "rollback": {
+      "correct": 200
+    },
+    "selection_ambiguous": {
+      "correct": 200
+    },
+    "suppress": {
+      "correct": 200
+    },
+    "top_view": {
+      "correct": 200
+    },
+    "unsupported_precise": {
+      "correct": 200
+    },
+    "unsuppress": {
+      "correct": 200
+    },
+    "zoom": {
+      "correct": 200
+    }
+  }
+}
