@@ -486,6 +486,21 @@ def main():
     assert_eq(c,{"route":"do","op":"feature.add","args":{"feature_type":"chamfer","amount":"1.8 mm"}},"v16-empty-selection-state-not-clear")
     checks.append("v16-empty-selection-state-not-clear")
 
+    # V16 residual invariants.
+    for text,want in [
+        ("visibility Part 3 رو off کن اگه اوکیه",{"route":"do","op":"part.visibility","args":{"part_name":"Part 3","visible":False}}),
+        ("visibility Part 14 رو on کن اگه اوکیه",{"route":"do","op":"part.visibility","args":{"part_name":"Part 14","visible":True}}),
+        ("selectionها رو خالی کن",{"route":"do","op":"viewer.selection.clear","args":{}}),
+        ("یه plane مرجع تازه بساز و اسمش رو بذار fit top ref 0",{"route":"do","op":"feature.add","args":{"feature_type":"plane","name":"fit top ref 0"}}),
+        ("از جهت بالا نشونش بده",{"route":"do","op":"view.standard","args":{"view":"top"}}),
+        ("Extrude 3 دیگه نباشه، حذفش کن",{"route":"do","op":"feature.delete","args":{"feature_name":"Extrude 3"}}),
+        ("Fillet 3 name = follow material node 16",{"route":"do","op":"feature.patch","args":{"feature_name":"Fillet 3","new_name":"follow material node 16"}}),
+        ("میشه لطف کنی از Part 32 یه linear pattern با 4 copies و فاصله 4 mm بساز مرسی",{"route":"do","op":"feature.add","args":{"feature_type":"linearPattern","part_name":"Part 32","copies":4,"distance":"4 mm"}}),
+    ]:
+        c,_=compiled(text)
+        assert_eq(c,want,f"v16-residual:{text}")
+        checks.append(f"v16-residual:{text}")
+
     # Metamorphic invariants: neutral conversational envelopes must preserve semantics.
     envelope_bases=[
         ("Part 5 رو مخفی کن",{},{"route":"do","op":"part.visibility","args":{"part_name":"Part 5","visible":False}}),
