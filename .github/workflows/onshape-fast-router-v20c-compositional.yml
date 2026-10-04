@@ -1,0 +1,70 @@
+name: Onshape Fast Router V20C Compositional
+on:
+  push:
+    branches: [main]
+    paths:
+      - qualification/onshape-fast-router-v20c-compositional/control/*.request
+permissions:
+  contents: write
+concurrency:
+  group: onshape-fast-router-v20c-compositional
+  cancel-in-progress: false
+jobs:
+  qualify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Syntax gate
+        run: |
+          python -m py_compile qualification/onshape-fast-router-v20c-compositional/scenario_builder.py
+          python -m py_compile qualification/onshape-fast-router-v20c-compositional/realize.py
+          python -m py_compile qualification/onshape-fast-router-v20c-compositional/freeze.py
+          python -m py_compile qualification/onshape-fast-router-v20c-compositional/score.py
+          python -m py_compile qualification/onshape-fast-router-v20c-compositional/evidence_v06.py
+          python -m py_compile qualification/onshape-fast-router-v20c-compositional/evidence_architecture_selftest.py
+      - name: Build scenarios
+        run: |
+          ART="$GITHUB_WORKSPACE/artifacts/onshape-fast-router-v20c-compositional"
+          mkdir -p "$ART"
+          python qualification/onshape-fast-router-v20c-compositional/scenario_builder.py --out-dir "$ART"
+      - name: Realize language
+        run: |
+          ART="$GITHUB_WORKSPACE/artifacts/onshape-fast-router-v20c-compositional"
+          python qualification/onshape-fast-router-v20c-compositional/realize.py --scenarios "$ART/apprentice-scenarios.jsonl" --output "$ART/realized.jsonl"
+      - name: Freeze
+        run: |
+          ART="$GITHUB_WORKSPACE/artifacts/onshape-fast-router-v20c-compositional"
+          python qualification/onshape-fast-router-v20c-compositional/freeze.py --scenarios "$ART/apprentice-scenarios.jsonl" --realized "$ART/realized.jsonl" --qualification-root "$GITHUB_WORKSPACE/qualification" --out-dir "$ART"
+      - name: Architecture selftest
+        run: |
+          ART="$GITHUB_WORKSPACE/artifacts/onshape-fast-router-v20c-compositional"
+          cd qualification/onshape-fast-router-v20c-compositional
+          python evidence_architecture_selftest.py > "$ART/architecture-selftest.json"
+      - name: Score
+        run: |
+          ART="$GITHUB_WORKSPACE/artifacts/onshape-fast-router-v20c-compositional"
+          python qualification/onshape-fast-router-v20c-compositional/score.py --corpus "$ART/frozen-corpus.jsonl" --freeze "$ART/freeze.json" --out-dir "$ART"
+      - name: Publish
+        if: always()
+        run: |
+          set -eu
+          src="artifacts/onshape-fast-router-v20c-compositional"
+          dst="reports/onshape-fast-router-v20c-compositional"
+          mkdir -p "$dst"
+          for f in scenario-universe.jsonl apprentice-scenarios.jsonl scope-filter.json realized.jsonl construction-report.json diversity-report.json freeze.json architecture-selftest.json summary.json failures.json frozen-corpus.jsonl; do
+            test -f "$src/$f" && cp "$src/$f" "$dst/$f" || true
+          done
+          printf '{"run_id":"%s","head_sha":"%s"}\n' "$GITHUB_RUN_ID" "$GITHUB_SHA" > "$dst/latest-meta.json"
+          if test -f "$src/summary.json"; then rm -f "$dst/latest-error.json"; else printf '{"state":"NO_SUMMARY"}\n' > "$dst/latest-error.json"; fi
+          git config user.name "cf-exec-plane"
+          git config user.email "actions@users.noreply.github.com"
+          git add "$dst"
+          git commit -m "Report: V20C compositional qualification" || exit 0
+          for i in 1 2 3; do git pull --rebase origin main && git push origin HEAD:main && break || sleep $((i*3)); done

@@ -1,0 +1,15 @@
+{
+  "request_id": "v20c-compositional-final-20261004-1532b",
+  "method": "scenario-first semantic compositional grammar",
+  "candidate_commit": "54580b67a9a61d2463ec3b9ced7a801707bb242b",
+  "cases_before_scope_filter": 10000,
+  "expected_scored_cases": 9800,
+  "prior_overlap_gate": [
+    "V15",
+    "V16",
+    "V17",
+    "V18",
+    "V19"
+  ],
+  "production_effects": false
+}
