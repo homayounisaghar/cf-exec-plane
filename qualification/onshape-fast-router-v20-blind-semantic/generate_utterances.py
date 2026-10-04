@@ -52,9 +52,8 @@ def main():
             utt=str(got[sid].get("utterance","")).strip()
             if not utt: raise RuntimeError(f"empty utterance {sid}")
             s=byid[sid]
-            for lit in s.get("realization_constraints",{}).get("preserve_literals",[]):
-                if lit not in utt: raise RuntimeError(f"literal not preserved {sid}: {lit!r}")
-            out.append({"scenario_id":sid,"family":s["family"],"text":utt,"context":s.get("context",{})})
+            missing=[lit for lit in s.get("realization_constraints",{}).get("preserve_literals",[]) if lit not in utt]
+            out.append({"scenario_id":sid,"family":s["family"],"text":utt,"context":s.get("context",{}),"missing_literals":missing})
         usage.append(u)
     write_jsonl(a.output,out)
     print(json.dumps({"attempt":a.attempt,"model":model,"cases":len(out),"batches":len(usage),"usage":usage},ensure_ascii=False))

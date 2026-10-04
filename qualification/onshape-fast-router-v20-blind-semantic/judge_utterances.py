@@ -28,6 +28,7 @@ Routing contract:
 - route=think only for open-ended engineering/design judgment.
 - A correction like "do not X; instead Y" is one positive effect Y if unambiguous.
 - Preserve exact explicit names and values. Normalize ordinary numeric units to "N mm" or "N deg".
+- Part deletion -> feature.delete_part.
 - Part rename -> documented.updateWVEPMetadata property=name.
 - Feature rename -> feature.patch new_name.
 - Part color/material/description -> metadata.property.set.
