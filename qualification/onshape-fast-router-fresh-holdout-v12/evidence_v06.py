@@ -396,12 +396,32 @@ def extract_parts(text):
     for i,x in enumerate(out,1): x["id"]=f"p{i}"
     return out
 
-def extract_name_value(text):
+def extract_literal_payloads(text):
+    """Extract typed, effect-bearing literal payloads once before routing."""
     s=norm_text(text)
-    patterns=[
+    t=low(text)
+    out=[]
+
+    def add(field,value,span,provenance,scope=None):
+        value=str(value).strip(" ،,.;")
+        value=re.sub(r"\s+بساز$","",value).strip()
+        if not value:
+            return
+        out.append({
+            "id":f"lit{len(out)+1}",
+            "kind":"literal_payload",
+            "field":field,
+            "value":value,
+            "span":[span[0],span[1]],
+            "scope":scope,
+            "effect_bearing":True,
+            "provenance":provenance,
+        })
+
+    name_patterns=[
+        r"(?:به|با)\s+اسم\s+(.+)$",
         r"(?:اسم(?:ش)?\s+(?:بشه|بشود))\s+(.+)$",
         r"(?:اسم\s+.+?\s+(?:بشه|بشود))\s+(.+)$",
-        r"(?:به اسم)\s+(.+)$",
         r"اسمش\s+(?!رو\b|را\b)(.+)$",
         r"\bcalled\s+(.+)$",
         r"(?:اسم\s+.+?\s+رو\s+بذار)\s+(.+)$",
@@ -410,38 +430,74 @@ def extract_name_value(text):
         r"\brename\s+.+?\s+to\s+(.+)$",
         r"(?:داکیومنت(?:و| رو)?\s+rename\s+کن\s+به)\s+(.+)$",
     ]
-    for pat in patterns:
+    for pat in name_patterns:
         m=re.search(pat,s,re.I)
         if m:
-            v=m.group(1).strip(" ،,.;")
-            v=re.sub(r"\s+بساز$","",v).strip()
-            if v: return v
-    return None
+            scope="document" if re.search(r"(?:document|داکیومنت)",s,re.I) else None
+            add("name",m.group(1),(m.start(1),m.end(1)),"typed_literal_name",scope)
+            break
 
-def extract_property_value(text, ctx):
-    t=low(text)
-    colors={"قرمز":"red","آبی":"blue","ابي":"blue","سبز":"green","مشکی":"black","سیاه":"black","خاکستری":"gray","سفید":"white","زرد":"yellow"}
-    for k,v in colors.items():
-        if k in t: return ("color",v)
-    m=re.search(r"\b(?:color\s*=?\s*)(red|blue|green|black|white|yellow|gray|grey)\b",t,re.I)
-    if m: return ("color","gray" if m.group(1).lower()=="grey" else m.group(1).lower())
+    aliases={"فولاد":"Steel","آلومینیوم":"Aluminum","الومینیوم":"Aluminum"}
     if has_any(t,["متریال","material"]):
-        aliases={"فولاد":"Steel","آلومینیوم":"Aluminum","الومینیوم":"Aluminum"}
+        found=False
         for k,v in aliases.items():
-            if k in t:
-                return ("material",v)
-        for pat in [r"(?:متریال|material).*?(?:رو|را|=|to)\s+(.+?)(?:\s+(?:بذار|بگذار|کن))?$", r"(?:متریالش رو)\s+(.+?)\s+کن$"]:
-            m=re.search(pat,norm_text(text),re.I)
+            m=re.search(re.escape(k),s,re.I)
             if m:
-                v=m.group(1).strip()
-                if v:
-                    return ("material",aliases.get(low(v),v))
-    if "description" in t:
-        m=re.search(r"description.*?(?:بذار|بگذار|=|to)\s+(.+)$",norm_text(text),re.I)
-        if m: return ("description",m.group(1).strip())
-    name=extract_name_value(text)
-    if name and has_any(t,["اسم","rename"]):
-        return ("name",name)
+                add("material",v,(m.start(),m.end()),"typed_literal_material")
+                found=True
+                break
+        if not found:
+            for pat in [
+                r"(?:متریال|material).*?(?:رو|را|=|to)\s+(.+?)(?:\s+(?:بذار|بگذار|کن))?$",
+                r"(?:متریالش رو)\s+(.+?)\s+کن$",
+            ]:
+                m=re.search(pat,s,re.I)
+                if m:
+                    raw=m.group(1).strip()
+                    add("material",aliases.get(low(raw),raw),(m.start(1),m.end(1)),"typed_literal_material")
+                    break
+
+    for pat in [
+        r"\bdescription\b.*?(?:بذار|بگذار|=|to)\s+(.+)$",
+        r"(?:توضیحات|توضیح).*?(?:بذار|بگذار|=|to|بشه|بشود)\s+(.+)$",
+    ]:
+        m=re.search(pat,s,re.I)
+        if m:
+            add("description",m.group(1),(m.start(1),m.end(1)),"typed_literal_description")
+            break
+
+    colors={"قرمز":"red","آبی":"blue","ابي":"blue","سبز":"green","مشکی":"black","سیاه":"black","خاکستری":"gray","سفید":"white","زرد":"yellow"}
+    color_done=False
+    for k,v in colors.items():
+        m=re.search(re.escape(k),s,re.I)
+        if m:
+            add("color",v,(m.start(),m.end()),"typed_literal_color")
+            color_done=True
+            break
+    if not color_done:
+        m=re.search(r"\b(?:color\s*=?\s*)(red|blue|green|black|white|yellow|gray|grey)\b",s,re.I)
+        if m:
+            v="gray" if m.group(1).lower()=="grey" else m.group(1).lower()
+            add("color",v,(m.start(1),m.end(1)),"typed_literal_color")
+
+    out.sort(key=lambda x:x["span"][0])
+    for i,x in enumerate(out,1):
+        x["id"]=f"lit{i}"
+    return out
+
+def payload_value(payloads,field):
+    vals=[x["value"] for x in payloads if x["field"]==field]
+    return vals[0] if len(vals)==1 else None
+
+def extract_name_value(text):
+    return payload_value(extract_literal_payloads(text),"name")
+
+def extract_property_value(text, ctx, payloads=None):
+    payloads=payloads if payloads is not None else extract_literal_payloads(text)
+    for field in ("color","material","description","name"):
+        v=payload_value(payloads,field)
+        if v is not None:
+            return (field,v)
     return (None,None)
 
 def extract_evidence(text, ctx=None):
@@ -450,8 +506,9 @@ def extract_evidence(text, ctx=None):
     qs,quantity_issues=extract_quantity_evidence(text)
     fs=extract_named_features(text)
     ps=extract_parts(text)
-    name_value=extract_name_value(text)
-    prop,pval=extract_property_value(text,ctx)
+    payloads=extract_literal_payloads(text)
+    name_value=payload_value(payloads,"name")
+    prop,pval=extract_property_value(text,ctx,payloads)
 
     # Literal/name payload is opaque to intent cues. Words such as "fit", "hide"
     # or "fillet" inside a requested name must never hijack the command.
@@ -465,14 +522,16 @@ def extract_evidence(text, ctx=None):
     visibility=None
     if re.search(r"(?:نشون|نشان)\s+نده",cue_t) or "نشون نده" in cue_t or "نشان نده" in cue_t:
         visibility=False
-    elif has_any(cue_t,["مخفی","قایم","hide","نشونش نده","نشانش نده","از جلوی چشم بردار","دیده نشه","دیده نشود"]):
+    elif has_any(cue_t,["مخفی","قایم","hide","نشونش نده","نشانش نده","از جلوی چشم بردار","از نما بردار","از توی نما بردار","دیده نشه","دیده نشود"]):
         visibility=False
     elif has_any(cue_t,["نشون بده","نشان بده","نشونش بده","نشانش بده","show","دوباره بیار","برگردونش توی نما","برگردون تو نما","برگردون توی نما"]):
         visibility=True
 
     suppressed=None
     if has_any(cue_t,["خاموش","suppress"]): suppressed=True
-    if has_any(cue_t,["دوباره روشن","روشنش کن","روشن کن","unsuppress"]): suppressed=False
+    if has_any(cue_t,["دوباره روشن","روشنش کن","روشن کن","unsuppress"]) or (
+        "روشن" in cue_t and has_any(cue_t,["برگردون","برگردان","برش گردون","برگردونش"])
+    ): suppressed=False
     if ctx.get("last_action")=="suppress" and has_any(cue_t,["برش گردون","برگردونش","دوباره بیارش"]):
         suppressed=False
 
@@ -498,11 +557,11 @@ def extract_evidence(text, ctx=None):
     unsupported = has_any(cue_t,["public","share","pdf","export","step","mate","company","شرکت onshape"])
 
     camera_action=None; camera_direction=None; camera_inverse=False
-    if has_any(cue_t,["زوم","zoom","نزدیک تر شو","نزدیک‌تر شو","دورتر شو","دور تر شو"]): camera_action="zoom"
+    if has_any(cue_t,["زوم","zoom","نزدیک تر شو","نزدیک‌تر شو","دورتر شو","دور تر شو","دور شو","ازش دور شو","ازش دورتر شو"]): camera_action="zoom"
     elif has_any(cue_t,["پن ","pan","نما رو","صفحه رو","هل بده"]) or (has_any(cue_t,["بکش بالا","بکش پایین"]) and has_any(cue_t,["نما","صفحه"])):
         camera_action="pan"
     elif has_any(cue_t,["بچرخ","rotate","ساعتگرد","پادساعتگرد","clockwise","counterclockwise","ربع دور","عقربه"]): camera_action="orbit"
-    if "پادساعتگرد" in cue_t or re.search(r"\bcounterclockwise\b",cue_t) or has_any(cue_t,["برعکس عقربه","خلاف جهت عقربه"]): camera_direction="counterclockwise"
+    if "پادساعتگرد" in cue_t or re.search(r"\bcounterclockwise\b",cue_t) or re.search(r"خلاف(?:\s+جهت)?\s+عقربه(?:\s*ها)?",cue_t) or has_any(cue_t,["برعکس عقربه"]): camera_direction="counterclockwise"
     elif "ساعتگرد" in cue_t or re.search(r"\bclockwise\b",cue_t) or has_any(cue_t,["در جهت عقربه","با عقربه","با جهت عقربه"]): camera_direction="clockwise"
     elif has_any(cue_t,["سمت راست","به راست","طرف راست","راست بچرخ","هل بده راست"]): camera_direction="right"
     elif has_any(cue_t,["سمت چپ","به چپ","طرف چپ","چپ بچرخ","هل بده چپ"]): camera_direction="left"
@@ -515,8 +574,16 @@ def extract_evidence(text, ctx=None):
     if has_any(cue_t,["زیادی شد","برش گردون","برگرد","عقب تر","عقب‌تر"]):
         camera_inverse=True
     if camera_action=="zoom" and camera_direction is None:
-        if has_any(cue_t,["نزدیک تر شو","نزدیک‌تر شو"]): camera_direction="in"
-        elif has_any(cue_t,["دورتر شو","دور تر شو"]): camera_direction="out"
+        if has_any(cue_t,["نزدیک تر شو","نزدیک‌تر شو","داخل","in","زومشو","زوم کن"]): camera_direction="in"
+        elif has_any(cue_t,["دورتر شو","دور تر شو","دور شو","ازش دور شو","ازش دورتر شو","اوت","out","بیرون","عقب"]): camera_direction="out"
+
+    lm=ctx.get("last_move") or {}
+    if camera_inverse and lm:
+        camera_action=lm.get("action",camera_action)
+        camera_direction=opposite(lm.get("direction"))
+    elif not camera_direction and lm and has_any(cue_t,["بیشتر","همون طرف"]):
+        camera_action=lm.get("action",camera_action)
+        camera_direction=lm.get("direction")
 
     fit_selection_cue = has_any(cue_t,[
         "انتخاب","selection","انتخابم","همین انتخاب","چیزای انتخاب","چیزهای انتخاب"
@@ -532,8 +599,38 @@ def extract_evidence(text, ctx=None):
     fit_selection = fit_verb and fit_selection_cue
     fit_all = fit_verb and not fit_selection and (fit_all_cue or has_any(cue_t,["فیت","fit"]))
     fit_target = "selection" if fit_selection else ("all" if fit_all else None)
-    top_view = has_any(cue_t,["از بالا","top view","نمای بالا"])
+    top_view = has_any(cue_t,["از بالا","top view","نمای بالا"]) or bool(
+        re.search(r"(?:نمای|نما)\s+top\b|\btop\s+(?:view|نما)",cue_t,re.I)
+    )
     clear_selection = has_any(cue_t,["انتخاب رو پاک","انتخاب را پاک","selection رو پاک","selection را پاک","selection رو خالی","selection را خالی","selection فعلی رو صفر","انتخابارو ول کن","انتخاب ها رو ول کن"]) or bool(re.search(r"(?:هر چی|هرچی).*(?:انتخاب|selection).*(?:پاک|خالی)",cue_t))
+
+    collaboration_cue = has_any(cue_t,["سشن","session","چند نفر","کسایی","کسانی","کیا","وصلن","چند نفریم"])
+    selection_cue = has_any(cue_t,["انتخاب","selection","سلکت","select","دستمه","گرفتم"]) or bool(
+        re.search(r"(?:چی|چه چیزی).*?(?:دست|گرفت|انتخاب|سلکت)",cue_t)
+    )
+    state_cue = has_any(cue_t,["وضعیت ویور","viewer state","وضعیت صفحه"]) or ("وضعیت" in cue_t and "viewer" in cue_t)
+    inspect_target = "collaboration" if collaboration_cue else ("selection" if selection_cue else ("state" if state_cue else None))
+
+    parameter_hint=None
+    if "flip direction" in cue_t: parameter_hint="flip direction"
+    elif has_any(cue_t,["عمق","depth"]): parameter_hint="depth"
+    elif has_any(cue_t,["زاویه","angle"]): parameter_hint="angle"
+    elif has_any(cue_t,["شعاع","radius"]): parameter_hint="radius"
+
+    boolean_value=None
+    if has_any(cue_t,["خاموش"]) or re.search(r"\b(?:off|false)\b",cue_t): boolean_value=False
+    elif has_any(cue_t,["روشن"]) or re.search(r"\b(?:on|true)\b",cue_t): boolean_value=True
+
+    follow_candidate_index = 2 if has_any(cue_t,["نفر دوم","دومی","دوم رو","second"]) else None
+    delete_position = "last" if "آخرین" in cue_t else ("first" if "اولین" in cue_t else None)
+    rollback_position = "end" if "آخر" in cue_t else ("start" if "اول" in cue_t else None)
+    feature_word = has_any(cue_t,["فیچر","feature"])
+    delete_cue = has_any(cue_t,["پاک کن","حذف کن","بنداز دور","حذفش کن","پاک","حذف"])
+    plane_explicit = has_any(cue_t,["plane","صفحه مرجع"])
+    plane_create_explicit = has_any(cue_t,["بساز","ایجاد","create","جدید","خالی"])
+    plane_reference_direction = next((x for x in ("right","left","top","front") if x in cue_t),None)
+    pattern_explicit = has_any(cue_t,["pattern","الگو","تکرار"])
+    edge_new_explicit = has_any(cue_t,["جدید","خالی","بدون انتخاب","فعلا بدون","فعلاً بدون","بساز"])
 
     edge_kind=None
     if has_any(cue_t,["پخ","چمفر","chamfer"]): edge_kind="chamfer"
@@ -595,6 +692,20 @@ def extract_evidence(text, ctx=None):
         "property":prop,
         "property_value":pval,
         "name_value":name_value,
+        "payloads":payloads,
+        "inspect_target":inspect_target,
+        "parameter_hint":parameter_hint,
+        "boolean_value":boolean_value,
+        "follow_candidate_index":follow_candidate_index,
+        "delete_position":delete_position,
+        "rollback_position":rollback_position,
+        "feature_word":feature_word,
+        "delete_cue":delete_cue,
+        "plane_explicit":plane_explicit,
+        "plane_create_explicit":plane_create_explicit,
+        "plane_reference_direction":plane_reference_direction,
+        "pattern_explicit":pattern_explicit,
+        "edge_new_explicit":edge_new_explicit,
         "cue_text":cue_t,
         "design":design,
         "unsupported":unsupported,
@@ -664,16 +775,14 @@ def direct_intent(case, ev):
     if ev["fit_selection"]: return ("act","fit_selection")
     if ev["fit_all"]: return ("act","fit")
     if ev["top_view"]: return ("act","top_view")
-    if has_any(t,["چی انتخاب","چی انتخابه","چی انتخاب شده","چی سلکت","سلکت شده","چی دستمه","چی گرفتم"]): return ("act","inspect")
-    if has_any(t,["وضعیت ویور","viewer state","وضعیت صفحه"]) or ("وضعیت" in t and "viewer" in t): return ("act","inspect")
-    if has_any(t,["سشن","session","چند نفر تو","کسایی تو","کسانی تو","کیا الان وصلن","چند نفریم","وصلن"]): return ("act","inspect")
+    if ev.get("inspect_target"): return ("act","inspect")
     if has_any(t,["فالو","follow","دنبال کن"]): return ("act","follow")
 
     if "flip direction" in t and choose_feature(ev):
         return ("act","feature_parameter")
     if has_any(t,["اسم","rename"]) and choose_feature(ev):
         return ("act","feature_rename")
-    if has_any(t,["آخرین فیچر","اولین فیچر","فیچرو","فیچر رو"]) and has_any(t,["پاک","حذف","بنداز دور"]):
+    if ev.get("delete_position") and ev.get("feature_word") and ev.get("delete_cue"):
         return ("act","feature_delete")
     if "آخرین" in t and has_any(t,["از فیچرها","درخت فیچر"]) and has_any(t,["پاک","حذف"]):
         return ("act","feature_delete")
@@ -754,18 +863,8 @@ def compile_intent(case, decision, intent, ev):
         return reject("quantity-parse-ambiguous")
 
     if intent=="camera_move":
-        lm=ev.get("last_move") or {}
-        action=ev.get("camera_action") or lm.get("action")
+        action=ev.get("camera_action")
         direction=ev.get("camera_direction")
-        if ev.get("camera_inverse") and lm:
-            action=lm.get("action",action)
-            direction=opposite(lm.get("direction"))
-        elif not direction and lm and has_any(t,["بیشتر","همون طرف"]):
-            action=lm.get("action",action)
-            direction=lm.get("direction")
-        if action=="zoom" and not direction:
-            if has_any(t,["اوت","out","بیرون","عقب"]): direction="out"
-            elif has_any(t,["داخل","in","زومشو","زوم کن"]) or t.strip() in {"زوم","zoom"}: direction="in"
         if not action:
             action="orbit"
         allowed={"orbit":{"left","right","up","down","clockwise","counterclockwise"},
@@ -799,14 +898,14 @@ def compile_intent(case, decision, intent, ev):
     if intent=="clear_selection": return accept("viewer.selection.clear",{},{})
 
     if intent=="inspect":
-        if has_any(t,["سشن","session","چند نفر","کسایی","کسانی","کیا","وصلن","چند نفریم"]): mode="collaboration"
-        elif has_any(t,["انتخاب","selection","چی انتخاب","سلکت","select","چی دستمه","چی گرفتم"]): mode="selection"
-        else: mode="state"
-        return accept("viewer.inspect",{"mode":mode},{"mode":"text"})
+        mode=ev.get("inspect_target")
+        if mode not in {"selection","collaboration","state"}:
+            return reject("inspect-target-ungrounded")
+        return accept("viewer.inspect",{"mode":mode},{"mode":"semantic-evidence"})
 
     if intent=="follow":
         cc=ev.get("collaborator_count")
-        idx=2 if has_any(t,["نفر دوم","دومی","دوم رو","second"]) else None
+        idx=ev.get("follow_candidate_index")
         if cc and cc>=3 and idx is None: return reject("follow-ambiguous")
         return accept("view.follow",{} if idx is None else {"candidate_index":idx},{"candidate":"text/context"})
 
@@ -823,18 +922,16 @@ def compile_intent(case, decision, intent, ev):
         feature=choose_feature(ev)
         if not feature: return reject("feature-ungrounded")
         if str(feature).lower().startswith("fillet"): parameter="radius"
-        elif has_any(t,["عمق","depth"]): parameter="depth"
-        elif has_any(t,["زاویه","angle"]): parameter="angle"
-        elif "flip direction" in t: parameter="flip direction"
-        else: return reject("feature-parameter-ungrounded")
+        else: parameter=ev.get("parameter_hint")
+        if parameter not in {"radius","depth","angle","flip direction"}:
+            return reject("feature-parameter-ungrounded")
 
         if not feature_parameter_compatible(feature,parameter):
             return reject("feature-parameter-incompatible")
 
         if parameter=="flip direction":
-            if has_any(t,["خاموش"]) or re.search(r"\b(?:off|false)\b",t): value=False
-            elif has_any(t,["روشن"]) or re.search(r"\b(?:on|true)\b",t): value=True
-            else: return reject("boolean-value-ungrounded")
+            value=ev.get("boolean_value")
+            if value is None: return reject("boolean-value-ungrounded")
             return accept("feature.parameter.set",{"feature_name":feature,"parameter":parameter,"value":value},
                           {"feature":"text/context","value":"text"})
 
@@ -869,8 +966,8 @@ def compile_intent(case, decision, intent, ev):
                       {"feature":"text/context","name":"text-span"})
 
     if intent=="feature_delete":
-        if "آخرین" in t: return accept("feature.delete",{"position":"last"},{"position":"text"})
-        if "اولین" in t: return accept("feature.delete",{"position":"first"},{"position":"text"})
+        if ev.get("delete_position") in {"last","first"}:
+            return accept("feature.delete",{"position":ev["delete_position"]},{"position":"semantic-evidence"})
         feature=choose_feature(ev)
         if not feature: return reject("delete-feature-ungrounded")
         return accept("feature.delete",{"feature_name":feature},{"feature":"text/context"})
@@ -894,18 +991,18 @@ def compile_intent(case, decision, intent, ev):
                       {"part":"text/context","property":"text","value":"text-span"})
 
     if intent=="add_plane":
-        if not has_any(t,["plane","صفحه مرجع"]):
+        if not ev.get("plane_explicit"):
             return reject("plane-not-explicit")
-        if not has_any(t,["بساز","ایجاد","create","جدید","خالی"]):
+        if not ev.get("plane_create_explicit"):
             return reject("plane-create-not-explicit")
-        if has_any(t,["right","left","top","front"]) and not ev.get("name_value"):
+        if ev.get("plane_reference_direction") and not ev.get("name_value"):
             return reject("plane-reference-needs-provider-shape")
         args={"feature_type":"plane"}
         if ev.get("name_value"): args["name"]=ev["name_value"]
         return accept("feature.add",args,{"name":"text-span" if ev.get("name_value") else None})
 
     if intent=="add_pattern":
-        if not has_any(t,["pattern","الگو","تکرار"]):
+        if not ev.get("pattern_explicit"):
             return reject("pattern-not-explicit")
         part=choose_part(ev)
         qs=all_quantities(ev,"mm")
@@ -916,7 +1013,7 @@ def compile_intent(case, decision, intent, ev):
                       {"part":"text/context","copies":"text","distance":qs[0]["id"]})
 
     if intent=="add_edge_feature":
-        if not has_any(t,["جدید","خالی","بدون انتخاب","فعلا بدون","فعلاً بدون","بساز"]):
+        if not ev.get("edge_new_explicit"):
             return reject("new-edge-not-explicit")
         qs=all_quantities(ev,"mm")
         if ev["edge_kind"] not in {"fillet","chamfer"} or len(qs)!=1:
@@ -941,9 +1038,9 @@ def compile_intent(case, decision, intent, ev):
             args={"before_feature":fs[-1]}
         elif ev["relation"]=="after" and fs:
             args={"after_feature":fs[-1]}
-        elif "آخر" in t:
+        elif ev.get("rollback_position")=="end":
             args={"position":"end"}
-        elif "اول" in t:
+        elif ev.get("rollback_position")=="start":
             args={"position":"start"}
         else: return reject("rollback-ungrounded")
         return accept("rollback.set",args,{"target":"text"})
@@ -962,6 +1059,76 @@ def compile_intent(case, decision, intent, ev):
         return accept("documented.updateDocumentAttributes",{"new_name":name},{"name":"text-span"})
 
     return reject("intent-unhandled")
+
+def _payload_consumed(atom, compiled):
+    op=compiled.get("op")
+    args=compiled.get("args") or {}
+    field=atom.get("field")
+    value=atom.get("value")
+    if field=="name":
+        return (
+            args.get("name")==value or args.get("new_name")==value or
+            (args.get("property")=="name" and args.get("value")==value)
+        )
+    if field in {"color","material","description"}:
+        return args.get("property")==field and args.get("value")==value
+    return False
+
+def enforce_evidence_consumption(post, ev):
+    """Fail closed if explicit effect-bearing evidence would be silently dropped."""
+    if not post.get("accepted"):
+        return post
+    compiled=post.get("compiled") or {}
+    op=compiled.get("op")
+    args=compiled.get("args") or {}
+    atoms=list(ev.get("payloads") or [])
+    if ev.get("inspect_target") is not None:
+        atoms.append({"id":"sem:inspect_target","kind":"semantic","field":"inspect_target","value":ev["inspect_target"]})
+    if ev.get("visibility") is not None:
+        atoms.append({"id":"sem:visibility","kind":"semantic","field":"visibility","value":ev["visibility"]})
+    if ev.get("suppressed") is not None:
+        atoms.append({"id":"sem:suppressed","kind":"semantic","field":"suppressed","value":ev["suppressed"]})
+    if ev.get("camera_direction") is not None:
+        atoms.append({"id":"sem:camera_direction","kind":"semantic","field":"camera_direction","value":ev["camera_direction"]})
+    if ev.get("fit_target") is not None:
+        atoms.append({"id":"sem:fit_target","kind":"semantic","field":"fit_target","value":ev["fit_target"]})
+    if ev.get("top_view"):
+        atoms.append({"id":"sem:standard_view","kind":"semantic","field":"standard_view","value":"top"})
+    if ev.get("delete_position") is not None and ev.get("delete_cue"):
+        atoms.append({"id":"sem:delete_position","kind":"semantic","field":"delete_position","value":ev["delete_position"]})
+
+    unconsumed=[]
+    for atom in atoms:
+        field=atom.get("field")
+        value=atom.get("value")
+        if atom.get("kind")=="literal_payload":
+            consumed=_payload_consumed(atom,compiled)
+        elif field=="inspect_target":
+            consumed=(op=="viewer.inspect" and args.get("mode")==value)
+        elif field=="visibility":
+            consumed=(op=="part.visibility" and args.get("visible")==value)
+        elif field=="suppressed":
+            consumed=(op=="feature.patch" and args.get("suppressed")==value)
+        elif field=="camera_direction":
+            consumed=(op=="view.move" and args.get("direction")==value)
+        elif field=="fit_target":
+            expected_action="fit_selection" if value=="selection" else "fit"
+            consumed=(op=="view.fit" and args.get("action")==expected_action)
+        elif field=="standard_view":
+            consumed=(op=="view.standard" and args.get("view")==value)
+        elif field=="delete_position":
+            consumed=(op=="feature.delete" and args.get("position")==value)
+        else:
+            consumed=False
+        if not consumed:
+            unconsumed.append(atom.get("id") or field)
+
+    if unconsumed:
+        blocked=reject("effect-evidence-unconsumed")
+        blocked["unconsumed_evidence"]=unconsumed
+        return blocked
+    post["consumed_evidence_count"]=len(atoms)
+    return post
 
 def parse_quantity_literal(v, unit):
     if v is None: return None
@@ -1059,6 +1226,7 @@ def plan_case(case, model_choice=None):
         d="q"
     decision={"a":"act","q":"ask","t":"think"}.get(d,d)
     post=compile_intent(case,decision,i,ev)
+    post=enforce_evidence_consumption(post,ev)
     return {"case":case,"source":source,"decision":decision,"intent":i,"evidence":ev,"post":post}
 
 def semantic_equivalence_options(expected):
