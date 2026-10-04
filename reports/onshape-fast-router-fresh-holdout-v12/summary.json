@@ -2,8 +2,8 @@
   "architecture": "evidence extraction -> deterministic reflex or intent-only 20B -> provenance compiler/residue guard",
   "model": "openai/gpt-oss-20b",
   "cases": 100,
-  "evidence_reflex_cases": 93,
-  "model_intent_cases": 7,
+  "evidence_reflex_cases": 94,
+  "model_intent_cases": 6,
   "model_batch_calls": 1,
   "model_batch_retries": 0,
   "exact_correct": 100,
@@ -19,11 +19,11 @@
   "routine_expected_do": 69,
   "routine_auto_accepted": 69,
   "routine_correct": 69,
-  "provider_prompt_tokens": 2479,
-  "provider_completion_tokens": 286,
-  "model_batch_p50_ms": 699.5463460000053,
-  "model_batch_p95_ms": 699.5463460000053,
-  "wall_seconds": 0.7436660480000086,
+  "provider_prompt_tokens": 2243,
+  "provider_completion_tokens": 276,
+  "model_batch_p50_ms": 606.1626409999974,
+  "model_batch_p95_ms": 606.1626409999974,
+  "wall_seconds": 0.6399983340000119,
   "outcomes": {
     "correct": 100
   }
