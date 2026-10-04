@@ -1,0 +1,4 @@
+request_id=pvc-r201-bale-list-canary1-ci-20261005-001
+candidate_commit=58d002415d387d2919c556c84977557576171c52
+expected_sequence=201
+expected_release=onshape-vps-fast-r100-direct-orbit1-paa-storage-r201-bale-list-canary1
