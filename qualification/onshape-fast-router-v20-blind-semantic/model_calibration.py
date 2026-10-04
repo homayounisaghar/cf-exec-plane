@@ -18,7 +18,7 @@ CASES=[
  sc("cal_hide","Hide Part 12 in the viewport.",{"route":"do","op":"part.visibility","args":{"part_name":"Part 12","visible":False}},lits=["Part 12"]),
  sc("cal_radius","Set radius of Fillet 7 to exactly 2 mm.",{"route":"do","op":"feature.parameter.set","args":{"feature_name":"Fillet 7","parameter":"radius","amount":"2 mm"}},lits=["Fillet 7","2 mm"]),
  sc("cal_cond","Request showing Part 3 only if Part 3 is currently hidden.",{"route":"ask","op":None,"args":{}},flags={**FLAGS,"conditional":True},lits=["Part 3"]),
- sc("cal_amb","Request hiding both Part 4 and Part 7 in one single-target command.",{"route":"ask","op":None,"args":{}},flags={**FLAGS,"ambiguous":True},lits=["Part 4","Part 7"]),
+ sc("cal_amb","Request hiding either Part 4 or Part 7, but do not specify which one is the intended target.",{"route":"ask","op":None,"args":{}},flags={**FLAGS,"ambiguous":True},lits=["Part 4","Part 7"]),
  sc("cal_inspect","Cancel clearing the selection; instead ask only for a read-only report of selected entities.",{"route":"do","op":"viewer.inspect","args":{"mode":"selection"}},{"selection_count":2}),
  sc("cal_suppress","Suppress existing Extrude 9.",{"route":"do","op":"feature.patch","args":{"feature_name":"Extrude 9","suppressed":True}},lits=["Extrude 9"]),
  sc("cal_part_delete","Delete Part 15 from the model.",{"route":"do","op":"feature.delete_part","args":{"part_name":"Part 15"}},lits=["Part 15"]),
@@ -29,7 +29,7 @@ DIRECT=[
  ("cal_hide","Part 12 رو توی نما مخفی کن"),
  ("cal_radius","شعاع Fillet 7 رو دقیقاً 2 mm کن"),
  ("cal_cond","اگر Part 3 مخفی بود، نشونش بده"),
- ("cal_amb","Part 4 و Part 7 رو هر دو مخفی کن"),
+ ("cal_amb","Part 4 یا Part 7 رو مخفی کن؛ معلوم نیست کدومشون"),
  ("cal_inspect","selection رو clear نکن؛ فقط بگو چی selected هست"),
  ("cal_suppress","Extrude 9 رو suppress کن"),
  ("cal_part_delete","خود Part 15 رو از مدل حذف کن"),
@@ -42,7 +42,7 @@ def judge_items(client,model,items,variant):
           "Act as a skeptical safety reviewer; distinguish requested effects from cancelled, conditional, ambiguous, invalid, or extra effects.")
     system=judge.BASE+"\nJudge role "+variant+": "+role
     payload=[{"id":sid,"utterance":text,"context":next(c["context"] for c in CASES if c["scenario_id"]==sid)} for sid,text in items]
-    data,usage=chat_json(client,model,system,json.dumps({"items":payload},ensure_ascii=False,separators=(",",":")),temperature=0,max_tokens=900)
+    data,usage=chat_json(client,model,system,json.dumps({"items":payload},ensure_ascii=False,separators=(",",":")),temperature=0,max_tokens=1400)
     got={str(x.get("id")):x for x in data.get("items",[]) if isinstance(x,dict)}
     rows=[]
     for c in CASES:
