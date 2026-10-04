@@ -509,6 +509,7 @@ def extract_evidence(text, ctx=None):
     payloads=extract_literal_payloads(text)
     name_value=payload_value(payloads,"name")
     prop,pval=extract_property_value(text,ctx,payloads)
+    copy_count=extract_copy_count(text)
 
     # Literal/name payload is opaque to intent cues. Words such as "fit", "hide"
     # or "fillet" inside a requested name must never hijack the command.
@@ -614,7 +615,7 @@ def extract_evidence(text, ctx=None):
     # from being hijacked into viewer.inspect.
     selection_inspect_cue = (
         has_any(cue_t,["چی انتخاب","چی انتخابه","چی انتخاب شده","چی سلکت","چی دستمه","چی گرفتم"]) or
-        bool(re.search(r"(?:چی(?=\\s|$)|چه چیزی).*?(?:دست|گرفت|انتخاب|سلکت)",cue_t)) or
+        bool(re.search(r"(?:چی(?=\s|$)|چه چیزی).*?(?:دست|گرفت|انتخاب|سلکت)",cue_t)) or
         bool(re.search(r"(?:انتخاب|selection|سلکت).*?(?:چیه|چی هست|چی شده)",cue_t))
     )
     selection_action = None
@@ -721,6 +722,7 @@ def extract_evidence(text, ctx=None):
         "plane_reference_direction":plane_reference_direction,
         "pattern_explicit":pattern_explicit,
         "edge_new_explicit":edge_new_explicit,
+        "copy_count":copy_count,
         "cue_text":cue_t,
         "design":design,
         "unsupported":unsupported,
@@ -864,7 +866,6 @@ def direct_intent(case, ev):
     return (None,None)
 
 def compile_intent(case, decision, intent, ev):
-    t=ev.get("cue_text") or low(case["text"]); ctx=case.get("ctx",{})
     if decision=="think":
         return reject("design-escalation")
     if decision=="ask" or not intent:
@@ -1023,7 +1024,7 @@ def compile_intent(case, decision, intent, ev):
             return reject("pattern-not-explicit")
         part=choose_part(ev)
         qs=all_quantities(ev,"mm")
-        copies=extract_copy_count(case["text"])
+        copies=ev.get("copy_count")
         if not part or copies is None or len(qs)!=1: return reject("pattern-ungrounded")
         return accept("feature.add",
                       {"feature_type":"linearPattern","part_name":part,"copies":copies,"distance":quantity_string(qs[0])},
@@ -1064,9 +1065,6 @@ def compile_intent(case, decision, intent, ev):
 
     if intent=="create_part_studio":
         name=ev.get("name_value")
-        if not name:
-            m=re.search(r"(?:part studio|پارت استودیو).*?(?:اسمش|به اسم)\s+(.+)$",norm_text(case["text"]),re.I)
-            name=m.group(1).strip() if m else None
         if not name: return reject("part-studio-name-ungrounded")
         return accept("documented.createPartStudio",{"new_name":name},{"name":"text-span"})
 
