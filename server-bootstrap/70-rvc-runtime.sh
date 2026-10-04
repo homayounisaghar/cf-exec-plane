@@ -8,6 +8,9 @@ HUBERT_REVISION="1be9d36ece685661920e1a7cb36eb0437c1e5581"
 RMVPE_REVISION="0d7ebae452fb102c695b08f4e6f546be00603425"
 HUBERT_SHA256="cc8c20f4b90a520757260197a3ff2505705a7adbd20ad9eeaa4e1a9b38442ef5"
 RMVPE_SHA256="6d62215f4306e3ca278246188607209f09af3dc77ed4232efdd069798c4ec193"
+UV_VERSION="0.12.20"
+UV_X86_64_SHA256="6590717592ace991ff83a63fef799e3ad9d33ecc8f96c5d6bdd732496e79337f"
+UV_AARCH64_SHA256="8a7aad7bc76a2fae5151566ff3e43eacce0b2a113d5e4de3e4afe3e58fa2441e"
 
 root=/var/lib/capability-fabric/rvc
 releases="$root/releases"
@@ -101,19 +104,21 @@ systemctl restart capability-fabric-rvc-worker.service
 CURRENT_STAGE="os_check"
 write_status "RUNNING" "$CURRENT_STAGE" "validating host OS"
 . /etc/os-release
-[[ "${ID:-}" == "ubuntu" && "${VERSION_ID:-}" == "24.04" ]] || {
-  FAIL_DETAIL="id=${ID:-unknown} version=${VERSION_ID:-unknown}"
-  echo "RVC_RUNTIME_UNSUPPORTED_OS $FAIL_DETAIL" >&2
-  exit 11
-}
+case "${ID:-}:${VERSION_ID:-}" in
+  ubuntu:24.04|ubuntu:26.04) ;;
+  *)
+    FAIL_DETAIL="id=${ID:-unknown} version=${VERSION_ID:-unknown}"
+    echo "RVC_RUNTIME_UNSUPPORTED_OS $FAIL_DETAIL" >&2
+    exit 11
+    ;;
+esac
 
 CURRENT_STAGE="apt_dependencies"
 write_status "RUNNING" "$CURRENT_STAGE" "installing OS prerequisites"
 export DEBIAN_FRONTEND=noninteractive
 apt-get update
 apt-get install -y --no-install-recommends \
-  ca-certificates curl ffmpeg unzip \
-  python3.12 python3.12-venv python3.12-dev \
+  ca-certificates curl ffmpeg unzip xz-utils \
   libsndfile1 libportaudio2
 
 if [[ -e "$release" ]]; then
@@ -138,8 +143,56 @@ else
   }
 
   CURRENT_STAGE="python_environment"
-  write_status "RUNNING" "$CURRENT_STAGE" "creating pinned CPU Python environment"
-  python3.12 -m venv "$incoming/.venv"
+  write_status "RUNNING" "$CURRENT_STAGE" "installing pinned uv and managed Python 3.12"
+
+  host_arch="$(uname -m)"
+  case "$host_arch" in
+    x86_64)
+      uv_asset="uv-x86_64-unknown-linux-gnu.tar.gz"
+      uv_sha256="$UV_X86_64_SHA256"
+      ;;
+    aarch64|arm64)
+      uv_asset="uv-aarch64-unknown-linux-gnu.tar.gz"
+      uv_sha256="$UV_AARCH64_SHA256"
+      ;;
+    *)
+      FAIL_DETAIL="unsupported_arch=$host_arch"
+      echo "RVC_RUNTIME_UNSUPPORTED_ARCH $FAIL_DETAIL" >&2
+      exit 22
+      ;;
+  esac
+
+  uv_archive="$tmpdir/$uv_asset"
+  uv_extract="$tmpdir/uv"
+  curl -fL --retry 5 --retry-delay 2 --connect-timeout 15 \
+    "https://github.com/astral-sh/uv/releases/download/$UV_VERSION/$uv_asset" \
+    -o "$uv_archive"
+  printf '%s  %s\n' "$uv_sha256" "$uv_archive" | sha256sum -c -
+  install -d -m 0755 "$uv_extract"
+  tar -xzf "$uv_archive" -C "$uv_extract"
+  uv_dirname="${uv_asset%.tar.gz}"
+  uv_bin="$uv_extract/$uv_dirname/uv"
+  [[ -x "$uv_bin" ]] || {
+    FAIL_DETAIL="uv_binary_missing asset=$uv_asset"
+    echo "RVC_UV_LAYOUT_INVALID $FAIL_DETAIL" >&2
+    exit 23
+  }
+
+  python_store="$root/python"
+  install -d -m 0755 -o root -g root "$python_store"
+  UV_PYTHON_INSTALL_DIR="$python_store" \
+    "$uv_bin" python install 3.12 --managed-python --no-bin --no-config
+  managed_python="$(UV_PYTHON_INSTALL_DIR="$python_store" \
+    "$uv_bin" python find 3.12 --managed-python --no-config)"
+  [[ -x "$managed_python" ]] || {
+    FAIL_DETAIL="managed_python_not_found"
+    echo "RVC_MANAGED_PYTHON_MISSING" >&2
+    exit 24
+  }
+  managed_python_version="$("$managed_python" -c 'import platform; print(platform.python_version())')"
+  write_status "RUNNING" "$CURRENT_STAGE" "uv=$UV_VERSION python=$managed_python_version arch=$host_arch"
+
+  "$managed_python" -m venv "$incoming/.venv"
   "$incoming/.venv/bin/python" -m pip install --upgrade "pip>=24,<26" "setuptools>=75,<81" "wheel>=0.45,<1"
 
   cp "$incoming/requirments_cpu_py312.txt" "$tmpdir/requirements.txt"
@@ -191,7 +244,10 @@ PY
   "hubert_revision": "$HUBERT_REVISION",
   "hubert_sha256": "$HUBERT_SHA256",
   "rmvpe_revision": "$RMVPE_REVISION",
-  "rmvpe_sha256": "$RMVPE_SHA256"
+  "rmvpe_sha256": "$RMVPE_SHA256",
+  "python_distribution": "uv-managed-3.12",
+  "uv_version": "$UV_VERSION",
+  "python_version": "$managed_python_version"
 }
 EOF
   chown -R root:root "$incoming"
