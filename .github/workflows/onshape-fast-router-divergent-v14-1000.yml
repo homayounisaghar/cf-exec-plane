@@ -47,8 +47,9 @@ jobs:
           MAX_BATCH_RETRIES: '2'
           OUT_DIR: ${{ github.workspace }}/artifacts/onshape-fast-router-divergent-v14-1000
         run: |
+          set -o pipefail
           cd qualification/onshape-fast-router-divergent-v14-1000
-          python run_v14_1000.py
+          python run_v14_1000.py 2>&1 | tee "${{ github.workspace }}/artifacts/onshape-fast-router-divergent-v14-1000/run.log"
       - name: Publish direct readback
         if: always()
         run: |
@@ -58,6 +59,7 @@ jobs:
           mkdir -p "$dst"
           test -f "$src/architecture-selftest.json" && cp "$src/architecture-selftest.json" "$dst/architecture-selftest.json" || true
           test -f "$src/corpus-manifest.json" && cp "$src/corpus-manifest.json" "$dst/corpus-manifest.json" || true
+          test -f "$src/run.log" && cp "$src/run.log" "$dst/run.log" || true
           if test -f "$src/summary.json"; then
             cp "$src/summary.json" "$dst/summary.json"
             cp "$src/rows.json" "$dst/rows.json"
