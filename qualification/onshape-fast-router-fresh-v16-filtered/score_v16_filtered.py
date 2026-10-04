@@ -63,6 +63,16 @@ def main():
             })
 
     severe=sum(outcomes[k] for k in ("wrong_material_accepted","false_execute","wrong_reversible_accepted"))
+    reason_counts=collections.defaultdict(collections.Counter)
+    representatives=collections.defaultdict(list)
+    for row in rows:
+        reason_counts[row["category"]][row.get("reason") or row["outcome"]]+=1
+        if len(representatives[row["category"]])<3:
+            representatives[row["category"]].append({
+                "id":row["id"],"text":row["text"],"expected":row["expected"],
+                "compiled":row["compiled"],"outcome":row["outcome"],"reason":row.get("reason"),
+                "action_families":row.get("action_families"),"quantity_issues":row.get("quantity_issues"),
+            })
     summary={
         "candidate_cases_before_filter":len(CANDIDATES),
         "filtered_before_score":len(FILTERED),
@@ -82,6 +92,8 @@ def main():
         "route_mismatch":outcomes["route_mismatch"],
         "outcomes":dict(outcomes),
         "by_category":{k:dict(v) for k,v in sorted(by_category.items())},
+        "failure_reason_counts":{k:dict(v) for k,v in sorted(reason_counts.items())},
+        "representative_failures":{k:v for k,v in sorted(representatives.items())},
         "wall_seconds":time.perf_counter()-started,
     }
     with open(os.path.join(outdir,"summary.json"),"w",encoding="utf-8") as f:
