@@ -1,0 +1,10 @@
+{
+  "request_id": "v18-hardening-1239146f-20261004-1248",
+  "source_head": "1239146f00c1005b7361f6e23ec40e9de08b3870",
+  "source_sha": "2049eb3f87990e296e1842e3ce0d122165bfb1a8",
+  "selftest_sha": "344f36c0bb5401721741e6eeab28fc2f7f617228",
+  "pre_score_filter": "apprentice-only",
+  "frozen_corpus_sha256": "f595020150c6a86c883376cedd201ff95d35292ed13e69f596f1d0af25fb998f",
+  "overlap_must_be_zero_with": ["V15","V16","V17"],
+  "production_effects": false
+}
