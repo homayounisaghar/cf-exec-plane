@@ -1,0 +1,97 @@
+services:
+  onshape_server:
+    container_name: capability-fabric-onshape-server
+    image: mcr.microsoft.com/playwright:v1.62.1-resolute@sha256:aebd85bce8056dcdc2269853fd94ea432b6a201da4f0ef125b509489ecd52ddb
+    group_add:
+      - "65534"
+    network_mode: host
+    ipc: host
+    working_dir: /tmp/app
+    command:
+      - sh
+      - -lc
+      - >-
+        umask 077 &&
+        chmod 0700 /profile /run/onshape-secrets /agent-state &&
+        mkdir -p /tmp/app &&
+        cp /release/package.json /release/server.js /release/core.js /release/browser.js /release/onshape-request.cjs /release/onshape-agent.js /release/telegram-ingress.mjs /release/paa-search-preload.mjs /tmp/app/ &&
+        cd /tmp/app &&
+        PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm install --omit=dev --ignore-scripts --no-audit --no-fund --package-lock=false &&
+        exec node --import ./paa-search-preload.mjs server.js
+    environment:
+      HOST: 127.0.0.1
+      PORT: "8788"
+      ONSHAPE_AGENT_STATE_DIR: /agent-state
+      MCP_TOKEN_FILE: /run/secrets/mcp-token
+      ONSHAPE_PROFILE_DIR: /profile
+      ONSHAPE_ACCOUNT_FILE: /run/onshape-secrets/account
+      ONSHAPE_PASSWORD_FILE: /run/onshape-secrets/password
+      ONSHAPE_ANTI_FORGERY_HEADER_NAME: "x-xsrf-token"
+      ONSHAPE_UI_API_VERSION: "v14"
+      ONSHAPE_OPENAPI_FILE: /openapi/onshape-openapi.json
+      ONSHAPE_API_MIN_INTERVAL_MS: "1000"
+      PCG_WEB_SOCKET: /run/pcg/web.sock
+      CF_RVC_WORKER_URL: http://127.0.0.1:8794
+      NODE_ENV: production
+      NPM_CONFIG_CACHE: /tmp/npm-cache
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+      HOME: /tmp
+    volumes:
+      - ./:/release:ro
+      - /etc/capability-fabric/secrets/mcp-token:/run/secrets/mcp-token:ro
+      - /etc/capability-fabric/secrets/onshape:/run/onshape-secrets:rw
+      - /var/lib/capability-fabric/onshape/browser-profile:/profile:rw
+      - /var/lib/capability-fabric/onshape/openapi:/openapi:rw
+      - /var/lib/capability-fabric/onshape/agent:/agent-state:rw
+      - /var/lib/capability-fabric/pcg/run/ingress:/run/pcg:ro
+      - /var/lib/capability-fabric/pcg/run/downloads:/run/pcg-downloads:ro
+    tmpfs:
+      - /tmp
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    stop_grace_period: 15s
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:8788/').then(async r => { if (!r.ok || (await r.text()) !== 'cf-onshape-single ok') process.exit(1) }).catch(() => process.exit(1))"
+      interval: 10s
+      timeout: 4s
+      retries: 12
+      start_period: 60s
+
+  onshape_gateway:
+    container_name: capability-fabric-onshape-gateway
+    image: mcr.microsoft.com/playwright:v1.62.1-resolute@sha256:aebd85bce8056dcdc2269853fd94ea432b6a201da4f0ef125b509489ecd52ddb
+    network_mode: host
+    depends_on:
+      onshape_server:
+        condition: service_healthy
+    working_dir: /app
+    command:
+      - node
+      - /app/gateway.js
+    volumes:
+      - /opt/capability-fabric/current/gateway.js:/app/gateway.js:ro
+      - /etc/capability-fabric/secrets/mcp-token:/run/secrets/mcp-token:ro
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:8787/').then(async r => { if (!r.ok || (await r.text()) !== 'cf-onshape-single ok') process.exit(1) }).catch(() => process.exit(1))"
+      interval: 10s
+      timeout: 3s
+      retries: 12
+      start_period: 20s
