@@ -1,0 +1,8 @@
+{
+  "generator": "v20c-semantic-compositional-grammar-v1",
+  "scenario_first": true,
+  "router_source_read_by_realizer": false,
+  "prior_holdout_text_read_by_realizer": false,
+  "semantic_fidelity": "by construction from structured gold and typed context",
+  "cases": 9800
+}

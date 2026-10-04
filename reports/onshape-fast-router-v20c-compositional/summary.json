@@ -1,0 +1,263 @@
+{
+  "evidence_kind": "FRESH_COMPOSITIONAL_SCORE",
+  "candidate_commit": "54580b67a9a61d2463ec3b9ced7a801707bb242b",
+  "cases": 9800,
+  "deterministic_cases": 9002,
+  "deterministic_coverage": 0.9185714285714286,
+  "fallback_cases": 798,
+  "conservative_escalations": 4072,
+  "fallback_plus_conservative_rate": 0.4969387755102041,
+  "exact_correct": 4143,
+  "exact_accuracy": 0.42275510204081634,
+  "effect_correct": 4143,
+  "effect_accuracy": 0.42275510204081634,
+  "effect_errors": 5657,
+  "severe_accepted_effect_errors": 787,
+  "wrong_material_accepted": 626,
+  "false_execute": 58,
+  "wrong_reversible_accepted": 103,
+  "accepted_effects": 4148,
+  "accepted_effects_correct": 3361,
+  "automatic_effect_acceptance_precision": 0.8102700096432015,
+  "outcomes": {
+    "correct": 4143,
+    "conservative_escalation": 4072,
+    "fallback": 798,
+    "wrong_reversible_accepted": 103,
+    "wrong_material_accepted": 626,
+    "false_execute": 58
+  },
+  "by_category": {
+    "ambiguous_target_safe_ask": {
+      "correct": 198,
+      "false_execute": 2
+    },
+    "clear_selection": {
+      "correct": 166,
+      "conservative_escalation": 34
+    },
+    "conditional_safe_ask": {
+      "correct": 144,
+      "false_execute": 56
+    },
+    "context_camera_continue": {
+      "correct": 64,
+      "conservative_escalation": 136
+    },
+    "context_camera_reverse": {
+      "conservative_escalation": 200
+    },
+    "context_relative": {
+      "conservative_escalation": 150,
+      "wrong_material_accepted": 50
+    },
+    "create_part_studio": {
+      "wrong_material_accepted": 157,
+      "conservative_escalation": 43
+    },
+    "draft_angle": {
+      "correct": 158,
+      "conservative_escalation": 42
+    },
+    "extrude_depth": {
+      "correct": 158,
+      "conservative_escalation": 42
+    },
+    "feature_delete": {
+      "conservative_escalation": 196,
+      "wrong_reversible_accepted": 4
+    },
+    "feature_rename": {
+      "conservative_escalation": 196,
+      "wrong_reversible_accepted": 4
+    },
+    "feature_reorder": {
+      "conservative_escalation": 188,
+      "correct": 4,
+      "wrong_reversible_accepted": 4,
+      "wrong_material_accepted": 4
+    },
+    "fillet_radius": {
+      "correct": 158,
+      "conservative_escalation": 42
+    },
+    "fit_all": {
+      "fallback": 166,
+      "conservative_escalation": 30,
+      "wrong_reversible_accepted": 4
+    },
+    "fit_selection": {
+      "fallback": 156,
+      "conservative_escalation": 30,
+      "wrong_reversible_accepted": 14
+    },
+    "flip_direction": {
+      "correct": 158,
+      "conservative_escalation": 42
+    },
+    "follow_pair": {
+      "conservative_escalation": 200
+    },
+    "follow_three": {
+      "conservative_escalation": 200
+    },
+    "inspect_collaboration": {
+      "correct": 170,
+      "conservative_escalation": 30
+    },
+    "inspect_selection": {
+      "fallback": 60,
+      "conservative_escalation": 132,
+      "wrong_reversible_accepted": 8
+    },
+    "inspect_state": {
+      "fallback": 64,
+      "conservative_escalation": 132,
+      "wrong_reversible_accepted": 4
+    },
+    "invalid_quantity_safe_ask": {
+      "correct": 200
+    },
+    "linear_pattern": {
+      "correct": 64,
+      "conservative_escalation": 136
+    },
+    "multi_action_safe_ask": {
+      "correct": 200
+    },
+    "negation_correction": {
+      "conservative_escalation": 100,
+      "fallback": 20,
+      "wrong_reversible_accepted": 40,
+      "correct": 40
+    },
+    "new_chamfer": {
+      "correct": 166,
+      "conservative_escalation": 34
+    },
+    "new_fillet": {
+      "correct": 166,
+      "conservative_escalation": 34
+    },
+    "orbit_horizontal": {
+      "correct": 166,
+      "conservative_escalation": 34
+    },
+    "orbit_roll": {
+      "conservative_escalation": 200
+    },
+    "orbit_vertical": {
+      "correct": 166,
+      "conservative_escalation": 34
+    },
+    "pan_horizontal": {
+      "correct": 166,
+      "conservative_escalation": 34
+    },
+    "pan_vertical": {
+      "correct": 166,
+      "conservative_escalation": 34
+    },
+    "part_color": {
+      "correct": 127,
+      "conservative_escalation": 72,
+      "wrong_reversible_accepted": 1
+    },
+    "part_delete": {
+      "correct": 166,
+      "conservative_escalation": 34
+    },
+    "part_description": {
+      "conservative_escalation": 200
+    },
+    "part_hide": {
+      "correct": 166,
+      "conservative_escalation": 34
+    },
+    "part_material": {
+      "wrong_material_accepted": 197,
+      "conservative_escalation": 3
+    },
+    "part_rename": {
+      "conservative_escalation": 128,
+      "wrong_material_accepted": 60,
+      "wrong_reversible_accepted": 12
+    },
+    "part_show": {
+      "fallback": 166,
+      "conservative_escalation": 30,
+      "wrong_reversible_accepted": 4
+    },
+    "plane_named": {
+      "conservative_escalation": 200
+    },
+    "plane_plain": {
+      "correct": 166,
+      "conservative_escalation": 34
+    },
+    "rename_document": {
+      "fallback": 166,
+      "conservative_escalation": 30,
+      "wrong_reversible_accepted": 4
+    },
+    "rollback": {
+      "correct": 166,
+      "conservative_escalation": 34
+    },
+    "selected_chamfer": {
+      "correct": 166,
+      "conservative_escalation": 34
+    },
+    "selected_fillet": {
+      "correct": 166,
+      "conservative_escalation": 34
+    },
+    "suppress": {
+      "conservative_escalation": 200
+    },
+    "top_view": {
+      "correct": 142,
+      "conservative_escalation": 58
+    },
+    "unsuppress": {
+      "wrong_material_accepted": 158,
+      "conservative_escalation": 42
+    },
+    "zoom": {
+      "conservative_escalation": 200
+    }
+  },
+  "by_safety_class": {
+    "bounded_mutation": {
+      "correct": 2155,
+      "conservative_escalation": 2294,
+      "wrong_material_accepted": 626,
+      "wrong_reversible_accepted": 33,
+      "fallback": 332
+    },
+    "clarification_required": {
+      "correct": 782,
+      "false_execute": 58
+    },
+    "read_only": {
+      "fallback": 124,
+      "conservative_escalation": 334,
+      "wrong_reversible_accepted": 12,
+      "correct": 170
+    },
+    "reversible_view": {
+      "correct": 1036,
+      "conservative_escalation": 1444,
+      "fallback": 342,
+      "wrong_reversible_accepted": 58
+    }
+  },
+  "strong_gate": {
+    "zero_severe": false,
+    "effect_accuracy_ge_95": false,
+    "deterministic_coverage_ge_95": false,
+    "fallback_plus_conservative_le_5": false,
+    "pass": false
+  },
+  "wall_seconds": 15.76000539200001
+}

@@ -1,0 +1,14 @@
+{
+  "test_id": "onshape-fast-router-v20c-compositional",
+  "candidate_commit": "54580b67a9a61d2463ec3b9ced7a801707bb242b",
+  "router_blob": "2794465cefb0f8cad45ad5428b0570d04921a343",
+  "selftest_blob": "344f36c0bb5401721741e6eeab28fc2f7f617228",
+  "candidate_scenarios": 10000,
+  "filtered_before_language": 200,
+  "scored_cases": 9800,
+  "scenario_sha256": "8b832deb888f9b2642f2eb52b317f6474d6b4c85ec4ccbcabff643cdafd28b80",
+  "corpus_sha256": "7b5212ff21d58230aceeab34a272b467e8eaebff03122a6ec97919d7270b6479",
+  "semantic_construction_gate": "PASS",
+  "diversity_gate": "PASS",
+  "prior_normalized_overlap": 0
+}
