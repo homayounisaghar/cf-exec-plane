@@ -72,7 +72,7 @@ def has_any(t, xs):
     return any(x in t for x in xs)
 
 _LEADING_ENVELOPE_RE=re.compile(
-    r"^(?:(?:لطفاً|لطفا|بی\s*زحمت|بی‌زحمت|اگه میشه|اگر میشه|میشه|الان|یه لحظه|برای من|فقط|"
+    r"^(?:(?:لطفاً|لطفا|بی\s*زحمت|بی‌زحمت|اگه میشه|اگر میشه|میشه لطف کنی|می شه لطف کنی|میشه|الان|یه لحظه|برای من|فقط|"
     r"خب|باشه|ممنون می شم|ممنون می‌شم|زحمت میشه|وقتی آماده ای|وقتی آماده‌ای|"
     r"سریع|آروم|دقیقاً|دقیقا|فعلاً|فعلا|اول از همه|اگه امکانش هست|می‌خوام|می خوام|"
     r"یه زحمت|لطف می‌کنی|لطف می کنی|می‌تونی|می تونی|واسه من|میشه لطف کنی|می شه لطف کنی|"
@@ -689,13 +689,18 @@ def extract_evidence(text, ctx=None):
     cue_t,negated_clause_count=mask_negated_action_clauses(t)
 
     visibility=None
-    if re.search(r"(?:نشون|نشان)\s+نده",cue_t) or "نشون نده" in cue_t or "نشان نده" in cue_t:
+    part_visibility_target=bool(ps or ctx.get("last_part"))
+    if part_visibility_target and re.search(r"\bvisibility\b.*?\boff\b",cue_t,re.I):
         visibility=False
-    elif has_any(cue_t,["مخفی","قایم","hide","هاید","نامرئی","visibility off","visibility رو off","نشونش نده","نشانش نده","از جلوی چشم بردار","از نما بردار","از توی نما بردار","دیده نشه","دیده نشود"]):
-        visibility=False
-    elif has_any(cue_t,["نشون بده","نشان بده","نشونش بده","نشانش بده","show","visibility on","visibility رو on","دوباره بیار","دوباره توی viewport بیار","برگردونش توی نما","برگردون تو نما","برگردون توی نما"]):
+    elif part_visibility_target and re.search(r"\bvisibility\b.*?\bon\b",cue_t,re.I):
         visibility=True
-    elif (ps or ctx.get("last_part")) and has_any(cue_t,["دیده بشه","دیده بشود","دیده شه","دوباره دیده"]):
+    elif part_visibility_target and (re.search(r"(?:نشون|نشان)\s+نده",cue_t) or "نشون نده" in cue_t or "نشان نده" in cue_t):
+        visibility=False
+    elif part_visibility_target and has_any(cue_t,["مخفی","قایم","hide","هاید","نامرئی","نشونش نده","نشانش نده","از جلوی چشم بردار","از نما بردار","از توی نما بردار","دیده نشه","دیده نشود"]):
+        visibility=False
+    elif part_visibility_target and has_any(cue_t,["نشون بده","نشان بده","نشونش بده","نشانش بده","show","دوباره بیار","دوباره توی viewport بیار","برگردونش توی نما","برگردون تو نما","برگردون توی نما"]):
+        visibility=True
+    elif part_visibility_target and has_any(cue_t,["دیده بشه","دیده بشود","دیده شه","دوباره دیده"]):
         visibility=True
 
     suppressed=None
@@ -814,7 +819,7 @@ def extract_evidence(text, ctx=None):
     )
     clear_selection = (
         has_any(cue_t,["انتخاب رو پاک","انتخاب را پاک","selection رو پاک","selection را پاک",
-                       "selection فعلی رو صفر","انتخاب فعلی رو صفر","انتخابارو ول کن","انتخاب ها رو ول کن","clear selection","selection رو clear","selection را clear",
+                       "selection فعلی رو صفر","انتخاب فعلی رو صفر","selectionها رو خالی","selection ها رو خالی","انتخابارو ول کن","انتخاب ها رو ول کن","clear selection","selection رو clear","selection را clear",
                        "selection ro clear","selection ro clear kon","select شده آزادش کن","انتخاب شده آزادش کن","انتخاب‌شده آزادش کن",
                        "هیچ چیز انتخاب شده نمونه","هیچ چیز انتخاب‌شده نمونه"]) or
         bool(re.search(r"(?:هر چی|هرچی).*(?:انتخاب|selection|select).*(?:پاک|خالی|ول کن|آزاد|clear)",cue_t)) or
@@ -903,13 +908,14 @@ def extract_evidence(text, ctx=None):
 
     feature_target=bool(fs or ctx.get("last_feature"))
     part_target=bool(ps or ctx.get("last_part"))
-    named_feature_context = bool(fs) and (relation is not None or has_any(cue_t,["اسم","نام","rename","پاک","حذف","بنداز دور"]))
+    rename_cue = has_any(cue_t,["اسم","نام","rename"]) or bool(re.search(r"\bname\b",cue_t,re.I))
+    named_feature_context = bool(fs) and (relation is not None or rename_cue or has_any(cue_t,["پاک","حذف","بنداز دور"]))
     edge_effect_context = (ctx.get("selection_count",0)>0 or has_any(cue_t,["لبه","انتخاب","selected"]) or has_any(cue_t,["جدید","خالی","بدون انتخاب"]))
     cue("edge_fillet", has_any(cue_t,["فیلت","fillet","فیلِت"]) and edge_effect_context and not named_feature_context)
     cue("edge_chamfer", has_any(cue_t,["پخ","چمفر","chamfer","bevel"]) and edge_effect_context and not named_feature_context)
     cue("part_visibility", visibility is not None and part_target)
     cue("part_property", prop is not None and part_target)
-    cue("feature_rename", name_value is not None and feature_target and has_any(cue_t,["اسم","نام","rename"]))
+    cue("feature_rename", name_value is not None and feature_target and rename_cue)
     cue("delete", delete_cue and (feature_target or part_target) and not clear_selection)
     cue("reorder", relation is not None and len(fs)>=1 and not rollback_explicit)
     cue("rollback", rollback_explicit)
@@ -940,7 +946,10 @@ def extract_evidence(text, ctx=None):
     conditional=has_conditional_or_exception(cue_t)
     dependent_sequence=has_dependent_sequence(cue_t)
     action_families=sorted(set(action_cues))
-    multi_action=(len(action_families)>1 or effect_clause_count>1)
+    payload_binding_single_effect = bool(name_value) and (
+        (plane_explicit and plane_create_explicit) or part_studio_create or document_rename
+    )
+    multi_action=(len(action_families)>1 or (effect_clause_count>1 and not payload_binding_single_effect))
     negated_action_only=(negated_clause_count>0 and effect_clause_count==0)
 
     return {
@@ -977,6 +986,7 @@ def extract_evidence(text, ctx=None):
         "rollback_explicit":rollback_explicit,
         "part_studio_create":part_studio_create,
         "document_rename":document_rename,
+        "rename_cue":rename_cue,
         "feature_word":feature_word,
         "delete_cue":delete_cue,
         "plane_explicit":plane_explicit,
@@ -1081,13 +1091,13 @@ def direct_intent(case, ev):
 
     if ev.get("parameter_hint")=="flip direction" and choose_feature(ev):
         return ("act","feature_parameter")
-    if has_any(t,["اسم","نام","rename"]) and choose_feature(ev):
+    if ev.get("rename_cue") and choose_feature(ev):
         return ("act","feature_rename")
     if ev.get("delete_position") and ev.get("feature_word") and ev.get("delete_cue"):
         return ("act","feature_delete")
     if "آخرین" in t and has_any(t,["از فیچرها","درخت فیچر"]) and has_any(t,["پاک","حذف"]):
         return ("act","feature_delete")
-    if choose_feature(ev) and has_any(t,["پاک کن","حذف کن","بنداز دور","delete کن","delete "]):
+    if choose_feature(ev) and has_any(t,["پاک کن","حذف کن","حذفش کن","پاکش کن","بنداز دور","delete کن","delete "]):
         return ("act","feature_delete")
     if choose_part(ev) and has_any(t,["پاک کن","حذف کن","delete کن","delete ","بنداز دور"]) and not choose_feature(ev):
         return ("act","part_delete")
