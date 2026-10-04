@@ -1,8 +1,8 @@
 {
   "schema": "cf.onshape.fast-router-divergent-v15-10000",
   "statistical_role": "fresh_post_v14_stress_holdout",
-  "corpus_freeze_commit": "aba4c688d2da8f6b404ce16a5c5aa591cf5480d5",
-  "corpus_file_sha": "71033923d1b62ba3a79b8b89cc969c581f859074",
+  "corpus_freeze_commit": "d35cf061fcca306d9f3912c4ac9fec705303fb72",
+  "corpus_file_sha": "ba4c2a535404debcf9275913e6c8ce8257b75fea",
   "router_source_repo": "homayounisaghar/capability-fabric",
   "router_source_ref": "work/onshape-fast-router-v14-hardening",
   "router_source_head": "91c285ad97adb5af45fa806f7af2caf4a693cd93",
@@ -11,5 +11,5 @@
   "cases": 10000,
   "families": 50,
   "production_effects": false,
-  "note": "Fresh 10,000-case post-V14 divergent holdout. Methodology was critically redesigned before scoring to broaden professional CAD language, discourse, negation/correction, context conflict, localized quantities, noisy mobile/ASR forms, unsupported professional operations, and multi-action residue. Corpus source was committed before any router score. Do not edit corpus or gold labels after first score."
+  "note": "Fresh 10,000-case post-V14 divergent holdout. Methodology was critically redesigned before scoring to broaden professional CAD language, discourse, negation/correction, context conflict, localized quantities, noisy mobile/ASR forms, unsupported professional operations, and multi-action residue. Corpus source was committed before any router score. Do not edit corpus or gold labels after first score. The initial freeze-only diagnostic found one duplicate case-id prefix; before any score, only that identifier prefix was renamed. Utterance text and gold labels were unchanged. This commit is the final pre-score corpus freeze."
 }
