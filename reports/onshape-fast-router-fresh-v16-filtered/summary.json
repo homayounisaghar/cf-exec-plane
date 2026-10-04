@@ -1,0 +1,251 @@
+{
+  "candidate_cases_before_filter": 10000,
+  "filtered_before_score": 200,
+  "cases": 9800,
+  "deterministic_cases": 7821,
+  "fallback_cases": 1979,
+  "exact_correct": 5964,
+  "exact_accuracy": 0.6085714285714285,
+  "effect_correct": 5964,
+  "effect_accuracy": 0.6085714285714285,
+  "effect_errors": 3836,
+  "severe_accepted_effect_errors": 501,
+  "wrong_material_accepted": 386,
+  "false_execute": 0,
+  "wrong_reversible_accepted": 115,
+  "conservative_escalations": 1356,
+  "route_mismatch": 0,
+  "outcomes": {
+    "fallback": 1979,
+    "correct": 5964,
+    "conservative_escalation": 1356,
+    "wrong_reversible_accepted": 115,
+    "wrong_material_accepted": 386
+  },
+  "by_category": {
+    "ambiguous_target_safe_ask": {
+      "correct": 200
+    },
+    "clear_selection": {
+      "fallback": 130,
+      "correct": 50,
+      "conservative_escalation": 20
+    },
+    "conditional_safe_ask": {
+      "correct": 200
+    },
+    "context_camera_continue": {
+      "correct": 136,
+      "conservative_escalation": 20,
+      "fallback": 44
+    },
+    "context_camera_reverse": {
+      "correct": 136,
+      "conservative_escalation": 20,
+      "fallback": 44
+    },
+    "context_relative": {
+      "correct": 180,
+      "conservative_escalation": 20
+    },
+    "create_part_studio": {
+      "correct": 34,
+      "conservative_escalation": 150,
+      "wrong_material_accepted": 16
+    },
+    "draft_angle": {
+      "correct": 180,
+      "conservative_escalation": 20
+    },
+    "extrude_depth": {
+      "correct": 180,
+      "conservative_escalation": 20
+    },
+    "feature_delete": {
+      "correct": 162,
+      "conservative_escalation": 20,
+      "fallback": 18
+    },
+    "feature_rename": {
+      "wrong_reversible_accepted": 35,
+      "conservative_escalation": 109,
+      "wrong_material_accepted": 11,
+      "correct": 45
+    },
+    "feature_reorder": {
+      "correct": 180,
+      "conservative_escalation": 20
+    },
+    "fillet_radius": {
+      "correct": 180,
+      "conservative_escalation": 20
+    },
+    "fit_all": {
+      "fallback": 140,
+      "correct": 40,
+      "conservative_escalation": 20
+    },
+    "fit_selection": {
+      "fallback": 130,
+      "correct": 50,
+      "conservative_escalation": 20
+    },
+    "flip_direction": {
+      "correct": 180,
+      "conservative_escalation": 20
+    },
+    "follow_pair": {
+      "correct": 90,
+      "fallback": 90,
+      "conservative_escalation": 20
+    },
+    "follow_three": {
+      "correct": 180,
+      "conservative_escalation": 20
+    },
+    "inspect_collaboration": {
+      "correct": 140,
+      "fallback": 40,
+      "conservative_escalation": 20
+    },
+    "inspect_selection": {
+      "fallback": 140,
+      "correct": 40,
+      "conservative_escalation": 20
+    },
+    "inspect_state": {
+      "fallback": 140,
+      "correct": 40,
+      "conservative_escalation": 20
+    },
+    "invalid_quantity_safe_ask": {
+      "correct": 200
+    },
+    "linear_pattern": {
+      "conservative_escalation": 70,
+      "correct": 130
+    },
+    "multi_action_safe_ask": {
+      "correct": 200
+    },
+    "negation_correction": {
+      "correct": 160,
+      "fallback": 40
+    },
+    "new_chamfer": {
+      "conservative_escalation": 65,
+      "correct": 135
+    },
+    "new_fillet": {
+      "correct": 180,
+      "conservative_escalation": 20
+    },
+    "orbit_horizontal": {
+      "fallback": 90,
+      "correct": 90,
+      "conservative_escalation": 20
+    },
+    "orbit_roll": {
+      "correct": 100,
+      "wrong_reversible_accepted": 80,
+      "conservative_escalation": 20
+    },
+    "orbit_vertical": {
+      "fallback": 90,
+      "correct": 90,
+      "conservative_escalation": 20
+    },
+    "pan_horizontal": {
+      "correct": 135,
+      "fallback": 45,
+      "conservative_escalation": 20
+    },
+    "pan_vertical": {
+      "correct": 135,
+      "fallback": 45,
+      "conservative_escalation": 20
+    },
+    "part_color": {
+      "correct": 180,
+      "conservative_escalation": 20
+    },
+    "part_delete": {
+      "correct": 180,
+      "conservative_escalation": 20
+    },
+    "part_description": {
+      "correct": 126,
+      "conservative_escalation": 20,
+      "wrong_material_accepted": 54
+    },
+    "part_hide": {
+      "conservative_escalation": 92,
+      "fallback": 72,
+      "correct": 36
+    },
+    "part_material": {
+      "wrong_material_accepted": 99,
+      "conservative_escalation": 20,
+      "correct": 81
+    },
+    "part_rename": {
+      "correct": 126,
+      "conservative_escalation": 20,
+      "wrong_material_accepted": 54
+    },
+    "part_show": {
+      "fallback": 144,
+      "conservative_escalation": 20,
+      "correct": 36
+    },
+    "plane_named": {
+      "conservative_escalation": 110,
+      "wrong_material_accepted": 54,
+      "correct": 36
+    },
+    "plane_plain": {
+      "correct": 180,
+      "conservative_escalation": 20
+    },
+    "rename_document": {
+      "correct": 64,
+      "fallback": 90,
+      "conservative_escalation": 20,
+      "wrong_material_accepted": 26
+    },
+    "rollback": {
+      "correct": 135,
+      "fallback": 45,
+      "conservative_escalation": 20
+    },
+    "selected_chamfer": {
+      "correct": 180,
+      "conservative_escalation": 20
+    },
+    "selected_fillet": {
+      "correct": 180,
+      "conservative_escalation": 20
+    },
+    "suppress": {
+      "correct": 126,
+      "conservative_escalation": 20,
+      "fallback": 54
+    },
+    "top_view": {
+      "correct": 50,
+      "fallback": 130,
+      "conservative_escalation": 20
+    },
+    "unsuppress": {
+      "fallback": 108,
+      "conservative_escalation": 20,
+      "wrong_material_accepted": 72
+    },
+    "zoom": {
+      "fallback": 110,
+      "correct": 70,
+      "conservative_escalation": 20
+    }
+  },
+  "wall_seconds": 5.58617753499999
+}
