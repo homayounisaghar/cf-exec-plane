@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import hashlib
-import importlib.metadata
 import json
 import os
 import subprocess
@@ -14,9 +13,10 @@ from urllib.parse import parse_qs, urlparse
 
 HOST = os.environ.get("CF_RVC_HOST", "127.0.0.1")
 PORT = int(os.environ.get("CF_RVC_PORT", "8794"))
-RVC_ROOT = Path(os.environ.get("CF_RVC_ROOT", "/var/lib/capability-fabric/rvc/current")).resolve()
-MODEL = Path(os.environ.get("CF_RVC_MODEL", "/var/lib/capability-fabric/rvc/models/owner.pth")).resolve()
-INDEX = Path(os.environ.get("CF_RVC_INDEX", "/var/lib/capability-fabric/rvc/models/owner.index")).resolve()
+RVC_ROOT = Path(os.environ.get("CF_RVC_ROOT", "/var/lib/capability-fabric/rvc/current"))
+MODEL = Path(os.environ.get("CF_RVC_MODEL", "/var/lib/capability-fabric/rvc/models/owner.pth"))
+INDEX = Path(os.environ.get("CF_RVC_INDEX", "/var/lib/capability-fabric/rvc/models/owner.index"))
+BOOTSTRAP_STATUS = Path(os.environ.get("CF_RVC_BOOTSTRAP_STATUS", "/var/lib/capability-fabric/rvc/bootstrap-status.json"))
 MAX_INPUT = 64 * 1024 * 1024
 MAX_OUTPUT = 64 * 1024 * 1024
 TIMEOUT_SECONDS = 20 * 60
@@ -26,24 +26,55 @@ RVC_COMMIT = "81eed5e8f68b6bed1789f682fe78cdd324495afc"
 HUBERT_REVISION = "1be9d36ece685661920e1a7cb36eb0437c1e5581"
 RMVPE_REVISION = "0d7ebae452fb102c695b08f4e6f546be00603425"
 
-def package_version(name):
+def bootstrap_status():
     try:
-        return importlib.metadata.version(name)
+        value = json.loads(BOOTSTRAP_STATUS.read_text(encoding="utf-8"))
+        return value if isinstance(value, dict) else None
     except Exception:
         return None
 
+def runtime_versions(python_path):
+    if not python_path.is_file():
+        return {"python": None, "torch": None, "faiss_cpu": None}
+    code = (
+        "import importlib.metadata as m,json,sys;"
+        "get=lambda n: (m.version(n) if True else None);"
+        "print(json.dumps({'python':sys.version.split()[0],"
+        "'torch':get('torch'),'faiss_cpu':get('faiss-cpu')}))"
+    )
+    try:
+        proc = subprocess.run(
+            [str(python_path), "-c", code],
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            timeout=8,
+            check=False,
+        )
+        if proc.returncode != 0:
+            return {"python": None, "torch": None, "faiss_cpu": None}
+        value = json.loads(proc.stdout.decode("utf-8", "replace"))
+        return value if isinstance(value, dict) else {"python": None, "torch": None, "faiss_cpu": None}
+    except Exception:
+        return {"python": None, "torch": None, "faiss_cpu": None}
+
 def runtime_status():
+    runtime_python = RVC_ROOT / ".venv" / "bin" / "python"
     required = [
+        runtime_python,
         RVC_ROOT / "infer" / "cli.py",
         RVC_ROOT / "assets" / "hubert_base" / "config.json",
         RVC_ROOT / "assets" / "hubert_base" / "preprocessor_config.json",
         RVC_ROOT / "assets" / "hubert_base" / "pytorch_model.bin",
         RVC_ROOT / "assets" / "rmvpe" / "rmvpe.pt",
+        RVC_ROOT / ".cf-rvc-runtime.json",
     ]
     runtime_ready = all(p.is_file() for p in required)
+    versions = runtime_versions(runtime_python) if runtime_ready else {"python": None, "torch": None, "faiss_cpu": None}
     return {
         "state": "READY" if runtime_ready and MODEL.is_file() else "NOT_READY",
         "engine": "RVC",
+        "worker_reachable": True,
         "runtime_ready": runtime_ready,
         "model_ready": MODEL.is_file(),
         "index_ready": INDEX.is_file(),
@@ -52,9 +83,10 @@ def runtime_status():
         "rvc_commit": RVC_COMMIT,
         "hubert_revision": HUBERT_REVISION,
         "rmvpe_revision": RMVPE_REVISION,
-        "python": sys.version.split()[0],
-        "torch": package_version("torch"),
-        "faiss_cpu": package_version("faiss-cpu"),
+        "python": versions.get("python"),
+        "torch": versions.get("torch"),
+        "faiss_cpu": versions.get("faiss_cpu"),
+        "bootstrap": bootstrap_status(),
     }
 
 def json_bytes(payload):
@@ -135,8 +167,9 @@ class Handler(BaseHTTPRequestHandler):
                 output_path = work / ("converted." + output_format)
                 input_path.write_bytes(source)
 
+                runtime_python = RVC_ROOT / ".venv" / "bin" / "python"
                 cmd = [
-                    sys.executable,
+                    str(runtime_python),
                     str(RVC_ROOT / "infer" / "cli.py"),
                     "--model", str(MODEL),
                     "--input", str(input_path),
