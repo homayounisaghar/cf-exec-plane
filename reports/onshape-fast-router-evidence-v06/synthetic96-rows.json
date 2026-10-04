@@ -144,7 +144,7 @@
       "d": "a",
       "i": "camera_move"
     },
-    "model_latency_ms": 935.3603560000039,
+    "model_latency_ms": 689.9505419999982,
     "outcome": "correct"
   },
   {
@@ -1010,7 +1010,7 @@
         }
       ]
     },
-    "source": "model_intent",
+    "source": "evidence_reflex",
     "decision": "act",
     "intent": "fit",
     "evidence": {
@@ -1041,8 +1041,8 @@
       "camera_action": null,
       "camera_direction": null,
       "camera_inverse": false,
-      "fit_all": false,
-      "fit_selection": false,
+      "fit_all": true,
+      "fit_selection": true,
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
@@ -1056,20 +1056,14 @@
         "route": "do",
         "op": "view.fit",
         "args": {
-          "action": "fit"
+          "action": "fit_selection"
         }
       },
       "provenance": {
         "target": "text/context"
       }
     },
-    "model_choice": {
-      "id": "syn_cam_14",
-      "d": "a",
-      "i": "fit"
-    },
-    "model_latency_ms": 935.3603560000039,
-    "outcome": "wrong_reversible_accepted"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -1784,7 +1778,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 935.3603560000039,
+    "model_latency_ms": 689.9505419999982,
     "outcome": "correct"
   },
   {
@@ -1873,7 +1867,7 @@
     },
     "source": "evidence_reflex",
     "decision": "act",
-    "intent": "feature_parameter",
+    "intent": "edge_on_selection",
     "evidence": {
       "text": "روی همین دوتا لبه یه فیلت دو میل بزن",
       "quantities": [
@@ -1888,16 +1882,7 @@
           ]
         }
       ],
-      "features": [
-        {
-          "id": "f1",
-          "name": "Fillet 2",
-          "span": [
-            21,
-            28
-          ]
-        }
-      ],
+      "features": [],
       "parts": [],
       "context_feature": null,
       "context_part": null,
@@ -1937,20 +1922,19 @@
       "reason": "ok",
       "compiled": {
         "route": "do",
-        "op": "feature.parameter.set",
+        "op": "feature.from_selection",
         "args": {
-          "feature_name": "Fillet 2",
-          "parameter": "radius",
+          "feature_type": "fillet",
           "amount": "2 mm"
         }
       },
       "provenance": {
-        "feature": "text/context",
-        "value": "q1",
-        "parameter": "text/type"
+        "kind": "text",
+        "amount": "q1",
+        "selection": "verified-context"
       }
     },
-    "outcome": "wrong_material_accepted"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -2626,9 +2610,7 @@
       "clear_selection": false,
       "edge_kind": "chamfer",
       "multi_action": false,
-      "action_cues": [
-        "chamfer"
-      ]
+      "action_cues": []
     },
     "post": {
       "accepted": false,
@@ -2723,7 +2705,7 @@
       "d": "a",
       "i": "edge_on_selection"
     },
-    "model_latency_ms": 935.3603560000039,
+    "model_latency_ms": 689.9505419999982,
     "outcome": "correct"
   },
   {
@@ -2880,7 +2862,7 @@
       "collaborator_count": null,
       "visibility": null,
       "suppressed": null,
-      "relation": null,
+      "relation": "after",
       "relative": null,
       "property": null,
       "property_value": null,
@@ -2984,9 +2966,7 @@
       "clear_selection": false,
       "edge_kind": "fillet",
       "multi_action": false,
-      "action_cues": [
-        "fillet"
-      ]
+      "action_cues": []
     },
     "post": {
       "accepted": true,
@@ -3177,21 +3157,12 @@
       "action_cues": []
     },
     "post": {
-      "accepted": true,
-      "reason": "ok",
+      "accepted": false,
+      "reason": "feature-parameter-ungrounded",
       "compiled": {
-        "route": "do",
-        "op": "feature.parameter.set",
-        "args": {
-          "feature_name": "Extrude 4",
-          "parameter": "depth",
-          "amount": "18 mm"
-        }
-      },
-      "provenance": {
-        "feature": "text/context",
-        "value": "q1",
-        "parameter": "text/type"
+        "route": "ask",
+        "op": null,
+        "args": {}
       }
     },
     "model_choice": {
@@ -3199,8 +3170,8 @@
       "d": "a",
       "i": "feature_parameter"
     },
-    "model_latency_ms": 935.3603560000039,
-    "outcome": "correct"
+    "model_latency_ms": 689.9505419999982,
+    "outcome": "conservative_escalation"
   },
   {
     "case": {
@@ -3361,9 +3332,7 @@
       "clear_selection": false,
       "edge_kind": "fillet",
       "multi_action": false,
-      "action_cues": [
-        "fillet"
-      ]
+      "action_cues": []
     },
     "post": {
       "accepted": true,
@@ -3571,7 +3540,7 @@
         }
       ]
     },
-    "source": "model_intent",
+    "source": "evidence_reflex",
     "decision": "act",
     "intent": "feature_suppressed",
     "evidence": {
@@ -3588,7 +3557,7 @@
       "last_action": "suppress",
       "collaborator_count": null,
       "visibility": null,
-      "suppressed": null,
+      "suppressed": false,
       "relation": null,
       "relative": null,
       "property": null,
@@ -3608,21 +3577,22 @@
       "action_cues": []
     },
     "post": {
-      "accepted": false,
-      "reason": "suppress-ungrounded",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 2",
+          "suppressed": false
+        }
+      },
+      "provenance": {
+        "feature": "text/context",
+        "state": "text"
       }
     },
-    "model_choice": {
-      "id": "syn_feat_08",
-      "d": "a",
-      "i": "feature_suppressed"
-    },
-    "model_latency_ms": 935.3603560000039,
-    "outcome": "conservative_escalation"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -3645,7 +3615,7 @@
     },
     "source": "evidence_reflex",
     "decision": "act",
-    "intent": "edge_on_selection",
+    "intent": "feature_rename",
     "evidence": {
       "text": "اسم این فیلت رو بذار نرم کن",
       "quantities": [],
@@ -3678,20 +3648,26 @@
       "edge_kind": "fillet",
       "multi_action": false,
       "action_cues": [
-        "fillet",
         "rename"
       ]
     },
     "post": {
-      "accepted": false,
-      "reason": "selection-ungrounded",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Fillet 1",
+          "new_name": "نرم کن"
+        }
+      },
+      "provenance": {
+        "feature": "text/context",
+        "name": "text-span"
       }
     },
-    "outcome": "conservative_escalation"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -3711,7 +3687,7 @@
     },
     "source": "evidence_reflex",
     "decision": "act",
-    "intent": "camera_move",
+    "intent": "feature_delete",
     "evidence": {
       "text": "آخرین فیچرو بنداز دور",
       "quantities": [],
@@ -3734,7 +3710,7 @@
       "name_value": null,
       "design": false,
       "unsupported": false,
-      "camera_action": "orbit",
+      "camera_action": null,
       "camera_direction": null,
       "camera_inverse": false,
       "fit_all": false,
@@ -3748,15 +3724,20 @@
       ]
     },
     "post": {
-      "accepted": false,
-      "reason": "camera-ungrounded",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
+        "route": "do",
+        "op": "feature.delete",
+        "args": {
+          "position": "last"
+        }
+      },
+      "provenance": {
+        "position": "text"
       }
     },
-    "outcome": "conservative_escalation"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -3775,8 +3756,8 @@
       ]
     },
     "source": "evidence_reflex",
-    "decision": "ask",
-    "intent": null,
+    "decision": "act",
+    "intent": "feature_delete",
     "evidence": {
       "text": "فیلت پنج رو حذف کن",
       "quantities": [],
@@ -3816,22 +3797,26 @@
       "top_view": false,
       "clear_selection": false,
       "edge_kind": "fillet",
-      "multi_action": true,
+      "multi_action": false,
       "action_cues": [
-        "fillet",
         "delete"
       ]
     },
     "post": {
-      "accepted": false,
-      "reason": "clarification",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
+        "route": "do",
+        "op": "feature.delete",
+        "args": {
+          "feature_name": "Fillet 5"
+        }
+      },
+      "provenance": {
+        "feature": "text/context"
       }
     },
-    "outcome": "conservative_escalation"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -4050,7 +4035,7 @@
     },
     "post": {
       "accepted": false,
-      "reason": "relative-delta-ambiguous",
+      "reason": "feature-parameter-ungrounded",
       "compiled": {
         "route": "ask",
         "op": null,
@@ -4677,8 +4662,8 @@
       "relation": null,
       "relative": null,
       "property": "name",
-      "property_value": "بشه lid",
-      "name_value": "بشه lid",
+      "property_value": "lid",
+      "name_value": "lid",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -4703,7 +4688,7 @@
         "args": {
           "part_name": "Part 2",
           "property": "name",
-          "value": "بشه lid"
+          "value": "lid"
         }
       },
       "provenance": {
@@ -4712,7 +4697,7 @@
         "value": "text-span"
       }
     },
-    "outcome": "wrong_material_accepted"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -4755,7 +4740,7 @@
       "relation": null,
       "relative": null,
       "property": "material",
-      "property_value": "فولاد",
+      "property_value": "Steel",
       "name_value": null,
       "design": false,
       "unsupported": false,
@@ -4779,7 +4764,7 @@
         "args": {
           "part_name": "Part 1",
           "property": "material",
-          "value": "فولاد"
+          "value": "Steel"
         }
       },
       "provenance": {
@@ -4788,7 +4773,7 @@
         "value": "text-span"
       }
     },
-    "outcome": "wrong_material_accepted"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -5274,22 +5259,12 @@
       "action_cues": []
     },
     "post": {
-      "accepted": true,
-      "reason": "ok",
+      "accepted": false,
+      "reason": "pattern-not-explicit",
       "compiled": {
-        "route": "do",
-        "op": "feature.add",
-        "args": {
-          "feature_type": "linearPattern",
-          "part_name": "Part 2",
-          "copies": 4,
-          "distance": "15 mm"
-        }
-      },
-      "provenance": {
-        "part": "text/context",
-        "copies": "text",
-        "distance": "q1"
+        "route": "ask",
+        "op": null,
+        "args": {}
       }
     },
     "model_choice": {
@@ -5297,8 +5272,8 @@
       "d": "a",
       "i": "add_pattern"
     },
-    "model_latency_ms": 935.3603560000039,
-    "outcome": "false_execute"
+    "model_latency_ms": 689.9505419999982,
+    "outcome": "correct"
   },
   {
     "case": {
@@ -5709,8 +5684,8 @@
       ]
     },
     "source": "evidence_reflex",
-    "decision": "ask",
-    "intent": null,
+    "decision": "act",
+    "intent": "feature_reorder",
     "evidence": {
       "text": "Fillet 2 رو ببر بالای Extrude 4",
       "quantities": [],
@@ -5758,22 +5733,30 @@
       "top_view": false,
       "clear_selection": false,
       "edge_kind": "fillet",
-      "multi_action": true,
+      "multi_action": false,
       "action_cues": [
-        "fillet",
         "reorder"
       ]
     },
     "post": {
-      "accepted": false,
-      "reason": "clarification",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
+        "route": "do",
+        "op": "feature.reorder",
+        "args": {
+          "source_feature": "Fillet 2",
+          "target_feature": "Extrude 4",
+          "placement": "before"
+        }
+      },
+      "provenance": {
+        "source": "text/context",
+        "target": "text",
+        "placement": "text"
       }
     },
-    "outcome": "conservative_escalation"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -5890,7 +5873,7 @@
     },
     "source": "evidence_reflex",
     "decision": "act",
-    "intent": "edge_on_selection",
+    "intent": "feature_reorder",
     "evidence": {
       "text": "همینو ببر قبل Fillet 6",
       "quantities": [],
@@ -5915,7 +5898,7 @@
       "collaborator_count": null,
       "visibility": null,
       "suppressed": null,
-      "relation": null,
+      "relation": "before",
       "relative": null,
       "property": null,
       "property_value": null,
@@ -5932,19 +5915,28 @@
       "edge_kind": "fillet",
       "multi_action": false,
       "action_cues": [
-        "fillet"
+        "reorder"
       ]
     },
     "post": {
-      "accepted": false,
-      "reason": "selection-ungrounded",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
+        "route": "do",
+        "op": "feature.reorder",
+        "args": {
+          "source_feature": "Extrude 2",
+          "target_feature": "Fillet 6",
+          "placement": "before"
+        }
+      },
+      "provenance": {
+        "source": "text/context",
+        "target": "text",
+        "placement": "text"
       }
     },
-    "outcome": "conservative_escalation"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -5963,8 +5955,8 @@
       ]
     },
     "source": "evidence_reflex",
-    "decision": "act",
-    "intent": "rollback",
+    "decision": "ask",
+    "intent": null,
     "evidence": {
       "text": "rollback رو بذار درست قبل Extrude 3",
       "quantities": [],
@@ -5989,7 +5981,7 @@
       "collaborator_count": null,
       "visibility": null,
       "suppressed": null,
-      "relation": null,
+      "relation": "before",
       "relative": null,
       "property": null,
       "property_value": null,
@@ -6004,14 +5996,15 @@
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
-      "multi_action": false,
+      "multi_action": true,
       "action_cues": [
+        "reorder",
         "rollback"
       ]
     },
     "post": {
       "accepted": false,
-      "reason": "rollback-ungrounded",
+      "reason": "clarification",
       "compiled": {
         "route": "ask",
         "op": null,
@@ -6336,9 +6329,9 @@
       "suppressed": null,
       "relation": null,
       "relative": null,
-      "property": null,
-      "property_value": null,
-      "name_value": null,
+      "property": "name",
+      "property_value": "suitcase base",
+      "name_value": "suitcase base",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -6350,18 +6343,25 @@
       "clear_selection": false,
       "edge_kind": null,
       "multi_action": false,
-      "action_cues": []
+      "action_cues": [
+        "rename"
+      ]
     },
     "post": {
-      "accepted": false,
-      "reason": "document-name-ungrounded",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
+        "route": "do",
+        "op": "documented.updateDocumentAttributes",
+        "args": {
+          "new_name": "suitcase base"
+        }
+      },
+      "provenance": {
+        "name": "text-span"
       }
     },
-    "outcome": "conservative_escalation"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -6796,7 +6796,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 935.3603560000039,
+    "model_latency_ms": 689.9505419999982,
     "outcome": "correct"
   },
   {
@@ -6861,7 +6861,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 935.3603560000039,
+    "model_latency_ms": 689.9505419999982,
     "outcome": "correct"
   },
   {
@@ -6922,11 +6922,10 @@
       }
     },
     "model_choice": {
-      "id": "syn_esc_08",
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 935.3603560000039,
+    "model_latency_ms": 689.9505419999982,
     "outcome": "correct"
   },
   {

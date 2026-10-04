@@ -255,7 +255,7 @@
       "design": false,
       "unsupported": false,
       "camera_action": "orbit",
-      "camera_direction": null,
+      "camera_direction": "down",
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
@@ -266,15 +266,22 @@
       "action_cues": []
     },
     "post": {
-      "accepted": false,
-      "reason": "camera-ungrounded",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
+        "route": "do",
+        "op": "view.move",
+        "args": {
+          "action": "orbit",
+          "direction": "down"
+        }
+      },
+      "provenance": {
+        "direction": "text/context",
+        "magnitude": null
       }
     },
-    "outcome": "conservative_escalation"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -545,7 +552,7 @@
       "design": false,
       "unsupported": false,
       "camera_action": "pan",
-      "camera_direction": null,
+      "camera_direction": "left",
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
@@ -556,15 +563,22 @@
       "action_cues": []
     },
     "post": {
-      "accepted": false,
-      "reason": "camera-ungrounded",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
+        "route": "do",
+        "op": "view.move",
+        "args": {
+          "action": "pan",
+          "direction": "left"
+        }
+      },
+      "provenance": {
+        "direction": "text/context",
+        "magnitude": null
       }
     },
-    "outcome": "conservative_escalation"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -751,7 +765,7 @@
       "design": false,
       "unsupported": false,
       "camera_action": "pan",
-      "camera_direction": null,
+      "camera_direction": "down",
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
@@ -762,15 +776,22 @@
       "action_cues": []
     },
     "post": {
-      "accepted": false,
-      "reason": "camera-ungrounded",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
+        "route": "do",
+        "op": "view.move",
+        "args": {
+          "action": "pan",
+          "direction": "down"
+        }
+      },
+      "provenance": {
+        "direction": "text/context",
+        "magnitude": null
       }
     },
-    "outcome": "conservative_escalation"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -1494,15 +1515,22 @@
       "action_cues": []
     },
     "post": {
-      "accepted": false,
-      "reason": "camera-ungrounded",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
+        "route": "do",
+        "op": "view.move",
+        "args": {
+          "action": "zoom",
+          "direction": "in"
+        }
+      },
+      "provenance": {
+        "direction": "text/context",
+        "magnitude": null
       }
     },
-    "outcome": "conservative_escalation"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -1547,7 +1575,7 @@
       "design": false,
       "unsupported": false,
       "camera_action": "orbit",
-      "camera_direction": null,
+      "camera_direction": "right",
       "camera_inverse": false,
       "fit_all": false,
       "fit_selection": false,
@@ -1558,15 +1586,22 @@
       "action_cues": []
     },
     "post": {
-      "accepted": false,
-      "reason": "camera-ungrounded",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
+        "route": "do",
+        "op": "view.move",
+        "args": {
+          "action": "orbit",
+          "direction": "right"
+        }
+      },
+      "provenance": {
+        "direction": "text/context",
+        "magnitude": null
       }
     },
-    "outcome": "conservative_escalation"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -2941,9 +2976,7 @@
       "clear_selection": false,
       "edge_kind": "fillet",
       "multi_action": false,
-      "action_cues": [
-        "fillet"
-      ]
+      "action_cues": []
     },
     "post": {
       "accepted": false,
@@ -3148,18 +3181,7 @@
     "intent": "edge_on_selection",
     "evidence": {
       "text": "لبه های انتخاب شده رو یک و بیست و پنج صدم میلی پخ بزن",
-      "quantities": [
-        {
-          "id": "q1",
-          "value": 0.25,
-          "unit": "mm",
-          "text": "بیست و پنج صدم میلی",
-          "span": [
-            27,
-            46
-          ]
-        }
-      ],
+      "quantities": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -3196,23 +3218,15 @@
       ]
     },
     "post": {
-      "accepted": true,
-      "reason": "ok",
+      "accepted": false,
+      "reason": "edge-amount-ambiguous",
       "compiled": {
-        "route": "do",
-        "op": "feature.from_selection",
-        "args": {
-          "feature_type": "chamfer",
-          "amount": "0.25 mm"
-        }
-      },
-      "provenance": {
-        "kind": "text",
-        "amount": "q1",
-        "selection": "verified-context"
+        "route": "ask",
+        "op": null,
+        "args": {}
       }
     },
-    "outcome": "wrong_material_accepted"
+    "outcome": "conservative_escalation"
   },
   {
     "case": {
@@ -3239,7 +3253,7 @@
     },
     "source": "evidence_reflex",
     "decision": "act",
-    "intent": "feature_parameter",
+    "intent": "edge_on_selection",
     "evidence": {
       "text": "با همین انتخاب یه فیلت ده میلی بزن",
       "quantities": [
@@ -3254,16 +3268,7 @@
           ]
         }
       ],
-      "features": [
-        {
-          "id": "f1",
-          "name": "Fillet 10",
-          "span": [
-            18,
-            25
-          ]
-        }
-      ],
+      "features": [],
       "parts": [],
       "context_feature": null,
       "context_part": null,
@@ -3303,20 +3308,19 @@
       "reason": "ok",
       "compiled": {
         "route": "do",
-        "op": "feature.parameter.set",
+        "op": "feature.from_selection",
         "args": {
-          "feature_name": "Fillet 10",
-          "parameter": "radius",
+          "feature_type": "fillet",
           "amount": "10 mm"
         }
       },
       "provenance": {
-        "feature": "text/context",
-        "value": "q1",
-        "parameter": "text/type"
+        "kind": "text",
+        "amount": "q1",
+        "selection": "verified-context"
       }
     },
-    "outcome": "wrong_material_accepted"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -3484,9 +3488,7 @@
       "clear_selection": false,
       "edge_kind": "fillet",
       "multi_action": false,
-      "action_cues": [
-        "fillet"
-      ]
+      "action_cues": []
     },
     "post": {
       "accepted": true,
@@ -3573,9 +3575,7 @@
       "clear_selection": false,
       "edge_kind": "fillet",
       "multi_action": false,
-      "action_cues": [
-        "fillet"
-      ]
+      "action_cues": []
     },
     "post": {
       "accepted": true,
@@ -3667,9 +3667,7 @@
       "clear_selection": false,
       "edge_kind": "fillet",
       "multi_action": false,
-      "action_cues": [
-        "fillet"
-      ]
+      "action_cues": []
     },
     "post": {
       "accepted": true,
@@ -3871,7 +3869,7 @@
     },
     "source": "evidence_reflex",
     "decision": "act",
-    "intent": "edge_on_selection",
+    "intent": "feature_rename",
     "evidence": {
       "text": "اسم Fillet 1 رو بذار لبه نرم",
       "quantities": [],
@@ -3913,20 +3911,26 @@
       "edge_kind": "fillet",
       "multi_action": false,
       "action_cues": [
-        "fillet",
         "rename"
       ]
     },
     "post": {
-      "accepted": false,
-      "reason": "selection-ungrounded",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Fillet 1",
+          "new_name": "لبه نرم"
+        }
+      },
+      "provenance": {
+        "feature": "text/context",
+        "name": "text-span"
       }
     },
-    "outcome": "conservative_escalation"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -3945,8 +3949,8 @@
       ]
     },
     "source": "evidence_reflex",
-    "decision": "ask",
-    "intent": null,
+    "decision": "act",
+    "intent": "feature_delete",
     "evidence": {
       "text": "Fillet 4 رو پاک کن",
       "quantities": [],
@@ -3986,22 +3990,26 @@
       "top_view": false,
       "clear_selection": false,
       "edge_kind": "fillet",
-      "multi_action": true,
+      "multi_action": false,
       "action_cues": [
-        "fillet",
         "delete"
       ]
     },
     "post": {
-      "accepted": false,
-      "reason": "clarification",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
+        "route": "do",
+        "op": "feature.delete",
+        "args": {
+          "feature_name": "Fillet 4"
+        }
+      },
+      "provenance": {
+        "feature": "text/context"
       }
     },
-    "outcome": "conservative_escalation"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -4502,7 +4510,7 @@
     },
     "source": "evidence_reflex",
     "decision": "act",
-    "intent": "feature_suppressed",
+    "intent": "feature_parameter",
     "evidence": {
       "text": "flip direction رو برای Extrude 1 روشن کن",
       "quantities": [],
@@ -4550,18 +4558,19 @@
       "reason": "ok",
       "compiled": {
         "route": "do",
-        "op": "feature.patch",
+        "op": "feature.parameter.set",
         "args": {
           "feature_name": "Extrude 1",
-          "suppressed": false
+          "parameter": "flip direction",
+          "value": true
         }
       },
       "provenance": {
         "feature": "text/context",
-        "state": "text"
+        "value": "text"
       }
     },
-    "outcome": "wrong_material_accepted"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -4699,7 +4708,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 688.2397080000118,
+    "model_latency_ms": 777.3357529999955,
     "outcome": "correct"
   },
   {
@@ -4771,21 +4780,12 @@
       "action_cues": []
     },
     "post": {
-      "accepted": true,
-      "reason": "ok",
+      "accepted": false,
+      "reason": "feature-parameter-ungrounded",
       "compiled": {
-        "route": "do",
-        "op": "feature.parameter.set",
-        "args": {
-          "feature_name": "Extrude 2",
-          "parameter": "depth",
-          "amount": "5 mm"
-        }
-      },
-      "provenance": {
-        "feature": "text/context",
-        "value": "q1",
-        "parameter": "text/type"
+        "route": "ask",
+        "op": null,
+        "args": {}
       }
     },
     "model_choice": {
@@ -4793,8 +4793,8 @@
       "d": "a",
       "i": "feature_parameter"
     },
-    "model_latency_ms": 688.2397080000118,
-    "outcome": "false_execute"
+    "model_latency_ms": 777.3357529999955,
+    "outcome": "correct"
   },
   {
     "case": {
@@ -5872,7 +5872,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 688.2397080000118,
+    "model_latency_ms": 777.3357529999955,
     "outcome": "correct"
   },
   {
@@ -6903,7 +6903,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 688.2397080000118,
+    "model_latency_ms": 777.3357529999955,
     "outcome": "correct"
   },
   {
@@ -7002,8 +7002,8 @@
       ]
     },
     "source": "evidence_reflex",
-    "decision": "ask",
-    "intent": null,
+    "decision": "act",
+    "intent": "feature_reorder",
     "evidence": {
       "text": "Fillet 1 رو قبل از Extrude 3 ببر",
       "quantities": [],
@@ -7051,22 +7051,30 @@
       "top_view": false,
       "clear_selection": false,
       "edge_kind": "fillet",
-      "multi_action": true,
+      "multi_action": false,
       "action_cues": [
-        "fillet",
         "reorder"
       ]
     },
     "post": {
-      "accepted": false,
-      "reason": "clarification",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
+        "route": "do",
+        "op": "feature.reorder",
+        "args": {
+          "source_feature": "Fillet 1",
+          "target_feature": "Extrude 3",
+          "placement": "before"
+        }
+      },
+      "provenance": {
+        "source": "text/context",
+        "target": "text",
+        "placement": "text"
       }
     },
-    "outcome": "conservative_escalation"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -7182,8 +7190,8 @@
       ]
     },
     "source": "evidence_reflex",
-    "decision": "ask",
-    "intent": null,
+    "decision": "act",
+    "intent": "feature_reorder",
     "evidence": {
       "text": "همین فیچر رو ببر قبل از Fillet 5",
       "quantities": [],
@@ -7223,22 +7231,30 @@
       "top_view": false,
       "clear_selection": false,
       "edge_kind": "fillet",
-      "multi_action": true,
+      "multi_action": false,
       "action_cues": [
-        "fillet",
         "reorder"
       ]
     },
     "post": {
-      "accepted": false,
-      "reason": "clarification",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
+        "route": "do",
+        "op": "feature.reorder",
+        "args": {
+          "source_feature": "Extrude 2",
+          "target_feature": "Fillet 5",
+          "placement": "before"
+        }
+      },
+      "provenance": {
+        "source": "text/context",
+        "target": "text",
+        "placement": "text"
       }
     },
-    "outcome": "conservative_escalation"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -7300,7 +7316,6 @@
       "edge_kind": "fillet",
       "multi_action": true,
       "action_cues": [
-        "fillet",
         "reorder",
         "rollback"
       ]
@@ -7648,7 +7663,7 @@
       "relative": null,
       "property": null,
       "property_value": null,
-      "name_value": null,
+      "name_value": "bracket experiments",
       "design": false,
       "unsupported": false,
       "camera_action": null,
@@ -7663,15 +7678,20 @@
       "action_cues": []
     },
     "post": {
-      "accepted": false,
-      "reason": "part-studio-name-ungrounded",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
+        "route": "do",
+        "op": "documented.createPartStudio",
+        "args": {
+          "new_name": "bracket experiments"
+        }
+      },
+      "provenance": {
+        "name": "text-span"
       }
     },
-    "outcome": "conservative_escalation"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -8386,7 +8406,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 688.2397080000118,
+    "model_latency_ms": 777.3357529999955,
     "outcome": "correct"
   },
   {
@@ -8453,7 +8473,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 688.2397080000118,
+    "model_latency_ms": 777.3357529999955,
     "outcome": "correct"
   },
   {
@@ -8504,9 +8524,7 @@
       "clear_selection": false,
       "edge_kind": "fillet",
       "multi_action": false,
-      "action_cues": [
-        "fillet"
-      ]
+      "action_cues": []
     },
     "post": {
       "accepted": false,
@@ -8581,7 +8599,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 688.2397080000118,
+    "model_latency_ms": 777.3357529999955,
     "outcome": "correct"
   },
   {
@@ -8646,7 +8664,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 688.2397080000118,
+    "model_latency_ms": 777.3357529999955,
     "outcome": "correct"
   },
   {
@@ -9010,7 +9028,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 688.2397080000118,
+    "model_latency_ms": 777.3357529999955,
     "outcome": "correct"
   }
 ]
