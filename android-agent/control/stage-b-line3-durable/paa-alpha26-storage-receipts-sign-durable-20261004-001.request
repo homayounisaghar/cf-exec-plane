@@ -1,0 +1,5 @@
+request_id=paa-alpha26-storage-receipts-sign-durable-20261004-001
+stage_a_request_id=paa-alpha26-storage-receipts-durable-20261004-003
+candidate_commit=bb85659015bd78d58b5c7157f1f955c2a771a6d2
+version_code=26
+version_name=0.1.0-alpha26
