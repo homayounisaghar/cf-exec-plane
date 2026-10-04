@@ -13,16 +13,15 @@
     "whisper-large-v3-turbo"
   ],
   "generator_preferences": [
-    "qwen/qwen3.8-27b"
-  ],
-  "judge_a_preferences": [
-    "openai/gpt-oss-20b"
-  ],
-  "judge_b_preferences": [
     "openai/gpt-oss-120b"
   ],
-  "selected_generator": "qwen/qwen3.8-27b",
+  "judge_preferences": [
+    "openai/gpt-oss-20b"
+  ],
+  "selected_generator": "openai/gpt-oss-120b",
   "selected_judge_a": "openai/gpt-oss-20b",
-  "selected_judge_b": "openai/gpt-oss-120b",
-  "three_distinct_model_ids": true
+  "selected_judge_b": "openai/gpt-oss-20b",
+  "generator_distinct_from_judges": true,
+  "judge_independence": "separate calls with distinct A/B role prompts; same judge model id",
+  "rationale": "Matches V20 design requirement that semantic judges use model ids different from generator; avoids Qwen 1000 OTPM bottleneck."
 }
