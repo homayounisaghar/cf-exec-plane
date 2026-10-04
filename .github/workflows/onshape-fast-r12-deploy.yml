@@ -73,6 +73,10 @@ jobs:
           assert c["required_runtime_config"]["documented_operation_path"]=="DIRECT_NODE_AGENT"
           assert c["required_runtime_config"]["browser_topology"]=="SINGLE_SESSION"
           assert set(m["files"])==set(c["files"])
+          telegram=(root/"telegram-ingress.mjs").read_text()
+          assert 'server.registerTool("audio_upload"' in telegram
+          assert '"openai/fileParams": ["file"]' in telegram
+          assert "CHAT_FILE_CLIENT_HANDOFF_UNAVAILABLE" in telegram
           for rel,h in m["files"].items():
               p=root/rel
               assert p.is_file(), rel
@@ -87,7 +91,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for f in browser.js core.js server.js gateway.js onshape-agent.js; do
+          for f in browser.js core.js server.js gateway.js onshape-agent.js telegram-ingress.mjs; do
             node --check "$SNAPSHOT/$f"
           done
           node --check "$SNAPSHOT/onshape-request.cjs"
