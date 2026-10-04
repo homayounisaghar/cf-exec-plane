@@ -44,6 +44,12 @@ def main():
     assert_eq(c,{"route":"do","op":"feature.add","args":{"feature_type":"plane","name":"hide top fit"}},"literal-masking")
     checks.append("literal-masking")
 
+    c,ev=compiled("Part 5 description بذار hide fit")
+    assert_eq(ev.get("visibility"),None,"description-literal-no-visibility-cue")
+    assert_eq(ev.get("fit_target"),None,"description-literal-no-fit-cue")
+    assert_eq(c,{"route":"do","op":"metadata.property.set","args":{"part_name":"Part 5","property":"description","value":"hide fit"}},"description-literal-masking")
+    checks.append("description-literal-masking")
+
     for text in [
         "این انتخاب رو پنجاه و پنج صدم میل پخ کن",
         "پخ شش دهم روی انتخاب فعلی",
