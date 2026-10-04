@@ -1,0 +1,7 @@
+{
+  "request_id": "v17-hardening-pass1-20261004-1512",
+  "source_head": "a02dceeced41ba5488a2bf9a2f278f5a72f482d3",
+  "source_sha": "a98c71c59a9d26ccbe05a420d699257979640462",
+  "corpus_sha256": "a684f14376f859fc80522b71b13c00cdec79c45d08fc67066d57bd8412741912",
+  "production_effects": false
+}
