@@ -1,0 +1,7 @@
+{
+  "request_id": "evidence-v06-20261004-v09",
+  "router_source_head": "ce8ff3845db6e788c83a3dd37478dce4fe9a899e",
+  "fresh_holdout_v09_commit": "d87d590a4cfc429742bc5ea5d292a9a4f3940356",
+  "cases": 100,
+  "purpose": "fresh-independent-synthetic-v09"
+}
