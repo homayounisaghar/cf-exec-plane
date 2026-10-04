@@ -28,13 +28,19 @@ jobs:
       - name: Syntax gate
         run: |
           python -m py_compile qualification/onshape-fast-router-fresh-holdout-v12/evidence_v06.py
+          python -m py_compile qualification/onshape-fast-router-fresh-holdout-v12/evidence_architecture_selftest.py
           python -m py_compile qualification/onshape-fast-router-fresh-holdout-v12/fresh_holdout_v12.py
           python -m py_compile qualification/onshape-fast-router-fresh-holdout-v12/run_v12.py
+      - name: Run deterministic evidence architecture selftest
+        run: |
+          mkdir -p artifacts/onshape-fast-router-fresh-holdout-v12
+          cd qualification/onshape-fast-router-fresh-holdout-v12
+          python evidence_architecture_selftest.py > "${{ github.workspace }}/artifacts/onshape-fast-router-fresh-holdout-v12/architecture-selftest.json"
       - name: Require Groq credential
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
         run: test -n "$GROQ_API_KEY"
-      - name: Run frozen fresh holdout v12
+      - name: Run frozen v12 regression
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           BATCH_SIZE: '10'
@@ -50,6 +56,7 @@ jobs:
           src="artifacts/onshape-fast-router-fresh-holdout-v12"
           dst="reports/onshape-fast-router-fresh-holdout-v12"
           mkdir -p "$dst"
+          test -f "$src/architecture-selftest.json" && cp "$src/architecture-selftest.json" "$dst/architecture-selftest.json" || true
           if test -f "$src/summary.json"; then
             cp "$src/summary.json" "$dst/summary.json"
             cp "$src/rows.json" "$dst/rows.json"
@@ -61,6 +68,6 @@ jobs:
           git config user.name "cf-exec-plane"
           git config user.email "actions@users.noreply.github.com"
           git add "$dst"
-          git commit -m "Report: Onshape fresh holdout v12" || exit 0
+          git commit -m "Report: Onshape v12 regression" || exit 0
           git pull --rebase origin main
           git push origin HEAD:main
