@@ -1,0 +1,9 @@
+{
+  "schema": "cf.onshape.fast-router-evidence-v06",
+  "private_source_repo": "homayounisaghar/capability-fabric",
+  "private_source_ref": "experiment/onshape-fast-router-evidence-v06",
+  "private_head": "71621c61016b7dbc38caaab1ca5dc69ff86dad95",
+  "known_cases": 120,
+  "synthetic_cases": 96,
+  "production_effects": false
+}
