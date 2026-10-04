@@ -124,6 +124,178 @@ function registerAndroidStorageSearch(server) {
   });
 }
 
+
+const BALE_CDP_URL = "http://127.0.0.1:9222/json";
+
+const BALE_LIST_IN_PAGE = async (limit) => {
+  const getRequire = () => {
+    if (globalThis.__cfBaleRequire) return globalThis.__cfBaleRequire;
+    const chunks = globalThis.rspackChunkweb;
+    if (!chunks?.push) return null;
+    try { chunks.push([[987654321], {}, (req) => { globalThis.__cfBaleRequire = req; }]); } catch {}
+    return globalThis.__cfBaleRequire || null;
+  };
+  const findApi = (req) => {
+    if (globalThis.__cfBaleApi?.core?.dialogs && globalThis.__cfBaleApi?.core?.entities) return globalThis.__cfBaleApi;
+    for (const module of Object.values(req?.c || {})) {
+      let exported;
+      try { exported = module?.exports; } catch { continue; }
+      const candidates = [exported];
+      if (exported && (typeof exported === "object" || typeof exported === "function")) {
+        for (const key of Object.keys(exported).slice(0, 100)) {
+          try { candidates.push(exported[key]); } catch {}
+        }
+      }
+      for (const value of candidates) {
+        try {
+          if (value?.core?.dialogs && value?.core?.entities && value?.core?.messaging && value?.core?.search) {
+            globalThis.__cfBaleApi = value;
+            return value;
+          }
+        } catch {}
+      }
+    }
+    return null;
+  };
+  const firstValue = (observable, timeoutMs = 10000) => new Promise((resolve, reject) => {
+    let done = false, subscription = null;
+    const finish = (fn, value) => {
+      if (done) return;
+      done = true;
+      clearTimeout(timer);
+      try { subscription?.unsubscribe?.(); } catch {}
+      fn(value);
+    };
+    const timer = setTimeout(() => finish(reject, new Error("BALE_OBSERVABLE_TIMEOUT")), timeoutMs);
+    try {
+      subscription = observable.subscribe({
+        next: (value) => finish(resolve, value),
+        error: (error) => finish(reject, error),
+        complete: () => finish(resolve, undefined),
+      });
+    } catch (error) { finish(reject, error); }
+  });
+
+  const api = findApi(getRequire());
+  if (!api) throw new Error("BALE_API_NOT_FOUND");
+  const raw = await firstValue(api.core.dialogs.getAllDialogs(false));
+  const rows = (Array.isArray(raw) ? raw : [])
+    .filter((item) => item?.peer && Number.isSafeInteger(item.peer.id))
+    .sort((a, b) => Number(b.date || 0) - Number(a.date || 0))
+    .slice(0, limit);
+  const entities = rows.length
+    ? await firstValue(api.core.entities.loadPeers(rows.map((item) => item.peer)))
+    : { users: [], groups: [] };
+  const users = new Map((entities?.users || []).map((item) => [Number(item.id), item]));
+  const groups = new Map((entities?.groups || []).map((item) => [Number(item.id), item]));
+  return rows.map((item) => {
+    const peerType = Number(item.peer.type);
+    const peerId = Number(item.peer.id);
+    const entity = peerType === 1 ? users.get(peerId) : groups.get(peerId);
+    const name = peerType === 1
+      ? (entity?.name || entity?.localName || entity?.nick || ("User " + peerId))
+      : (entity?.title || entity?.nick || ("Group " + peerId));
+    const unreadCount = Number.isSafeInteger(item.counter) && item.counter >= 0 ? item.counter : 0;
+    return {
+      handle: "balechat:" + peerType + ":" + peerId,
+      name: String(name).slice(0, 256),
+      kind: peerType === 1 ? "user" : "group",
+      unread_count: unreadCount,
+      marked_unread: item.markedAsUnread === true,
+      has_unread: unreadCount > 0 || item.markedAsUnread === true,
+      last_date_ms: Number.isSafeInteger(item.date) ? item.date : 0,
+    };
+  });
+};
+
+async function baleConversationList(limit) {
+  let targets;
+  try {
+    const response = await fetch(BALE_CDP_URL, { signal: AbortSignal.timeout(4000) });
+    if (!response.ok) throw new Error("CDP_HTTP_" + response.status);
+    targets = await response.json();
+  } catch (cause) {
+    const error = new Error("Bale browser debugging endpoint is unavailable.");
+    error.code = "BALE_BROWSER_UNAVAILABLE";
+    error.cause = cause;
+    throw error;
+  }
+  const page = Array.isArray(targets)
+    ? targets.find((target) => target?.type === "page" && /^https:\/\/web\.bale\.ai\/chat(?:[/?#]|$)/.test(String(target.url || "")))
+    : null;
+  if (!page?.webSocketDebuggerUrl) {
+    const error = new Error("Authenticated Bale chat page is not ready.");
+    error.code = "BALE_SESSION_NOT_READY";
+    throw error;
+  }
+
+  const ws = new WebSocket(page.webSocketDebuggerUrl);
+  let nextId = 0;
+  const pending = new Map();
+  ws.onmessage = (event) => {
+    let message;
+    try { message = JSON.parse(String(event.data)); } catch { return; }
+    if (message?.id && pending.has(message.id)) {
+      pending.get(message.id)(message);
+      pending.delete(message.id);
+    }
+  };
+  await new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error("BALE_CDP_CONNECT_TIMEOUT")), 5000);
+    ws.onopen = () => { clearTimeout(timer); resolve(); };
+    ws.onerror = (event) => { clearTimeout(timer); reject(event?.error || new Error("BALE_CDP_CONNECT_FAILED")); };
+  });
+  const call = (method, params = {}) => new Promise((resolve, reject) => {
+    const id = ++nextId;
+    const timer = setTimeout(() => {
+      pending.delete(id);
+      reject(new Error("BALE_CDP_CALL_TIMEOUT"));
+    }, 15000);
+    pending.set(id, (value) => { clearTimeout(timer); resolve(value); });
+    ws.send(JSON.stringify({ id, method, params }));
+  });
+
+  try {
+    const expression = "(" + BALE_LIST_IN_PAGE.toString() + ")(" + JSON.stringify(limit) + ")";
+    const response = await call("Runtime.evaluate", { expression, returnByValue: true, awaitPromise: true });
+    const exception = response?.result?.exceptionDetails;
+    if (exception) throw new Error(String(exception?.exception?.description || exception?.text || "BALE_RUNTIME_EVALUATION_FAILED"));
+    const conversations = response?.result?.result?.value;
+    if (!Array.isArray(conversations)) throw new Error("BALE_RUNTIME_RESULT_INVALID");
+    return {
+      state: "ACHIEVED",
+      provider: "bale",
+      realization: "web-rpc",
+      count: conversations.length,
+      conversations,
+      bounded: true,
+    };
+  } finally {
+    try { ws.close(); } catch {}
+  }
+}
+
+function registerBaleConversationList(server) {
+  server.registerTool("bale_conversation_list", {
+    title: "List recent Bale conversations",
+    description: "Read recent Bale conversations from the authenticated Bale Web session without opening chats or changing read state.",
+    inputSchema: { limit: z.number().int().min(1).max(50).optional() },
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
+  }, async ({ limit = 10 }) => {
+    try {
+      const result = await baleConversationList(limit);
+      return { structuredContent: result, content: [{ type: "text", text: JSON.stringify(result, null, 1) }] };
+    } catch (error) {
+      const code = String(error?.code || "BALE_CONVERSATION_LIST_FAILED");
+      return {
+        structuredContent: { state: "FAILED", provider: "bale", error: code },
+        content: [{ type: "text", text: "Bale conversation listing failed: " + code }],
+        isError: true,
+      };
+    }
+  });
+}
+
 const originalConnect = McpServer.prototype.connect;
 if (typeof originalConnect !== "function") {
   throw new Error("McpServer.connect is unavailable");
@@ -132,6 +304,7 @@ if (typeof originalConnect !== "function") {
 McpServer.prototype.connect = async function (...args) {
   if (!this.__paaStorageSearchRegistered) {
     registerAndroidStorageSearch(this);
+    registerBaleConversationList(this);
     Object.defineProperty(this, "__paaStorageSearchRegistered", {
       value: true,
       enumerable: false,
