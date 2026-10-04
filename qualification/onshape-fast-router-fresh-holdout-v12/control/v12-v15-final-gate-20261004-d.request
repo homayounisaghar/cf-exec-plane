@@ -1,0 +1,8 @@
+{
+  "request_id": "onshape-fast-router-v12-v15-final-gate-20261004-d",
+  "source_repo": "homayounisaghar/capability-fabric",
+  "source_ref": "work/onshape-fast-router-v15-hardening",
+  "source_head": "1ba05a937463d149693cd68723c101c76afa5fa9",
+  "purpose": "final V12 gate for fundamental V15 language and safety architecture",
+  "production_effects": false
+}
