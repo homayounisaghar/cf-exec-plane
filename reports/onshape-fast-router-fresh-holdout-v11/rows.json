@@ -1,0 +1,8058 @@
+[
+  {
+    "case": {
+      "category": "camera",
+      "id": "v11_c01",
+      "text": "مدل رو یه خرده سمت راست بچرخون",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "view.move",
+          "args": {
+            "action": "orbit",
+            "direction": "right"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "camera_move",
+    "evidence": {
+      "text": "مدل رو یه خرده سمت راست بچرخون",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "مدل رو یه خرده سمت راست بچرخون",
+      "design": false,
+      "unsupported": false,
+      "camera_action": "orbit",
+      "camera_direction": "right",
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "view.move",
+        "args": {
+          "action": "orbit",
+          "direction": "right"
+        }
+      },
+      "provenance": {
+        "direction": "text/context",
+        "magnitude": null
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "camera",
+      "id": "v11_c02",
+      "text": "یه کوچولو rotate left",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "view.move",
+          "args": {
+            "action": "orbit",
+            "direction": "left"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "camera_move",
+    "evidence": {
+      "text": "یه کوچولو rotate left",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "یه کوچولو rotate left",
+      "design": false,
+      "unsupported": false,
+      "camera_action": "orbit",
+      "camera_direction": "left",
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "view.move",
+        "args": {
+          "action": "orbit",
+          "direction": "left"
+        }
+      },
+      "provenance": {
+        "direction": "text/context",
+        "magnitude": null
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "camera",
+      "id": "v11_c03",
+      "text": "با جهت عقربه ساعت یه کم بچرخونش",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "view.move",
+          "args": {
+            "action": "orbit",
+            "direction": "clockwise"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "camera_move",
+    "evidence": {
+      "text": "با جهت عقربه ساعت یه کم بچرخونش",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "با جهت عقربه ساعت یه کم بچرخونش",
+      "design": false,
+      "unsupported": false,
+      "camera_action": "orbit",
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": false,
+      "reason": "camera-ungrounded",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      }
+    },
+    "outcome": "conservative_escalation"
+  },
+  {
+    "case": {
+      "category": "camera",
+      "id": "v11_c04",
+      "text": "خلاف جهت عقربه ساعت بچرخونش",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "view.move",
+          "args": {
+            "action": "orbit",
+            "direction": "counterclockwise"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "camera_move",
+    "evidence": {
+      "text": "خلاف جهت عقربه ساعت بچرخونش",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "خلاف جهت عقربه ساعت بچرخونش",
+      "design": false,
+      "unsupported": false,
+      "camera_action": "orbit",
+      "camera_direction": "counterclockwise",
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "view.move",
+        "args": {
+          "action": "orbit",
+          "direction": "counterclockwise"
+        }
+      },
+      "provenance": {
+        "direction": "text/context",
+        "magnitude": null
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "camera",
+      "id": "v11_c05",
+      "text": "چهل و پنج درجه به راست بچرخون",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "view.move",
+          "args": {
+            "action": "orbit",
+            "direction": "right",
+            "angle_degrees": 45
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "camera_move",
+    "evidence": {
+      "text": "چهل و پنج درجه به راست بچرخون",
+      "quantities": [
+        {
+          "id": "q1",
+          "value": 45.0,
+          "unit": "deg",
+          "text": "چهل و پنج درجه",
+          "span": [
+            0,
+            14
+          ],
+          "ast": {
+            "value": 45.0,
+            "kind": "cardinal",
+            "source": "چهل و پنج",
+            "cardinal": 45
+          },
+          "provenance": "canonical_quantity_grammar"
+        }
+      ],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "چهل و پنج درجه به راست بچرخون",
+      "design": false,
+      "unsupported": false,
+      "camera_action": "orbit",
+      "camera_direction": "right",
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "view.move",
+        "args": {
+          "action": "orbit",
+          "direction": "right",
+          "angle_degrees": 45.0
+        }
+      },
+      "provenance": {
+        "direction": "text/context",
+        "magnitude": "q1"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "camera",
+      "id": "v11_c06",
+      "text": "ربع دور ببرش سمت چپ",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "view.move",
+          "args": {
+            "action": "orbit",
+            "direction": "left",
+            "angle_degrees": 90
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "camera_move",
+    "evidence": {
+      "text": "ربع دور ببرش سمت چپ",
+      "quantities": [
+        {
+          "id": "q1",
+          "value": 90.0,
+          "unit": "deg",
+          "text": "ربع دور",
+          "span": [
+            0,
+            7
+          ],
+          "ast": {
+            "value": 90.0,
+            "kind": "quarter_turn",
+            "source": "ربع دور"
+          },
+          "provenance": "camera_quarter_turn"
+        }
+      ],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "ربع دور ببرش سمت چپ",
+      "design": false,
+      "unsupported": false,
+      "camera_action": "orbit",
+      "camera_direction": "left",
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "view.move",
+        "args": {
+          "action": "orbit",
+          "direction": "left",
+          "angle_degrees": 90.0
+        }
+      },
+      "provenance": {
+        "direction": "text/context",
+        "magnitude": "q1"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "camera",
+      "id": "v11_c07",
+      "text": "نما رو یه کم بکش بالا",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "view.move",
+          "args": {
+            "action": "pan",
+            "direction": "up"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "camera_move",
+    "evidence": {
+      "text": "نما رو یه کم بکش بالا",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "نما رو یه کم بکش بالا",
+      "design": false,
+      "unsupported": false,
+      "camera_action": "pan",
+      "camera_direction": "up",
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "view.move",
+        "args": {
+          "action": "pan",
+          "direction": "up"
+        }
+      },
+      "provenance": {
+        "direction": "text/context",
+        "magnitude": null
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "camera",
+      "id": "v11_c08",
+      "text": "صفحه رو یه کوچولو بکش پایین",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "view.move",
+          "args": {
+            "action": "pan",
+            "direction": "down"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "camera_move",
+    "evidence": {
+      "text": "صفحه رو یه کوچولو بکش پایین",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "صفحه رو یه کوچولو بکش پایین",
+      "design": false,
+      "unsupported": false,
+      "camera_action": "pan",
+      "camera_direction": "down",
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "view.move",
+        "args": {
+          "action": "pan",
+          "direction": "down"
+        }
+      },
+      "provenance": {
+        "direction": "text/context",
+        "magnitude": null
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "camera",
+      "id": "v11_c09",
+      "text": "pan right کن یه ذره",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "view.move",
+          "args": {
+            "action": "pan",
+            "direction": "right"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "camera_move",
+    "evidence": {
+      "text": "pan right کن یه ذره",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "pan right کن یه ذره",
+      "design": false,
+      "unsupported": false,
+      "camera_action": "pan",
+      "camera_direction": "right",
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "view.move",
+        "args": {
+          "action": "pan",
+          "direction": "right"
+        }
+      },
+      "provenance": {
+        "direction": "text/context",
+        "magnitude": null
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "camera",
+      "id": "v11_c10",
+      "text": "یه پله نزدیک تر شو",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "view.move",
+          "args": {
+            "action": "zoom",
+            "direction": "in"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "camera_move",
+    "evidence": {
+      "text": "یه پله نزدیک تر شو",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "یه پله نزدیک تر شو",
+      "design": false,
+      "unsupported": false,
+      "camera_action": "zoom",
+      "camera_direction": "in",
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "view.move",
+        "args": {
+          "action": "zoom",
+          "direction": "in"
+        }
+      },
+      "provenance": {
+        "direction": "text/context",
+        "magnitude": null
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "camera",
+      "id": "v11_c11",
+      "text": "یه پله دورتر شو",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "view.move",
+          "args": {
+            "action": "zoom",
+            "direction": "out"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "camera_move",
+    "evidence": {
+      "text": "یه پله دورتر شو",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "یه پله دورتر شو",
+      "design": false,
+      "unsupported": false,
+      "camera_action": "zoom",
+      "camera_direction": "out",
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "view.move",
+        "args": {
+          "action": "zoom",
+          "direction": "out"
+        }
+      },
+      "provenance": {
+        "direction": "text/context",
+        "magnitude": null
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "camera",
+      "id": "v11_c12",
+      "text": "کاری کن کل مدل معلوم باشه",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "view.fit",
+          "args": {
+            "action": "fit"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "fit",
+    "evidence": {
+      "text": "کاری کن کل مدل معلوم باشه",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "کاری کن کل مدل معلوم باشه",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": true,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "view.fit",
+        "args": {
+          "action": "fit"
+        }
+      },
+      "provenance": {
+        "target": "text/context"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "camera",
+      "id": "v11_c13",
+      "text": "همین انتخاب بزرگ بشه تو صفحه",
+      "ctx": {
+        "selection_count": 2,
+        "selection_types": [
+          "edge",
+          "edge"
+        ]
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "view.fit",
+          "args": {
+            "action": "fit_selection"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "fit",
+    "evidence": {
+      "text": "همین انتخاب بزرگ بشه تو صفحه",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 2,
+      "selection_types": [
+        "edge",
+        "edge"
+      ],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "همین انتخاب بزرگ بشه تو صفحه",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": true,
+      "fit_selection": true,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "view.fit",
+        "args": {
+          "action": "fit_selection"
+        }
+      },
+      "provenance": {
+        "target": "text/context"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "camera",
+      "id": "v11_c14",
+      "text": "نمای بالا رو نشون بده",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "view.standard",
+          "args": {
+            "view": "top"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "top_view",
+    "evidence": {
+      "text": "نمای بالا رو نشون بده",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": true,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "نمای بالا رو نشون بده",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": true,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": [
+        "hide_show"
+      ]
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "view.standard",
+        "args": {
+          "view": "top"
+        }
+      },
+      "provenance": {
+        "view": "text"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "camera",
+      "id": "v11_c15",
+      "text": "هر چی انتخابه پاکش کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "viewer.selection.clear",
+          "args": {}
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "clear_selection",
+    "evidence": {
+      "text": "هر چی انتخابه پاکش کن",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "هر چی انتخابه پاکش کن",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": true,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "viewer.selection.clear",
+        "args": {}
+      },
+      "provenance": {}
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "camera",
+      "id": "v11_c16",
+      "text": "نمای جلو رو بیار",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "source": "model_intent",
+    "decision": "ask",
+    "intent": null,
+    "evidence": {
+      "text": "نمای جلو رو بیار",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "نمای جلو رو بیار",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": false,
+      "reason": "clarification",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      }
+    },
+    "model_choice": {
+      "id": "v11_c16",
+      "d": "q",
+      "i": null
+    },
+    "model_latency_ms": 793.9741559999902,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "camera",
+      "id": "v11_c17",
+      "text": "نمای ایزومتریک بده",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "camera_move",
+    "evidence": {
+      "text": "نمای ایزومتریک بده",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "نمای ایزومتریک بده",
+      "design": false,
+      "unsupported": false,
+      "camera_action": "zoom",
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": false,
+      "reason": "camera-ungrounded",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "camera",
+      "id": "v11_c18",
+      "text": "یه کاری کن فقط انتخابم تو کادر باشه",
+      "ctx": {
+        "selection_count": 1,
+        "selection_types": [
+          "face"
+        ]
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "view.fit",
+          "args": {
+            "action": "fit_selection"
+          }
+        }
+      ]
+    },
+    "source": "model_intent",
+    "decision": "act",
+    "intent": "fit",
+    "evidence": {
+      "text": "یه کاری کن فقط انتخابم تو کادر باشه",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 1,
+      "selection_types": [
+        "face"
+      ],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "یه کاری کن فقط انتخابم تو کادر باشه",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "view.fit",
+        "args": {
+          "action": "fit"
+        }
+      },
+      "provenance": {
+        "target": "text/context"
+      }
+    },
+    "model_choice": {
+      "id": "v11_c18",
+      "d": "a",
+      "i": "fit"
+    },
+    "model_latency_ms": 793.9741559999902,
+    "outcome": "wrong_reversible_accepted"
+  },
+  {
+    "case": {
+      "category": "inspect",
+      "id": "v11_i01",
+      "text": "الان چی دستمه؟",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "viewer.inspect",
+          "args": {
+            "mode": "selection"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "inspect",
+    "evidence": {
+      "text": "الان چی دستمه؟",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "الان چی دستمه؟",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "viewer.inspect",
+        "args": {
+          "mode": "selection"
+        }
+      },
+      "provenance": {
+        "mode": "text"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "inspect",
+      "id": "v11_i02",
+      "text": "ببین الان چی گرفتم",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "viewer.inspect",
+          "args": {
+            "mode": "selection"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "inspect",
+    "evidence": {
+      "text": "ببین الان چی گرفتم",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "ببین الان چی گرفتم",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "viewer.inspect",
+        "args": {
+          "mode": "selection"
+        }
+      },
+      "provenance": {
+        "mode": "text"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "inspect",
+      "id": "v11_i03",
+      "text": "وضعیت صفحه رو یه نگاه بنداز",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "viewer.inspect",
+          "args": {
+            "mode": "state"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "inspect",
+    "evidence": {
+      "text": "وضعیت صفحه رو یه نگاه بنداز",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "وضعیت صفحه رو یه نگاه بنداز",
+      "design": false,
+      "unsupported": false,
+      "camera_action": "pan",
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "viewer.inspect",
+        "args": {
+          "mode": "state"
+        }
+      },
+      "provenance": {
+        "mode": "text"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "inspect",
+      "id": "v11_i04",
+      "text": "ببین کیا الان وصلن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "viewer.inspect",
+          "args": {
+            "mode": "collaboration"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "inspect",
+    "evidence": {
+      "text": "ببین کیا الان وصلن",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "ببین کیا الان وصلن",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "viewer.inspect",
+        "args": {
+          "mode": "collaboration"
+        }
+      },
+      "provenance": {
+        "mode": "text"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "inspect",
+      "id": "v11_i05",
+      "text": "ببین توی session چند نفریم",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "viewer.inspect",
+          "args": {
+            "mode": "collaboration"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "inspect",
+    "evidence": {
+      "text": "ببین توی session چند نفریم",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "ببین توی session چند نفریم",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "viewer.inspect",
+        "args": {
+          "mode": "collaboration"
+        }
+      },
+      "provenance": {
+        "mode": "text"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "inspect",
+      "id": "v11_i06",
+      "text": "طرف مقابلم رو follow کن",
+      "ctx": {
+        "collaborator_count": 2
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "view.follow",
+          "args": {}
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "follow",
+    "evidence": {
+      "text": "طرف مقابلم رو follow کن",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": 2,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "طرف مقابلم رو follow کن",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "view.follow",
+        "args": {}
+      },
+      "provenance": {
+        "candidate": "text/context"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "inspect",
+      "id": "v11_i07",
+      "text": "دومی رو فالو کن",
+      "ctx": {
+        "collaborator_count": 3
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "view.follow",
+          "args": {
+            "candidate_index": 2
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "follow",
+    "evidence": {
+      "text": "دومی رو فالو کن",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": 3,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "دومی رو فالو کن",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "view.follow",
+        "args": {
+          "candidate_index": 2
+        }
+      },
+      "provenance": {
+        "candidate": "text/context"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "inspect",
+      "id": "v11_i08",
+      "text": "یکی از این چند نفر رو فالو کن",
+      "ctx": {
+        "collaborator_count": 4
+      },
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "follow",
+    "evidence": {
+      "text": "یکی از این چند نفر رو فالو کن",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": 4,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "یکی از این چند نفر رو فالو کن",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": false,
+      "reason": "follow-ambiguous",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "inspect",
+      "id": "v11_i09",
+      "text": "همین سطحی که روشیم رو بگیر",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "source": "model_intent",
+    "decision": "ask",
+    "intent": null,
+    "evidence": {
+      "text": "همین سطحی که روشیم رو بگیر",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "همین سطحی که روشیم رو بگیر",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": false,
+      "reason": "clarification",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      }
+    },
+    "model_choice": {
+      "id": "v11_i09",
+      "d": "q",
+      "i": null
+    },
+    "model_latency_ms": 793.9741559999902,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "inspect",
+      "id": "v11_i10",
+      "text": "اون لبه سمت چپی رو انتخاب کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "ask",
+    "intent": null,
+    "evidence": {
+      "text": "اون لبه سمت چپی رو انتخاب کن",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "اون لبه سمت چپی رو انتخاب کن",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": "left",
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": false,
+      "reason": "clarification",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "edge",
+      "id": "v11_e01",
+      "text": "روی انتخاب فیلت یک و سه دهم میل بزن",
+      "ctx": {
+        "selection_count": 2,
+        "selection_types": [
+          "edge",
+          "edge"
+        ]
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.from_selection",
+          "args": {
+            "feature_type": "fillet",
+            "amount": "1.3 mm"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "edge_on_selection",
+    "evidence": {
+      "text": "روی انتخاب فیلت یک و سه دهم میل بزن",
+      "quantities": [
+        {
+          "id": "q1",
+          "value": 1.3,
+          "unit": "mm",
+          "text": "یک و سه دهم میل",
+          "span": [
+            16,
+            31
+          ],
+          "ast": {
+            "value": 1.3,
+            "kind": "whole_plus_fraction",
+            "source": "یک و سه دهم",
+            "whole": 1,
+            "numerator": 3,
+            "denominator": 10
+          },
+          "provenance": "canonical_quantity_grammar"
+        }
+      ],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 2,
+      "selection_types": [
+        "edge",
+        "edge"
+      ],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "روی انتخاب فیلت یک و سه دهم میل بزن",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": "fillet",
+      "multi_action": false,
+      "action_cues": [
+        "fillet"
+      ]
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.from_selection",
+        "args": {
+          "feature_type": "fillet",
+          "amount": "1.3 mm"
+        }
+      },
+      "provenance": {
+        "kind": "text",
+        "amount": "q1",
+        "selection": "verified-context"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "edge",
+      "id": "v11_e02",
+      "text": "این لبه ها رو شصت و پنج صدم میل پخ کن",
+      "ctx": {
+        "selection_count": 2,
+        "selection_types": [
+          "edge",
+          "edge"
+        ]
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.from_selection",
+          "args": {
+            "feature_type": "chamfer",
+            "amount": "0.65 mm"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "edge_on_selection",
+    "evidence": {
+      "text": "این لبه ها رو شصت و پنج صدم میل پخ کن",
+      "quantities": [
+        {
+          "id": "q1",
+          "value": 0.65,
+          "unit": "mm",
+          "text": "شصت و پنج صدم میل",
+          "span": [
+            14,
+            31
+          ],
+          "ast": {
+            "value": 0.65,
+            "kind": "fraction",
+            "source": "شصت و پنج صدم",
+            "numerator": 65,
+            "denominator": 100
+          },
+          "provenance": "canonical_quantity_grammar"
+        }
+      ],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 2,
+      "selection_types": [
+        "edge",
+        "edge"
+      ],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "این لبه ها رو شصت و پنج صدم میل پخ کن",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": "chamfer",
+      "multi_action": false,
+      "action_cues": [
+        "chamfer"
+      ]
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.from_selection",
+        "args": {
+          "feature_type": "chamfer",
+          "amount": "0.65 mm"
+        }
+      },
+      "provenance": {
+        "kind": "text",
+        "amount": "q1",
+        "selection": "verified-context"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "edge",
+      "id": "v11_e03",
+      "text": "همین لبه ها رو دو میل و نیم گرد کن",
+      "ctx": {
+        "selection_count": 2,
+        "selection_types": [
+          "edge",
+          "edge"
+        ]
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.from_selection",
+          "args": {
+            "feature_type": "fillet",
+            "amount": "2.5 mm"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "edge_on_selection",
+    "evidence": {
+      "text": "همین لبه ها رو دو میل و نیم گرد کن",
+      "quantities": [
+        {
+          "id": "q1",
+          "value": 2.5,
+          "unit": "mm",
+          "text": "دو میل و نیم",
+          "span": [
+            15,
+            27
+          ],
+          "ast": {
+            "value": 2.5,
+            "kind": "unit_then_fraction",
+            "source": "دو میل و نیم",
+            "base": {
+              "value": 2.0,
+              "kind": "cardinal",
+              "source": "دو",
+              "cardinal": 2
+            },
+            "post_fraction": {
+              "value": 0.5,
+              "kind": "half",
+              "source": "نیم"
+            }
+          },
+          "provenance": "canonical_quantity_grammar"
+        }
+      ],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 2,
+      "selection_types": [
+        "edge",
+        "edge"
+      ],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "همین لبه ها رو دو میل و نیم گرد کن",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": "fillet",
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.from_selection",
+        "args": {
+          "feature_type": "fillet",
+          "amount": "2.5 mm"
+        }
+      },
+      "provenance": {
+        "kind": "text",
+        "amount": "q1",
+        "selection": "verified-context"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "edge",
+      "id": "v11_e04",
+      "text": "روی همین انتخاب پخ یک ممیز هفت میل",
+      "ctx": {
+        "selection_count": 1,
+        "selection_types": [
+          "edge"
+        ]
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.from_selection",
+          "args": {
+            "feature_type": "chamfer",
+            "amount": "1.7 mm"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "edge_on_selection",
+    "evidence": {
+      "text": "روی همین انتخاب پخ یک ممیز هفت میل",
+      "quantities": [
+        {
+          "id": "q1",
+          "value": 1.7,
+          "unit": "mm",
+          "text": "یک ممیز هفت میل",
+          "span": [
+            19,
+            34
+          ],
+          "ast": {
+            "value": 1.7,
+            "kind": "spoken_decimal",
+            "source": "یک ممیز هفت",
+            "whole": 1,
+            "fraction": {
+              "digits": "7"
+            }
+          },
+          "provenance": "canonical_quantity_grammar"
+        }
+      ],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 1,
+      "selection_types": [
+        "edge"
+      ],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "روی همین انتخاب پخ یک ممیز هفت میل",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": "chamfer",
+      "multi_action": false,
+      "action_cues": [
+        "chamfer"
+      ]
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.from_selection",
+        "args": {
+          "feature_type": "chamfer",
+          "amount": "1.7 mm"
+        }
+      },
+      "provenance": {
+        "kind": "text",
+        "amount": "q1",
+        "selection": "verified-context"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "edge",
+      "id": "v11_e05",
+      "text": "فیلت سه و بیست صدم میلی روی اینا",
+      "ctx": {
+        "selection_count": 2,
+        "selection_types": [
+          "edge",
+          "edge"
+        ]
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.from_selection",
+          "args": {
+            "feature_type": "fillet",
+            "amount": "3.2 mm"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "edge_on_selection",
+    "evidence": {
+      "text": "فیلت سه و بیست صدم میلی روی اینا",
+      "quantities": [
+        {
+          "id": "q1",
+          "value": 3.2,
+          "unit": "mm",
+          "text": "سه و بیست صدم میلی",
+          "span": [
+            5,
+            23
+          ],
+          "ast": {
+            "value": 3.2,
+            "kind": "whole_plus_fraction",
+            "source": "سه و بیست صدم",
+            "whole": 3,
+            "numerator": 20,
+            "denominator": 100
+          },
+          "provenance": "canonical_quantity_grammar"
+        }
+      ],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 2,
+      "selection_types": [
+        "edge",
+        "edge"
+      ],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "فیلت سه و بیست صدم میلی روی اینا",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": "fillet",
+      "multi_action": false,
+      "action_cues": [
+        "fillet"
+      ]
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.from_selection",
+        "args": {
+          "feature_type": "fillet",
+          "amount": "3.2 mm"
+        }
+      },
+      "provenance": {
+        "kind": "text",
+        "amount": "q1",
+        "selection": "verified-context"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "edge",
+      "id": "v11_e06",
+      "text": "پخ چهار دهم روی انتخاب",
+      "ctx": {
+        "selection_count": 1,
+        "selection_types": [
+          "edge"
+        ]
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.from_selection",
+          "args": {
+            "feature_type": "chamfer",
+            "amount": "0.4 mm"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "edge_on_selection",
+    "evidence": {
+      "text": "پخ چهار دهم روی انتخاب",
+      "quantities": [
+        {
+          "id": "q1",
+          "value": 0.4,
+          "unit": "mm",
+          "text": "چهار دهم",
+          "span": [
+            3,
+            11
+          ],
+          "implicit_unit": true,
+          "ast": {
+            "value": 0.4,
+            "kind": "fraction",
+            "source": "چهار دهم",
+            "numerator": 4,
+            "denominator": 10
+          },
+          "provenance": "bounded_implicit_edge_mm"
+        }
+      ],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 1,
+      "selection_types": [
+        "edge"
+      ],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "پخ چهار دهم روی انتخاب",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": "chamfer",
+      "multi_action": false,
+      "action_cues": [
+        "chamfer"
+      ]
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.from_selection",
+        "args": {
+          "feature_type": "chamfer",
+          "amount": "0.4 mm"
+        }
+      },
+      "provenance": {
+        "kind": "text",
+        "amount": "q1",
+        "selection": "verified-context"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "edge",
+      "id": "v11_e07",
+      "text": "روی این دو لبه ۱.۷۵ mm fillet بزن",
+      "ctx": {
+        "selection_count": 2,
+        "selection_types": [
+          "edge",
+          "edge"
+        ]
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.from_selection",
+          "args": {
+            "feature_type": "fillet",
+            "amount": "1.75 mm"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "edge_on_selection",
+    "evidence": {
+      "text": "روی این دو لبه 1.75 mm fillet بزن",
+      "quantities": [
+        {
+          "id": "q1",
+          "value": 1.75,
+          "unit": "mm",
+          "text": "1.75 mm",
+          "span": [
+            15,
+            22
+          ],
+          "ast": {
+            "value": 1.75,
+            "kind": "numeric_literal",
+            "source": "1.75"
+          },
+          "provenance": "canonical_quantity_grammar"
+        }
+      ],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 2,
+      "selection_types": [
+        "edge",
+        "edge"
+      ],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "روی این دو لبه 1.75 mm fillet بزن",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": "fillet",
+      "multi_action": false,
+      "action_cues": [
+        "fillet"
+      ]
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.from_selection",
+        "args": {
+          "feature_type": "fillet",
+          "amount": "1.75 mm"
+        }
+      },
+      "provenance": {
+        "kind": "text",
+        "amount": "q1",
+        "selection": "verified-context"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "edge",
+      "id": "v11_e08",
+      "text": "فیلت نیم میل روی همین لبه",
+      "ctx": {
+        "selection_count": 1,
+        "selection_types": [
+          "edge"
+        ]
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.from_selection",
+          "args": {
+            "feature_type": "fillet",
+            "amount": "0.5 mm"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "edge_on_selection",
+    "evidence": {
+      "text": "فیلت نیم میل روی همین لبه",
+      "quantities": [
+        {
+          "id": "q1",
+          "value": 0.5,
+          "unit": "mm",
+          "text": "نیم میل",
+          "span": [
+            5,
+            12
+          ],
+          "ast": {
+            "value": 0.5,
+            "kind": "half",
+            "source": "نیم"
+          },
+          "provenance": "canonical_quantity_grammar"
+        }
+      ],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 1,
+      "selection_types": [
+        "edge"
+      ],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "فیلت نیم میل روی همین لبه",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": "fillet",
+      "multi_action": false,
+      "action_cues": [
+        "fillet"
+      ]
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.from_selection",
+        "args": {
+          "feature_type": "fillet",
+          "amount": "0.5 mm"
+        }
+      },
+      "provenance": {
+        "kind": "text",
+        "amount": "q1",
+        "selection": "verified-context"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "edge",
+      "id": "v11_e09",
+      "text": "دو میل پخ بزن",
+      "ctx": {
+        "selection_count": 0
+      },
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "edge_on_selection",
+    "evidence": {
+      "text": "دو میل پخ بزن",
+      "quantities": [
+        {
+          "id": "q1",
+          "value": 2.0,
+          "unit": "mm",
+          "text": "دو میل",
+          "span": [
+            0,
+            6
+          ],
+          "ast": {
+            "value": 2.0,
+            "kind": "cardinal",
+            "source": "دو",
+            "cardinal": 2
+          },
+          "provenance": "canonical_quantity_grammar"
+        }
+      ],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "دو میل پخ بزن",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": "chamfer",
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": false,
+      "reason": "selection-ungrounded",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "edge",
+      "id": "v11_e10",
+      "text": "این انتخاب رو فیلت کن",
+      "ctx": {
+        "selection_count": 2,
+        "selection_types": [
+          "edge",
+          "edge"
+        ]
+      },
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "edge_on_selection",
+    "evidence": {
+      "text": "این انتخاب رو فیلت کن",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 2,
+      "selection_types": [
+        "edge",
+        "edge"
+      ],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "این انتخاب رو فیلت کن",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": "fillet",
+      "multi_action": false,
+      "action_cues": [
+        "fillet"
+      ]
+    },
+    "post": {
+      "accepted": false,
+      "reason": "edge-amount-ambiguous",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "edge",
+      "id": "v11_e11",
+      "text": "یه fillet خالی سه و نیم میل بساز",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.add",
+          "args": {
+            "feature_type": "fillet",
+            "amount": "3.5 mm"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "add_edge_feature",
+    "evidence": {
+      "text": "یه fillet خالی سه و نیم میل بساز",
+      "quantities": [
+        {
+          "id": "q1",
+          "value": 3.5,
+          "unit": "mm",
+          "text": "سه و نیم میل",
+          "span": [
+            15,
+            27
+          ],
+          "ast": {
+            "value": 3.5,
+            "kind": "whole_plus_half",
+            "source": "سه و نیم",
+            "whole": 3
+          },
+          "provenance": "canonical_quantity_grammar"
+        }
+      ],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "یه fillet خالی سه و نیم میل بساز",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": "fillet",
+      "multi_action": false,
+      "action_cues": [
+        "fillet"
+      ]
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.add",
+        "args": {
+          "feature_type": "fillet",
+          "amount": "3.5 mm"
+        }
+      },
+      "provenance": {
+        "kind": "text",
+        "amount": "q1"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "edge",
+      "id": "v11_e12",
+      "text": "یه پخ جدید هشت دهم میل بدون انتخاب بساز",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.add",
+          "args": {
+            "feature_type": "chamfer",
+            "amount": "0.8 mm"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "add_edge_feature",
+    "evidence": {
+      "text": "یه پخ جدید هشت دهم میل بدون انتخاب بساز",
+      "quantities": [
+        {
+          "id": "q1",
+          "value": 0.8,
+          "unit": "mm",
+          "text": "هشت دهم میل",
+          "span": [
+            11,
+            22
+          ],
+          "ast": {
+            "value": 0.8,
+            "kind": "fraction",
+            "source": "هشت دهم",
+            "numerator": 8,
+            "denominator": 10
+          },
+          "provenance": "canonical_quantity_grammar"
+        }
+      ],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "یه پخ جدید هشت دهم میل بدون انتخاب بساز",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": "chamfer",
+      "multi_action": false,
+      "action_cues": [
+        "chamfer"
+      ]
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.add",
+        "args": {
+          "feature_type": "chamfer",
+          "amount": "0.8 mm"
+        }
+      },
+      "provenance": {
+        "kind": "text",
+        "amount": "q1"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "edge",
+      "id": "v11_e13",
+      "text": "دو میل فیلت کن بعد یک میل پخ",
+      "ctx": {
+        "selection_count": 2,
+        "selection_types": [
+          "edge",
+          "edge"
+        ]
+      },
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "ask",
+    "intent": null,
+    "evidence": {
+      "text": "دو میل فیلت کن بعد یک میل پخ",
+      "quantities": [
+        {
+          "id": "q1",
+          "value": 2.0,
+          "unit": "mm",
+          "text": "دو میل",
+          "span": [
+            0,
+            6
+          ],
+          "ast": {
+            "value": 2.0,
+            "kind": "cardinal",
+            "source": "دو",
+            "cardinal": 2
+          },
+          "provenance": "canonical_quantity_grammar"
+        },
+        {
+          "id": "q2",
+          "value": 1.0,
+          "unit": "mm",
+          "text": "یک میل",
+          "span": [
+            19,
+            25
+          ],
+          "ast": {
+            "value": 1.0,
+            "kind": "cardinal",
+            "source": "یک",
+            "cardinal": 1
+          },
+          "provenance": "canonical_quantity_grammar"
+        }
+      ],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 2,
+      "selection_types": [
+        "edge",
+        "edge"
+      ],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": "after",
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "دو میل فیلت کن بعد یک میل پخ",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": "chamfer",
+      "multi_action": true,
+      "action_cues": [
+        "fillet",
+        "chamfer"
+      ]
+    },
+    "post": {
+      "accepted": false,
+      "reason": "clarification",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "edge",
+      "id": "v11_e14",
+      "text": "فیلتش کن و بعد مخفیش کن",
+      "ctx": {
+        "selection_count": 1,
+        "selection_types": [
+          "edge"
+        ],
+        "last_part": "Part 3"
+      },
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "ask",
+    "intent": null,
+    "evidence": {
+      "text": "فیلتش کن و بعد مخفیش کن",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": "Part 3",
+      "selection_count": 1,
+      "selection_types": [
+        "edge"
+      ],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": false,
+      "suppressed": null,
+      "relation": "after",
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "فیلتش کن و بعد مخفیش کن",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": "fillet",
+      "multi_action": true,
+      "action_cues": [
+        "fillet",
+        "hide_show"
+      ]
+    },
+    "post": {
+      "accepted": false,
+      "reason": "clarification",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "edge",
+      "id": "v11_e15",
+      "text": "روی انتخاب radius دو میل بده",
+      "ctx": {
+        "selection_count": 2,
+        "selection_types": [
+          "edge",
+          "edge"
+        ]
+      },
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "ask",
+    "intent": null,
+    "evidence": {
+      "text": "روی انتخاب radius دو میل بده",
+      "quantities": [
+        {
+          "id": "q1",
+          "value": 2.0,
+          "unit": "mm",
+          "text": "دو میل",
+          "span": [
+            18,
+            24
+          ],
+          "ast": {
+            "value": 2.0,
+            "kind": "cardinal",
+            "source": "دو",
+            "cardinal": 2
+          },
+          "provenance": "canonical_quantity_grammar"
+        }
+      ],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 2,
+      "selection_types": [
+        "edge",
+        "edge"
+      ],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "روی انتخاب radius دو میل بده",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": false,
+      "reason": "clarification",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "edge",
+      "id": "v11_e16",
+      "text": "فیلت دو",
+      "ctx": {
+        "selection_count": 1,
+        "selection_types": [
+          "edge"
+        ]
+      },
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "edge_on_selection",
+    "evidence": {
+      "text": "فیلت دو",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [
+        {
+          "id": "f1",
+          "name": "Fillet 2",
+          "span": [
+            0,
+            7
+          ]
+        }
+      ],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 1,
+      "selection_types": [
+        "edge"
+      ],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "فیلت دو",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": "fillet",
+      "multi_action": false,
+      "action_cues": [
+        "fillet"
+      ]
+    },
+    "post": {
+      "accepted": false,
+      "reason": "edge-amount-ambiguous",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "edge",
+      "id": "v11_e17",
+      "text": "پخ دو و نیم میل روی همین انتخاب",
+      "ctx": {
+        "selection_count": 1,
+        "selection_types": [
+          "edge"
+        ]
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.from_selection",
+          "args": {
+            "feature_type": "chamfer",
+            "amount": "2.5 mm"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "edge_on_selection",
+    "evidence": {
+      "text": "پخ دو و نیم میل روی همین انتخاب",
+      "quantities": [
+        {
+          "id": "q1",
+          "value": 2.5,
+          "unit": "mm",
+          "text": "دو و نیم میل",
+          "span": [
+            3,
+            15
+          ],
+          "ast": {
+            "value": 2.5,
+            "kind": "whole_plus_half",
+            "source": "دو و نیم",
+            "whole": 2
+          },
+          "provenance": "canonical_quantity_grammar"
+        }
+      ],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 1,
+      "selection_types": [
+        "edge"
+      ],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "پخ دو و نیم میل روی همین انتخاب",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": "chamfer",
+      "multi_action": false,
+      "action_cues": [
+        "chamfer"
+      ]
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.from_selection",
+        "args": {
+          "feature_type": "chamfer",
+          "amount": "2.5 mm"
+        }
+      },
+      "provenance": {
+        "kind": "text",
+        "amount": "q1",
+        "selection": "verified-context"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "edge",
+      "id": "v11_e18",
+      "text": "یه chamfer خالی ۰.۳ میلی بساز",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.add",
+          "args": {
+            "feature_type": "chamfer",
+            "amount": "0.3 mm"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "add_edge_feature",
+    "evidence": {
+      "text": "یه chamfer خالی 0.3 میلی بساز",
+      "quantities": [
+        {
+          "id": "q1",
+          "value": 0.3,
+          "unit": "mm",
+          "text": "0.3 میلی",
+          "span": [
+            16,
+            24
+          ],
+          "ast": {
+            "value": 0.3,
+            "kind": "numeric_literal",
+            "source": "0.3"
+          },
+          "provenance": "canonical_quantity_grammar"
+        }
+      ],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "یه chamfer خالی 0.3 میلی بساز",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": "chamfer",
+      "multi_action": false,
+      "action_cues": [
+        "chamfer"
+      ]
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.add",
+        "args": {
+          "feature_type": "chamfer",
+          "amount": "0.3 mm"
+        }
+      },
+      "provenance": {
+        "kind": "text",
+        "amount": "q1"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "feature",
+      "id": "v11_f01",
+      "text": "شعاع Fillet 3 رو هفت میل کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.parameter.set",
+          "args": {
+            "feature_name": "Fillet 3",
+            "parameter": "radius",
+            "amount": "7 mm"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "feature_parameter",
+    "evidence": {
+      "text": "شعاع Fillet 3 رو هفت میل کن",
+      "quantities": [
+        {
+          "id": "q1",
+          "value": 7.0,
+          "unit": "mm",
+          "text": "هفت میل",
+          "span": [
+            17,
+            24
+          ],
+          "ast": {
+            "value": 7.0,
+            "kind": "cardinal",
+            "source": "هفت",
+            "cardinal": 7
+          },
+          "provenance": "canonical_quantity_grammar"
+        }
+      ],
+      "quantity_issues": [],
+      "features": [
+        {
+          "id": "f1",
+          "name": "Fillet 3",
+          "span": [
+            5,
+            13
+          ]
+        }
+      ],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "شعاع fillet 3 رو هفت میل کن",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": "fillet",
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.parameter.set",
+        "args": {
+          "feature_name": "Fillet 3",
+          "parameter": "radius",
+          "amount": "7 mm"
+        }
+      },
+      "provenance": {
+        "feature": "text/context",
+        "value": "q1",
+        "parameter": "text/type"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "feature",
+      "id": "v11_f02",
+      "text": "عمق Extrude 2 رو هجده میل بذار",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.parameter.set",
+          "args": {
+            "feature_name": "Extrude 2",
+            "parameter": "depth",
+            "amount": "18 mm"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "feature_parameter",
+    "evidence": {
+      "text": "عمق Extrude 2 رو هجده میل بذار",
+      "quantities": [
+        {
+          "id": "q1",
+          "value": 18.0,
+          "unit": "mm",
+          "text": "هجده میل",
+          "span": [
+            17,
+            25
+          ],
+          "ast": {
+            "value": 18.0,
+            "kind": "cardinal",
+            "source": "هجده",
+            "cardinal": 18
+          },
+          "provenance": "canonical_quantity_grammar"
+        }
+      ],
+      "quantity_issues": [],
+      "features": [
+        {
+          "id": "f1",
+          "name": "Extrude 2",
+          "span": [
+            4,
+            13
+          ]
+        }
+      ],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "عمق extrude 2 رو هجده میل بذار",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.parameter.set",
+        "args": {
+          "feature_name": "Extrude 2",
+          "parameter": "depth",
+          "amount": "18 mm"
+        }
+      },
+      "provenance": {
+        "feature": "text/context",
+        "value": "q1",
+        "parameter": "text/type"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "feature",
+      "id": "v11_f03",
+      "text": "Extrude 2 رو هجده میل کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "ask",
+    "intent": null,
+    "evidence": {
+      "text": "Extrude 2 رو هجده میل کن",
+      "quantities": [
+        {
+          "id": "q1",
+          "value": 18.0,
+          "unit": "mm",
+          "text": "هجده میل",
+          "span": [
+            13,
+            21
+          ],
+          "ast": {
+            "value": 18.0,
+            "kind": "cardinal",
+            "source": "هجده",
+            "cardinal": 18
+          },
+          "provenance": "canonical_quantity_grammar"
+        }
+      ],
+      "quantity_issues": [],
+      "features": [
+        {
+          "id": "f1",
+          "name": "Extrude 2",
+          "span": [
+            0,
+            9
+          ]
+        }
+      ],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "extrude 2 رو هجده میل کن",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": false,
+      "reason": "clarification",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "feature",
+      "id": "v11_f04",
+      "text": "زاویه Draft 2 رو هفت درجه کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.parameter.set",
+          "args": {
+            "feature_name": "Draft 2",
+            "parameter": "angle",
+            "amount": "7 deg"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "feature_parameter",
+    "evidence": {
+      "text": "زاویه Draft 2 رو هفت درجه کن",
+      "quantities": [
+        {
+          "id": "q1",
+          "value": 7.0,
+          "unit": "deg",
+          "text": "هفت درجه",
+          "span": [
+            17,
+            25
+          ],
+          "ast": {
+            "value": 7.0,
+            "kind": "cardinal",
+            "source": "هفت",
+            "cardinal": 7
+          },
+          "provenance": "canonical_quantity_grammar"
+        }
+      ],
+      "quantity_issues": [],
+      "features": [
+        {
+          "id": "f1",
+          "name": "Draft 2",
+          "span": [
+            6,
+            13
+          ]
+        }
+      ],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "زاویه draft 2 رو هفت درجه کن",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.parameter.set",
+        "args": {
+          "feature_name": "Draft 2",
+          "parameter": "angle",
+          "amount": "7 deg"
+        }
+      },
+      "provenance": {
+        "feature": "text/context",
+        "value": "q1",
+        "parameter": "text/type"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "feature",
+      "id": "v11_f05",
+      "text": "این فیلت رو یک و سه دهم میل بیشتر کن",
+      "ctx": {
+        "last_feature": "Fillet 2",
+        "feature_parameters": {
+          "radius": "4 mm"
+        }
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.parameter.set",
+          "args": {
+            "feature_name": "Fillet 2",
+            "parameter": "radius",
+            "amount": "5.3 mm"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "feature_parameter",
+    "evidence": {
+      "text": "این فیلت رو یک و سه دهم میل بیشتر کن",
+      "quantities": [
+        {
+          "id": "q1",
+          "value": 1.3,
+          "unit": "mm",
+          "text": "یک و سه دهم میل",
+          "span": [
+            12,
+            27
+          ],
+          "ast": {
+            "value": 1.3,
+            "kind": "whole_plus_fraction",
+            "source": "یک و سه دهم",
+            "whole": 1,
+            "numerator": 3,
+            "denominator": 10
+          },
+          "provenance": "canonical_quantity_grammar"
+        }
+      ],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": "Fillet 2",
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {
+        "radius": "4 mm"
+      },
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": "add",
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "این فیلت رو یک و سه دهم میل بیشتر کن",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": "fillet",
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.parameter.set",
+        "args": {
+          "feature_name": "Fillet 2",
+          "parameter": "radius",
+          "amount": "5.3 mm"
+        }
+      },
+      "provenance": {
+        "feature": "text/context",
+        "delta": "q1",
+        "current": "verified-context",
+        "operator": "add"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "feature",
+      "id": "v11_f06",
+      "text": "این فیلت رو هفتاد و پنج صدم میل کمتر کن",
+      "ctx": {
+        "last_feature": "Fillet 2",
+        "feature_parameters": {
+          "radius": "4 mm"
+        }
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.parameter.set",
+          "args": {
+            "feature_name": "Fillet 2",
+            "parameter": "radius",
+            "amount": "3.25 mm"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "feature_parameter",
+    "evidence": {
+      "text": "این فیلت رو هفتاد و پنج صدم میل کمتر کن",
+      "quantities": [
+        {
+          "id": "q1",
+          "value": 0.75,
+          "unit": "mm",
+          "text": "هفتاد و پنج صدم میل",
+          "span": [
+            12,
+            31
+          ],
+          "ast": {
+            "value": 0.75,
+            "kind": "fraction",
+            "source": "هفتاد و پنج صدم",
+            "numerator": 75,
+            "denominator": 100
+          },
+          "provenance": "canonical_quantity_grammar"
+        }
+      ],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": "Fillet 2",
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {
+        "radius": "4 mm"
+      },
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": "subtract",
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "این فیلت رو هفتاد و پنج صدم میل کمتر کن",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": "fillet",
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.parameter.set",
+        "args": {
+          "feature_name": "Fillet 2",
+          "parameter": "radius",
+          "amount": "3.25 mm"
+        }
+      },
+      "provenance": {
+        "feature": "text/context",
+        "delta": "q1",
+        "current": "verified-context",
+        "operator": "subtract"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "feature",
+      "id": "v11_f07",
+      "text": "یه کم بیشترش کن",
+      "ctx": {
+        "last_feature": "Extrude 2",
+        "feature_parameters": {
+          "depth": "12 mm"
+        }
+      },
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "feature_parameter",
+    "evidence": {
+      "text": "یه کم بیشترش کن",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": "Extrude 2",
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {
+        "depth": "12 mm"
+      },
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": "add",
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "یه کم بیشترش کن",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": false,
+      "reason": "feature-parameter-ungrounded",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "feature",
+      "id": "v11_f08",
+      "text": "Extrude 5 رو خاموش کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.patch",
+          "args": {
+            "feature_name": "Extrude 5",
+            "suppressed": true
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "feature_suppressed",
+    "evidence": {
+      "text": "Extrude 5 رو خاموش کن",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [
+        {
+          "id": "f1",
+          "name": "Extrude 5",
+          "span": [
+            0,
+            9
+          ]
+        }
+      ],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": true,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "extrude 5 رو خاموش کن",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 5",
+          "suppressed": true
+        }
+      },
+      "provenance": {
+        "feature": "text/context",
+        "state": "text"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "feature",
+      "id": "v11_f09",
+      "text": "Extrude 5 رو دوباره روشن کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.patch",
+          "args": {
+            "feature_name": "Extrude 5",
+            "suppressed": false
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "feature_suppressed",
+    "evidence": {
+      "text": "Extrude 5 رو دوباره روشن کن",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [
+        {
+          "id": "f1",
+          "name": "Extrude 5",
+          "span": [
+            0,
+            9
+          ]
+        }
+      ],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": false,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "extrude 5 رو دوباره روشن کن",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 5",
+          "suppressed": false
+        }
+      },
+      "provenance": {
+        "feature": "text/context",
+        "state": "text"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "feature",
+      "id": "v11_f10",
+      "text": "برش گردون",
+      "ctx": {
+        "last_feature": "Extrude 5",
+        "last_action": "suppress"
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.patch",
+          "args": {
+            "feature_name": "Extrude 5",
+            "suppressed": false
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "feature_suppressed",
+    "evidence": {
+      "text": "برش گردون",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": "Extrude 5",
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": "suppress",
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": false,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "برش گردون",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": true,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Extrude 5",
+          "suppressed": false
+        }
+      },
+      "provenance": {
+        "feature": "text/context",
+        "state": "text"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "feature",
+      "id": "v11_f11",
+      "text": "اسم Fillet 6 بشه smooth rim",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.patch",
+          "args": {
+            "feature_name": "Fillet 6",
+            "new_name": "smooth rim"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "feature_rename",
+    "evidence": {
+      "text": "اسم Fillet 6 بشه smooth rim",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [
+        {
+          "id": "f1",
+          "name": "Fillet 6",
+          "span": [
+            4,
+            12
+          ]
+        }
+      ],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": "name",
+      "property_value": "smooth rim",
+      "name_value": "smooth rim",
+      "cue_text": "اسم fillet 6 بشه           ",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": "fillet",
+      "multi_action": false,
+      "action_cues": [
+        "rename"
+      ]
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.patch",
+        "args": {
+          "feature_name": "Fillet 6",
+          "new_name": "smooth rim"
+        }
+      },
+      "provenance": {
+        "feature": "text/context",
+        "name": "text-span"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "feature",
+      "id": "v11_f12",
+      "text": "Fillet 7 رو بنداز دور",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.delete",
+          "args": {
+            "feature_name": "Fillet 7"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "feature_delete",
+    "evidence": {
+      "text": "Fillet 7 رو بنداز دور",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [
+        {
+          "id": "f1",
+          "name": "Fillet 7",
+          "span": [
+            0,
+            8
+          ]
+        }
+      ],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "fillet 7 رو بنداز دور",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": "fillet",
+      "multi_action": false,
+      "action_cues": [
+        "delete"
+      ]
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.delete",
+        "args": {
+          "feature_name": "Fillet 7"
+        }
+      },
+      "provenance": {
+        "feature": "text/context"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "feature",
+      "id": "v11_f13",
+      "text": "آخرین چیزی که توی درخت فیچر ساختیم رو پاک کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.delete",
+          "args": {
+            "position": "last"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "think",
+    "intent": null,
+    "evidence": {
+      "text": "آخرین چیزی که توی درخت فیچر ساختیم رو پاک کن",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "آخرین چیزی که توی درخت فیچر ساختیم رو پاک کن",
+      "design": true,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": [
+        "delete"
+      ]
+    },
+    "post": {
+      "accepted": false,
+      "reason": "design-escalation",
+      "compiled": {
+        "route": "think",
+        "op": null,
+        "args": {}
+      }
+    },
+    "outcome": "conservative_escalation"
+  },
+  {
+    "case": {
+      "category": "feature",
+      "id": "v11_f14",
+      "text": "اولین فیچر رو حذف کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.delete",
+          "args": {
+            "position": "first"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "feature_delete",
+    "evidence": {
+      "text": "اولین فیچر رو حذف کن",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "اولین فیچر رو حذف کن",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": [
+        "delete"
+      ]
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.delete",
+        "args": {
+          "position": "first"
+        }
+      },
+      "provenance": {
+        "position": "text"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "feature",
+      "id": "v11_f15",
+      "text": "flip direction برای Extrude 4 رو روشن کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.parameter.set",
+          "args": {
+            "feature_name": "Extrude 4",
+            "parameter": "flip direction",
+            "value": true
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "feature_parameter",
+    "evidence": {
+      "text": "flip direction برای Extrude 4 رو روشن کن",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [
+        {
+          "id": "f1",
+          "name": "Extrude 4",
+          "span": [
+            20,
+            29
+          ]
+        }
+      ],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": false,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "flip direction برای extrude 4 رو روشن کن",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.parameter.set",
+        "args": {
+          "feature_name": "Extrude 4",
+          "parameter": "flip direction",
+          "value": true
+        }
+      },
+      "provenance": {
+        "feature": "text/context",
+        "value": "text"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "feature",
+      "id": "v11_f16",
+      "text": "flip direction برای Extrude 4 رو off کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.parameter.set",
+          "args": {
+            "feature_name": "Extrude 4",
+            "parameter": "flip direction",
+            "value": false
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "feature_parameter",
+    "evidence": {
+      "text": "flip direction برای Extrude 4 رو off کن",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [
+        {
+          "id": "f1",
+          "name": "Extrude 4",
+          "span": [
+            20,
+            29
+          ]
+        }
+      ],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "flip direction برای extrude 4 رو off کن",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.parameter.set",
+        "args": {
+          "feature_name": "Extrude 4",
+          "parameter": "flip direction",
+          "value": false
+        }
+      },
+      "provenance": {
+        "feature": "text/context",
+        "value": "text"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "feature",
+      "id": "v11_f17",
+      "text": "شعاع همین فیلت رو دو میل کن",
+      "ctx": {
+        "last_feature": "Fillet 4"
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.parameter.set",
+          "args": {
+            "feature_name": "Fillet 4",
+            "parameter": "radius",
+            "amount": "2 mm"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "feature_parameter",
+    "evidence": {
+      "text": "شعاع همین فیلت رو دو میل کن",
+      "quantities": [
+        {
+          "id": "q1",
+          "value": 2.0,
+          "unit": "mm",
+          "text": "دو میل",
+          "span": [
+            18,
+            24
+          ],
+          "ast": {
+            "value": 2.0,
+            "kind": "cardinal",
+            "source": "دو",
+            "cardinal": 2
+          },
+          "provenance": "canonical_quantity_grammar"
+        }
+      ],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": "Fillet 4",
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "شعاع همین فیلت رو دو میل کن",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": "fillet",
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.parameter.set",
+        "args": {
+          "feature_name": "Fillet 4",
+          "parameter": "radius",
+          "amount": "2 mm"
+        }
+      },
+      "provenance": {
+        "feature": "text/context",
+        "value": "q1",
+        "parameter": "text/type"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "feature",
+      "id": "v11_f18",
+      "text": "زاویه اش رو پنج درجه کن",
+      "ctx": {
+        "last_feature": "Extrude 4"
+      },
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "feature_parameter",
+    "evidence": {
+      "text": "زاویه اش رو پنج درجه کن",
+      "quantities": [
+        {
+          "id": "q1",
+          "value": 5.0,
+          "unit": "deg",
+          "text": "پنج درجه",
+          "span": [
+            12,
+            20
+          ],
+          "ast": {
+            "value": 5.0,
+            "kind": "cardinal",
+            "source": "پنج",
+            "cardinal": 5
+          },
+          "provenance": "canonical_quantity_grammar"
+        }
+      ],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": "Extrude 4",
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "زاویه اش رو پنج درجه کن",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.parameter.set",
+        "args": {
+          "feature_name": "Extrude 4",
+          "parameter": "angle",
+          "amount": "5 deg"
+        }
+      },
+      "provenance": {
+        "feature": "text/context",
+        "value": "q1",
+        "parameter": "text/type"
+      }
+    },
+    "outcome": "false_execute"
+  },
+  {
+    "case": {
+      "category": "part",
+      "id": "v11_p01",
+      "text": "Part 4 رو از جلوی چشم بردار",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "part.visibility",
+          "args": {
+            "part_name": "Part 4",
+            "visible": false
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "part_visibility",
+    "evidence": {
+      "text": "Part 4 رو از جلوی چشم بردار",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [
+        {
+          "id": "p1",
+          "name": "Part 4",
+          "span": [
+            0,
+            6
+          ]
+        }
+      ],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": false,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "part 4 رو از جلوی چشم بردار",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": [
+        "hide_show"
+      ]
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "part.visibility",
+        "args": {
+          "part_name": "Part 4",
+          "visible": false
+        }
+      },
+      "provenance": {
+        "part": "text/context",
+        "state": "text-negation-aware"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "part",
+      "id": "v11_p02",
+      "text": "Part 4 دیگه دیده نشه",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "part.visibility",
+          "args": {
+            "part_name": "Part 4",
+            "visible": false
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "part_visibility",
+    "evidence": {
+      "text": "Part 4 دیگه دیده نشه",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [
+        {
+          "id": "p1",
+          "name": "Part 4",
+          "span": [
+            0,
+            6
+          ]
+        }
+      ],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": false,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "part 4 دیگه دیده نشه",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": [
+        "hide_show"
+      ]
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "part.visibility",
+        "args": {
+          "part_name": "Part 4",
+          "visible": false
+        }
+      },
+      "provenance": {
+        "part": "text/context",
+        "state": "text-negation-aware"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "part",
+      "id": "v11_p03",
+      "text": "همون پارت رو برگردون تو نما",
+      "ctx": {
+        "last_part": "Part 4",
+        "last_action": "hide"
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "part.visibility",
+          "args": {
+            "part_name": "Part 4",
+            "visible": true
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "part_visibility",
+    "evidence": {
+      "text": "همون پارت رو برگردون تو نما",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": "Part 4",
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": "hide",
+      "collaborator_count": null,
+      "visibility": true,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "همون پارت رو برگردون تو نما",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": true,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": [
+        "hide_show"
+      ]
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "part.visibility",
+        "args": {
+          "part_name": "Part 4",
+          "visible": true
+        }
+      },
+      "provenance": {
+        "part": "text/context",
+        "state": "text-negation-aware"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "part",
+      "id": "v11_p04",
+      "text": "Cap رو نشون بده",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "part.visibility",
+          "args": {
+            "part_name": "Cap",
+            "visible": true
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "part_visibility",
+    "evidence": {
+      "text": "Cap رو نشون بده",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [
+        {
+          "id": "p1",
+          "name": "Cap",
+          "span": [
+            0,
+            3
+          ]
+        }
+      ],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": true,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "cap رو نشون بده",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": [
+        "hide_show"
+      ]
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "part.visibility",
+        "args": {
+          "part_name": "Cap",
+          "visible": true
+        }
+      },
+      "provenance": {
+        "part": "text/context",
+        "state": "text-negation-aware"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "part",
+      "id": "v11_p05",
+      "text": "Part 2 رو قرمز کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "metadata.property.set",
+          "args": {
+            "part_name": "Part 2",
+            "property": "color",
+            "value": "red"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "part_property",
+    "evidence": {
+      "text": "Part 2 رو قرمز کن",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [
+        {
+          "id": "p1",
+          "name": "Part 2",
+          "span": [
+            0,
+            6
+          ]
+        }
+      ],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": "color",
+      "property_value": "red",
+      "name_value": null,
+      "cue_text": "part 2 رو قرمز کن",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": [
+        "color"
+      ]
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "metadata.property.set",
+        "args": {
+          "part_name": "Part 2",
+          "property": "color",
+          "value": "red"
+        }
+      },
+      "provenance": {
+        "part": "text/context",
+        "property": "text",
+        "value": "text-span"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "part",
+      "id": "v11_p06",
+      "text": "Cap رو خاکستری کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "metadata.property.set",
+          "args": {
+            "part_name": "Cap",
+            "property": "color",
+            "value": "gray"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "part_property",
+    "evidence": {
+      "text": "Cap رو خاکستری کن",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [
+        {
+          "id": "p1",
+          "name": "Cap",
+          "span": [
+            0,
+            3
+          ]
+        }
+      ],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": "color",
+      "property_value": "gray",
+      "name_value": null,
+      "cue_text": "cap رو خاکستری کن",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": [
+        "color"
+      ]
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "metadata.property.set",
+        "args": {
+          "part_name": "Cap",
+          "property": "color",
+          "value": "gray"
+        }
+      },
+      "provenance": {
+        "part": "text/context",
+        "property": "text",
+        "value": "text-span"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "part",
+      "id": "v11_p07",
+      "text": "اسم Part 5 بشه cover plate",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "metadata.property.set",
+          "args": {
+            "part_name": "Part 5",
+            "property": "name",
+            "value": "cover plate"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "part_property",
+    "evidence": {
+      "text": "اسم Part 5 بشه cover plate",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [
+        {
+          "id": "p1",
+          "name": "Part 5",
+          "span": [
+            4,
+            10
+          ]
+        }
+      ],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": "name",
+      "property_value": "cover plate",
+      "name_value": "cover plate",
+      "cue_text": "اسم part 5 بشه            ",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": [
+        "rename"
+      ]
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "documented.updateWVEPMetadata",
+        "args": {
+          "part_name": "Part 5",
+          "property": "name",
+          "value": "cover plate"
+        }
+      },
+      "provenance": {
+        "part": "text/context",
+        "property": "text",
+        "value": "text-span"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "part",
+      "id": "v11_p08",
+      "text": "متریال Part 3 رو فولاد کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "metadata.property.set",
+          "args": {
+            "part_name": "Part 3",
+            "property": "material",
+            "value": "Steel"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "part_property",
+    "evidence": {
+      "text": "متریال Part 3 رو فولاد کن",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [
+        {
+          "id": "p1",
+          "name": "Part 3",
+          "span": [
+            7,
+            13
+          ]
+        }
+      ],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": "material",
+      "property_value": "Steel",
+      "name_value": null,
+      "cue_text": "متریال part 3 رو فولاد کن",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "metadata.property.set",
+        "args": {
+          "part_name": "Part 3",
+          "property": "material",
+          "value": "Steel"
+        }
+      },
+      "provenance": {
+        "part": "text/context",
+        "property": "text",
+        "value": "text-span"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "part",
+      "id": "v11_p09",
+      "text": "Part 6 رو آلومینیوم متریال بده",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "metadata.property.set",
+          "args": {
+            "part_name": "Part 6",
+            "property": "material",
+            "value": "Aluminum"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "part_property",
+    "evidence": {
+      "text": "Part 6 رو آلومینیوم متریال بده",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [
+        {
+          "id": "p1",
+          "name": "Part 6",
+          "span": [
+            0,
+            6
+          ]
+        }
+      ],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": "material",
+      "property_value": "Aluminum",
+      "name_value": null,
+      "cue_text": "part 6 رو آلومینیوم متریال بده",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "metadata.property.set",
+        "args": {
+          "part_name": "Part 6",
+          "property": "material",
+          "value": "Aluminum"
+        }
+      },
+      "provenance": {
+        "part": "text/context",
+        "property": "text",
+        "value": "text-span"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "part",
+      "id": "v11_p10",
+      "text": "description Part 2 رو بذار inner shell",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "metadata.property.set",
+          "args": {
+            "part_name": "Part 2",
+            "property": "description",
+            "value": "inner shell"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "part_property",
+    "evidence": {
+      "text": "description Part 2 رو بذار inner shell",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [
+        {
+          "id": "p1",
+          "name": "Part 2",
+          "span": [
+            12,
+            18
+          ]
+        }
+      ],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": "description",
+      "property_value": "inner shell",
+      "name_value": null,
+      "cue_text": "description part 2 رو بذار inner shell",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "metadata.property.set",
+        "args": {
+          "part_name": "Part 2",
+          "property": "description",
+          "value": "inner shell"
+        }
+      },
+      "provenance": {
+        "part": "text/context",
+        "property": "text",
+        "value": "text-span"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "part",
+      "id": "v11_p11",
+      "text": "Part 8 رو پاک کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.delete_part",
+          "args": {
+            "part_name": "Part 8"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "part_delete",
+    "evidence": {
+      "text": "Part 8 رو پاک کن",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [
+        {
+          "id": "p1",
+          "name": "Part 8",
+          "span": [
+            0,
+            6
+          ]
+        }
+      ],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "part 8 رو پاک کن",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": [
+        "delete"
+      ]
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.delete_part",
+        "args": {
+          "part_name": "Part 8"
+        }
+      },
+      "provenance": {
+        "part": "text/context"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "part",
+      "id": "v11_p12",
+      "text": "همین پارت رو حذف کن",
+      "ctx": {
+        "last_part": "Part 9"
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.delete_part",
+          "args": {
+            "part_name": "Part 9"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "part_delete",
+    "evidence": {
+      "text": "همین پارت رو حذف کن",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": "Part 9",
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "همین پارت رو حذف کن",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": [
+        "delete"
+      ]
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.delete_part",
+        "args": {
+          "part_name": "Part 9"
+        }
+      },
+      "provenance": {
+        "part": "text/context"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "part",
+      "id": "v11_p13",
+      "text": "Part 2 رو آبی کن و قایمش کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "ask",
+    "intent": null,
+    "evidence": {
+      "text": "Part 2 رو آبی کن و قایمش کن",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [
+        {
+          "id": "p1",
+          "name": "Part 2",
+          "span": [
+            0,
+            6
+          ]
+        }
+      ],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": false,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": "color",
+      "property_value": "blue",
+      "name_value": null,
+      "cue_text": "part 2 رو آبی کن و قایمش کن",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": true,
+      "action_cues": [
+        "hide_show",
+        "color"
+      ]
+    },
+    "post": {
+      "accepted": false,
+      "reason": "clarification",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "part",
+      "id": "v11_p14",
+      "text": "اسم همین پارت رو عوض کن",
+      "ctx": {
+        "last_part": "Part 2"
+      },
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "ask",
+    "intent": null,
+    "evidence": {
+      "text": "اسم همین پارت رو عوض کن",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": "Part 2",
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "اسم همین پارت رو عوض کن",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": false,
+      "reason": "clarification",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "doc",
+      "id": "v11_d01",
+      "text": "یه plane خالی بساز",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.add",
+          "args": {
+            "feature_type": "plane"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "add_plane",
+    "evidence": {
+      "text": "یه plane خالی بساز",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "یه plane خالی بساز",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": [
+        "create_plane"
+      ]
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.add",
+        "args": {
+          "feature_type": "plane"
+        }
+      },
+      "provenance": {
+        "name": null
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "doc",
+      "id": "v11_d02",
+      "text": "یه صفحه مرجع بساز اسمش datum rear",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.add",
+          "args": {
+            "feature_type": "plane",
+            "name": "datum rear"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "add_plane",
+    "evidence": {
+      "text": "یه صفحه مرجع بساز اسمش datum rear",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": "name",
+      "property_value": "datum rear",
+      "name_value": "datum rear",
+      "cue_text": "یه صفحه مرجع بساز اسمش           ",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": [
+        "rename",
+        "create_plane"
+      ]
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.add",
+        "args": {
+          "feature_type": "plane",
+          "name": "datum rear"
+        }
+      },
+      "provenance": {
+        "name": "text-span"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "doc",
+      "id": "v11_d03",
+      "text": "یه plane روی Front بساز",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "add_plane",
+    "evidence": {
+      "text": "یه plane روی Front بساز",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "یه plane روی front بساز",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": [
+        "create_plane"
+      ]
+    },
+    "post": {
+      "accepted": false,
+      "reason": "plane-reference-needs-provider-shape",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "doc",
+      "id": "v11_d04",
+      "text": "از Part 2 یه linear pattern چهار تایی با فاصله یازده میل بساز",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.add",
+          "args": {
+            "feature_type": "linearPattern",
+            "part_name": "Part 2",
+            "copies": 4,
+            "distance": "11 mm"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "add_pattern",
+    "evidence": {
+      "text": "از Part 2 یه linear pattern چهار تایی با فاصله یازده میل بساز",
+      "quantities": [
+        {
+          "id": "q1",
+          "value": 11.0,
+          "unit": "mm",
+          "text": "یازده میل",
+          "span": [
+            47,
+            56
+          ],
+          "ast": {
+            "value": 11.0,
+            "kind": "cardinal",
+            "source": "یازده",
+            "cardinal": 11
+          },
+          "provenance": "canonical_quantity_grammar"
+        }
+      ],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [
+        {
+          "id": "p1",
+          "name": "Part 2",
+          "span": [
+            3,
+            9
+          ]
+        }
+      ],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "از part 2 یه linear pattern چهار تایی با فاصله یازده میل بساز",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": [
+        "pattern"
+      ]
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.add",
+        "args": {
+          "feature_type": "linearPattern",
+          "part_name": "Part 2",
+          "copies": 4,
+          "distance": "11 mm"
+        }
+      },
+      "provenance": {
+        "part": "text/context",
+        "copies": "text",
+        "distance": "q1"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "doc",
+      "id": "v11_d05",
+      "text": "Part 3 رو سه تا pattern کن با فاصله هفت و نیم میل",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.add",
+          "args": {
+            "feature_type": "linearPattern",
+            "part_name": "Part 3",
+            "copies": 3,
+            "distance": "7.5 mm"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "add_pattern",
+    "evidence": {
+      "text": "Part 3 رو سه تا pattern کن با فاصله هفت و نیم میل",
+      "quantities": [
+        {
+          "id": "q1",
+          "value": 7.5,
+          "unit": "mm",
+          "text": "هفت و نیم میل",
+          "span": [
+            36,
+            49
+          ],
+          "ast": {
+            "value": 7.5,
+            "kind": "whole_plus_half",
+            "source": "هفت و نیم",
+            "whole": 7
+          },
+          "provenance": "canonical_quantity_grammar"
+        }
+      ],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [
+        {
+          "id": "p1",
+          "name": "Part 3",
+          "span": [
+            0,
+            6
+          ]
+        }
+      ],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "part 3 رو سه تا pattern کن با فاصله هفت و نیم میل",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": [
+        "pattern"
+      ]
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.add",
+        "args": {
+          "feature_type": "linearPattern",
+          "part_name": "Part 3",
+          "copies": 3,
+          "distance": "7.5 mm"
+        }
+      },
+      "provenance": {
+        "part": "text/context",
+        "copies": "text",
+        "distance": "q1"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "doc",
+      "id": "v11_d06",
+      "text": "Part 2 رو چهار تا کن هر یازده میل",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "ask",
+    "intent": null,
+    "evidence": {
+      "text": "Part 2 رو چهار تا کن هر یازده میل",
+      "quantities": [
+        {
+          "id": "q1",
+          "value": 11.0,
+          "unit": "mm",
+          "text": "یازده میل",
+          "span": [
+            24,
+            33
+          ],
+          "ast": {
+            "value": 11.0,
+            "kind": "cardinal",
+            "source": "یازده",
+            "cardinal": 11
+          },
+          "provenance": "canonical_quantity_grammar"
+        }
+      ],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [
+        {
+          "id": "p1",
+          "name": "Part 2",
+          "span": [
+            0,
+            6
+          ]
+        }
+      ],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "part 2 رو چهار تا کن هر یازده میل",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": false,
+      "reason": "clarification",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "doc",
+      "id": "v11_d07",
+      "text": "Fillet 2 رو قبل Extrude 5 ببر",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.reorder",
+          "args": {
+            "source_feature": "Fillet 2",
+            "target_feature": "Extrude 5",
+            "placement": "before"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "feature_reorder",
+    "evidence": {
+      "text": "Fillet 2 رو قبل Extrude 5 ببر",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [
+        {
+          "id": "f1",
+          "name": "Fillet 2",
+          "span": [
+            0,
+            8
+          ]
+        },
+        {
+          "id": "f2",
+          "name": "Extrude 5",
+          "span": [
+            16,
+            25
+          ]
+        }
+      ],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": "before",
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "fillet 2 رو قبل extrude 5 ببر",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": "fillet",
+      "multi_action": false,
+      "action_cues": [
+        "reorder"
+      ]
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.reorder",
+        "args": {
+          "source_feature": "Fillet 2",
+          "target_feature": "Extrude 5",
+          "placement": "before"
+        }
+      },
+      "provenance": {
+        "source": "text/context",
+        "target": "text",
+        "placement": "text"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "doc",
+      "id": "v11_d08",
+      "text": "Extrude 4 رو زیر Sketch 3 بنداز",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.reorder",
+          "args": {
+            "source_feature": "Extrude 4",
+            "target_feature": "Sketch 3",
+            "placement": "after"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "feature_reorder",
+    "evidence": {
+      "text": "Extrude 4 رو زیر Sketch 3 بنداز",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [
+        {
+          "id": "f1",
+          "name": "Extrude 4",
+          "span": [
+            0,
+            9
+          ]
+        },
+        {
+          "id": "f2",
+          "name": "Sketch 3",
+          "span": [
+            17,
+            25
+          ]
+        }
+      ],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": "after",
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "extrude 4 رو زیر sketch 3 بنداز",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": [
+        "reorder"
+      ]
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.reorder",
+        "args": {
+          "source_feature": "Extrude 4",
+          "target_feature": "Sketch 3",
+          "placement": "after"
+        }
+      },
+      "provenance": {
+        "source": "text/context",
+        "target": "text",
+        "placement": "text"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "doc",
+      "id": "v11_d09",
+      "text": "rollback رو قبل Fillet 3 بذار",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "rollback.set",
+          "args": {
+            "before_feature": "Fillet 3"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "rollback",
+    "evidence": {
+      "text": "rollback رو قبل Fillet 3 بذار",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [
+        {
+          "id": "f1",
+          "name": "Fillet 3",
+          "span": [
+            16,
+            24
+          ]
+        }
+      ],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": "before",
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "rollback رو قبل fillet 3 بذار",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": "fillet",
+      "multi_action": false,
+      "action_cues": [
+        "rollback"
+      ]
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "rollback.set",
+        "args": {
+          "before_feature": "Fillet 3"
+        }
+      },
+      "provenance": {
+        "target": "text"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "doc",
+      "id": "v11_d10",
+      "text": "rollback رو ببر آخر",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "rollback.set",
+          "args": {
+            "position": "end"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "rollback",
+    "evidence": {
+      "text": "rollback رو ببر آخر",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "rollback رو ببر آخر",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": [
+        "rollback"
+      ]
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "rollback.set",
+        "args": {
+          "position": "end"
+        }
+      },
+      "provenance": {
+        "target": "text"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "doc",
+      "id": "v11_d11",
+      "text": "یه Part Studio جدید به اسم shell trial بساز",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "documented.createPartStudio",
+          "args": {
+            "new_name": "shell trial"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "create_part_studio",
+    "evidence": {
+      "text": "یه Part Studio جدید به اسم shell trial بساز",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": "name",
+      "property_value": "shell trial",
+      "name_value": "shell trial",
+      "cue_text": "یه part studio جدید به اسم             بساز",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": [
+        "rename"
+      ]
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "documented.createPartStudio",
+        "args": {
+          "new_name": "shell trial"
+        }
+      },
+      "provenance": {
+        "name": "text-span"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "doc",
+      "id": "v11_d12",
+      "text": "اسم document بشه case final",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "documented.updateDocumentAttributes",
+          "args": {
+            "new_name": "case final"
+          }
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "act",
+    "intent": "rename_document",
+    "evidence": {
+      "text": "اسم document بشه case final",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": "name",
+      "property_value": "case final",
+      "name_value": "case final",
+      "cue_text": "اسم document بشه           ",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": [
+        "rename"
+      ]
+    },
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "documented.updateDocumentAttributes",
+        "args": {
+          "new_name": "case final"
+        }
+      },
+      "provenance": {
+        "name": "text-span"
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "escalate",
+      "id": "v11_x01",
+      "text": "این طراحی رو حرفه ای تر و تمیزتر کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "think"
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "think",
+    "intent": null,
+    "evidence": {
+      "text": "این طراحی رو حرفه ای تر و تمیزتر کن",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "این طراحی رو حرفه ای تر و تمیزتر کن",
+      "design": true,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": false,
+      "reason": "design-escalation",
+      "compiled": {
+        "route": "think",
+        "op": null,
+        "args": {}
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "escalate",
+      "id": "v11_x02",
+      "text": "جوری تغییرش بده برای تزریق منطقی تر باشه",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "think"
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "think",
+    "intent": null,
+    "evidence": {
+      "text": "جوری تغییرش بده برای تزریق منطقی تر باشه",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "جوری تغییرش بده برای تزریق منطقی تر باشه",
+      "design": true,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": false,
+      "reason": "design-escalation",
+      "compiled": {
+        "route": "think",
+        "op": null,
+        "args": {}
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "escalate",
+      "id": "v11_x03",
+      "text": "وزنش کمتر شه ولی استحکامش نریزه",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "think"
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "think",
+    "intent": null,
+    "evidence": {
+      "text": "وزنش کمتر شه ولی استحکامش نریزه",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "وزنش کمتر شه ولی استحکامش نریزه",
+      "design": true,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": false,
+      "reason": "design-escalation",
+      "compiled": {
+        "route": "think",
+        "op": null,
+        "args": {}
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "escalate",
+      "id": "v11_x04",
+      "text": "درخت فیچر رو مرتب و خلوت کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "think"
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "think",
+    "intent": null,
+    "evidence": {
+      "text": "درخت فیچر رو مرتب و خلوت کن",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "درخت فیچر رو مرتب و خلوت کن",
+      "design": true,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": false,
+      "reason": "design-escalation",
+      "compiled": {
+        "route": "think",
+        "op": null,
+        "args": {}
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "escalate",
+      "id": "v11_x05",
+      "text": "اون یکی رو حذف کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "ask",
+    "intent": null,
+    "evidence": {
+      "text": "اون یکی رو حذف کن",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "اون یکی رو حذف کن",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": [
+        "delete"
+      ]
+    },
+    "post": {
+      "accepted": false,
+      "reason": "clarification",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "escalate",
+      "id": "v11_x06",
+      "text": "سه میلش کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "source": "model_intent",
+    "decision": "act",
+    "intent": "add_pattern",
+    "evidence": {
+      "text": "سه میلش کن",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "سه میلش کن",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": false,
+      "reason": "pattern-not-explicit",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      }
+    },
+    "model_choice": {
+      "id": "v11_x06",
+      "d": "a",
+      "i": "add_pattern"
+    },
+    "model_latency_ms": 793.9741559999902,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "escalate",
+      "id": "v11_x07",
+      "text": "همون کار قبلی رو اینجا هم انجام بده",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "source": "model_intent",
+    "decision": "ask",
+    "intent": null,
+    "evidence": {
+      "text": "همون کار قبلی رو اینجا هم انجام بده",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "همون کار قبلی رو اینجا هم انجام بده",
+      "design": false,
+      "unsupported": false,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": false,
+      "reason": "clarification",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      }
+    },
+    "model_choice": {
+      "id": "v11_x07",
+      "d": "q",
+      "i": null
+    },
+    "model_latency_ms": 793.9741559999902,
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "escalate",
+      "id": "v11_x08",
+      "text": "ازش STEP بگیر",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "ask",
+    "intent": null,
+    "evidence": {
+      "text": "ازش STEP بگیر",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "ازش step بگیر",
+      "design": false,
+      "unsupported": true,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": false,
+      "reason": "clarification",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "escalate",
+      "id": "v11_x09",
+      "text": "با تیم share کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "ask",
+    "intent": null,
+    "evidence": {
+      "text": "با تیم share کن",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "با تیم share کن",
+      "design": false,
+      "unsupported": true,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": false,
+      "reason": "clarification",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      }
+    },
+    "outcome": "correct"
+  },
+  {
+    "case": {
+      "category": "escalate",
+      "id": "v11_x10",
+      "text": "همه بتونن ببیننش publicش کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ]
+    },
+    "source": "evidence_reflex",
+    "decision": "ask",
+    "intent": null,
+    "evidence": {
+      "text": "همه بتونن ببیننش publicش کن",
+      "quantities": [],
+      "quantity_issues": [],
+      "features": [],
+      "parts": [],
+      "context_feature": null,
+      "context_part": null,
+      "selection_count": 0,
+      "selection_types": [],
+      "last_move": null,
+      "feature_parameters": {},
+      "last_action": null,
+      "collaborator_count": null,
+      "visibility": null,
+      "suppressed": null,
+      "relation": null,
+      "relative": null,
+      "property": null,
+      "property_value": null,
+      "name_value": null,
+      "cue_text": "همه بتونن ببیننش publicش کن",
+      "design": false,
+      "unsupported": true,
+      "camera_action": null,
+      "camera_direction": null,
+      "camera_inverse": false,
+      "fit_all": false,
+      "fit_selection": false,
+      "top_view": false,
+      "clear_selection": false,
+      "edge_kind": null,
+      "multi_action": false,
+      "action_cues": []
+    },
+    "post": {
+      "accepted": false,
+      "reason": "clarification",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      }
+    },
+    "outcome": "correct"
+  }
+]
