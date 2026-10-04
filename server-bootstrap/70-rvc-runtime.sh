@@ -23,17 +23,17 @@ unit_dst=/etc/systemd/system/capability-fabric-rvc-worker.service
 [[ -f "$worker_src" && -f "$unit_src" ]] || { echo "RVC_BOOTSTRAP_BUNDLE_INCOMPLETE" >&2; exit 12; }
 
 status_file=/var/lib/capability-fabric/onshape/agent/rvc-bootstrap-status.json
+status_file_worker="$root/bootstrap-status.json"
 tmpdir=''
 CURRENT_STAGE="bootstrap_prepare"
 BOOTSTRAP_OK=0
 
 write_status() {
   local state="$1" stage="$2" detail="${3:-}"
-  python3 - "$status_file" "$state" "$stage" "$detail" "$RVC_COMMIT" <<'PY'
+  python3 - "$status_file" "$status_file_worker" "$state" "$stage" "$detail" "$RVC_COMMIT" <<'PY'
 import json,os,sys,tempfile
 from datetime import datetime,timezone
-path,state,stage,detail,commit=sys.argv[1:]
-os.makedirs(os.path.dirname(path),exist_ok=True)
+path,worker_path,state,stage,detail,commit=sys.argv[1:]
 payload={
   "schema":"capability-fabric.rvc-bootstrap-status.v1",
   "state":state,
@@ -42,18 +42,20 @@ payload={
   "rvc_commit":commit,
   "updated_at":datetime.now(timezone.utc).isoformat(),
 }
-fd,tmp=tempfile.mkstemp(prefix=".bootstrap-status.",dir=os.path.dirname(path),text=True)
-try:
-    with os.fdopen(fd,"w",encoding="utf-8") as out:
-        json.dump(payload,out,separators=(",",":"))
-        out.write("\n")
-    os.chmod(tmp,0o644)
-    os.replace(tmp,path)
-finally:
+for target in (path,worker_path):
+    os.makedirs(os.path.dirname(target),exist_ok=True)
+    fd,tmp=tempfile.mkstemp(prefix=".bootstrap-status.",dir=os.path.dirname(target),text=True)
     try:
-        if os.path.exists(tmp): os.unlink(tmp)
-    except OSError:
-        pass
+        with os.fdopen(fd,"w",encoding="utf-8") as out:
+            json.dump(payload,out,separators=(",",":"))
+            out.write("\n")
+        os.chmod(tmp,0o644)
+        os.replace(tmp,target)
+    finally:
+        try:
+            if os.path.exists(tmp): os.unlink(tmp)
+        except OSError:
+            pass
 PY
 }
 
