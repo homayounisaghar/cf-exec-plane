@@ -1,0 +1,39 @@
+name: Onshape V15 Principled Effect Score
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - qualification/onshape-fast-router-divergent-v15-10000/effect-control/*.request
+
+permissions:
+  contents: write
+
+jobs:
+  score:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Score effect correctness
+        env:
+          OUT_DIR: ${{ github.workspace }}/artifacts/onshape-v15-principled-effect
+        run: python qualification/onshape-fast-router-divergent-v15-10000/principled_effect_score.py
+      - name: Publish
+        run: |
+          dst="reports/onshape-v15-principled-effect"
+          mkdir -p "$dst"
+          cp artifacts/onshape-v15-principled-effect/summary.json "$dst/summary.json"
+          printf '{"run_id":"%s","head_sha":"%s"}\n' "$GITHUB_RUN_ID" "$GITHUB_SHA" > "$dst/latest-meta.json"
+          git config user.name "cf-exec-plane"
+          git config user.email "actions@users.noreply.github.com"
+          git add "$dst"
+          git commit -m "Report: V15 principled effect score" || exit 0
+          git pull --rebase origin main
+          git push origin HEAD:main
