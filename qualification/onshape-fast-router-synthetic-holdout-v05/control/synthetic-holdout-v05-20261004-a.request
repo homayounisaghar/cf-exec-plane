@@ -1,0 +1,8 @@
+{
+  "request_id": "synthetic-holdout-v05-20261004-a",
+  "frozen_cases": 96,
+  "source_repo": "homayounisaghar/capability-fabric",
+  "source_ref": "experiment/onshape-fast-router-synthetic-holdout-v05",
+  "source_commit": "58bed5b096b51743d368ec45003602229f409116",
+  "baseline_commit": "888054e66bc6005689eb9138141b856660390d23"
+}
