@@ -303,6 +303,7 @@ def main():
     checks.append("english-reorder")
 
     c,ev=compiled("rollback after Extrude 5")
+    print("DIAG_ENGLISH_ROLLBACK="+json.dumps({"compiled":c,"evidence":ev},ensure_ascii=False,sort_keys=True), flush=True)
     assert_eq(c,{"route":"do","op":"rollback.set","args":{"after_feature":"Extrude 5"}},"english-rollback")
     checks.append("english-rollback")
 
