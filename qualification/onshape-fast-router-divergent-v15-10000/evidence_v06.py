@@ -794,12 +794,13 @@ def extract_evidence(text, ctx=None):
 
     suppressed=None
     feature_suppression_target=bool(fs or ctx.get("last_feature"))
-    if feature_suppression_target and re.search(r"\b(?:suppressed|suppression)\b.*?(?:خاموش|off|false)",cue_t,re.I):
+    explicit_unsuppress=feature_suppression_target and has_any(cue_t,["از حالت suppress دربیار","از حالت suppress در بیار","از حالت suppressed خارج","دوباره فعال کن","دوباره به محاسبه برگرد","به محاسبه برگرد","برگرده توی regeneration","برگرده تو regeneration","regeneration برای","unsuppress","enable کن","دوباره enable","حساب بشه","حساب شود","برگردون به اجرا","برگردان به اجرا"])
+    if explicit_unsuppress:
+        suppressed=False
+    elif feature_suppression_target and re.search(r"\b(?:suppressed|suppression)\b.*?(?:خاموش|off|false)",cue_t,re.I):
         suppressed=False
     elif feature_suppression_target and re.search(r"\b(?:suppressed|suppression)\b.*?(?:روشن|on|true)",cue_t,re.I):
         suppressed=True
-    elif feature_suppression_target and has_any(cue_t,["از حالت suppress دربیار","از حالت suppress در بیار","از حالت suppressed خارج","دوباره فعال کن","دوباره به محاسبه برگرد","به محاسبه برگرد","برگرده توی regeneration","برگرده تو regeneration","regeneration برای","unsuppress","enable کن","دوباره enable","حساب بشه","حساب شود","برگردون به اجرا","برگردان به اجرا"]) and has_any(cue_t,["دوباره","خارج","روشن","فعال","برگرد","unsuppress"]):
-        suppressed=False
     elif feature_suppression_target and has_any(cue_t,["خاموش","suppress","غیرفعال باشه","غیرفعال باشد","غیرفعال کن","از regeneration خارج کن","از محاسبه خارج کن","disable کن","حساب نشه","حساب نشود","از اجرا خارج کن"]):
         suppressed=True
     if suppressed is None and feature_suppression_target and has_any(cue_t,["دوباره روشن","روشنش کن","روشن کن","unsuppress","دوباره فعال باشه","دوباره فعال باشد","دوباره فعال کن","enable کن","دوباره enable","حساب بشه","حساب شود","برگردون به اجرا","برگردان به اجرا"]) or (
@@ -852,7 +853,7 @@ def extract_evidence(text, ctx=None):
     if has_any(cue_t,["زوم","zoom","بزرگنمایی","بزرگ نمایی","درشت‌تر","درشت تر","ریزتر","ریز تر","نزدیک تر شو","نزدیک‌تر شو","نزدیک شو","نزدیک‌ترش کن","نزدیک ترش کن","نزدیک تر شود","نزدیک‌تر شود","دورتر شو","دور تر شو","دور شو","دورتر برو","دور تر برو","دورترش کن","دور ترش کن","ازش دور شو","ازش دورتر شو","از مدل فاصله بگیر","فاصله دید رو کمتر","فاصله دید رو بیشتر","فاصله بیشتری بگیرد","فاصله دوربین با قطعه کمتر","فاصله دوربین با قطعه بیشتر"]): camera_action="zoom"
     else:
         pan_negated=has_any(cue_t,["بدون pan","بدون پن","نه pan","نه پن"])
-        orbit_negated=has_any(cue_t,["بدون orbit","نه orbit","بدون چرخش","بدون دوران","بدون چرخوندن","بدون چرخاندن"])
+        orbit_negated=(has_any(cue_t,["بدون orbit","نه orbit","بدون چرخش","بدون دوران","بدون چرخوندن","بدون چرخاندن"]) or bool(re.search(r"(?:بدون|نه|no)\s+(?:rotate|rotation|orbit)\b",cue_t,re.I)))
         explicit_pan=(re.search(r"\bpan\b",cue_t,re.I) or "پن " in cue_t) and not pan_negated
         view_translate=(
             has_any(cue_t,["viewport","نما","صفحه","کادر","دوربین"]) and
@@ -1010,7 +1011,8 @@ def extract_evidence(text, ctx=None):
     selection_referent=has_any(cue_t,["selection","انتخاب","لبه انتخاب","لبه‌های انتخاب","لبه هاي انتخاب","edgeهای","edge ها","edgeها"])
     explicit_selection_absence=has_any(cue_t,["بدون انتخاب","بدون selection","بدون edge انتخابی","بدون لبه انتخابی","بدون اینکه edgeای انتخاب باشه","بدون اینکه edge ای انتخاب باشه","بدون target فعلی","selection نداریم","انتخاب نداریم","selection خالیه","selection خالی است","selection خالی باشد","انتخاب خالیه","انتخاب خالی است","لبه انتخاب نشده","edge انتخاب نشده"])
     edge_new_explicit = explicit_selection_absence or (
-        has_any(cue_t,["جدید","خالی","تازه"]) and not selection_referent and ctx.get("selection_count",0)<=0
+        (has_any(cue_t,["جدید","خالی","تازه"]) or bool(re.search(r"\b(?:new|empty)\b",cue_t,re.I))) and
+        not selection_referent and ctx.get("selection_count",0)<=0
     )
 
     edge_kind=None
