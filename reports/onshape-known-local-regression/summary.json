@@ -1,0 +1,61 @@
+{
+  "v12": {
+    "cases": 100,
+    "deterministic_cases": 92,
+    "fallback_cases": 8,
+    "fallback_ids": [
+      "v12_c01",
+      "v12_c16",
+      "v12_c17",
+      "v12_i03",
+      "v12_i10",
+      "v12_d04",
+      "v12_d06",
+      "v12_x07"
+    ],
+    "correct": 92,
+    "wrong_material_accepted": 0,
+    "false_execute": 0,
+    "wrong_reversible_accepted": 0,
+    "conservative_escalation": 0,
+    "route_mismatch": 0,
+    "unsafe_total": 0
+  },
+  "v13": {
+    "cases": 100,
+    "deterministic_cases": 99,
+    "fallback_cases": 1,
+    "fallback_ids": [
+      "v13_d07"
+    ],
+    "correct": 99,
+    "wrong_material_accepted": 0,
+    "false_execute": 0,
+    "wrong_reversible_accepted": 0,
+    "conservative_escalation": 0,
+    "route_mismatch": 0,
+    "unsafe_total": 0
+  },
+  "v14": {
+    "cases": 1000,
+    "deterministic_cases": 992,
+    "fallback_cases": 8,
+    "fallback_ids": [
+      "v14_orbit_025",
+      "v14_orbit_026",
+      "v14_orbit_029",
+      "v14_orbit_030",
+      "v14_amb_007",
+      "v14_amb_017",
+      "v14_amb_027",
+      "v14_amb_037"
+    ],
+    "correct": 986,
+    "wrong_material_accepted": 0,
+    "false_execute": 0,
+    "wrong_reversible_accepted": 0,
+    "conservative_escalation": 6,
+    "route_mismatch": 0,
+    "unsafe_total": 0
+  }
+}
