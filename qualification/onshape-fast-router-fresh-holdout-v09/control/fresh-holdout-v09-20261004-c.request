@@ -1,0 +1,7 @@
+{
+  "request_id": "fresh-holdout-v09-20261004-c",
+  "frozen_cases": 100,
+  "frozen_holdout_commit": "d87d590a4cfc429742bc5ea5d292a9a4f3940356",
+  "router_source_head": "ce8ff3845db6e788c83a3dd37478dce4fe9a899e",
+  "purpose": "fresh-v09-retrigger-after-workflow-present"
+}
