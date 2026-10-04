@@ -977,7 +977,7 @@ def extract_evidence(text, ctx=None):
 
     feature_target=bool(fs or ctx.get("last_feature"))
     part_target=bool(ps or ctx.get("last_part"))
-    rename_cue = has_any(cue_t,["اسم","نام","عنوان","rename","نام گذاری","نام‌گذاری","صدا کن"]) or bool(re.search(r"\bname\b",cue_t,re.I))
+    rename_cue = has_any(cue_t,["اسم","نام","عنوان","title","rename","نام گذاری","نام‌گذاری","صدا کن"]) or bool(re.search(r"\bname\b",cue_t,re.I))
     named_feature_context = bool(fs) and (relation is not None or rename_cue or has_any(cue_t,["پاک","حذف","بنداز دور"]))
     edge_effect_context = (ctx.get("selection_count",0)>0 or has_any(cue_t,["لبه","انتخاب","selected"]) or has_any(cue_t,["جدید","خالی","بدون انتخاب"]))
     cue("edge_fillet", has_any(cue_t,["فیلت","fillet","فیلِت"]) and edge_effect_context and not named_feature_context)
