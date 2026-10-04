@@ -32,6 +32,7 @@ jobs:
 
       - name: Syntax gate
         run: |
+          python -m py_compile qualification/onshape-fast-router-v20-blind-semantic/model_preflight.py
           python -m py_compile qualification/onshape-fast-router-v20-blind-semantic/scenario_builder.py
           python -m py_compile qualification/onshape-fast-router-v20-blind-semantic/llm_client.py
           python -m py_compile qualification/onshape-fast-router-v20-blind-semantic/generate_utterances.py
@@ -52,12 +53,17 @@ jobs:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
         run: test -n "$GROQ_API_KEY"
 
+      - name: Resolve accessible independent model pair
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: |
+          ART="$GITHUB_WORKSPACE/artifacts/onshape-fast-router-v20-blind-semantic"
+          python qualification/onshape-fast-router-v20-blind-semantic/model_preflight.py             --github-env "$GITHUB_ENV"             --report "$ART/model-preflight.json"
+
       - name: Blind realization and dual semantic fidelity
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           GROQ_API_KEY_BACKUP: ${{ secrets.GROQ_API_KEY_BACKUP }}
-          GENERATOR_MODEL: qwen/qwen3.6-27b
-          JUDGE_MODEL: openai/gpt-oss-20b
         run: |
           set -eu
           ART="$GITHUB_WORKSPACE/artifacts/onshape-fast-router-v20-blind-semantic"
@@ -127,7 +133,7 @@ jobs:
           src="artifacts/onshape-fast-router-v20-blind-semantic"
           dst="reports/onshape-fast-router-v20-blind-semantic"
           mkdir -p "$dst"
-          for f in scenario-universe.jsonl apprentice-scenarios.jsonl scope-filter.json                    accepted-final.jsonl frozen-corpus.jsonl fidelity-report.json diversity-report.json                    freeze.json architecture-selftest.json summary.json failures.json evidence-kind.txt                    fidelity-round-1.json fidelity-round-2.json fidelity-round-3.json; do
+          for f in model-preflight.json scenario-universe.jsonl apprentice-scenarios.jsonl scope-filter.json                    accepted-final.jsonl frozen-corpus.jsonl fidelity-report.json diversity-report.json                    freeze.json architecture-selftest.json summary.json failures.json evidence-kind.txt                    fidelity-round-1.json fidelity-round-2.json fidelity-round-3.json; do
             test -f "$src/$f" && cp "$src/$f" "$dst/$f" || true
           done
           printf '{"run_id":"%s","head_sha":"%s"}\n' "$GITHUB_RUN_ID" "$GITHUB_SHA" > "$dst/latest-meta.json"
