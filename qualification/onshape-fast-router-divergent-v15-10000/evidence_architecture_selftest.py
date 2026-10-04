@@ -157,6 +157,199 @@ def main():
         assert_eq((c.get("op"),c.get("args")),want,f"v12-class:{text}")
         checks.append(f"v12-class:{text}")
 
+    # V15 architecture invariants: envelope, literal-first parsing, scope, clauses and bounds.
+    c,ev=compiled("لطفاً اسم Fillet 3 بشه delete top corner 1؟")
+    assert_eq(c,{"route":"do","op":"feature.patch","args":{"feature_name":"Fillet 3","new_name":"delete top corner 1"}},"envelope-feature-rename")
+    checks.append("envelope-feature-rename")
+
+    c,ev=compiled("اگه میشه material Part 14 رو Aluminum بذار، مرسی")
+    assert_eq(c,{"route":"do","op":"metadata.property.set","args":{"part_name":"Part 14","property":"material","value":"Aluminum"}},"envelope-material")
+    checks.append("envelope-material")
+
+    c,ev=compiled("Part 8 description بذار pattern 4x 5mm note؛ ممنون")
+    assert_eq(ev.get("copy_count"),None,"literal-first-no-copy-count")
+    assert_eq(ev.get("pattern_explicit"),False,"literal-first-no-pattern")
+    assert_eq(c,{"route":"do","op":"metadata.property.set","args":{"part_name":"Part 8","property":"description","value":"pattern 4x 5mm note"}},"literal-first-description")
+    checks.append("literal-first-description")
+
+    c,ev=compiled("یه plane بساز با اسم Draft 7 angle 15 deg")
+    assert_eq(ev.get("features"),[],"literal-first-no-fake-feature")
+    assert_eq(ev.get("quantities"),[],"literal-first-no-fake-quantity")
+    assert_eq(c,{"route":"do","op":"feature.add","args":{"feature_type":"plane","name":"Draft 7 angle 15 deg"}},"literal-first-plane")
+    checks.append("literal-first-plane")
+
+    c,ev=compiled("میشه جهت flip اکسترود 2 رو روشن کن؟")
+    assert_eq(c,{"route":"do","op":"feature.parameter.set","args":{"feature_name":"Extrude 2","parameter":"flip direction","value":True}},"flip-synonym-role")
+    checks.append("flip-synonym-role")
+
+    c,ev=compiled("می‌خوام هرچی انتخاب شده ول کن")
+    assert_eq(ev.get("inspect_target"),None,"clear-not-inspect")
+    assert_eq(c,{"route":"do","op":"viewer.selection.clear","args":{}},"clear-selection-colloquial")
+    checks.append("clear-selection-colloquial")
+
+    c,ev=compiled("Part 4 رو مخفی نکن، نشونش بده")
+    assert_eq(c,{"route":"do","op":"part.visibility","args":{"part_name":"Part 4","visible":True}},"negation-correction-visibility")
+    checks.append("negation-correction-visibility")
+
+    c,ev=compiled("hide نکن، فقط top view بده")
+    assert_eq(c,{"route":"do","op":"view.standard","args":{"view":"top"}},"negation-correction-view")
+    checks.append("negation-correction-view")
+
+    c,ev=compiled("Fillet 5 رو حذف نکن")
+    assert_eq(c,{"route":"ask","op":None,"args":{}},"negated-only-fails-closed")
+    checks.append("negated-only-fails-closed")
+
+    c,ev=compiled("zoom in نه، zoom out کن")
+    assert_eq(c,{"route":"do","op":"view.move","args":{"action":"zoom","direction":"out"}},"correction-polarity")
+    checks.append("correction-polarity")
+
+    c,ev=compiled("selection رو clear کن و Part 3 رو قرمز کن")
+    assert_eq(ev.get("multi_action"),True,"bare-conjunction-multi-action")
+    assert_eq(c,{"route":"ask","op":None,"args":{}},"bare-conjunction-fails-closed")
+    checks.append("bare-conjunction-fails-closed")
+
+    c,ev=compiled("zoom out کن و pan left")
+    assert_eq(ev.get("effect_clause_count"),2,"same-family-clause-count")
+    assert_eq(c,{"route":"ask","op":None,"args":{}},"same-family-multi-action")
+    checks.append("same-family-multi-action")
+
+    c,ev=compiled("اگر سه نفر وصلن نفر دوم رو follow کن",{"collaborator_count":3})
+    assert_eq(ev.get("conditional"),True,"conditional-detected")
+    assert_eq(c,{"route":"ask","op":None,"args":{}},"conditional-fails-closed")
+    checks.append("conditional-fails-closed")
+
+    c,ev=compiled("Part 8 رو hide کن مگر اینکه تنها part visible باشه")
+    assert_eq(c,{"route":"ask","op":None,"args":{}},"exception-fails-closed")
+    checks.append("exception-fails-closed")
+
+    c,ev=compiled("Fillet 4 رو منفی دو میلی کن",{"selection_count":1,"selection_types":["edge"]})
+    assert_eq(c,{"route":"ask","op":None,"args":{}},"negative-spoken-quantity")
+    checks.append("negative-spoken-quantity")
+
+    c,ev=compiled("روی selection فیلت -1 mm بزن",{"selection_count":1,"selection_types":["edge"]})
+    assert_eq(c,{"route":"ask","op":None,"args":{}},"negative-literal-quantity")
+    checks.append("negative-literal-quantity")
+
+    c,ev=compiled("Draft 6 رو 9999 درجه کن")
+    assert_eq(c,{"route":"ask","op":None,"args":{}},"angle-bound")
+    checks.append("angle-bound")
+
+    c,ev=compiled("از Part 6 0 copies خطی با فاصله 3.5 mm بساز")
+    assert_eq(c,{"route":"ask","op":None,"args":{}},"pattern-count-bound")
+    checks.append("pattern-count-bound")
+
+    c,ev=compiled("برای همین feature 0.25 mm بیشتر",{"last_feature":"Fillet 6","feature_parameters":{"radius":"4 mm"}})
+    assert_eq(c,{"route":"do","op":"feature.parameter.set","args":{"feature_name":"Fillet 6","parameter":"radius","amount":"4.25 mm"}},"context-relative-delta")
+    checks.append("context-relative-delta")
+
+    c,ev=compiled("new Part Studio: fit hide studio 4")
+    assert_eq(c,{"route":"do","op":"documented.createPartStudio","args":{"new_name":"fit hide studio 4"}},"part-studio-colon")
+    checks.append("part-studio-colon")
+
+    c,ev=compiled("نام داکیومنت رو بذار top delete archive 21")
+    assert_eq(c,{"route":"do","op":"documented.updateDocumentAttributes","args":{"new_name":"top delete archive 21"}},"document-name-persian")
+    checks.append("document-name-persian")
+
+    c,ev=compiled("همین edge رو 0.8 mm bevel کن",{"selection_count":1,"selection_types":["edge"]})
+    assert_eq(c,{"route":"do","op":"feature.from_selection","args":{"feature_type":"chamfer","amount":"0.8 mm"}},"bevel-alias")
+    checks.append("bevel-alias")
+
+    c,ev=compiled("Draft 5 angle 8 degrees")
+    assert_eq(c,{"route":"do","op":"feature.parameter.set","args":{"feature_name":"Draft 5","parameter":"angle","amount":"8 deg"}},"degrees-alias")
+    checks.append("degrees-alias")
+
+    c,ev=compiled("participantها رو بگو")
+    assert_eq(c,{"route":"do","op":"viewer.inspect","args":{"mode":"collaboration"}},"participant-not-pan")
+    checks.append("participant-not-pan")
+
+    c,ev=compiled("صفحه الان چه وضعیه")
+    assert_eq(c,{"route":"do","op":"viewer.inspect","args":{"mode":"state"}},"state-colloquial")
+    checks.append("state-colloquial")
+
+    c,ev=compiled("شعاع Fillet 4 رو ۳٫۵ mm کن")
+    assert_eq(c,{"route":"do","op":"feature.parameter.set","args":{"feature_name":"Fillet 4","parameter":"radius","amount":"3.5 mm"}},"persian-decimal-separator")
+    checks.append("persian-decimal-separator")
+
+    c,ev=compiled("اکسترود 7 دیپث ده میل")
+    assert_eq(c,{"route":"do","op":"feature.parameter.set","args":{"feature_name":"Extrude 7","parameter":"depth","amount":"10 mm"}},"spoken-depth-alias")
+    checks.append("spoken-depth-alias")
+
+    c,ev=compiled("فیلِت 8 ریدیوس دو میل")
+    assert_eq(c,{"route":"do","op":"feature.parameter.set","args":{"feature_name":"Fillet 8","parameter":"radius","amount":"2 mm"}},"spoken-radius-alias")
+    checks.append("spoken-radius-alias")
+
+    c,ev=compiled("نما رو ببر روی top")
+    assert_eq(c,{"route":"do","op":"view.standard","args":{"view":"top"}},"top-view-colloquial")
+    checks.append("top-view-colloquial")
+
+    c,ev=compiled("follow participant",{"collaborator_count":2})
+    assert_eq(c,{"route":"do","op":"view.follow","args":{}},"follow-participant")
+    checks.append("follow-participant")
+
+    c,ev=compiled("camera رو به چپ ببر")
+    assert_eq(c,{"route":"do","op":"view.move","args":{"action":"orbit","direction":"left"}},"camera-orbit-colloquial")
+    checks.append("camera-orbit-colloquial")
+
+    c,ev=compiled("viewport رو یکم ببر راست")
+    assert_eq(c,{"route":"do","op":"view.move","args":{"action":"pan","direction":"right"}},"viewport-pan")
+    checks.append("viewport-pan")
+
+    c,ev=compiled("delete کن Part 5 رو")
+    assert_eq(c,{"route":"do","op":"feature.delete_part","args":{"part_name":"Part 5"}},"english-part-delete")
+    checks.append("english-part-delete")
+
+    c,ev=compiled("move Fillet 12 before Sketch 32")
+    assert_eq(c,{"route":"do","op":"feature.reorder","args":{"source_feature":"Fillet 12","target_feature":"Sketch 32","placement":"before"}},"english-reorder")
+    checks.append("english-reorder")
+
+    c,ev=compiled("rollback after Extrude 5")
+    assert_eq(c,{"route":"do","op":"rollback.set","args":{"after_feature":"Extrude 5"}},"english-rollback")
+    checks.append("english-rollback")
+
+    c,ev=compiled("Extrude 4 فعلاً غیرفعال باشه")
+    assert_eq(c,{"route":"do","op":"feature.patch","args":{"feature_name":"Extrude 4","suppressed":True}},"suppression-colloquial")
+    checks.append("suppression-colloquial")
+
+    c,ev=compiled("Extrude 4 دوباره فعال باشه")
+    assert_eq(c,{"route":"do","op":"feature.patch","args":{"feature_name":"Extrude 4","suppressed":False}},"unsuppression-colloquial")
+    checks.append("unsuppression-colloquial")
+
+    c,ev=compiled("part 9 material titanium")
+    assert_eq(c,{"route":"do","op":"metadata.property.set","args":{"part_name":"Part 9","property":"material","value":"titanium"}},"bare-material-order")
+    checks.append("bare-material-order")
+
+    c,ev=compiled("Part 2 و Part 3 رو hide کن")
+    assert_eq(c,{"route":"ask","op":None,"args":{}},"multi-part-target-fails-closed")
+    checks.append("multi-part-target-fails-closed")
+
+    c,ev=compiled("Extrude 2 و Extrude 3 رو خاموش کن")
+    assert_eq(c,{"route":"ask","op":None,"args":{}},"multi-feature-target-fails-closed")
+    checks.append("multi-feature-target-fails-closed")
+
+    c,ev=compiled("روی selection فیلت 2 mm بزن",{"selection_count":1,"selection_types":["face"]})
+    assert_eq(c,{"route":"ask","op":None,"args":{}},"selection-type-fails-closed")
+    checks.append("selection-type-fails-closed")
+
+    c,ev=compiled("Part 4 رو مخفی نکن نشونش بده")
+    assert_eq(c,{"route":"do","op":"part.visibility","args":{"part_name":"Part 4","visible":True}},"inline-negation-correction")
+    checks.append("inline-negation-correction")
+
+    c,ev=compiled("zoom in نه zoom out کن")
+    assert_eq(c,{"route":"do","op":"view.move","args":{"action":"zoom","direction":"out"}},"inline-polarity-correction")
+    checks.append("inline-polarity-correction")
+
+    c,ev=compiled("وقتی selection خالی شد top view بده")
+    assert_eq(c,{"route":"ask","op":None,"args":{}},"temporal-condition-fails-closed")
+    checks.append("temporal-condition-fails-closed")
+
+    c,ev=compiled("قبل از حذف Fillet 7 وضعیت selection رو بگو",{"selection_count":1})
+    assert_eq(c,{"route":"ask","op":None,"args":{}},"dependent-sequence-fails-closed")
+    checks.append("dependent-sequence-fails-closed")
+
+    c,ev=compiled("پارت 6 رو هاید کن")
+    assert_eq(c,{"route":"do","op":"part.visibility","args":{"part_name":"Part 6","visible":False}},"hide-loanword")
+    checks.append("hide-loanword")
+
     # Explicit payload that is not compatible with the selected operation must never disappear.
     ev=e.extract_evidence("Part 5 رو مخفی کن با اسم Foo",{})
     post=e.accept("part.visibility",{"part_name":"Part 5","visible":False},{})
