@@ -6,14 +6,12 @@
   "model_intent_cases": 7,
   "model_batch_calls": 1,
   "model_batch_retries": 0,
-  "exact_correct": 99,
-  "exact_accuracy": 0.99,
+  "exact_correct": 100,
+  "exact_accuracy": 1.0,
   "wrong_material_accepted": 0,
   "wrong_material_ids": [],
-  "false_execute": 1,
-  "false_execute_ids": [
-    "v09_c14"
-  ],
+  "false_execute": 0,
+  "false_execute_ids": [],
   "wrong_reversible_accepted": 0,
   "conservative_escalations": 0,
   "route_mismatch": 0,
@@ -23,11 +21,10 @@
   "routine_correct": 67,
   "provider_prompt_tokens": 1783,
   "provider_completion_tokens": 310,
-  "model_batch_p50_ms": 680.1881960000031,
-  "model_batch_p95_ms": 680.1881960000031,
-  "wall_seconds": 0.6994812230000065,
+  "model_batch_p50_ms": 766.893236999998,
+  "model_batch_p95_ms": 766.893236999998,
+  "wall_seconds": 0.7931591339999997,
   "outcomes": {
-    "correct": 99,
-    "false_execute": 1
+    "correct": 100
   }
 }

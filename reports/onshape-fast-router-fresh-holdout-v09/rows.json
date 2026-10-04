@@ -1010,17 +1010,12 @@
       "action_cues": []
     },
     "post": {
-      "accepted": true,
-      "reason": "ok",
+      "accepted": false,
+      "reason": "standard-view-not-grounded",
       "compiled": {
-        "route": "do",
-        "op": "view.standard",
-        "args": {
-          "view": "top"
-        }
-      },
-      "provenance": {
-        "view": "text"
+        "route": "ask",
+        "op": null,
+        "args": {}
       }
     },
     "model_choice": {
@@ -1028,8 +1023,8 @@
       "d": "a",
       "i": "top_view"
     },
-    "model_latency_ms": 680.1881960000031,
-    "outcome": "false_execute"
+    "model_latency_ms": 766.893236999998,
+    "outcome": "correct"
   },
   {
     "case": {
@@ -1508,7 +1503,7 @@
       "d": "a",
       "i": "add_plane"
     },
-    "model_latency_ms": 680.1881960000031,
+    "model_latency_ms": 766.893236999998,
     "outcome": "correct"
   },
   {
@@ -1577,7 +1572,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 680.1881960000031,
+    "model_latency_ms": 766.893236999998,
     "outcome": "correct"
   },
   {
@@ -6937,7 +6932,7 @@
       "d": "a",
       "i": "rename_document"
     },
-    "model_latency_ms": 680.1881960000031,
+    "model_latency_ms": 766.893236999998,
     "outcome": "correct"
   },
   {
@@ -7372,7 +7367,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 680.1881960000031,
+    "model_latency_ms": 766.893236999998,
     "outcome": "correct"
   },
   {
@@ -7439,7 +7434,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 680.1881960000031,
+    "model_latency_ms": 766.893236999998,
     "outcome": "correct"
   },
   {
@@ -7813,7 +7808,7 @@
       "d": "a",
       "i": "part_property"
     },
-    "model_latency_ms": 680.1881960000031,
+    "model_latency_ms": 766.893236999998,
     "outcome": "correct"
   },
   {
