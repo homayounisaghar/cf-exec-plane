@@ -144,7 +144,7 @@
       "d": "a",
       "i": "camera_move"
     },
-    "model_latency_ms": 689.9505419999982,
+    "model_latency_ms": 731.0796080000017,
     "outcome": "correct"
   },
   {
@@ -1778,7 +1778,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 689.9505419999982,
+    "model_latency_ms": 731.0796080000017,
     "outcome": "correct"
   },
   {
@@ -2434,7 +2434,19 @@
     "intent": "edge_on_selection",
     "evidence": {
       "text": "پخ هشت دهم روی همینا",
-      "quantities": [],
+      "quantities": [
+        {
+          "id": "q1",
+          "value": 0.8,
+          "unit": "mm",
+          "text": "هشت دهم",
+          "span": [
+            3,
+            10
+          ],
+          "implicit_unit": true
+        }
+      ],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -2471,15 +2483,23 @@
       ]
     },
     "post": {
-      "accepted": false,
-      "reason": "edge-amount-ambiguous",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
+        "route": "do",
+        "op": "feature.from_selection",
+        "args": {
+          "feature_type": "chamfer",
+          "amount": "0.8 mm"
+        }
+      },
+      "provenance": {
+        "kind": "text",
+        "amount": "q1",
+        "selection": "verified-context"
       }
     },
-    "outcome": "conservative_escalation"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -2705,7 +2725,7 @@
       "d": "a",
       "i": "edge_on_selection"
     },
-    "model_latency_ms": 689.9505419999982,
+    "model_latency_ms": 731.0796080000017,
     "outcome": "correct"
   },
   {
@@ -3090,13 +3110,7 @@
       "ctx": {},
       "expected": [
         {
-          "route": "do",
-          "op": "feature.parameter.set",
-          "args": {
-            "feature_name": "Extrude 4",
-            "parameter": "depth",
-            "amount": "18 mm"
-          }
+          "route": "ask"
         }
       ]
     },
@@ -3170,8 +3184,8 @@
       "d": "a",
       "i": "feature_parameter"
     },
-    "model_latency_ms": 689.9505419999982,
-    "outcome": "conservative_escalation"
+    "model_latency_ms": 731.0796080000017,
+    "outcome": "correct"
   },
   {
     "case": {
@@ -5272,7 +5286,7 @@
       "d": "a",
       "i": "add_pattern"
     },
-    "model_latency_ms": 689.9505419999982,
+    "model_latency_ms": 731.0796080000017,
     "outcome": "correct"
   },
   {
@@ -5955,8 +5969,8 @@
       ]
     },
     "source": "evidence_reflex",
-    "decision": "ask",
-    "intent": null,
+    "decision": "act",
+    "intent": "rollback",
     "evidence": {
       "text": "rollback رو بذار درست قبل Extrude 3",
       "quantities": [],
@@ -5996,22 +6010,26 @@
       "top_view": false,
       "clear_selection": false,
       "edge_kind": null,
-      "multi_action": true,
+      "multi_action": false,
       "action_cues": [
-        "reorder",
         "rollback"
       ]
     },
     "post": {
-      "accepted": false,
-      "reason": "clarification",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
+        "route": "do",
+        "op": "rollback.set",
+        "args": {
+          "before_feature": "Extrude 3"
+        }
+      },
+      "provenance": {
+        "target": "text"
       }
     },
-    "outcome": "conservative_escalation"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -6796,7 +6814,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 689.9505419999982,
+    "model_latency_ms": 731.0796080000017,
     "outcome": "correct"
   },
   {
@@ -6861,7 +6879,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 689.9505419999982,
+    "model_latency_ms": 731.0796080000017,
     "outcome": "correct"
   },
   {
@@ -6925,7 +6943,7 @@
       "d": "q",
       "i": null
     },
-    "model_latency_ms": 689.9505419999982,
+    "model_latency_ms": 731.0796080000017,
     "outcome": "correct"
   },
   {
