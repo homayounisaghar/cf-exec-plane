@@ -15,6 +15,7 @@ on:
           - phase4
           - phase5
           - phase6
+          - rvc-runtime
   push:
     branches:
       - main
@@ -61,7 +62,7 @@ jobs:
             phase="$(awk -F= '$1=="phase" {print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
           fi
           case "$phase" in
-            diagnostic|phase1|phase2|phase3|phase4|phase5|phase6) ;;
+            diagnostic|phase1|phase2|phase3|phase4|phase5|phase6|rvc-runtime) ;;
             *) echo "invalid phase" >&2; exit 1 ;;
           esac
           printf 'phase=%s\n' "$phase" >> "$GITHUB_OUTPUT"
@@ -303,3 +304,34 @@ jobs:
         run: VPS_TEST_USER="$VPS_SSH_USER" REQUIRE_SUDO=no bash server-bootstrap/runner/ssh-test.sh
       - name: Verify fresh non-root admin SSH and sudo
         run: VPS_TEST_USER="$CF_ADMIN_USER" REQUIRE_SUDO=yes bash server-bootstrap/runner/ssh-test.sh
+
+  rvc-runtime:
+    needs: resolve
+    if: needs.resolve.outputs.phase == 'rvc-runtime'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Mask endpoint and login
+        run: |
+          set -euo pipefail
+          printf '::add-mask::%s\n' "$VPS_HOST"
+          printf '::add-mask::%s\n' "$VPS_SSH_USER"
+          while IFS= read -r addr; do
+            [[ -n "$addr" ]] && printf '::add-mask::%s\n' "$addr"
+          done < <(getent ahosts "$VPS_HOST" 2>/dev/null | awk '{print $1}' | sort -u)
+      - name: Static-check RVC bootstrap bundle
+        run: |
+          set -euo pipefail
+          bash -n server-bootstrap/70-rvc-runtime.sh
+          python3 -m py_compile server-bootstrap/rvc-worker.py
+      - name: Install pinned local RVC CPU runtime
+        run: bash server-bootstrap/runner/remote-bundle-exec.sh server-bootstrap/70-rvc-runtime.sh
