@@ -1,0 +1,7 @@
+{
+  "request_id": "fresh-holdout-v07-20261004-a",
+  "frozen_cases": 100,
+  "source_ref": "experiment/onshape-fast-router-fresh-holdout-v07",
+  "frozen_holdout_commit": "332c7a85912eda59317fa24ad0071fcad0394683",
+  "router_source_head": "4f34da247f0da6e8b7ebfeb44d7b5d4ebf5a432a"
+}
