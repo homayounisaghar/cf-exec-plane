@@ -759,18 +759,19 @@ def extract_evidence(text, ctx=None):
         visibility=True
 
     suppressed=None
-    if re.search(r"\bsuppressed\b.*?(?:خاموش|off|false)",cue_t,re.I):
+    feature_suppression_target=bool(fs or ctx.get("last_feature"))
+    if feature_suppression_target and re.search(r"\bsuppressed\b.*?(?:خاموش|off|false)",cue_t,re.I):
         suppressed=False
-    elif re.search(r"\bsuppressed\b.*?(?:روشن|on|true)",cue_t,re.I):
+    elif feature_suppression_target and re.search(r"\bsuppressed\b.*?(?:روشن|on|true)",cue_t,re.I):
         suppressed=True
-    elif has_any(cue_t,["از حالت suppress دربیار","از حالت suppress در بیار","از حالت suppressed خارج","دوباره فعال کن","دوباره به محاسبه برگرد","به محاسبه برگرد","برگرده توی regeneration","برگرده تو regeneration","regeneration برای","unsuppress"]) and has_any(cue_t,["دوباره","خارج","روشن","فعال","برگرد","unsuppress"]):
+    elif feature_suppression_target and has_any(cue_t,["از حالت suppress دربیار","از حالت suppress در بیار","از حالت suppressed خارج","دوباره فعال کن","دوباره به محاسبه برگرد","به محاسبه برگرد","برگرده توی regeneration","برگرده تو regeneration","regeneration برای","unsuppress"]) and has_any(cue_t,["دوباره","خارج","روشن","فعال","برگرد","unsuppress"]):
         suppressed=False
-    elif has_any(cue_t,["خاموش","suppress","غیرفعال باشه","غیرفعال باشد","غیرفعال کن","از regeneration خارج کن","از محاسبه خارج کن"]):
+    elif feature_suppression_target and has_any(cue_t,["خاموش","suppress","غیرفعال باشه","غیرفعال باشد","غیرفعال کن","از regeneration خارج کن","از محاسبه خارج کن"]):
         suppressed=True
-    if has_any(cue_t,["دوباره روشن","روشنش کن","روشن کن","unsuppress","دوباره فعال باشه","دوباره فعال باشد","دوباره فعال کن"]) or (
+    if feature_suppression_target and has_any(cue_t,["دوباره روشن","روشنش کن","روشن کن","unsuppress","دوباره فعال باشه","دوباره فعال باشد","دوباره فعال کن"]) or (
         "روشن" in cue_t and has_any(cue_t,["برگردون","برگردان","برش گردون","برگردونش"])
     ): suppressed=False
-    if ctx.get("last_action")=="suppress" and has_any(cue_t,["برش گردون","برگردونش","دوباره بیارش"]):
+    if feature_suppression_target and ctx.get("last_action")=="suppress" and has_any(cue_t,["برش گردون","برگردونش","دوباره بیارش"]):
         suppressed=False
     if (fs or ctx.get("last_feature")) and has_any(cue_t,["feature","فیچر"]) and has_any(cue_t,["برگردون","برگردان"]):
         suppressed=False
@@ -896,7 +897,7 @@ def extract_evidence(text, ctx=None):
         bool(re.search(r"(?:انتخاب|selection).*?(?:پاک|clear)(?:\s+کن)?",cue_t))
     )
 
-    collab_terms=has_any(cue_t,["سشن","session","آدم های حاضر","آدم‌های حاضر","افراد حاضر","افراد داخل session","همکارها","همکارهای","participant","participants","participantها","توی همکاری هستیم","تو همکاری هستیم"])
+    collab_terms=has_any(cue_t,["سشن","session","جلسه","حاضرند","حاضرن","آدم های حاضر","آدم‌های حاضر","افراد حاضر","افراد داخل session","همکارها","همکارهای","participant","participants","participantها","توی همکاری هستیم","تو همکاری هستیم"])
     collab_inspect_signal=has_any(cue_t,["بگو","گزارش","لیست","فهرست","list","چند نفر","چند نفریم","کیا","چه کسایی","چه کسانی","چه همکار","چه participant","وضع","وضعیت"])
     collaboration_cue = (
         (collab_terms and collab_inspect_signal) or
