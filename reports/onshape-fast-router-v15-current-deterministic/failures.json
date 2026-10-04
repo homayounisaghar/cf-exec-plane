@@ -1,0 +1,794 @@
+[
+  {
+    "id": "v15_pro_0000",
+    "category": "professional_out_of_contract",
+    "text": "Sketch 4 رو fully constrain کن",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0005",
+    "category": "professional_out_of_contract",
+    "text": "خب این feature رو mirror کن نسبت به Front plane",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0006",
+    "category": "professional_out_of_contract",
+    "text": "یه drawing با front/top/isometric از این part بساز؛ ممنون",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0010",
+    "category": "professional_out_of_contract",
+    "text": "می‌خوام این two-part clearance رو 0.2 mm کن",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0011",
+    "category": "professional_out_of_contract",
+    "text": "ممنون می‌شم روی این لبه variable fillet بساز، مرسی",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "new-edge-ungrounded"
+  },
+  {
+    "id": "v15_pro_0015",
+    "category": "professional_out_of_contract",
+    "text": "آروم Sketch 4 رو fully constrain کن",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0020",
+    "category": "professional_out_of_contract",
+    "text": "میشه این feature رو mirror کن نسبت به Front plane؟ لطفاً",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0021",
+    "category": "professional_out_of_contract",
+    "text": "خب یه drawing با front/top/isometric از این part بساز لطفاً",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0025",
+    "category": "professional_out_of_contract",
+    "text": "الان این two-part clearance رو 0.2 mm کن؟ لطفاً",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0026",
+    "category": "professional_out_of_contract",
+    "text": "می‌خوام روی این لبه variable fillet بساز لطفاً",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "new-edge-ungrounded"
+  },
+  {
+    "id": "v15_pro_0030",
+    "category": "professional_out_of_contract",
+    "text": "Sketch 4 رو fully constrain کن؛ لطفاً",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0035",
+    "category": "professional_out_of_contract",
+    "text": "آروم این feature رو mirror کن نسبت به Front plane، مرسی لطفاً",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0036",
+    "category": "professional_out_of_contract",
+    "text": "میشه یه drawing با front/top/isometric از این part بساز؟ لطفاً",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0040",
+    "category": "professional_out_of_contract",
+    "text": "این two-part clearance رو 0.2 mm کن اگه میشه",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0041",
+    "category": "professional_out_of_contract",
+    "text": "لطفاً روی این لبه variable fillet بساز؟ اگه میشه",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "new-edge-ungrounded"
+  },
+  {
+    "id": "v15_pro_0045",
+    "category": "professional_out_of_contract",
+    "text": "خب Sketch 4 رو fully constrain کن اگه میشه",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0050",
+    "category": "professional_out_of_contract",
+    "text": "می‌خوام این feature رو mirror کن نسبت به Front plane اگه میشه",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0051",
+    "category": "professional_out_of_contract",
+    "text": "ممنون می‌شم یه drawing با front/top/isometric از این part بساز، مرسی اگه میشه",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0055",
+    "category": "professional_out_of_contract",
+    "text": "آروم این two-part clearance رو 0.2 mm کن اگه میشه",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0056",
+    "category": "professional_out_of_contract",
+    "text": "دقیقاً روی این لبه variable fillet بساز اگه میشه",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "new-edge-ungrounded"
+  },
+  {
+    "id": "v15_pro_0060",
+    "category": "professional_out_of_contract",
+    "text": "میشه Sketch 4 رو fully constrain کن؟ همین الان",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0065",
+    "category": "professional_out_of_contract",
+    "text": "الان این feature رو mirror کن نسبت به Front plane؟ همین الان",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0066",
+    "category": "professional_out_of_contract",
+    "text": "می‌خوام یه drawing با front/top/isometric از این part بساز همین الان",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0070",
+    "category": "professional_out_of_contract",
+    "text": "این two-part clearance رو 0.2 mm کن؛ همین الان",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0071",
+    "category": "professional_out_of_contract",
+    "text": "ممنون می‌شم روی این لبه variable fillet بساز همین الان",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "new-edge-ungrounded"
+  },
+  {
+    "id": "v15_pro_0075",
+    "category": "professional_out_of_contract",
+    "text": "آروم Sketch 4 رو fully constrain کن، مرسی همین الان",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0080",
+    "category": "professional_out_of_contract",
+    "text": "این feature رو mirror کن نسبت به Front plane برای من",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0081",
+    "category": "professional_out_of_contract",
+    "text": "لطفاً یه drawing با front/top/isometric از این part بساز؟ برای من",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0085",
+    "category": "professional_out_of_contract",
+    "text": "خب این two-part clearance رو 0.2 mm کن برای من",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0086",
+    "category": "professional_out_of_contract",
+    "text": "روی این لبه variable fillet بساز؛ برای من",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "new-edge-ungrounded"
+  },
+  {
+    "id": "v15_pro_0090",
+    "category": "professional_out_of_contract",
+    "text": "می‌خوام Sketch 4 رو fully constrain کن برای من",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0095",
+    "category": "professional_out_of_contract",
+    "text": "آروم این feature رو mirror کن نسبت به Front plane برای من",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0096",
+    "category": "professional_out_of_contract",
+    "text": "دقیقاً یه drawing با front/top/isometric از این part بساز برای من",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0100",
+    "category": "professional_out_of_contract",
+    "text": "میشه این two-part clearance رو 0.2 mm کن؟ ممنون",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0101",
+    "category": "professional_out_of_contract",
+    "text": "خب روی این لبه variable fillet بساز ممنون",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "new-edge-ungrounded"
+  },
+  {
+    "id": "v15_pro_0105",
+    "category": "professional_out_of_contract",
+    "text": "الان Sketch 4 رو fully constrain کن؟ ممنون",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0110",
+    "category": "professional_out_of_contract",
+    "text": "این feature رو mirror کن نسبت به Front plane؛ ممنون",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0111",
+    "category": "professional_out_of_contract",
+    "text": "ممنون می‌شم یه drawing با front/top/isometric از این part بساز ممنون",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0115",
+    "category": "professional_out_of_contract",
+    "text": "آروم این two-part clearance رو 0.2 mm کن، مرسی ممنون",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0116",
+    "category": "professional_out_of_contract",
+    "text": "میشه روی این لبه variable fillet بساز؟ ممنون",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "new-edge-ungrounded"
+  },
+  {
+    "id": "v15_pro_0120",
+    "category": "professional_out_of_contract",
+    "text": "Sketch 4 رو fully constrain کن بی‌زحمت",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0125",
+    "category": "professional_out_of_contract",
+    "text": "خب این feature رو mirror کن نسبت به Front plane بی‌زحمت",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0126",
+    "category": "professional_out_of_contract",
+    "text": "یه drawing با front/top/isometric از این part بساز؛ بی‌زحمت",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0130",
+    "category": "professional_out_of_contract",
+    "text": "می‌خوام این two-part clearance رو 0.2 mm کن بی‌زحمت",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0131",
+    "category": "professional_out_of_contract",
+    "text": "ممنون می‌شم روی این لبه variable fillet بساز، مرسی بی‌زحمت",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "new-edge-ungrounded"
+  },
+  {
+    "id": "v15_pro_0135",
+    "category": "professional_out_of_contract",
+    "text": "آروم Sketch 4 رو fully constrain کن بی‌زحمت",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0140",
+    "category": "professional_out_of_contract",
+    "text": "میشه این feature رو mirror کن نسبت به Front plane؟ فعلاً",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0141",
+    "category": "professional_out_of_contract",
+    "text": "خب یه drawing با front/top/isometric از این part بساز فعلاً",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0145",
+    "category": "professional_out_of_contract",
+    "text": "الان این two-part clearance رو 0.2 mm کن؟ فعلاً",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0146",
+    "category": "professional_out_of_contract",
+    "text": "می‌خوام روی این لبه variable fillet بساز فعلاً",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "new-edge-ungrounded"
+  },
+  {
+    "id": "v15_pro_0150",
+    "category": "professional_out_of_contract",
+    "text": "Sketch 4 رو fully constrain کن؛ فعلاً",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0155",
+    "category": "professional_out_of_contract",
+    "text": "آروم این feature رو mirror کن نسبت به Front plane، مرسی فعلاً",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0156",
+    "category": "professional_out_of_contract",
+    "text": "میشه یه drawing با front/top/isometric از این part بساز؟ فعلاً",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0160",
+    "category": "professional_out_of_contract",
+    "text": "این two-part clearance رو 0.2 mm کن یه لحظه",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0161",
+    "category": "professional_out_of_contract",
+    "text": "لطفاً روی این لبه variable fillet بساز؟ یه لحظه",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "new-edge-ungrounded"
+  },
+  {
+    "id": "v15_pro_0165",
+    "category": "professional_out_of_contract",
+    "text": "خب Sketch 4 رو fully constrain کن یه لحظه",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0170",
+    "category": "professional_out_of_contract",
+    "text": "می‌خوام این feature رو mirror کن نسبت به Front plane یه لحظه",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0171",
+    "category": "professional_out_of_contract",
+    "text": "ممنون می‌شم یه drawing با front/top/isometric از این part بساز، مرسی یه لحظه",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0175",
+    "category": "professional_out_of_contract",
+    "text": "آروم این two-part clearance رو 0.2 mm کن یه لحظه",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0176",
+    "category": "professional_out_of_contract",
+    "text": "دقیقاً روی این لبه variable fillet بساز یه لحظه",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "new-edge-ungrounded"
+  },
+  {
+    "id": "v15_pro_0180",
+    "category": "professional_out_of_contract",
+    "text": "میشه Sketch 4 رو fully constrain کن؟ و تموم",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0185",
+    "category": "professional_out_of_contract",
+    "text": "الان این feature رو mirror کن نسبت به Front plane؟ و تموم",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0186",
+    "category": "professional_out_of_contract",
+    "text": "می‌خوام یه drawing با front/top/isometric از این part بساز و تموم",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0190",
+    "category": "professional_out_of_contract",
+    "text": "این two-part clearance رو 0.2 mm کن؛ و تموم",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  },
+  {
+    "id": "v15_pro_0191",
+    "category": "professional_out_of_contract",
+    "text": "ممنون می‌شم روی این لبه variable fillet بساز و تموم",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "new-edge-ungrounded"
+  },
+  {
+    "id": "v15_pro_0195",
+    "category": "professional_out_of_contract",
+    "text": "آروم Sketch 4 رو fully constrain کن، مرسی و تموم",
+    "outcome": "route_mismatch",
+    "compiled": {
+      "route": "ask",
+      "op": null,
+      "args": {}
+    },
+    "reason": "clarification"
+  }
+]
