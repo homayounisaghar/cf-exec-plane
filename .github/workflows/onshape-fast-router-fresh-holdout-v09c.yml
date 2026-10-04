@@ -1,0 +1,76 @@
+name: Onshape Fast Router Fresh Holdout V09C
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - qualification/onshape-fast-router-fresh-holdout-v09c/control/*.request
+
+permissions:
+  contents: write
+
+concurrency:
+  group: onshape-fast-router-fresh-holdout-v09c
+  cancel-in-progress: true
+
+jobs:
+  qualify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Run isolated v09 with captured diagnostics
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          BATCH_SIZE: '10'
+          MAX_BATCH_RETRIES: '1'
+          OUT_DIR: ${{ github.workspace }}/artifacts/onshape-fast-router-fresh-holdout-v09c
+        run: |
+          set +e
+          mkdir -p "$OUT_DIR"
+          cp qualification/onshape-fast-router-fresh-holdout-v09/evidence_v06.py "$OUT_DIR/evidence_v06.py"
+          cp qualification/onshape-fast-router-fresh-holdout-v09/fresh_holdout_v09.py "$OUT_DIR/fresh_holdout_v09.py"
+          cp qualification/onshape-fast-router-fresh-holdout-v09/run_v09.py "$OUT_DIR/run_v09.py"
+          cd "$OUT_DIR"
+          python -m py_compile evidence_v06.py fresh_holdout_v09.py run_v09.py > runner.log 2>&1
+          rc=$?
+          if test "$rc" -eq 0; then
+            if test -z "$GROQ_API_KEY"; then
+              echo "GROQ_API_KEY missing" >> runner.log
+              rc=90
+            else
+              python run_v09.py >> runner.log 2>&1
+              rc=$?
+            fi
+          fi
+          printf '{"exit_code":%s}\n' "$rc" > status.json
+          exit 0
+      - name: Publish v09c direct readback
+        if: always()
+        run: |
+          set -eu
+          src="artifacts/onshape-fast-router-fresh-holdout-v09c"
+          dst="reports/onshape-fast-router-fresh-holdout-v09"
+          mkdir -p "$dst"
+          if test -f "$src/summary.json"; then
+            cp "$src/summary.json" "$dst/summary.json"
+            cp "$src/rows.json" "$dst/rows.json"
+            rm -f "$dst/latest-error.json"
+          else
+            printf '{"state":"NO_SUMMARY"}\n' > "$dst/latest-error.json"
+          fi
+          test -f "$src/runner.log" && cp "$src/runner.log" "$dst/runner.log" || true
+          test -f "$src/status.json" && cp "$src/status.json" "$dst/status.json" || true
+          printf '{"run_id":"%s","head_sha":"%s","via":"isolated-v09c"}\n' "$GITHUB_RUN_ID" "$GITHUB_SHA" > "$dst/latest-meta.json"
+          git config user.name "cf-exec-plane"
+          git config user.email "actions@users.noreply.github.com"
+          git add "$dst"
+          git commit -m "Report: isolated Onshape fresh holdout v09c" || exit 0
+          git pull --rebase origin main
+          git push origin HEAD:main
