@@ -949,7 +949,7 @@ def extract_evidence(text, ctx=None):
         (has_any(cue_t,["در یک خط","نسخه","گام","spacing","count"]) and copy_count is not None and bool(ps or ctx.get("last_part")))
     )
     selection_referent=has_any(cue_t,["selection","انتخاب","لبه انتخاب","لبه‌های انتخاب","لبه هاي انتخاب","edgeهای","edge ها","edgeها"])
-    explicit_selection_absence=has_any(cue_t,["بدون انتخاب","بدون selection","selection نداریم","انتخاب نداریم","لبه انتخاب نشده","edge انتخاب نشده"])
+    explicit_selection_absence=has_any(cue_t,["بدون انتخاب","بدون selection","selection نداریم","انتخاب نداریم","selection خالیه","selection خالی است","selection خالی باشد","انتخاب خالیه","انتخاب خالی است","لبه انتخاب نشده","edge انتخاب نشده"])
     edge_new_explicit = explicit_selection_absence or (
         has_any(cue_t,["جدید","خالی","تازه"]) and not selection_referent and ctx.get("selection_count",0)<=0
     )
