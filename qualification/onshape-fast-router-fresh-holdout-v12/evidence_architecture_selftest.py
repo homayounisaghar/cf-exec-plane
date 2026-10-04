@@ -1,4 +1,5 @@
 from __future__ import annotations
+import inspect
 import json
 import statistics
 import time
@@ -24,6 +25,11 @@ def assert_eq(got,want,label):
 
 def main():
     checks=[]
+
+    compiler_source=inspect.getsource(e.compile_intent)
+    if 'case["text"]' in compiler_source or "case['text']" in compiler_source:
+        raise AssertionError("compiler-text-leakage")
+    checks.append("compiler-text-blind")
 
     for text in ["چی الان دستمه","الان چی انتخاب کردم","چی دستمه الان"]:
         c,ev=compiled(text,{"selection_count":2})
