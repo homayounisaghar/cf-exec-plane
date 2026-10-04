@@ -1,0 +1,8 @@
+{
+  "request_id": "v12-v15-finalgate-b795-20261004",
+  "source_repo": "homayounisaghar/capability-fabric",
+  "source_ref": "work/onshape-fast-router-v15-hardening",
+  "source_head": "b795ce3f3f14937681ffca085f50f9ff4ccc9d5a",
+  "purpose": "clean V12 regression after 82/82 V15 architecture selftest",
+  "production_effects": false
+}
