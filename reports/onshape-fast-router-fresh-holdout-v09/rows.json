@@ -22,6 +22,7 @@
     "evidence": {
       "text": "یه ذره بچرخونش به راست",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -94,6 +95,7 @@
     "evidence": {
       "text": "یه خورده بچرخونش سمت چپ",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -166,6 +168,7 @@
     "evidence": {
       "text": "یه کوچولو در جهت عقربه ها بچرخونش",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -231,6 +234,7 @@
     "evidence": {
       "text": "برعکس عقربه ها یه ذره بچرخون",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -305,9 +309,17 @@
           "span": [
             0,
             7
-          ]
+          ],
+          "ast": {
+            "value": 30.0,
+            "kind": "cardinal",
+            "source": "سی",
+            "cardinal": 30
+          },
+          "provenance": "canonical_quantity_grammar"
         }
       ],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -376,11 +388,12 @@
       ]
     },
     "source": "model_intent",
-    "decision": "ask",
-    "intent": null,
+    "decision": "act",
+    "intent": "camera_move",
     "evidence": {
       "text": "نمای کار رو یه کم بکش بالا",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -414,15 +427,20 @@
     },
     "post": {
       "accepted": false,
-      "reason": "api-failure",
+      "reason": "camera-ungrounded",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       }
     },
-    "error": "HTTP 429: {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01m40md9dfev0vsx6yved4nm6y` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199219, Requested 2781. Please try again in 14m24s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
-    "outcome": "api_failure"
+    "model_choice": {
+      "id": "v09_c06",
+      "d": "a",
+      "i": "camera_move"
+    },
+    "model_latency_ms": 909.8129509999992,
+    "outcome": "conservative_escalation"
   },
   {
     "case": {
@@ -447,6 +465,7 @@
     "evidence": {
       "text": "کل صفحه رو یه ذره بده سمت چپ",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -514,11 +533,12 @@
       ]
     },
     "source": "model_intent",
-    "decision": "ask",
-    "intent": null,
+    "decision": "act",
+    "intent": "camera_move",
     "evidence": {
       "text": "یه پله نزدیک تر شو",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -552,15 +572,20 @@
     },
     "post": {
       "accepted": false,
-      "reason": "api-failure",
+      "reason": "camera-ungrounded",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       }
     },
-    "error": "HTTP 429: {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01m40md9dfev0vsx6yved4nm6y` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199219, Requested 2781. Please try again in 14m24s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
-    "outcome": "api_failure"
+    "model_choice": {
+      "id": "v09_c08",
+      "d": "a",
+      "i": "camera_move"
+    },
+    "model_latency_ms": 909.8129509999992,
+    "outcome": "conservative_escalation"
   },
   {
     "case": {
@@ -580,11 +605,12 @@
       ]
     },
     "source": "model_intent",
-    "decision": "ask",
-    "intent": null,
+    "decision": "act",
+    "intent": "camera_move",
     "evidence": {
       "text": "یه پله دورتر شو",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -618,15 +644,20 @@
     },
     "post": {
       "accepted": false,
-      "reason": "api-failure",
+      "reason": "camera-ungrounded",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       }
     },
-    "error": "HTTP 429: {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01m40md9dfev0vsx6yved4nm6y` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199219, Requested 2781. Please try again in 14m24s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
-    "outcome": "api_failure"
+    "model_choice": {
+      "id": "v09_c09",
+      "d": "a",
+      "i": "camera_move"
+    },
+    "model_latency_ms": 909.8129509999992,
+    "outcome": "conservative_escalation"
   },
   {
     "case": {
@@ -645,11 +676,12 @@
       ]
     },
     "source": "model_intent",
-    "decision": "ask",
-    "intent": null,
+    "decision": "act",
+    "intent": "fit",
     "evidence": {
       "text": "یه کاری کن همه مدل معلوم باشه",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -682,16 +714,26 @@
       "action_cues": []
     },
     "post": {
-      "accepted": false,
-      "reason": "api-failure",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
+        "route": "do",
+        "op": "view.fit",
+        "args": {
+          "action": "fit"
+        }
+      },
+      "provenance": {
+        "target": "text/context"
       }
     },
-    "error": "HTTP 429: {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01m40md9dfev0vsx6yved4nm6y` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199219, Requested 2781. Please try again in 14m24s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
-    "outcome": "api_failure"
+    "model_choice": {
+      "id": "v09_c10",
+      "d": "a",
+      "i": "fit"
+    },
+    "model_latency_ms": 909.8129509999992,
+    "outcome": "correct"
   },
   {
     "case": {
@@ -716,11 +758,12 @@
       ]
     },
     "source": "model_intent",
-    "decision": "ask",
-    "intent": null,
+    "decision": "act",
+    "intent": "fit_selection",
     "evidence": {
       "text": "فقط همین انتخاب بزرگ شه تو صفحه",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -757,15 +800,20 @@
     },
     "post": {
       "accepted": false,
-      "reason": "api-failure",
+      "reason": "intent-unhandled",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       }
     },
-    "error": "HTTP 429: {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01m40md9dfev0vsx6yved4nm6y` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199219, Requested 2781. Please try again in 14m24s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
-    "outcome": "api_failure"
+    "model_choice": {
+      "id": "v09_c11",
+      "d": "a",
+      "i": "fit_selection"
+    },
+    "model_latency_ms": 909.8129509999992,
+    "outcome": "conservative_escalation"
   },
   {
     "case": {
@@ -789,6 +837,7 @@
     "evidence": {
       "text": "از بالا ببینیمش",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -851,11 +900,12 @@
       ]
     },
     "source": "model_intent",
-    "decision": "ask",
-    "intent": null,
+    "decision": "act",
+    "intent": "clear_selection",
     "evidence": {
       "text": "هر چی الان انتخابه پاکش کن",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -888,16 +938,22 @@
       "action_cues": []
     },
     "post": {
-      "accepted": false,
-      "reason": "api-failure",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
+        "route": "do",
+        "op": "viewer.selection.clear",
         "args": {}
-      }
+      },
+      "provenance": {}
     },
-    "error": "HTTP 429: {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01m40md9dfev0vsx6yved4nm6y` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199219, Requested 2781. Please try again in 14m24s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
-    "outcome": "api_failure"
+    "model_choice": {
+      "id": "v09_c13",
+      "d": "a",
+      "i": "clear_selection"
+    },
+    "model_latency_ms": 909.8129509999992,
+    "outcome": "correct"
   },
   {
     "case": {
@@ -917,6 +973,7 @@
     "evidence": {
       "text": "نمای جلو رو بده",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -950,15 +1007,20 @@
     },
     "post": {
       "accepted": false,
-      "reason": "api-failure",
+      "reason": "clarification",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       }
     },
-    "error": "HTTP 429: {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01m40md9dfev0vsx6yved4nm6y` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199219, Requested 2781. Please try again in 14m24s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
-    "outcome": "api_failure"
+    "model_choice": {
+      "id": "v09_c14",
+      "d": "q",
+      "i": null
+    },
+    "model_latency_ms": 909.8129509999992,
+    "outcome": "correct"
   },
   {
     "case": {
@@ -977,11 +1039,12 @@
       ]
     },
     "source": "model_intent",
-    "decision": "ask",
-    "intent": null,
+    "decision": "act",
+    "intent": "inspect",
     "evidence": {
       "text": "الان چی دستمه؟",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -1014,16 +1077,26 @@
       "action_cues": []
     },
     "post": {
-      "accepted": false,
-      "reason": "api-failure",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
+        "route": "do",
+        "op": "viewer.inspect",
+        "args": {
+          "mode": "state"
+        }
+      },
+      "provenance": {
+        "mode": "text"
       }
     },
-    "error": "HTTP 429: {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01m40md9dfev0vsx6yved4nm6y` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199219, Requested 2781. Please try again in 14m24s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
-    "outcome": "api_failure"
+    "model_choice": {
+      "id": "v09_i01",
+      "d": "a",
+      "i": "inspect"
+    },
+    "model_latency_ms": 909.8129509999992,
+    "outcome": "wrong_reversible_accepted"
   },
   {
     "case": {
@@ -1047,6 +1120,7 @@
     "evidence": {
       "text": "وضعیت صفحه رو یه نگاه بنداز",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -1106,11 +1180,12 @@
       ]
     },
     "source": "model_intent",
-    "decision": "ask",
-    "intent": null,
+    "decision": "act",
+    "intent": "inspect",
     "evidence": {
       "text": "ببین کیا الان وصلن",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -1143,16 +1218,26 @@
       "action_cues": []
     },
     "post": {
-      "accepted": false,
-      "reason": "api-failure",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
+        "route": "do",
+        "op": "viewer.inspect",
+        "args": {
+          "mode": "state"
+        }
+      },
+      "provenance": {
+        "mode": "text"
       }
     },
-    "error": "HTTP 429: {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01m40md9dfev0vsx6yved4nm6y` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199219, Requested 2781. Please try again in 14m24s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
-    "outcome": "api_failure"
+    "model_choice": {
+      "id": "v09_i03",
+      "d": "a",
+      "i": "inspect"
+    },
+    "model_latency_ms": 909.8129509999992,
+    "outcome": "wrong_reversible_accepted"
   },
   {
     "case": {
@@ -1176,6 +1261,7 @@
     "evidence": {
       "text": "اون یکی که وصله رو دنبال کن",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -1245,6 +1331,7 @@
     "evidence": {
       "text": "دومی رو فالو کن",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -1307,6 +1394,7 @@
     "evidence": {
       "text": "یکی از این سه نفر رو فالو کن",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -1362,11 +1450,12 @@
       ]
     },
     "source": "model_intent",
-    "decision": "ask",
-    "intent": null,
+    "decision": "act",
+    "intent": "add_plane",
     "evidence": {
       "text": "همین سطحی که روشم هستم رو بگیر",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -1399,16 +1488,26 @@
       "action_cues": []
     },
     "post": {
-      "accepted": false,
-      "reason": "api-failure",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
+        "route": "do",
+        "op": "feature.add",
+        "args": {
+          "feature_type": "plane"
+        }
+      },
+      "provenance": {
+        "name": null
       }
     },
-    "error": "HTTP 429: {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01m40md9dfev0vsx6yved4nm6y` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199219, Requested 2781. Please try again in 14m24s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
-    "outcome": "api_failure"
+    "model_choice": {
+      "id": "v09_i07",
+      "d": "a",
+      "i": "add_plane"
+    },
+    "model_latency_ms": 909.8129509999992,
+    "outcome": "false_execute"
   },
   {
     "case": {
@@ -1430,6 +1529,7 @@
     "evidence": {
       "text": "کنار این یکی یه انتخاب دیگه هم بزن",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -1463,15 +1563,20 @@
     },
     "post": {
       "accepted": false,
-      "reason": "api-failure",
+      "reason": "clarification",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       }
     },
-    "error": "HTTP 429: {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01m40md9dfev0vsx6yved4nm6y` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 198663, Requested 2695. Please try again in 9m46.656s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
-    "outcome": "api_failure"
+    "model_choice": {
+      "id": "v09_i08",
+      "d": "q",
+      "i": null
+    },
+    "model_latency_ms": 729.9205529999995,
+    "outcome": "correct"
   },
   {
     "case": {
@@ -1504,15 +1609,25 @@
       "quantities": [
         {
           "id": "q1",
-          "value": 0.2,
+          "value": 1.2,
           "unit": "mm",
-          "text": "دو دهم میل",
+          "text": "یک و دو دهم میل",
           "span": [
-            26,
+            21,
             36
-          ]
+          ],
+          "ast": {
+            "value": 1.2,
+            "kind": "whole_plus_fraction",
+            "source": "یک و دو دهم",
+            "whole": 1,
+            "numerator": 2,
+            "denominator": 10
+          },
+          "provenance": "canonical_quantity_grammar"
         }
       ],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -1557,7 +1672,7 @@
         "op": "feature.from_selection",
         "args": {
           "feature_type": "fillet",
-          "amount": "0.2 mm"
+          "amount": "1.2 mm"
         }
       },
       "provenance": {
@@ -1566,7 +1681,7 @@
         "selection": "verified-context"
       }
     },
-    "outcome": "wrong_material_accepted"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -1599,15 +1714,24 @@
       "quantities": [
         {
           "id": "q1",
-          "value": 70.05,
+          "value": 0.75,
           "unit": "mm",
           "text": "هفتاد و پنج صدم میل",
           "span": [
             19,
             38
-          ]
+          ],
+          "ast": {
+            "value": 0.75,
+            "kind": "fraction",
+            "source": "هفتاد و پنج صدم",
+            "numerator": 75,
+            "denominator": 100
+          },
+          "provenance": "canonical_quantity_grammar"
         }
       ],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -1652,7 +1776,7 @@
         "op": "feature.from_selection",
         "args": {
           "feature_type": "chamfer",
-          "amount": "70.05 mm"
+          "amount": "0.75 mm"
         }
       },
       "provenance": {
@@ -1661,7 +1785,7 @@
         "selection": "verified-context"
       }
     },
-    "outcome": "wrong_material_accepted"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -1700,9 +1824,17 @@
           "span": [
             14,
             26
-          ]
+          ],
+          "ast": {
+            "value": 2.5,
+            "kind": "whole_plus_half",
+            "source": "دو و نیم",
+            "whole": 2
+          },
+          "provenance": "canonical_quantity_grammar"
         }
       ],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -1785,9 +1917,19 @@
           "span": [
             10,
             28
-          ]
+          ],
+          "ast": {
+            "value": 1.2,
+            "kind": "whole_plus_fraction",
+            "source": "یک و بیست صدم",
+            "whole": 1,
+            "numerator": 20,
+            "denominator": 100
+          },
+          "provenance": "canonical_quantity_grammar"
         }
       ],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -1879,9 +2021,16 @@
           "span": [
             21,
             28
-          ]
+          ],
+          "ast": {
+            "value": 0.5,
+            "kind": "half",
+            "source": "نیم"
+          },
+          "provenance": "canonical_quantity_grammar"
         }
       ],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -1973,9 +2122,18 @@
             16,
             22
           ],
-          "implicit_unit": true
+          "implicit_unit": true,
+          "ast": {
+            "value": 0.3,
+            "kind": "fraction",
+            "source": "سه دهم",
+            "numerator": 3,
+            "denominator": 10
+          },
+          "provenance": "bounded_implicit_edge_mm"
         }
       ],
+      "quantity_issues": [],
       "features": [
         {
           "id": "f1",
@@ -2062,6 +2220,7 @@
     "evidence": {
       "text": "فیلت بزن روش",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -2136,9 +2295,17 @@
           "span": [
             0,
             6
-          ]
+          ],
+          "ast": {
+            "value": 1.0,
+            "kind": "cardinal",
+            "source": "یک",
+            "cardinal": 1
+          },
+          "provenance": "canonical_quantity_grammar"
         }
       ],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -2212,9 +2379,17 @@
           "span": [
             13,
             20
-          ]
+          ],
+          "ast": {
+            "value": 3.0,
+            "kind": "cardinal",
+            "source": "سه",
+            "cardinal": 3
+          },
+          "provenance": "canonical_quantity_grammar"
         }
       ],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -2297,9 +2472,18 @@
           "span": [
             13,
             23
-          ]
+          ],
+          "ast": {
+            "value": 0.6,
+            "kind": "fraction",
+            "source": "شش دهم",
+            "numerator": 6,
+            "denominator": 10
+          },
+          "provenance": "canonical_quantity_grammar"
         }
       ],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -2383,7 +2567,14 @@
           "span": [
             4,
             10
-          ]
+          ],
+          "ast": {
+            "value": 2.0,
+            "kind": "cardinal",
+            "source": "دو",
+            "cardinal": 2
+          },
+          "provenance": "canonical_quantity_grammar"
         },
         {
           "id": "q2",
@@ -2393,9 +2584,17 @@
           "span": [
             23,
             29
-          ]
+          ],
+          "ast": {
+            "value": 1.0,
+            "kind": "cardinal",
+            "source": "یک",
+            "cardinal": 1
+          },
+          "provenance": "canonical_quantity_grammar"
         }
       ],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -2468,6 +2667,7 @@
     "evidence": {
       "text": "این لبه رو فیلت کن بعد پارتی که روشه رو قایم کن",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -2538,6 +2738,7 @@
     "evidence": {
       "text": "یه خورده فیلتش کن",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -2615,15 +2816,33 @@
       "quantities": [
         {
           "id": "q1",
-          "value": 1.0,
+          "value": 1.5,
           "unit": "mm",
-          "text": "یک میل",
+          "text": "یک میل و نیم",
           "span": [
             18,
-            24
-          ]
+            30
+          ],
+          "ast": {
+            "value": 1.5,
+            "kind": "unit_then_fraction",
+            "source": "یک میل و نیم",
+            "base": {
+              "value": 1.0,
+              "kind": "cardinal",
+              "source": "یک",
+              "cardinal": 1
+            },
+            "post_fraction": {
+              "value": 0.5,
+              "kind": "half",
+              "source": "نیم"
+            }
+          },
+          "provenance": "canonical_quantity_grammar"
         }
       ],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -2668,7 +2887,7 @@
         "op": "feature.from_selection",
         "args": {
           "feature_type": "chamfer",
-          "amount": "1 mm"
+          "amount": "1.5 mm"
         }
       },
       "provenance": {
@@ -2677,7 +2896,7 @@
         "selection": "verified-context"
       }
     },
-    "outcome": "wrong_material_accepted"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -2711,9 +2930,17 @@
           "span": [
             22,
             28
-          ]
+          ],
+          "ast": {
+            "value": 9.0,
+            "kind": "cardinal",
+            "source": "نه",
+            "cardinal": 9
+          },
+          "provenance": "canonical_quantity_grammar"
         }
       ],
+      "quantity_issues": [],
       "features": [
         {
           "id": "f1",
@@ -2806,9 +3033,17 @@
           "span": [
             17,
             30
-          ]
+          ],
+          "ast": {
+            "value": 22.0,
+            "kind": "cardinal",
+            "source": "بیست و دو",
+            "cardinal": 22
+          },
+          "provenance": "canonical_quantity_grammar"
         }
       ],
+      "quantity_issues": [],
       "features": [
         {
           "id": "f1",
@@ -2895,9 +3130,17 @@
           "span": [
             13,
             26
-          ]
+          ],
+          "ast": {
+            "value": 22.0,
+            "kind": "cardinal",
+            "source": "بیست و دو",
+            "cardinal": 22
+          },
+          "provenance": "canonical_quantity_grammar"
         }
       ],
+      "quantity_issues": [],
       "features": [
         {
           "id": "f1",
@@ -2981,9 +3224,17 @@
           "span": [
             17,
             28
-          ]
+          ],
+          "ast": {
+            "value": 12.0,
+            "kind": "cardinal",
+            "source": "دوازده",
+            "cardinal": 12
+          },
+          "provenance": "canonical_quantity_grammar"
         }
       ],
+      "quantity_issues": [],
       "features": [
         {
           "id": "f1",
@@ -3081,9 +3332,16 @@
           "span": [
             12,
             19
-          ]
+          ],
+          "ast": {
+            "value": 0.5,
+            "kind": "half",
+            "source": "نیم"
+          },
+          "provenance": "canonical_quantity_grammar"
         }
       ],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": "Fillet 2",
@@ -3175,9 +3433,19 @@
           "span": [
             12,
             35
-          ]
+          ],
+          "ast": {
+            "value": 1.25,
+            "kind": "whole_plus_fraction",
+            "source": "یک و بیست و پنج صدم",
+            "whole": 1,
+            "numerator": 25,
+            "denominator": 100
+          },
+          "provenance": "canonical_quantity_grammar"
         }
       ],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": "Fillet 3",
@@ -3255,6 +3523,7 @@
     "evidence": {
       "text": "یه کوچولو بیشترش کن",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": "Extrude 3",
@@ -3322,6 +3591,7 @@
     "evidence": {
       "text": "Extrude 8 رو فعلا خاموشش کن",
       "quantities": [],
+      "quantity_issues": [],
       "features": [
         {
           "id": "f1",
@@ -3403,6 +3673,7 @@
     "evidence": {
       "text": "همون Extrude 8 رو دوباره روشنش کن",
       "quantities": [],
+      "quantity_issues": [],
       "features": [
         {
           "id": "f1",
@@ -3484,6 +3755,7 @@
     "evidence": {
       "text": "اسم Fillet 8 رو بذار edge round",
       "quantities": [],
+      "quantity_issues": [],
       "features": [
         {
           "id": "f1",
@@ -3567,6 +3839,7 @@
     "evidence": {
       "text": "اسم Fillet 9 رو بذار fit hide check",
       "quantities": [],
+      "quantity_issues": [],
       "features": [
         {
           "id": "f1",
@@ -3649,6 +3922,7 @@
     "evidence": {
       "text": "Extrude 9 رو بنداز دور",
       "quantities": [],
+      "quantity_issues": [],
       "features": [
         {
           "id": "f1",
@@ -3729,6 +4003,7 @@
     "evidence": {
       "text": "آخرین چیزی که ساختیم رو از فیچرها پاک کن",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -3795,6 +4070,7 @@
     "evidence": {
       "text": "اولین فیچر رو کلا حذف کن",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -3868,6 +4144,7 @@
     "evidence": {
       "text": "flip direction برای Extrude 5 روشن باشه",
       "quantities": [],
+      "quantity_issues": [],
       "features": [
         {
           "id": "f1",
@@ -3951,6 +4228,7 @@
     "evidence": {
       "text": "flip direction برای Extrude 5 خاموش باشه",
       "quantities": [],
+      "quantity_issues": [],
       "features": [
         {
           "id": "f1",
@@ -4033,6 +4311,7 @@
     "evidence": {
       "text": "شعاع این فیلت رو دو برابر کن",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": "Fillet 4",
@@ -4095,6 +4374,7 @@
     "evidence": {
       "text": "زاویه Draft 2 رو یه کم بیشتر کن",
       "quantities": [],
+      "quantity_issues": [],
       "features": [
         {
           "id": "f1",
@@ -4164,11 +4444,12 @@
       ]
     },
     "source": "model_intent",
-    "decision": "ask",
-    "intent": null,
+    "decision": "act",
+    "intent": "part_visibility",
     "evidence": {
       "text": "Part 4 رو از جلوی چشم بردار",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [
         {
@@ -4211,15 +4492,20 @@
     },
     "post": {
       "accepted": false,
-      "reason": "api-failure",
+      "reason": "visibility-ungrounded",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       }
     },
-    "error": "HTTP 429: {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01m40md9dfev0vsx6yved4nm6y` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 198663, Requested 2695. Please try again in 9m46.656s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
-    "outcome": "api_failure"
+    "model_choice": {
+      "id": "v09_p01",
+      "d": "a",
+      "i": "part_visibility"
+    },
+    "model_latency_ms": 729.9205529999995,
+    "outcome": "conservative_escalation"
   },
   {
     "case": {
@@ -4242,11 +4528,12 @@
       ]
     },
     "source": "model_intent",
-    "decision": "ask",
-    "intent": null,
+    "decision": "act",
+    "intent": "part_visibility",
     "evidence": {
       "text": "همون پارت رو دوباره برگردون تو نما",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -4280,15 +4567,20 @@
     },
     "post": {
       "accepted": false,
-      "reason": "api-failure",
+      "reason": "visibility-ungrounded",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       }
     },
-    "error": "HTTP 429: {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01m40md9dfev0vsx6yved4nm6y` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 198663, Requested 2695. Please try again in 9m46.656s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
-    "outcome": "api_failure"
+    "model_choice": {
+      "id": "v09_p02",
+      "d": "a",
+      "i": "part_visibility"
+    },
+    "model_latency_ms": 729.9205529999995,
+    "outcome": "conservative_escalation"
   },
   {
     "case": {
@@ -4308,11 +4600,12 @@
       ]
     },
     "source": "model_intent",
-    "decision": "ask",
-    "intent": null,
+    "decision": "act",
+    "intent": "part_visibility",
     "evidence": {
       "text": "Part 4 دیگه دیده نشه",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [
         {
@@ -4355,15 +4648,20 @@
     },
     "post": {
       "accepted": false,
-      "reason": "api-failure",
+      "reason": "visibility-ungrounded",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       }
     },
-    "error": "HTTP 429: {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01m40md9dfev0vsx6yved4nm6y` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 198663, Requested 2695. Please try again in 9m46.656s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
-    "outcome": "api_failure"
+    "model_choice": {
+      "id": "v09_p03",
+      "d": "a",
+      "i": "part_visibility"
+    },
+    "model_latency_ms": 729.9205529999995,
+    "outcome": "conservative_escalation"
   },
   {
     "case": {
@@ -4389,6 +4687,7 @@
     "evidence": {
       "text": "Cap رو سفیدش کن",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [
         {
@@ -4475,6 +4774,7 @@
     "evidence": {
       "text": "Part 6 رو آبی کن",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [
         {
@@ -4561,6 +4861,7 @@
     "evidence": {
       "text": "اسم Part 8 بشه base",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [
         {
@@ -4647,6 +4948,7 @@
     "evidence": {
       "text": "متریال Part 5 رو فولاد بذار",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [
         {
@@ -4731,6 +5033,7 @@
     "evidence": {
       "text": "Part 6 رو آلومینیوم متریال بده",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [
         {
@@ -4806,6 +5109,7 @@
     "evidence": {
       "text": "description Part 3 رو بذار inner body",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [
         {
@@ -4888,6 +5192,7 @@
     "evidence": {
       "text": "Part 10 رو کامل حذف کن",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [
         {
@@ -4970,6 +5275,7 @@
     "evidence": {
       "text": "این قطعه رو پاک کن",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -5037,6 +5343,7 @@
     "evidence": {
       "text": "Part 2 رو زرد کن و قایمش کن",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [
         {
@@ -5111,6 +5418,7 @@
     "evidence": {
       "text": "اسم همین پارت رو عوض کن",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -5176,6 +5484,7 @@
     "evidence": {
       "text": "Cap رو فقط مخفی کن، رنگش دست نخوره",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [
         {
@@ -5258,6 +5567,7 @@
     "evidence": {
       "text": "یه صفحه مرجع خالی برام بساز",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -5330,6 +5640,7 @@
     "evidence": {
       "text": "یه plane بساز اسمش fit plane",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -5399,6 +5710,7 @@
     "evidence": {
       "text": "یه plane روی Front دربیار",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -5474,9 +5786,17 @@
           "span": [
             38,
             48
-          ]
+          ],
+          "ast": {
+            "value": 14.0,
+            "kind": "cardinal",
+            "source": "چهارده",
+            "cardinal": 14
+          },
+          "provenance": "canonical_quantity_grammar"
         }
       ],
+      "quantity_issues": [],
       "features": [],
       "parts": [
         {
@@ -5573,9 +5893,17 @@
           "span": [
             35,
             43
-          ]
+          ],
+          "ast": {
+            "value": 4.0,
+            "kind": "cardinal",
+            "source": "چهار",
+            "cardinal": 4
+          },
+          "provenance": "canonical_quantity_grammar"
         }
       ],
+      "quantity_issues": [],
       "features": [],
       "parts": [
         {
@@ -5665,9 +5993,17 @@
           "span": [
             22,
             32
-          ]
+          ],
+          "ast": {
+            "value": 14.0,
+            "kind": "cardinal",
+            "source": "چهارده",
+            "cardinal": 14
+          },
+          "provenance": "canonical_quantity_grammar"
         }
       ],
+      "quantity_issues": [],
       "features": [],
       "parts": [
         {
@@ -5744,15 +6080,25 @@
       "quantities": [
         {
           "id": "q1",
-          "value": 0.2,
+          "value": 2.2,
           "unit": "mm",
-          "text": "دو دهم میل",
+          "text": "دو و دو دهم میل",
           "span": [
-            20,
+            15,
             30
-          ]
+          ],
+          "ast": {
+            "value": 2.2,
+            "kind": "whole_plus_fraction",
+            "source": "دو و دو دهم",
+            "whole": 2,
+            "numerator": 2,
+            "denominator": 10
+          },
+          "provenance": "canonical_quantity_grammar"
         }
       ],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -5794,7 +6140,7 @@
         "op": "feature.add",
         "args": {
           "feature_type": "fillet",
-          "amount": "0.2 mm"
+          "amount": "2.2 mm"
         }
       },
       "provenance": {
@@ -5802,7 +6148,7 @@
         "amount": "q1"
       }
     },
-    "outcome": "wrong_material_accepted"
+    "outcome": "correct"
   },
   {
     "case": {
@@ -5835,9 +6181,18 @@
           "span": [
             16,
             26
-          ]
+          ],
+          "ast": {
+            "value": 0.9,
+            "kind": "fraction",
+            "source": "نه دهم",
+            "numerator": 9,
+            "denominator": 10
+          },
+          "provenance": "canonical_quantity_grammar"
         }
       ],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -5913,6 +6268,7 @@
     "evidence": {
       "text": "Fillet 2 رو قبل Extrude 8 بذار",
       "quantities": [],
+      "quantity_issues": [],
       "features": [
         {
           "id": "f1",
@@ -6007,6 +6363,7 @@
     "evidence": {
       "text": "Extrude 8 رو ببر زیر Sketch 5",
       "quantities": [],
+      "quantity_issues": [],
       "features": [
         {
           "id": "f1",
@@ -6103,6 +6460,7 @@
     "evidence": {
       "text": "همینو ببر قبل Fillet 10",
       "quantities": [],
+      "quantity_issues": [],
       "features": [
         {
           "id": "f1",
@@ -6187,6 +6545,7 @@
     "evidence": {
       "text": "rollback رو درست قبل Extrude 6 نگه دار",
       "quantities": [],
+      "quantity_issues": [],
       "features": [
         {
           "id": "f1",
@@ -6267,6 +6626,7 @@
     "evidence": {
       "text": "rollback رو بنداز بعد Fillet 3",
       "quantities": [],
+      "quantity_issues": [],
       "features": [
         {
           "id": "f1",
@@ -6347,6 +6707,7 @@
     "evidence": {
       "text": "rollback رو ببر اول کار",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -6418,6 +6779,7 @@
     "evidence": {
       "text": "یه تب Part Studio تازه بساز به اسم mockup",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -6484,11 +6846,12 @@
       ]
     },
     "source": "model_intent",
-    "decision": "ask",
-    "intent": null,
+    "decision": "act",
+    "intent": "rename_document",
     "evidence": {
       "text": "اسم فایل رو بذار suitcase rev C",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -6523,16 +6886,26 @@
       ]
     },
     "post": {
-      "accepted": false,
-      "reason": "api-failure",
+      "accepted": true,
+      "reason": "ok",
       "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
+        "route": "do",
+        "op": "documented.updateDocumentAttributes",
+        "args": {
+          "new_name": "suitcase rev C"
+        }
+      },
+      "provenance": {
+        "name": "text-span"
       }
     },
-    "error": "HTTP 429: {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01m40md9dfev0vsx6yved4nm6y` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 198663, Requested 2695. Please try again in 9m46.656s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
-    "outcome": "api_failure"
+    "model_choice": {
+      "id": "v09_d16",
+      "d": "a",
+      "i": "rename_document"
+    },
+    "model_latency_ms": 729.9205529999995,
+    "outcome": "correct"
   },
   {
     "case": {
@@ -6552,6 +6925,7 @@
     "evidence": {
       "text": "این قسمت رو یه جوری قوی تر کن که تاب برنداره",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -6612,6 +6986,7 @@
     "evidence": {
       "text": "ضخامت رو کمتر کن ولی ضعیف نشه",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -6672,6 +7047,7 @@
     "evidence": {
       "text": "این قطعه رو برای قالب تزریق منطقی ترش کن",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -6705,15 +7081,20 @@
     },
     "post": {
       "accepted": false,
-      "reason": "api-failure",
+      "reason": "clarification",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       }
     },
-    "error": "HTTP 429: {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01m40md9dfev0vsx6yved4nm6y` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 198663, Requested 2695. Please try again in 9m46.656s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
-    "outcome": "api_failure"
+    "model_choice": {
+      "id": "v09_x03",
+      "d": "q",
+      "i": null
+    },
+    "model_latency_ms": 729.9205529999995,
+    "outcome": "route_mismatch"
   },
   {
     "case": {
@@ -6728,11 +7109,12 @@
       ]
     },
     "source": "model_intent",
-    "decision": "ask",
-    "intent": null,
+    "decision": "act",
+    "intent": "feature_reorder",
     "evidence": {
       "text": "درخت فیچر خیلی شلوغه، مرتبش کن",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -6766,15 +7148,20 @@
     },
     "post": {
       "accepted": false,
-      "reason": "api-failure",
+      "reason": "reorder-targets-ungrounded",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       }
     },
-    "error": "HTTP 429: {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01m40md9dfev0vsx6yved4nm6y` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 198663, Requested 2695. Please try again in 9m46.656s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
-    "outcome": "api_failure"
+    "model_choice": {
+      "id": "v09_x04",
+      "d": "a",
+      "i": "feature_reorder"
+    },
+    "model_latency_ms": 729.9205529999995,
+    "outcome": "route_mismatch"
   },
   {
     "case": {
@@ -6794,6 +7181,7 @@
     "evidence": {
       "text": "این گوشه رو بهتر دربیار که تمیزتر بشه",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -6827,15 +7215,20 @@
     },
     "post": {
       "accepted": false,
-      "reason": "api-failure",
+      "reason": "clarification",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       }
     },
-    "error": "HTTP 429: {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01m40md9dfev0vsx6yved4nm6y` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 198663, Requested 2695. Please try again in 9m46.656s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
-    "outcome": "api_failure"
+    "model_choice": {
+      "id": "v09_x05",
+      "d": "q",
+      "i": null
+    },
+    "model_latency_ms": 729.9205529999995,
+    "outcome": "route_mismatch"
   },
   {
     "case": {
@@ -6855,6 +7248,7 @@
     "evidence": {
       "text": "اون یکی رو پاک کن",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -6917,6 +7311,7 @@
     "evidence": {
       "text": "پنج میلش کن",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -6950,15 +7345,20 @@
     },
     "post": {
       "accepted": false,
-      "reason": "api-failure",
+      "reason": "clarification",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       }
     },
-    "error": "HTTP 429: {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01m40md9dfev0vsx6yved4nm6y` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 198663, Requested 2695. Please try again in 9m46.656s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
-    "outcome": "api_failure"
+    "model_choice": {
+      "id": "v09_x07",
+      "d": "q",
+      "i": null
+    },
+    "model_latency_ms": 729.9205529999995,
+    "outcome": "correct"
   },
   {
     "case": {
@@ -6978,6 +7378,7 @@
     "evidence": {
       "text": "همون کار قبلی رو اینجا هم تکرار کن",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -7011,15 +7412,20 @@
     },
     "post": {
       "accepted": false,
-      "reason": "api-failure",
+      "reason": "clarification",
       "compiled": {
         "route": "ask",
         "op": null,
         "args": {}
       }
     },
-    "error": "HTTP 429: {\"error\":{\"message\":\"Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01m40md9dfev0vsx6yved4nm6y` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 198663, Requested 2695. Please try again in 9m46.656s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing\",\"type\":\"tokens\",\"code\":\"rate_limit_exceeded\"}}\n",
-    "outcome": "api_failure"
+    "model_choice": {
+      "id": "v09_x08",
+      "d": "q",
+      "i": null
+    },
+    "model_latency_ms": 729.9205529999995,
+    "outcome": "correct"
   },
   {
     "case": {
@@ -7039,6 +7445,7 @@
     "evidence": {
       "text": "ازش STEP خروجی بگیر",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -7099,6 +7506,7 @@
     "evidence": {
       "text": "با علی share کن",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -7159,6 +7567,7 @@
     "evidence": {
       "text": "همه بتونن ببیننش، publicش کن",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -7219,6 +7628,7 @@
     "evidence": {
       "text": "یه سوراخ اینجا بزن",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -7279,6 +7689,7 @@
     "evidence": {
       "text": "این دوتا رو نسبت به هم mirror کن",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -7339,6 +7750,7 @@
     "evidence": {
       "text": "همه پارت ها رو خاکستری کن",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -7386,7 +7798,7 @@
       "d": "a",
       "i": "part_property"
     },
-    "model_latency_ms": 198.44569899998987,
+    "model_latency_ms": 291.6582510000012,
     "outcome": "correct"
   },
   {
@@ -7407,6 +7819,7 @@
     "evidence": {
       "text": "هر چی فیلت اضافیه جمعش کن",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -7462,11 +7875,12 @@
       ]
     },
     "source": "model_intent",
-    "decision": "think",
+    "decision": "ask",
     "intent": null,
     "evidence": {
       "text": "این قسمت رو جمع و جورتر کن که توی قاب جا بگیره",
       "quantities": [],
+      "quantity_issues": [],
       "features": [],
       "parts": [],
       "context_feature": null,
@@ -7500,19 +7914,19 @@
     },
     "post": {
       "accepted": false,
-      "reason": "design-escalation",
+      "reason": "clarification",
       "compiled": {
-        "route": "think",
+        "route": "ask",
         "op": null,
         "args": {}
       }
     },
     "model_choice": {
       "id": "v09_x16",
-      "d": "t",
+      "d": "q",
       "i": null
     },
-    "model_latency_ms": 198.44569899998987,
-    "outcome": "correct"
+    "model_latency_ms": 291.6582510000012,
+    "outcome": "route_mismatch"
   }
 ]
