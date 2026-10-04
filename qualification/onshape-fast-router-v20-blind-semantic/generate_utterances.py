@@ -1,6 +1,11 @@
 from __future__ import annotations
-import argparse, json, os
+import argparse, json, os, re, unicodedata
 from llm_client import get_client, chat_json, read_jsonl, write_jsonl, chunks
+
+def norm_literal(s):
+    s=unicodedata.normalize("NFKC",str(s))
+    s=s.replace("\u00a0"," ").replace("\u202f"," ").replace("\u2009"," ")
+    return re.sub(r"\\s+"," ",s).strip()
 
 SYSTEM="""You are a blind natural-language realizer for a CAD apprentice evaluation.
 You receive structured semantic scenarios only. You do not know the router source,
@@ -53,7 +58,8 @@ def main():
                 utt=str(x.get("utterance","")).strip()
                 if not utt: continue
                 s=pending[sid]
-                missing=[lit for lit in s.get("realization_constraints",{}).get("preserve_literals",[]) if lit not in utt]
+                nu=norm_literal(utt)
+                missing=[lit for lit in s.get("realization_constraints",{}).get("preserve_literals",[]) if norm_literal(lit) not in nu]
                 if missing: continue
                 collected[sid]={"scenario_id":sid,"family":s["family"],"text":utt,"context":s.get("context",{}),"missing_literals":[]}
             pending={sid:s for sid,s in pending.items() if sid not in collected}

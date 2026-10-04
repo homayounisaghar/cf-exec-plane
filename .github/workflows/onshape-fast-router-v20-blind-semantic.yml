@@ -11,7 +11,7 @@ permissions:
 
 concurrency:
   group: onshape-fast-router-v20-blind-semantic
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   qualify:

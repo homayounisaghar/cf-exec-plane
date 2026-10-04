@@ -1,0 +1,8 @@
+{
+  "request_id": "v20-unicode-literal-fix-final-20261004-1534",
+  "reason": "calibration semantic judges passed; only literal substring gate failed on U+202F between numeric value and unit",
+  "fix": "NFKC plus Unicode-space normalization for literal preservation only",
+  "candidate_commit": "54580b67a9a61d2463ec3b9ced7a801707bb242b",
+  "fresh_status": "unscored-unfrozen",
+  "production_effects": false
+}

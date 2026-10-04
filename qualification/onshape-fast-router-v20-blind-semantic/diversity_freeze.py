@@ -7,6 +7,11 @@ CANDIDATE="54580b67a9a61d2463ec3b9ced7a801707bb242b"
 ROUTER_BLOB="2794465cefb0f8cad45ad5428b0570d04921a343"
 SELFTEST_BLOB="344f36c0bb5401721741e6eeab28fc2f7f617228"
 
+def norm_literal(s):
+    s=unicodedata.normalize("NFKC",str(s))
+    s=s.replace("\u00a0"," ").replace("\u202f"," ").replace("\u2009"," ")
+    return re.sub(r"\\s+"," ",s).strip()
+
 def norm(s):
     s=unicodedata.normalize("NFKC",s).replace("\u200c"," ").lower()
     s=re.sub(r"[«»\"'“”؟?!،,؛;:()\[\]{}]"," ",s)
@@ -61,6 +66,14 @@ def main():
     if set(S)!=set(A): raise SystemExit("scenario/accepted id mismatch")
 
     texts=[A[x["scenario_id"]]["text"] for x in scenarios]
+    literal_violations=[]
+    for s in scenarios:
+        nt=norm_literal(A[s["scenario_id"]]["text"])
+        for lit in s.get("realization_constraints",{}).get("preserve_literals",[]):
+            if norm_literal(lit) not in nt:
+                literal_violations.append({"scenario_id":s["scenario_id"],"literal":lit})
+    if literal_violations:
+        raise SystemExit(f"literal preservation gate failed count={len(literal_violations)} examples={literal_violations[:10]}")
     norms=[norm(x) for x in texts]
     if len(set(norms))!=9800: raise SystemExit("normalized uniqueness gate failed")
 

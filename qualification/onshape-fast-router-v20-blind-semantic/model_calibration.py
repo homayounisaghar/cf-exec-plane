@@ -1,9 +1,14 @@
 from __future__ import annotations
-import argparse, json, os
+import argparse, json, os, re, unicodedata
 from llm_client import get_client, chat_json
 import generate_utterances as gen
 import judge_utterances as judge
 from fidelity_round import parse_ok
+
+def norm_literal(s):
+    s=unicodedata.normalize("NFKC",str(s))
+    s=s.replace("\u00a0"," ").replace("\u202f"," ").replace("\u2009"," ")
+    return re.sub(r"\\s+"," ",s).strip()
 
 FLAGS={"ambiguous":False,"conditional":False,"multi_effect":False,"invalid_quantity":False,"negated_only":False}
 
@@ -65,7 +70,8 @@ def generate_once(client,model,cases,attempt):
     good=[]; failures=[]
     for c in cases:
         sid=c["scenario_id"]; text=got.get(sid,"")
-        missing=[lit for lit in c["realization_constraints"]["preserve_literals"] if lit not in text]
+        nt=norm_literal(text)
+        missing=[lit for lit in c["realization_constraints"]["preserve_literals"] if norm_literal(lit) not in nt]
         if not text or missing: failures.append({"id":sid,"text":text,"missing":missing})
         else: good.append((sid,text))
     return good,failures,usage
