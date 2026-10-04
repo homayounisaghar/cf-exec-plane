@@ -1,9 +1,9 @@
 {
-  "pass": true,
-  "stage": "complete",
+  "pass": false,
+  "stage": "direct_judge",
   "generator_model": "qwen/qwen3.8-27b",
-  "judge_model_a": "openai/gpt-oss-20b",
-  "judge_model_b": "openai/gpt-oss-120b",
+  "judge_model_a": "openai/gpt-oss-120b",
+  "judge_model_b": "allam-2-7b",
   "direct_a": [
     {
       "id": "cal_hide",
@@ -170,15 +170,14 @@
   "direct_b": [
     {
       "id": "cal_hide",
-      "ok": true,
-      "reason": "ok",
+      "ok": false,
+      "reason": "route",
       "parsed": {
         "scenario_id": "cal_hide",
-        "route": "do",
-        "op": "part.visibility",
+        "route": "do|ask|think",
+        "op": "operation-or-null",
         "args": {
-          "part_name": "Part 12",
-          "visible": false
+          "Part 12": null
         },
         "flags": {
           "ambiguous": false,
@@ -191,16 +190,14 @@
     },
     {
       "id": "cal_radius",
-      "ok": true,
-      "reason": "ok",
+      "ok": false,
+      "reason": "route",
       "parsed": {
         "scenario_id": "cal_radius",
-        "route": "do",
-        "op": "feature.parameter.set",
+        "route": "do|ask|think",
+        "op": "operation-or-null",
         "args": {
-          "feature_name": "Fillet 7",
-          "parameter": "radius",
-          "amount": "2 mm"
+          "Fillet 7": null
         },
         "flags": {
           "ambiguous": false,
@@ -213,50 +210,14 @@
     },
     {
       "id": "cal_cond",
-      "ok": true,
-      "reason": "ok",
+      "ok": false,
+      "reason": "route",
       "parsed": {
         "scenario_id": "cal_cond",
-        "route": "ask",
-        "op": null,
-        "args": {},
-        "flags": {
-          "ambiguous": false,
-          "conditional": true,
-          "multi_effect": false,
-          "invalid_quantity": false,
-          "negated_only": false
-        }
-      }
-    },
-    {
-      "id": "cal_amb",
-      "ok": true,
-      "reason": "ok",
-      "parsed": {
-        "scenario_id": "cal_amb",
-        "route": "ask",
-        "op": null,
-        "args": {},
-        "flags": {
-          "ambiguous": true,
-          "conditional": false,
-          "multi_effect": false,
-          "invalid_quantity": false,
-          "negated_only": false
-        }
-      }
-    },
-    {
-      "id": "cal_inspect",
-      "ok": true,
-      "reason": "ok",
-      "parsed": {
-        "scenario_id": "cal_inspect",
-        "route": "do",
-        "op": "viewer.inspect",
+        "route": "do|ask|think",
+        "op": "operation-or-null",
         "args": {
-          "mode": "selection"
+          "selection_count": 2
         },
         "flags": {
           "ambiguous": false,
@@ -268,16 +229,25 @@
       }
     },
     {
+      "id": "cal_amb",
+      "ok": false,
+      "reason": "missing"
+    },
+    {
+      "id": "cal_inspect",
+      "ok": false,
+      "reason": "missing"
+    },
+    {
       "id": "cal_suppress",
-      "ok": true,
-      "reason": "ok",
+      "ok": false,
+      "reason": "route",
       "parsed": {
         "scenario_id": "cal_suppress",
-        "route": "do",
-        "op": "feature.patch",
+        "route": "do|ask|think",
+        "op": "operation-or-null",
         "args": {
-          "feature_name": "Extrude 9",
-          "suppressed": true
+          "Extrude 9": null
         },
         "flags": {
           "ambiguous": false,
@@ -290,35 +260,19 @@
     },
     {
       "id": "cal_part_delete",
-      "ok": true,
-      "reason": "ok",
-      "parsed": {
-        "scenario_id": "cal_part_delete",
-        "route": "do",
-        "op": "feature.delete_part",
-        "args": {
-          "part_name": "Part 15"
-        },
-        "flags": {
-          "ambiguous": false,
-          "conditional": false,
-          "multi_effect": false,
-          "invalid_quantity": false,
-          "negated_only": false
-        }
-      }
+      "ok": false,
+      "reason": "missing"
     },
     {
       "id": "cal_zoom_correct",
-      "ok": true,
-      "reason": "ok",
+      "ok": false,
+      "reason": "route",
       "parsed": {
         "scenario_id": "cal_zoom_correct",
-        "route": "do",
-        "op": "view.move",
+        "route": "do|ask|think",
+        "op": "operation-or-null",
         "args": {
-          "action": "zoom",
-          "direction": "out"
+          "zoom": null
         },
         "flags": {
           "ambiguous": false,
@@ -330,130 +284,33 @@
       }
     }
   ],
-  "rounds": [
-    {
-      "attempt": 1,
-      "input": 8,
-      "accepted_total": 8,
-      "literal_failures": [],
-      "judge_a_failures": [],
-      "judge_b_failures": []
-    }
-  ],
-  "accepted": [
-    [
-      "cal_amb",
-      "یکی از Part 4 یا Part 7 رو مخفی کن."
-    ],
-    [
-      "cal_cond",
-      "اگه Part 3 الان مخفی‌ه، نشونش بده."
-    ],
-    [
-      "cal_hide",
-      "Part 12 رو توی ویوپورت مخفی کن."
-    ],
-    [
-      "cal_inspect",
-      "انتخاب رو پاک نکن؛ فقط یک گزارش فقط‌خواندنی از اشیاء انتخاب‌شده بده."
-    ],
-    [
-      "cal_part_delete",
-      "Part 15 رو از مدل حذف کن."
-    ],
-    [
-      "cal_radius",
-      "شعاع Fillet 7 رو دقیقاً روی 2 mm تنظیم کن."
-    ],
-    [
-      "cal_suppress",
-      "Extrude 9 رو سرکوب کن."
-    ],
-    [
-      "cal_zoom_correct",
-      "زوم‌این رو لغو کن و به جاش زوم‌اوت بزن."
-    ]
-  ],
-  "unresolved": [],
   "usage": [
     {
-      "completion_tokens": 924,
+      "completion_tokens": 830,
       "prompt_tokens": 1026,
-      "total_tokens": 1950,
+      "total_tokens": 1856,
       "completion_tokens_details": {
         "accepted_prediction_tokens": null,
         "audio_tokens": null,
-        "reasoning_tokens": 486,
+        "reasoning_tokens": 392,
         "rejected_prediction_tokens": null
       },
       "prompt_tokens_details": null,
-      "queue_time": 0.049061283,
-      "prompt_time": 0.051209467,
-      "completion_time": 1.095018563,
-      "total_time": 1.14622803
+      "queue_time": 0.274270466,
+      "prompt_time": 0.052376298,
+      "completion_time": 1.7165264919999998,
+      "total_time": 1.7689027899999998
     },
     {
-      "completion_tokens": 739,
-      "prompt_tokens": 1045,
-      "total_tokens": 1784,
-      "completion_tokens_details": {
-        "accepted_prediction_tokens": null,
-        "audio_tokens": null,
-        "reasoning_tokens": 301,
-        "rejected_prediction_tokens": null
-      },
-      "prompt_tokens_details": null,
-      "queue_time": 0.145945741,
-      "prompt_time": 0.050108873,
-      "completion_time": 1.5431327929999998,
-      "total_time": 1.593241666
-    },
-    {
-      "completion_tokens": 323,
-      "prompt_tokens": 742,
-      "total_tokens": 1065,
+      "completion_tokens": 405,
+      "prompt_tokens": 1201,
+      "total_tokens": 1606,
       "completion_tokens_details": null,
       "prompt_tokens_details": null,
-      "queue_time": 0.064539954,
-      "prompt_time": 0.052381051,
-      "completion_time": 0.61628604,
-      "total_time": 0.668667091
-    },
-    {
-      "completion_tokens": 1005,
-      "prompt_tokens": 1047,
-      "total_tokens": 2052,
-      "completion_tokens_details": {
-        "accepted_prediction_tokens": null,
-        "audio_tokens": null,
-        "reasoning_tokens": 567,
-        "rejected_prediction_tokens": null
-      },
-      "prompt_tokens_details": {
-        "audio_tokens": null,
-        "cache_write_tokens": null,
-        "cached_tokens": 768
-      },
-      "queue_time": 0.08308298,
-      "prompt_time": 0.016554849,
-      "completion_time": 1.236924235,
-      "total_time": 1.253479084
-    },
-    {
-      "completion_tokens": 673,
-      "prompt_tokens": 1066,
-      "total_tokens": 1739,
-      "completion_tokens_details": {
-        "accepted_prediction_tokens": null,
-        "audio_tokens": null,
-        "reasoning_tokens": 235,
-        "rejected_prediction_tokens": null
-      },
-      "prompt_tokens_details": null,
-      "queue_time": 0.141421899,
-      "prompt_time": 0.054650245,
-      "completion_time": 1.400422149,
-      "total_time": 1.455072394
+      "queue_time": 0.199784583,
+      "prompt_time": 0.032741076,
+      "completion_time": 0.289883994,
+      "total_time": 0.32262507
     }
   ]
 }
