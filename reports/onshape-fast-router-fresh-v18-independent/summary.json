@@ -2,701 +2,216 @@
   "candidate_cases_before_filter": 10000,
   "filtered_before_score": 200,
   "cases": 9800,
-  "deterministic_cases": 7269,
-  "fallback_cases": 2531,
-  "exact_correct": 4766,
-  "exact_accuracy": 0.4863265306122449,
-  "effect_correct": 4766,
-  "effect_accuracy": 0.4863265306122449,
-  "effect_errors": 5034,
-  "severe_accepted_effect_errors": 882,
-  "wrong_material_accepted": 678,
-  "false_execute": 36,
-  "wrong_reversible_accepted": 168,
-  "conservative_escalations": 1621,
+  "deterministic_cases": 9380,
+  "fallback_cases": 420,
+  "exact_correct": 9150,
+  "exact_accuracy": 0.9336734693877551,
+  "effect_correct": 9150,
+  "effect_accuracy": 0.9336734693877551,
+  "effect_errors": 650,
+  "severe_accepted_effect_errors": 100,
+  "wrong_material_accepted": 50,
+  "false_execute": 0,
+  "wrong_reversible_accepted": 50,
+  "conservative_escalations": 130,
   "route_mismatch": 0,
   "outcomes": {
-    "correct": 4766,
-    "fallback": 2531,
-    "conservative_escalation": 1621,
-    "wrong_reversible_accepted": 168,
-    "wrong_material_accepted": 678,
-    "false_execute": 36
+    "correct": 9150,
+    "conservative_escalation": 130,
+    "fallback": 420,
+    "wrong_material_accepted": 50,
+    "wrong_reversible_accepted": 50
   },
   "by_category": {
     "ambiguous_target_safe_ask": {
       "correct": 200
     },
     "clear_selection": {
-      "fallback": 90,
-      "wrong_reversible_accepted": 48,
-      "conservative_escalation": 62
+      "correct": 200
     },
     "conditional_safe_ask": {
-      "correct": 190,
-      "fallback": 10
+      "correct": 200
     },
     "context_camera_continue": {
-      "correct": 138,
-      "fallback": 50,
-      "conservative_escalation": 12
+      "correct": 200
     },
     "context_camera_reverse": {
-      "correct": 50,
-      "wrong_reversible_accepted": 80,
-      "fallback": 50,
-      "conservative_escalation": 20
+      "correct": 150,
+      "wrong_reversible_accepted": 50
     },
     "context_relative": {
-      "wrong_material_accepted": 100,
-      "correct": 90,
-      "conservative_escalation": 10
+      "correct": 200
     },
     "create_part_studio": {
-      "conservative_escalation": 100,
-      "correct": 15,
-      "wrong_material_accepted": 85
+      "correct": 200
     },
     "draft_angle": {
-      "correct": 198,
-      "conservative_escalation": 2
+      "correct": 200
     },
     "extrude_depth": {
-      "correct": 198,
-      "conservative_escalation": 2
+      "correct": 200
     },
     "feature_delete": {
-      "correct": 90,
-      "fallback": 90,
-      "conservative_escalation": 20
+      "correct": 200
     },
     "feature_rename": {
-      "correct": 15,
-      "conservative_escalation": 100,
-      "wrong_material_accepted": 85
+      "correct": 200
     },
     "feature_reorder": {
-      "conservative_escalation": 62,
-      "correct": 138
+      "correct": 200
     },
     "fillet_radius": {
-      "correct": 198,
-      "conservative_escalation": 2
+      "correct": 200
     },
     "fit_all": {
-      "fallback": 148,
-      "correct": 40,
-      "conservative_escalation": 12
+      "correct": 200
     },
     "fit_selection": {
-      "fallback": 130,
-      "correct": 50,
-      "conservative_escalation": 20
+      "fallback": 50,
+      "correct": 150
     },
     "flip_direction": {
-      "correct": 100,
-      "wrong_material_accepted": 48,
-      "fallback": 50,
-      "conservative_escalation": 2
+      "correct": 150,
+      "wrong_material_accepted": 50
     },
     "follow_pair": {
-      "fallback": 120,
-      "correct": 50,
-      "conservative_escalation": 30
+      "correct": 100,
+      "fallback": 100
     },
     "follow_three": {
-      "correct": 140,
-      "fallback": 40,
-      "conservative_escalation": 20
+      "correct": 200
     },
     "inspect_collaboration": {
-      "fallback": 50,
-      "correct": 130,
-      "conservative_escalation": 20
+      "correct": 200
     },
     "inspect_selection": {
-      "correct": 100,
-      "fallback": 90,
-      "conservative_escalation": 10
+      "correct": 200
     },
     "inspect_state": {
-      "fallback": 188,
-      "conservative_escalation": 12
+      "correct": 200
     },
     "invalid_quantity_safe_ask": {
       "correct": 200
     },
     "linear_pattern": {
-      "correct": 138,
-      "fallback": 50,
-      "conservative_escalation": 12
+      "correct": 200
     },
     "multi_action_safe_ask": {
-      "false_execute": 36,
-      "correct": 164
+      "correct": 200
     },
     "negation_correction": {
-      "conservative_escalation": 112,
-      "fallback": 84,
-      "correct": 4
+      "conservative_escalation": 80,
+      "fallback": 120
     },
     "new_chamfer": {
-      "conservative_escalation": 80,
-      "correct": 120
+      "correct": 200
     },
     "new_fillet": {
-      "conservative_escalation": 80,
-      "correct": 120
+      "correct": 200
     },
     "orbit_horizontal": {
-      "correct": 140,
-      "fallback": 40,
-      "conservative_escalation": 20
+      "correct": 200
     },
     "orbit_roll": {
-      "correct": 180,
-      "conservative_escalation": 20
+      "correct": 200
     },
     "orbit_vertical": {
-      "correct": 140,
-      "wrong_reversible_accepted": 40,
-      "conservative_escalation": 20
+      "correct": 200
     },
     "pan_horizontal": {
-      "fallback": 100,
-      "correct": 80,
-      "conservative_escalation": 20
+      "correct": 200
     },
     "pan_vertical": {
-      "fallback": 100,
-      "correct": 80,
-      "conservative_escalation": 20
+      "correct": 200
     },
     "part_color": {
-      "correct": 198,
-      "conservative_escalation": 2
+      "correct": 200
     },
     "part_delete": {
-      "fallback": 50,
-      "correct": 130,
-      "conservative_escalation": 20
+      "correct": 200
     },
     "part_description": {
-      "correct": 8,
-      "conservative_escalation": 150,
-      "wrong_material_accepted": 42
+      "correct": 200
     },
     "part_hide": {
-      "correct": 100,
-      "fallback": 98,
-      "conservative_escalation": 2
+      "correct": 150,
+      "fallback": 50
     },
     "part_material": {
-      "fallback": 96,
-      "correct": 7,
-      "conservative_escalation": 12,
-      "wrong_material_accepted": 85
+      "correct": 200
     },
     "part_rename": {
-      "correct": 15,
-      "conservative_escalation": 95,
-      "wrong_material_accepted": 90
+      "correct": 200
     },
     "part_show": {
-      "fallback": 190,
-      "conservative_escalation": 10
+      "correct": 150,
+      "fallback": 50
     },
     "plane_named": {
-      "fallback": 93,
-      "conservative_escalation": 100,
-      "correct": 7
+      "correct": 200
     },
     "plane_plain": {
-      "correct": 140,
-      "fallback": 40,
-      "conservative_escalation": 20
+      "correct": 200
     },
     "rename_document": {
-      "conservative_escalation": 150,
-      "correct": 7,
-      "wrong_material_accepted": 43
+      "fallback": 50,
+      "correct": 150
     },
     "rollback": {
-      "fallback": 50,
-      "correct": 130,
-      "conservative_escalation": 20
+      "correct": 200
     },
     "selected_chamfer": {
-      "correct": 180,
-      "conservative_escalation": 20
+      "correct": 200
     },
     "selected_fillet": {
-      "conservative_escalation": 70,
-      "correct": 130
+      "correct": 200
     },
     "suppress": {
-      "fallback": 138,
-      "wrong_material_accepted": 50,
-      "conservative_escalation": 12
+      "correct": 200
     },
     "top_view": {
-      "correct": 138,
-      "fallback": 50,
-      "conservative_escalation": 12
+      "correct": 200
     },
     "unsuppress": {
-      "fallback": 98,
-      "wrong_material_accepted": 50,
-      "correct": 40,
-      "conservative_escalation": 12
+      "correct": 200
     },
     "zoom": {
-      "fallback": 148,
-      "correct": 40,
-      "conservative_escalation": 12
+      "conservative_escalation": 50,
+      "correct": 150
     }
   },
   "failure_reason_counts": {
-    "clear_selection": {
-      "model-fallback-required": 90,
-      "ok": 48,
-      "clarification": 62
-    },
-    "conditional_safe_ask": {
-      "model-fallback-required": 10
-    },
-    "context_camera_continue": {
-      "model-fallback-required": 50,
-      "clarification": 12
-    },
     "context_camera_reverse": {
-      "ok": 80,
-      "model-fallback-required": 50,
-      "clarification": 20
-    },
-    "context_relative": {
-      "ok": 100,
-      "clarification": 10
-    },
-    "create_part_studio": {
-      "clarification": 100,
-      "ok": 85
-    },
-    "draft_angle": {
-      "clarification": 2
-    },
-    "extrude_depth": {
-      "clarification": 2
-    },
-    "feature_delete": {
-      "model-fallback-required": 90,
-      "clarification": 20
-    },
-    "feature_rename": {
-      "feature-rename-ungrounded": 60,
-      "clarification": 40,
-      "ok": 85
-    },
-    "feature_reorder": {
-      "selection-ungrounded": 50,
-      "clarification": 12
-    },
-    "fillet_radius": {
-      "clarification": 2
-    },
-    "fit_all": {
-      "model-fallback-required": 148,
-      "clarification": 12
+      "ok": 50
     },
     "fit_selection": {
-      "model-fallback-required": 130,
-      "clarification": 20
+      "model-fallback-required": 50
     },
     "flip_direction": {
-      "ok": 48,
-      "model-fallback-required": 50,
-      "clarification": 2
+      "ok": 50
     },
     "follow_pair": {
-      "model-fallback-required": 120,
-      "clarification": 20,
-      "camera-ungrounded": 10
-    },
-    "follow_three": {
-      "model-fallback-required": 40,
-      "clarification": 20
-    },
-    "inspect_collaboration": {
-      "model-fallback-required": 50,
-      "clarification": 20
-    },
-    "inspect_selection": {
-      "model-fallback-required": 90,
-      "clarification": 10
-    },
-    "inspect_state": {
-      "model-fallback-required": 188,
-      "clarification": 12
-    },
-    "linear_pattern": {
-      "model-fallback-required": 50,
-      "clarification": 12
-    },
-    "multi_action_safe_ask": {
-      "ok": 36
+      "model-fallback-required": 100
     },
     "negation_correction": {
-      "clarification": 112,
-      "model-fallback-required": 84
-    },
-    "new_chamfer": {
-      "selection-ungrounded": 50,
-      "clarification": 30
-    },
-    "new_fillet": {
-      "selection-ungrounded": 50,
-      "clarification": 30
-    },
-    "orbit_horizontal": {
-      "model-fallback-required": 40,
-      "clarification": 20
-    },
-    "orbit_roll": {
-      "clarification": 20
-    },
-    "orbit_vertical": {
-      "ok": 40,
-      "clarification": 20
-    },
-    "pan_horizontal": {
-      "model-fallback-required": 100,
-      "clarification": 20
-    },
-    "pan_vertical": {
-      "model-fallback-required": 100,
-      "clarification": 20
-    },
-    "part_color": {
-      "clarification": 2
-    },
-    "part_delete": {
-      "model-fallback-required": 50,
-      "clarification": 20
-    },
-    "part_description": {
-      "clarification": 150,
-      "ok": 42
+      "clarification": 80,
+      "model-fallback-required": 120
     },
     "part_hide": {
-      "model-fallback-required": 98,
-      "clarification": 2
-    },
-    "part_material": {
-      "model-fallback-required": 96,
-      "clarification": 12,
-      "ok": 85
-    },
-    "part_rename": {
-      "part-property-ungrounded": 83,
-      "ok": 90,
-      "clarification": 12
+      "model-fallback-required": 50
     },
     "part_show": {
-      "model-fallback-required": 190,
-      "clarification": 10
-    },
-    "plane_named": {
-      "model-fallback-required": 93,
-      "clarification": 100
-    },
-    "plane_plain": {
-      "model-fallback-required": 40,
-      "clarification": 20
+      "model-fallback-required": 50
     },
     "rename_document": {
-      "camera-ungrounded": 140,
-      "ok": 43,
-      "clarification": 10
-    },
-    "rollback": {
-      "model-fallback-required": 50,
-      "clarification": 20
-    },
-    "selected_chamfer": {
-      "clarification": 20
-    },
-    "selected_fillet": {
-      "clarification": 70
-    },
-    "suppress": {
-      "model-fallback-required": 138,
-      "ok": 50,
-      "clarification": 12
-    },
-    "top_view": {
-      "model-fallback-required": 50,
-      "clarification": 12
-    },
-    "unsuppress": {
-      "model-fallback-required": 98,
-      "ok": 50,
-      "clarification": 12
+      "model-fallback-required": 50
     },
     "zoom": {
-      "model-fallback-required": 148,
-      "clarification": 12
+      "camera-ungrounded": 50
     }
   },
   "representative_failures": {
-    "clear_selection": [
-      {
-        "id": "v18_clear_0000",
-        "text": "همه انتخاب‌های فعلی رو لغو کن",
-        "expected": [
-          {
-            "route": "do",
-            "op": "viewer.selection.clear",
-            "args": {}
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_clear_0001",
-        "text": "راستی، هیچی selected نمونه",
-        "expected": [
-          {
-            "route": "do",
-            "op": "viewer.selection.clear",
-            "args": {}
-          }
-        ],
-        "compiled": {
-          "route": "do",
-          "op": "viewer.inspect",
-          "args": {
-            "mode": "selection"
-          }
-        },
-        "outcome": "wrong_reversible_accepted",
-        "reason": "ok",
-        "action_families": [
-          "inspect"
-        ],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_clear_0002",
-        "text": "اگه میشه الان کل selection رو deselect کن",
-        "expected": [
-          {
-            "route": "do",
-            "op": "viewer.selection.clear",
-            "args": {}
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "clarification",
-        "action_families": [
-          "selection_select"
-        ],
-        "quantity_issues": []
-      }
-    ],
-    "conditional_safe_ask": [
-      {
-        "id": "v18_cond_0100",
-        "text": "«اگه selection صفر بود برو Top»",
-        "expected": [
-          {
-            "route": "ask"
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_cond_0110",
-        "text": "«اگه selection صفر بود برو Top، لطف کردی»",
-        "expected": [
-          {
-            "route": "ask"
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_cond_0120",
-        "text": "«اگه selection صفر بود برو Top، تموم»",
-        "expected": [
-          {
-            "route": "ask"
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      }
-    ],
-    "context_camera_continue": [
-      {
-        "id": "v18_ctx_continue_0002",
-        "text": "اگه میشه الان آخرین حرکت view رو دوباره انجام بده",
-        "expected": [
-          {
-            "route": "do",
-            "op": "view.move",
-            "args": {
-              "action": "orbit",
-              "direction": "up"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_ctx_continue_0006",
-        "text": "ممکنه آخرین حرکت view رو دوباره انجام بده",
-        "expected": [
-          {
-            "route": "do",
-            "op": "view.move",
-            "args": {
-              "action": "orbit",
-              "direction": "up"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_ctx_continue_0007",
-        "text": "زحمتش رو بکش و همون جهت آخر رو یک قدم دیگه ادامه بده",
-        "expected": [
-          {
-            "route": "do",
-            "op": "view.move",
-            "args": {
-              "action": "orbit",
-              "direction": "down"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "clarification",
-        "action_families": [
-          "camera"
-        ],
-        "quantity_issues": []
-      }
-    ],
     "context_camera_reverse": [
-      {
-        "id": "v18_ctx_reverse_0001",
-        "text": "راستی، همین حرکت قبلی رو خلافش انجام بده",
-        "expected": [
-          {
-            "route": "do",
-            "op": "view.move",
-            "args": {
-              "action": "orbit",
-              "direction": "left"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "do",
-          "op": "view.move",
-          "args": {
-            "action": "orbit",
-            "direction": "right"
-          }
-        },
-        "outcome": "wrong_reversible_accepted",
-        "reason": "ok",
-        "action_families": [
-          "camera"
-        ],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_ctx_reverse_0002",
-        "text": "اگه میشه الان یک قدم برعکس آخرین مسیر برو",
-        "expected": [
-          {
-            "route": "do",
-            "op": "view.move",
-            "args": {
-              "action": "orbit",
-              "direction": "down"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
       {
         "id": "v18_ctx_reverse_0003",
         "text": "می‌خوام view رو خلاف حرکت قبلی جابه‌جا کن",
@@ -724,629 +239,61 @@
           "camera"
         ],
         "quantity_issues": []
-      }
-    ],
-    "context_relative": [
+      },
       {
-        "id": "v18_ctx_rel_0000",
-        "text": "شعاع همین فیلت رو 0.25 mm زیاد کن",
+        "id": "v18_ctx_reverse_0007",
+        "text": "زحمتش رو بکش و view رو خلاف حرکت قبلی جابه‌جا کن",
         "expected": [
           {
             "route": "do",
-            "op": "feature.parameter.set",
+            "op": "view.move",
             "args": {
-              "feature_name": "Fillet 9",
-              "parameter": "radius",
-              "amount": "2.75 mm"
+              "action": "orbit",
+              "direction": "up"
             }
           }
         ],
         "compiled": {
           "route": "do",
-          "op": "feature.parameter.set",
+          "op": "view.move",
           "args": {
-            "feature_name": "Fillet 9",
-            "parameter": "radius",
-            "amount": "0.25 mm"
+            "action": "orbit",
+            "direction": "down"
           }
         },
-        "outcome": "wrong_material_accepted",
+        "outcome": "wrong_reversible_accepted",
         "reason": "ok",
-        "action_families": [
-          "feature_parameter"
-        ],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_ctx_rel_0002",
-        "text": "اگه میشه الان مقدار فعلی radius رو به اندازه 0.75 mm بالا ببر",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.parameter.set",
-            "args": {
-              "feature_name": "Fillet 9",
-              "parameter": "radius",
-              "amount": "4.25 mm"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "do",
-          "op": "feature.parameter.set",
-          "args": {
-            "feature_name": "Fillet 9",
-            "parameter": "radius",
-            "amount": "0.75 mm"
-          }
-        },
-        "outcome": "wrong_material_accepted",
-        "reason": "ok",
-        "action_families": [
-          "feature_parameter"
-        ],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_ctx_rel_0004",
-        "text": "یه کار دیگه: شعاع همین فیلت رو 0.5 mm زیاد کن",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.parameter.set",
-            "args": {
-              "feature_name": "Fillet 9",
-              "parameter": "radius",
-              "amount": "5 mm"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "do",
-          "op": "feature.parameter.set",
-          "args": {
-            "feature_name": "Fillet 9",
-            "parameter": "radius",
-            "amount": "0.5 mm"
-          }
-        },
-        "outcome": "wrong_material_accepted",
-        "reason": "ok",
-        "action_families": [
-          "feature_parameter"
-        ],
-        "quantity_issues": []
-      }
-    ],
-    "create_part_studio": [
-      {
-        "id": "v18_partstudio_0000",
-        "text": "یه Part Studio نو اضافه کن با عنوان orbit fit workspace 0",
-        "expected": [
-          {
-            "route": "do",
-            "op": "documented.createPartStudio",
-            "args": {
-              "new_name": "orbit fit workspace 0"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "clarification",
-        "action_families": [
-          "camera",
-          "create_part_studio",
-          "fit"
-        ],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_partstudio_0003",
-        "text": "می‌خوام Part Studio تازه‌ای بساز و name آن orbit fit workspace 3 باشه",
-        "expected": [
-          {
-            "route": "do",
-            "op": "documented.createPartStudio",
-            "args": {
-              "new_name": "orbit fit workspace 3"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "clarification",
-        "action_families": [
-          "camera",
-          "create_part_studio",
-          "fit"
-        ],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_partstudio_0004",
-        "text": "یه کار دیگه: یه Part Studio نو اضافه کن با عنوان orbit fit workspace 4",
-        "expected": [
-          {
-            "route": "do",
-            "op": "documented.createPartStudio",
-            "args": {
-              "new_name": "orbit fit workspace 4"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "clarification",
-        "action_families": [
-          "camera",
-          "create_part_studio",
-          "fit"
-        ],
-        "quantity_issues": []
-      }
-    ],
-    "draft_angle": [
-      {
-        "id": "v18_angle_0097",
-        "text": "زحمتش رو بکش و مقدار angle روی Draft 40 باید 24 deg باشه، انجامش بده لطفاً",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.parameter.set",
-            "args": {
-              "feature_name": "Draft 40",
-              "parameter": "angle",
-              "amount": "24 deg"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "clarification",
-        "action_families": [
-          "feature_parameter"
-        ],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_angle_0197",
-        "text": "«زحمتش رو بکش و مقدار angle روی Draft 20 باید 24 deg باشه، انجامش بده لطفاً»",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.parameter.set",
-            "args": {
-              "feature_name": "Draft 20",
-              "parameter": "angle",
-              "amount": "24 deg"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "clarification",
-        "action_families": [
-          "feature_parameter"
-        ],
-        "quantity_issues": []
-      }
-    ],
-    "extrude_depth": [
-      {
-        "id": "v18_depth_0097",
-        "text": "زحمتش رو بکش و مقدار depth روی Extrude 40 باید 29 mm باشه، انجامش بده لطفاً",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.parameter.set",
-            "args": {
-              "feature_name": "Extrude 40",
-              "parameter": "depth",
-              "amount": "29 mm"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "clarification",
-        "action_families": [
-          "feature_parameter"
-        ],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_depth_0197",
-        "text": "«زحمتش رو بکش و مقدار depth روی Extrude 20 باید 24 mm باشه، انجامش بده لطفاً»",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.parameter.set",
-            "args": {
-              "feature_name": "Extrude 20",
-              "parameter": "depth",
-              "amount": "24 mm"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "clarification",
-        "action_families": [
-          "feature_parameter"
-        ],
-        "quantity_issues": []
-      }
-    ],
-    "feature_delete": [
-      {
-        "id": "v18_fdelete_0002",
-        "text": "اگه میشه الان Extrude 5 دیگه توی feature tree نباشه",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.delete",
-            "args": {
-              "feature_name": "Extrude 5"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_fdelete_0003",
-        "text": "می‌خوام از درخت، Extrude 6 رو remove کن",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.delete",
-            "args": {
-              "feature_name": "Extrude 6"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_fdelete_0006",
-        "text": "ممکنه Extrude 9 دیگه توی feature tree نباشه",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.delete",
-            "args": {
-              "feature_name": "Extrude 9"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      }
-    ],
-    "feature_rename": [
-      {
-        "id": "v18_frename_0001",
-        "text": "راستی، Fillet 4 از حالا با عنوان steel pan node 1 باشه",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.patch",
-            "args": {
-              "feature_name": "Fillet 4",
-              "new_name": "steel pan node 1"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "feature-rename-ungrounded",
         "action_families": [
           "camera"
         ],
         "quantity_issues": []
       },
       {
-        "id": "v18_frename_0003",
-        "text": "می‌خوام برای feature Fillet 6 نام top radius node 3 ثبت کن",
+        "id": "v18_ctx_reverse_0011",
+        "text": "راستی، view رو خلاف حرکت قبلی جابه‌جا کن، لطف کردی",
         "expected": [
           {
             "route": "do",
-            "op": "feature.patch",
+            "op": "view.move",
             "args": {
-              "feature_name": "Fillet 6",
-              "new_name": "top radius node 3"
+              "action": "orbit",
+              "direction": "up"
             }
           }
         ],
         "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
+          "route": "do",
+          "op": "view.move",
+          "args": {
+            "action": "orbit",
+            "direction": "down"
+          }
         },
-        "outcome": "conservative_escalation",
-        "reason": "feature-rename-ungrounded",
+        "outcome": "wrong_reversible_accepted",
+        "reason": "ok",
         "action_families": [
-          "feature_parameter"
+          "camera"
         ],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_frename_0005",
-        "text": "این یکی رو: Fillet 8 از حالا با عنوان zoom rollback node 5 باشه",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.patch",
-            "args": {
-              "feature_name": "Fillet 8",
-              "new_name": "zoom rollback node 5"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "clarification",
-        "action_families": [
-          "camera",
-          "rollback"
-        ],
-        "quantity_issues": []
-      }
-    ],
-    "feature_reorder": [
-      {
-        "id": "v18_reorder_0000",
-        "text": "Extrude 3 توی درخت پیش از Fillet 20 قرار بگیره",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.reorder",
-            "args": {
-              "source_feature": "Extrude 3",
-              "target_feature": "Fillet 20",
-              "placement": "before"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "selection-ungrounded",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_reorder_0004",
-        "text": "یه کار دیگه: Extrude 7 توی درخت پیش از Fillet 24 قرار بگیره",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.reorder",
-            "args": {
-              "source_feature": "Extrude 7",
-              "target_feature": "Fillet 24",
-              "placement": "before"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "selection-ungrounded",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_reorder_0007",
-        "text": "زحمتش رو بکش و move Extrude 10 after Fillet 27 in tree",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.reorder",
-            "args": {
-              "source_feature": "Extrude 10",
-              "target_feature": "Fillet 27",
-              "placement": "after"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "clarification",
-        "action_families": [
-          "reorder"
-        ],
-        "quantity_issues": []
-      }
-    ],
-    "fillet_radius": [
-      {
-        "id": "v18_radius_0097",
-        "text": "زحمتش رو بکش و مقدار radius روی Fillet 40 باید 0.6 mm باشه، انجامش بده لطفاً",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.parameter.set",
-            "args": {
-              "feature_name": "Fillet 40",
-              "parameter": "radius",
-              "amount": "0.6 mm"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "clarification",
-        "action_families": [
-          "feature_parameter"
-        ],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_radius_0197",
-        "text": "«زحمتش رو بکش و مقدار radius روی Fillet 20 باید 1.4 mm باشه، انجامش بده لطفاً»",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.parameter.set",
-            "args": {
-              "feature_name": "Fillet 20",
-              "parameter": "radius",
-              "amount": "1.4 mm"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "clarification",
-        "action_families": [
-          "feature_parameter"
-        ],
-        "quantity_issues": []
-      }
-    ],
-    "fit_all": [
-      {
-        "id": "v18_fitall_0000",
-        "text": "کل مدل رو داخل قاب جا کن",
-        "expected": [
-          {
-            "route": "do",
-            "op": "view.fit",
-            "args": {
-              "action": "fit"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_fitall_0001",
-        "text": "راستی، همهٔ قطعه‌ها توی یک قاب دیده بشن",
-        "expected": [
-          {
-            "route": "do",
-            "op": "view.fit",
-            "args": {
-              "action": "fit"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_fitall_0002",
-        "text": "اگه میشه الان دوربین رو طوری تنظیم کن که کل هندسه داخل صفحه بیفته",
-        "expected": [
-          {
-            "route": "do",
-            "op": "view.fit",
-            "args": {
-              "action": "fit"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
         "quantity_issues": []
       }
     ],
@@ -1374,8 +321,8 @@
         "quantity_issues": []
       },
       {
-        "id": "v18_fitsel_0001",
-        "text": "راستی، روی selection موجود قاب‌بندی کن",
+        "id": "v18_fitsel_0004",
+        "text": "یه کار دیگه: فقط چیزایی که گرفتم قاب رو پر کنن",
         "expected": [
           {
             "route": "do",
@@ -1396,8 +343,8 @@
         "quantity_issues": []
       },
       {
-        "id": "v18_fitsel_0003",
-        "text": "می‌خوام دوربین رو فقط با انتخاب‌های الان جور کن",
+        "id": "v18_fitsel_0008",
+        "text": "فعلاً فقط چیزایی که گرفتم قاب رو پر کنن",
         "expected": [
           {
             "route": "do",
@@ -1449,30 +396,6 @@
         "quantity_issues": []
       },
       {
-        "id": "v18_flip_0002",
-        "text": "اگه میشه الان Extrude 5 گزینه flip رو on کن",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.parameter.set",
-            "args": {
-              "feature_name": "Extrude 5",
-              "parameter": "flip direction",
-              "value": true
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
         "id": "v18_flip_0005",
         "text": "این یکی رو: برای Extrude 8 جهت معکوس خاموش باشه",
         "expected": [
@@ -1500,29 +423,38 @@
           "feature_suppression"
         ],
         "quantity_issues": []
-      }
-    ],
-    "follow_pair": [
+      },
       {
-        "id": "v18_follow2_0000",
-        "text": "نمای همکار دیگه رو sync کن با دوربین من",
+        "id": "v18_flip_0009",
+        "text": "خب این بار برای Extrude 12 جهت معکوس خاموش باشه",
         "expected": [
           {
             "route": "do",
-            "op": "view.follow",
-            "args": {}
+            "op": "feature.parameter.set",
+            "args": {
+              "feature_name": "Extrude 12",
+              "parameter": "flip direction",
+              "value": false
+            }
           }
         ],
         "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
+          "route": "do",
+          "op": "feature.patch",
+          "args": {
+            "feature_name": "Extrude 12",
+            "suppressed": true
+          }
         },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
+        "outcome": "wrong_material_accepted",
+        "reason": "ok",
+        "action_families": [
+          "feature_suppression"
+        ],
         "quantity_issues": []
-      },
+      }
+    ],
+    "follow_pair": [
       {
         "id": "v18_follow2_0001",
         "text": "راستی، دوربینم رو به دید نفر مقابل وصل کن",
@@ -1562,19 +494,15 @@
         "reason": "model-fallback-required",
         "action_families": [],
         "quantity_issues": []
-      }
-    ],
-    "follow_three": [
+      },
       {
-        "id": "v18_follow3_0003",
-        "text": "می‌خوام دوربینم رو با دومی sync کن",
+        "id": "v18_follow2_0005",
+        "text": "این یکی رو: دوربینم رو به دید نفر مقابل وصل کن",
         "expected": [
           {
             "route": "do",
             "op": "view.follow",
-            "args": {
-              "candidate_index": 2
-            }
+            "args": {}
           }
         ],
         "compiled": {
@@ -1585,406 +513,6 @@
         "outcome": "fallback",
         "reason": "model-fallback-required",
         "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_follow3_0007",
-        "text": "زحمتش رو بکش و دوربینم رو با دومی sync کن",
-        "expected": [
-          {
-            "route": "do",
-            "op": "view.follow",
-            "args": {
-              "candidate_index": 2
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "clarification",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_follow3_0011",
-        "text": "راستی، دوربینم رو با دومی sync کن، لطف کردی",
-        "expected": [
-          {
-            "route": "do",
-            "op": "view.follow",
-            "args": {
-              "candidate_index": 2
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      }
-    ],
-    "inspect_collaboration": [
-      {
-        "id": "v18_incollab_0000",
-        "text": "الان چه آدم‌هایی توی سند هستن؟",
-        "expected": [
-          {
-            "route": "do",
-            "op": "viewer.inspect",
-            "args": {
-              "mode": "collaboration"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_incollab_0004",
-        "text": "یه کار دیگه: الان چه آدم‌هایی توی سند هستن؟",
-        "expected": [
-          {
-            "route": "do",
-            "op": "viewer.inspect",
-            "args": {
-              "mode": "collaboration"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_incollab_0007",
-        "text": "زحمتش رو بکش و فهرست همکارهای حاضر رو بده",
-        "expected": [
-          {
-            "route": "do",
-            "op": "viewer.inspect",
-            "args": {
-              "mode": "collaboration"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "clarification",
-        "action_families": [
-          "inspect"
-        ],
-        "quantity_issues": []
-      }
-    ],
-    "inspect_selection": [
-      {
-        "id": "v18_insel_0001",
-        "text": "راستی، selectedهای فعلی رو برام فهرست کن",
-        "expected": [
-          {
-            "route": "do",
-            "op": "viewer.inspect",
-            "args": {
-              "mode": "selection"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_insel_0003",
-        "text": "می‌خوام محتوای selection رو بخون",
-        "expected": [
-          {
-            "route": "do",
-            "op": "viewer.inspect",
-            "args": {
-              "mode": "selection"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_insel_0005",
-        "text": "این یکی رو: selectedهای فعلی رو برام فهرست کن",
-        "expected": [
-          {
-            "route": "do",
-            "op": "viewer.inspect",
-            "args": {
-              "mode": "selection"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      }
-    ],
-    "inspect_state": [
-      {
-        "id": "v18_instate_0000",
-        "text": "الان وضعیت viewer رو بهم بگو",
-        "expected": [
-          {
-            "route": "do",
-            "op": "viewer.inspect",
-            "args": {
-              "mode": "state"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_instate_0001",
-        "text": "راستی، state فعلی نمای مدل رو بخون",
-        "expected": [
-          {
-            "route": "do",
-            "op": "viewer.inspect",
-            "args": {
-              "mode": "state"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_instate_0002",
-        "text": "اگه میشه الان وضع دوربین و صفحه رو گزارش بده",
-        "expected": [
-          {
-            "route": "do",
-            "op": "viewer.inspect",
-            "args": {
-              "mode": "state"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      }
-    ],
-    "linear_pattern": [
-      {
-        "id": "v18_pattern_0002",
-        "text": "اگه میشه الان 4 کپی از Part 18 در خط با فاصله 5 mm بساز",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.add",
-            "args": {
-              "feature_type": "linearPattern",
-              "part_name": "Part 18",
-              "copies": 4,
-              "distance": "5 mm"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_pattern_0006",
-        "text": "ممکنه 8 کپی از Part 22 در خط با فاصله 9 mm بساز",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.add",
-            "args": {
-              "feature_type": "linearPattern",
-              "part_name": "Part 22",
-              "copies": 8,
-              "distance": "9 mm"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_pattern_0007",
-        "text": "زحمتش رو بکش و الگوی خطی Part 23 رو 2 تایی و گام 10 mm بزن",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.add",
-            "args": {
-              "feature_type": "linearPattern",
-              "part_name": "Part 23",
-              "copies": 2,
-              "distance": "10 mm"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "clarification",
-        "action_families": [
-          "pattern"
-        ],
-        "quantity_issues": []
-      }
-    ],
-    "multi_action_safe_ask": [
-      {
-        "id": "v18_multi_0000",
-        "text": "Part 6 رو hide کن، بعدش Top رو هم بیار",
-        "expected": [
-          {
-            "route": "ask"
-          }
-        ],
-        "compiled": {
-          "route": "do",
-          "op": "part.visibility",
-          "args": {
-            "part_name": "Part 6",
-            "visible": false
-          }
-        },
-        "outcome": "false_execute",
-        "reason": "ok",
-        "action_families": [
-          "part_visibility"
-        ],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_multi_0005",
-        "text": "این یکی رو: Part 6 رو hide کن، بعدش Top رو هم بیار",
-        "expected": [
-          {
-            "route": "ask"
-          }
-        ],
-        "compiled": {
-          "route": "do",
-          "op": "part.visibility",
-          "args": {
-            "part_name": "Part 6",
-            "visible": false
-          }
-        },
-        "outcome": "false_execute",
-        "reason": "ok",
-        "action_families": [
-          "part_visibility"
-        ],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_multi_0010",
-        "text": "Part 6 رو hide کن، بعدش Top رو هم بیار، لطف کردی",
-        "expected": [
-          {
-            "route": "ask"
-          }
-        ],
-        "compiled": {
-          "route": "do",
-          "op": "part.visibility",
-          "args": {
-            "part_name": "Part 6",
-            "visible": false
-          }
-        },
-        "outcome": "false_execute",
-        "reason": "ok",
-        "action_families": [
-          "part_visibility"
-        ],
         "quantity_issues": []
       }
     ],
@@ -2048,187 +576,6 @@
           }
         ],
         "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "clarification",
-        "action_families": [
-          "selection_select"
-        ],
-        "quantity_issues": []
-      }
-    ],
-    "new_chamfer": [
-      {
-        "id": "v18_newchamfer_0000",
-        "text": "بدون اینکه edgeای انتخاب باشه، یک chamfer feature 1.8 mm اضافه کن",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.add",
-            "args": {
-              "feature_type": "chamfer",
-              "amount": "1.8 mm"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "selection-ungrounded",
-        "action_families": [
-          "edge_chamfer"
-        ],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_newchamfer_0004",
-        "text": "یه کار دیگه: بدون اینکه edgeای انتخاب باشه، یک chamfer feature 0.3 mm اضافه کن",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.add",
-            "args": {
-              "feature_type": "chamfer",
-              "amount": "0.3 mm"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "selection-ungrounded",
-        "action_families": [
-          "edge_chamfer"
-        ],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_newchamfer_0006",
-        "text": "ممکنه selection نداریم؛ chamfer جدید 0.65 mm ایجاد کن",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.add",
-            "args": {
-              "feature_type": "chamfer",
-              "amount": "0.65 mm"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "clarification",
-        "action_families": [
-          "edge_chamfer"
-        ],
-        "quantity_issues": []
-      }
-    ],
-    "new_fillet": [
-      {
-        "id": "v18_newfillet_0000",
-        "text": "بدون اینکه edgeای انتخاب باشه، یک fillet feature 0.45 mm اضافه کن",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.add",
-            "args": {
-              "feature_type": "fillet",
-              "amount": "0.45 mm"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "selection-ungrounded",
-        "action_families": [
-          "edge_fillet"
-        ],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_newfillet_0004",
-        "text": "یه کار دیگه: بدون اینکه edgeای انتخاب باشه، یک fillet feature 1.35 mm اضافه کن",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.add",
-            "args": {
-              "feature_type": "fillet",
-              "amount": "1.35 mm"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "selection-ungrounded",
-        "action_families": [
-          "edge_fillet"
-        ],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_newfillet_0006",
-        "text": "ممکنه selection نداریم؛ fillet جدید 2.2 mm ایجاد کن",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.add",
-            "args": {
-              "feature_type": "fillet",
-              "amount": "2.2 mm"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "clarification",
-        "action_families": [
-          "edge_fillet"
-        ],
-        "quantity_issues": []
-      }
-    ],
-    "orbit_horizontal": [
-      {
-        "id": "v18_orbh_0001",
-        "text": "راستی، حول مدل دوربین رو به راست متمایل کن",
-        "expected": [
-          {
-            "route": "do",
-            "op": "view.move",
-            "args": {
-              "action": "orbit",
-              "direction": "right"
-            }
-          }
-        ],
-        "compiled": {
           "route": "fallback",
           "op": null,
           "args": {}
@@ -2236,563 +583,6 @@
         "outcome": "fallback",
         "reason": "model-fallback-required",
         "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_orbh_0005",
-        "text": "این یکی رو: حول مدل دوربین رو به راست متمایل کن",
-        "expected": [
-          {
-            "route": "do",
-            "op": "view.move",
-            "args": {
-              "action": "orbit",
-              "direction": "right"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_orbh_0007",
-        "text": "زحمتش رو بکش و مدل رو با orbit افقی طرف راست بچرخون",
-        "expected": [
-          {
-            "route": "do",
-            "op": "view.move",
-            "args": {
-              "action": "orbit",
-              "direction": "right"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "clarification",
-        "action_families": [
-          "camera"
-        ],
-        "quantity_issues": []
-      }
-    ],
-    "orbit_roll": [
-      {
-        "id": "v18_orbr_0007",
-        "text": "زحمتش رو بکش و زاویه صفحه رو پادساعتگرد گردش بده",
-        "expected": [
-          {
-            "route": "do",
-            "op": "view.move",
-            "args": {
-              "action": "orbit",
-              "direction": "counterclockwise"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "clarification",
-        "action_families": [
-          "camera"
-        ],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_orbr_0017",
-        "text": "زحمتش رو بکش و دوربین حول محور خودش پادساعتگرد بچرخه، لطف کردی",
-        "expected": [
-          {
-            "route": "do",
-            "op": "view.move",
-            "args": {
-              "action": "orbit",
-              "direction": "counterclockwise"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "clarification",
-        "action_families": [
-          "camera"
-        ],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_orbr_0027",
-        "text": "زحمتش رو بکش و زاویه صفحه رو پادساعتگرد گردش بده، تموم",
-        "expected": [
-          {
-            "route": "do",
-            "op": "view.move",
-            "args": {
-              "action": "orbit",
-              "direction": "counterclockwise"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "clarification",
-        "action_families": [
-          "camera"
-        ],
-        "quantity_issues": []
-      }
-    ],
-    "orbit_vertical": [
-      {
-        "id": "v18_orbv_0001",
-        "text": "راستی، حول مدل دوربین رو عمودی به پایین ببر",
-        "expected": [
-          {
-            "route": "do",
-            "op": "view.move",
-            "args": {
-              "action": "orbit",
-              "direction": "down"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "do",
-          "op": "view.move",
-          "args": {
-            "action": "pan",
-            "direction": "down"
-          }
-        },
-        "outcome": "wrong_reversible_accepted",
-        "reason": "ok",
-        "action_families": [
-          "camera"
-        ],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_orbv_0005",
-        "text": "این یکی رو: حول مدل دوربین رو عمودی به پایین ببر",
-        "expected": [
-          {
-            "route": "do",
-            "op": "view.move",
-            "args": {
-              "action": "orbit",
-              "direction": "down"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "do",
-          "op": "view.move",
-          "args": {
-            "action": "pan",
-            "direction": "down"
-          }
-        },
-        "outcome": "wrong_reversible_accepted",
-        "reason": "ok",
-        "action_families": [
-          "camera"
-        ],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_orbv_0007",
-        "text": "زحمتش رو بکش و orbit عمودی رو سمت پایین انجام بده",
-        "expected": [
-          {
-            "route": "do",
-            "op": "view.move",
-            "args": {
-              "action": "orbit",
-              "direction": "down"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "clarification",
-        "action_families": [
-          "camera"
-        ],
-        "quantity_issues": []
-      }
-    ],
-    "pan_horizontal": [
-      {
-        "id": "v18_panh_0000",
-        "text": "کادر رو افقی سر بده سمت چپ",
-        "expected": [
-          {
-            "route": "do",
-            "op": "view.move",
-            "args": {
-              "action": "pan",
-              "direction": "left"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_panh_0003",
-        "text": "می‌خوام viewport رو در صفحه به راست شیفت بده",
-        "expected": [
-          {
-            "route": "do",
-            "op": "view.move",
-            "args": {
-              "action": "pan",
-              "direction": "right"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_panh_0004",
-        "text": "یه کار دیگه: کادر رو افقی سر بده سمت چپ",
-        "expected": [
-          {
-            "route": "do",
-            "op": "view.move",
-            "args": {
-              "action": "pan",
-              "direction": "left"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      }
-    ],
-    "pan_vertical": [
-      {
-        "id": "v18_panv_0000",
-        "text": "کادر رو عمودی سر بده بالا",
-        "expected": [
-          {
-            "route": "do",
-            "op": "view.move",
-            "args": {
-              "action": "pan",
-              "direction": "up"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_panv_0003",
-        "text": "می‌خوام viewport رو در صفحه به سمت پایین شیفت بده",
-        "expected": [
-          {
-            "route": "do",
-            "op": "view.move",
-            "args": {
-              "action": "pan",
-              "direction": "down"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_panv_0004",
-        "text": "یه کار دیگه: کادر رو عمودی سر بده بالا",
-        "expected": [
-          {
-            "route": "do",
-            "op": "view.move",
-            "args": {
-              "action": "pan",
-              "direction": "up"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      }
-    ],
-    "part_color": [
-      {
-        "id": "v18_color_0097",
-        "text": "زحمتش رو بکش و appearance color برای Part 27 بشه blue، انجامش بده لطفاً",
-        "expected": [
-          {
-            "route": "do",
-            "op": "metadata.property.set",
-            "args": {
-              "part_name": "Part 27",
-              "property": "color",
-              "value": "blue"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "clarification",
-        "action_families": [
-          "part_property"
-        ],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_color_0197",
-        "text": "«زحمتش رو بکش و appearance color برای Part 47 بشه yellow، انجامش بده لطفاً»",
-        "expected": [
-          {
-            "route": "do",
-            "op": "metadata.property.set",
-            "args": {
-              "part_name": "Part 47",
-              "property": "color",
-              "value": "yellow"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "clarification",
-        "action_families": [
-          "part_property"
-        ],
-        "quantity_issues": []
-      }
-    ],
-    "part_delete": [
-      {
-        "id": "v18_pdelete_0000",
-        "text": "خود Part 22 رو از مدل کامل بردار",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.delete_part",
-            "args": {
-              "part_name": "Part 22"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_pdelete_0004",
-        "text": "یه کار دیگه: خود Part 26 رو از مدل کامل بردار",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.delete_part",
-            "args": {
-              "part_name": "Part 26"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_pdelete_0007",
-        "text": "زحمتش رو بکش و part Part 29 رو برای همیشه حذف کن",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.delete_part",
-            "args": {
-              "part_name": "Part 29"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "clarification",
-        "action_families": [
-          "delete"
-        ],
-        "quantity_issues": []
-      }
-    ],
-    "part_description": [
-      {
-        "id": "v18_pdesc_0001",
-        "text": "راستی، description Part 35 بشه orbit steel note 1 fit",
-        "expected": [
-          {
-            "route": "do",
-            "op": "metadata.property.set",
-            "args": {
-              "part_name": "Part 35",
-              "property": "description",
-              "value": "orbit steel note 1 fit"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "clarification",
-        "action_families": [
-          "camera",
-          "fit"
-        ],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_pdesc_0002",
-        "text": "اگه میشه الان روی Part 36 یادداشت orbit steel note 2 fit ثبت کن",
-        "expected": [
-          {
-            "route": "do",
-            "op": "metadata.property.set",
-            "args": {
-              "part_name": "Part 36",
-              "property": "description",
-              "value": "orbit steel note 2 fit"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "clarification",
-        "action_families": [
-          "camera",
-          "fit"
-        ],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_pdesc_0003",
-        "text": "می‌خوام متن توضیح قطعه Part 37: orbit steel note 3 fit",
-        "expected": [
-          {
-            "route": "do",
-            "op": "metadata.property.set",
-            "args": {
-              "part_name": "Part 37",
-              "property": "description",
-              "value": "orbit steel note 3 fit"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "clarification",
-        "action_families": [
-          "camera",
-          "fit"
-        ],
         "quantity_issues": []
       }
     ],
@@ -2806,29 +596,6 @@
             "op": "part.visibility",
             "args": {
               "part_name": "Part 4",
-              "visible": false
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_phide_0002",
-        "text": "اگه میشه الان visibility مربوط به Part 5 خاموش باشه",
-        "expected": [
-          {
-            "route": "do",
-            "op": "part.visibility",
-            "args": {
-              "part_name": "Part 5",
               "visible": false
             }
           }
@@ -2865,173 +632,17 @@
         "reason": "model-fallback-required",
         "action_families": [],
         "quantity_issues": []
-      }
-    ],
-    "part_material": [
-      {
-        "id": "v18_material_0000",
-        "text": "متریال Part 26 رو روی Steel تنظیم کن",
-        "expected": [
-          {
-            "route": "do",
-            "op": "metadata.property.set",
-            "args": {
-              "part_name": "Part 26",
-              "property": "material",
-              "value": "Steel"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
       },
       {
-        "id": "v18_material_0001",
-        "text": "راستی، Part 27 جنسش Titanium باشه",
-        "expected": [
-          {
-            "route": "do",
-            "op": "metadata.property.set",
-            "args": {
-              "part_name": "Part 27",
-              "property": "material",
-              "value": "Titanium"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_material_0003",
-        "text": "می‌خوام برای قطعه Part 29 جنس Aluminum ثبت کن",
-        "expected": [
-          {
-            "route": "do",
-            "op": "metadata.property.set",
-            "args": {
-              "part_name": "Part 29",
-              "property": "material",
-              "value": "Aluminum"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      }
-    ],
-    "part_rename": [
-      {
-        "id": "v18_prename_0001",
-        "text": "راستی، Part 41 از حالا عنوانش top material assembly 1 باشه",
-        "expected": [
-          {
-            "route": "do",
-            "op": "documented.updateWVEPMetadata",
-            "args": {
-              "part_name": "Part 41",
-              "property": "name",
-              "value": "top material assembly 1"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "part-property-ungrounded",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_prename_0003",
-        "text": "می‌خوام برای قطعه Part 43 نام top material assembly 3 ثبت کن",
-        "expected": [
-          {
-            "route": "do",
-            "op": "documented.updateWVEPMetadata",
-            "args": {
-              "part_name": "Part 43",
-              "property": "name",
-              "value": "top material assembly 3"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "do",
-          "op": "metadata.property.set",
-          "args": {
-            "part_name": "Part 43",
-            "property": "material",
-            "value": "assembly 3 ثبت"
-          }
-        },
-        "outcome": "wrong_material_accepted",
-        "reason": "ok",
-        "action_families": [
-          "part_property"
-        ],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_prename_0005",
-        "text": "این یکی رو: Part 45 از حالا عنوانش top material assembly 5 باشه",
-        "expected": [
-          {
-            "route": "do",
-            "op": "documented.updateWVEPMetadata",
-            "args": {
-              "part_name": "Part 45",
-              "property": "name",
-              "value": "top material assembly 5"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "part-property-ungrounded",
-        "action_families": [],
-        "quantity_issues": []
-      }
-    ],
-    "part_show": [
-      {
-        "id": "v18_pshow_0000",
-        "text": "Part 14 رو مرئی کن",
+        "id": "v18_phide_0009",
+        "text": "خب این بار نمایش Part 12 رو ببند",
         "expected": [
           {
             "route": "do",
             "op": "part.visibility",
             "args": {
-              "part_name": "Part 14",
-              "visible": true
+              "part_name": "Part 12",
+              "visible": false
             }
           }
         ],
@@ -3044,7 +655,9 @@
         "reason": "model-fallback-required",
         "action_families": [],
         "quantity_issues": []
-      },
+      }
+    ],
+    "part_show": [
       {
         "id": "v18_pshow_0001",
         "text": "راستی، نمایش Part 15 رو باز کن",
@@ -3069,14 +682,14 @@
         "quantity_issues": []
       },
       {
-        "id": "v18_pshow_0002",
-        "text": "اگه میشه الان visibility مربوط به Part 16 روشن باشه",
+        "id": "v18_pshow_0005",
+        "text": "این یکی رو: نمایش Part 19 رو باز کن",
         "expected": [
           {
             "route": "do",
             "op": "part.visibility",
             "args": {
-              "part_name": "Part 16",
+              "part_name": "Part 19",
               "visible": true
             }
           }
@@ -3090,139 +703,17 @@
         "reason": "model-fallback-required",
         "action_families": [],
         "quantity_issues": []
-      }
-    ],
-    "plane_named": [
-      {
-        "id": "v18_plane_named_0000",
-        "text": "یک plane تازه با اسم fit top ref 0 اضافه کن",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.add",
-            "args": {
-              "feature_type": "plane",
-              "name": "fit top ref 0"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
       },
       {
-        "id": "v18_plane_named_0001",
-        "text": "راستی، صفحه مرجع جدید رو fit top ref 1 نام‌گذاری کن",
+        "id": "v18_pshow_0009",
+        "text": "خب این بار نمایش Part 23 رو باز کن",
         "expected": [
           {
             "route": "do",
-            "op": "feature.add",
+            "op": "part.visibility",
             "args": {
-              "feature_type": "plane",
-              "name": "fit top ref 1"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "clarification",
-        "action_families": [
-          "create_plane",
-          "fit"
-        ],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_plane_named_0002",
-        "text": "اگه میشه الان reference plane بساز با title fit top ref 2",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.add",
-            "args": {
-              "feature_type": "plane",
-              "name": "fit top ref 2"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "clarification",
-        "action_families": [
-          "create_plane",
-          "fit"
-        ],
-        "quantity_issues": []
-      }
-    ],
-    "plane_plain": [
-      {
-        "id": "v18_plane_plain_0003",
-        "text": "می‌خوام یک صفحه کمکی جدید بساز",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.add",
-            "args": {
-              "feature_type": "plane"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_plane_plain_0007",
-        "text": "زحمتش رو بکش و یک صفحه کمکی جدید بساز",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.add",
-            "args": {
-              "feature_type": "plane"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "clarification",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_plane_plain_0011",
-        "text": "راستی، یک صفحه کمکی جدید بساز، لطف کردی",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.add",
-            "args": {
-              "feature_type": "plane"
+              "part_name": "Part 23",
+              "visible": true
             }
           }
         ],
@@ -3251,76 +742,46 @@
           }
         ],
         "compiled": {
-          "route": "ask",
+          "route": "fallback",
           "op": null,
           "args": {}
         },
-        "outcome": "conservative_escalation",
-        "reason": "camera-ungrounded",
-        "action_families": [
-          "camera"
-        ],
+        "outcome": "fallback",
+        "reason": "model-fallback-required",
+        "action_families": [],
         "quantity_issues": []
       },
       {
-        "id": "v18_docrename_0001",
-        "text": "راستی، title این document رو بذار selection orbit project 1",
+        "id": "v18_docrename_0004",
+        "text": "یه کار دیگه: اسم فایل فعلی رو selection orbit project 4 کن",
         "expected": [
           {
             "route": "do",
             "op": "documented.updateDocumentAttributes",
             "args": {
-              "new_name": "selection orbit project 1"
+              "new_name": "selection orbit project 4"
             }
           }
         ],
         "compiled": {
-          "route": "ask",
+          "route": "fallback",
           "op": null,
           "args": {}
         },
-        "outcome": "conservative_escalation",
-        "reason": "camera-ungrounded",
-        "action_families": [
-          "camera"
-        ],
+        "outcome": "fallback",
+        "reason": "model-fallback-required",
+        "action_families": [],
         "quantity_issues": []
       },
       {
-        "id": "v18_docrename_0002",
-        "text": "اگه میشه الان سند فعلی از حالا selection orbit project 2 نام داشته باشه",
+        "id": "v18_docrename_0008",
+        "text": "فعلاً اسم فایل فعلی رو selection orbit project 8 کن",
         "expected": [
           {
             "route": "do",
             "op": "documented.updateDocumentAttributes",
             "args": {
-              "new_name": "selection orbit project 2"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "camera-ungrounded",
-        "action_families": [
-          "camera"
-        ],
-        "quantity_issues": []
-      }
-    ],
-    "rollback": [
-      {
-        "id": "v18_rollback_0000",
-        "text": "تاریخچه رو تا پیش از Extrude 4 عقب ببر",
-        "expected": [
-          {
-            "route": "do",
-            "op": "rollback.set",
-            "args": {
-              "before_feature": "Extrude 4"
+              "new_name": "selection orbit project 8"
             }
           }
         ],
@@ -3332,422 +793,6 @@
         "outcome": "fallback",
         "reason": "model-fallback-required",
         "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_rollback_0004",
-        "text": "یه کار دیگه: تاریخچه رو تا پیش از Extrude 8 عقب ببر",
-        "expected": [
-          {
-            "route": "do",
-            "op": "rollback.set",
-            "args": {
-              "before_feature": "Extrude 8"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_rollback_0007",
-        "text": "زحمتش رو بکش و history rollback after Extrude 11",
-        "expected": [
-          {
-            "route": "do",
-            "op": "rollback.set",
-            "args": {
-              "after_feature": "Extrude 11"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "clarification",
-        "action_families": [
-          "rollback"
-        ],
-        "quantity_issues": []
-      }
-    ],
-    "selected_chamfer": [
-      {
-        "id": "v18_selchamfer_0007",
-        "text": "زحمتش رو بکش و همین لبه انتخابی پخ 0.45 mm بگیره",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.from_selection",
-            "args": {
-              "feature_type": "chamfer",
-              "amount": "0.45 mm"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "clarification",
-        "action_families": [
-          "edge_chamfer"
-        ],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_selchamfer_0017",
-        "text": "زحمتش رو بکش و برای edge selected یک chamfer 0.45 mm اعمال کن، لطف کردی",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.from_selection",
-            "args": {
-              "feature_type": "chamfer",
-              "amount": "0.45 mm"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "clarification",
-        "action_families": [
-          "edge_chamfer"
-        ],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_selchamfer_0027",
-        "text": "زحمتش رو بکش و همین لبه انتخابی پخ 0.45 mm بگیره، تموم",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.from_selection",
-            "args": {
-              "feature_type": "chamfer",
-              "amount": "0.45 mm"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "clarification",
-        "action_families": [
-          "edge_chamfer"
-        ],
-        "quantity_issues": []
-      }
-    ],
-    "selected_fillet": [
-      {
-        "id": "v18_selfillet_0000",
-        "text": "لبه‌های گرفته‌شده رو با شعاع 0.3 mm نرم کن",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.from_selection",
-            "args": {
-              "feature_type": "fillet",
-              "amount": "0.3 mm"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "clarification",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_selfillet_0004",
-        "text": "یه کار دیگه: لبه‌های گرفته‌شده رو با شعاع 1.1 mm نرم کن",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.from_selection",
-            "args": {
-              "feature_type": "fillet",
-              "amount": "1.1 mm"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "clarification",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_selfillet_0007",
-        "text": "زحمتش رو بکش و همین لبه‌های انتخابی گردی 2.2 mm بگیرن",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.from_selection",
-            "args": {
-              "feature_type": "fillet",
-              "amount": "2.2 mm"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "clarification",
-        "action_families": [],
-        "quantity_issues": []
-      }
-    ],
-    "suppress": [
-      {
-        "id": "v18_sup_0000",
-        "text": "Extrude 3 رو موقت disable کن",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.patch",
-            "args": {
-              "feature_name": "Extrude 3",
-              "suppressed": true
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_sup_0001",
-        "text": "راستی، Extrude 4 فعلاً توی regeneration حساب نشه",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.patch",
-            "args": {
-              "feature_name": "Extrude 4",
-              "suppressed": true
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_sup_0002",
-        "text": "اگه میشه الان suppression Extrude 5 رو روشن کن",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.patch",
-            "args": {
-              "feature_name": "Extrude 5",
-              "suppressed": true
-            }
-          }
-        ],
-        "compiled": {
-          "route": "do",
-          "op": "feature.patch",
-          "args": {
-            "feature_name": "Extrude 5",
-            "suppressed": false
-          }
-        },
-        "outcome": "wrong_material_accepted",
-        "reason": "ok",
-        "action_families": [
-          "feature_suppression"
-        ],
-        "quantity_issues": []
-      }
-    ],
-    "top_view": [
-      {
-        "id": "v18_top_0002",
-        "text": "اگه میشه الان دوربین دقیقاً بالای مدل و رو به پایین باشه",
-        "expected": [
-          {
-            "route": "do",
-            "op": "view.standard",
-            "args": {
-              "view": "top"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_top_0006",
-        "text": "ممکنه دوربین دقیقاً بالای مدل و رو به پایین باشه",
-        "expected": [
-          {
-            "route": "do",
-            "op": "view.standard",
-            "args": {
-              "view": "top"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_top_0007",
-        "text": "زحمتش رو بکش و نمای Top استاندارد رو فعال کن",
-        "expected": [
-          {
-            "route": "do",
-            "op": "view.standard",
-            "args": {
-              "view": "top"
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "clarification",
-        "action_families": [
-          "standard_view"
-        ],
-        "quantity_issues": []
-      }
-    ],
-    "unsuppress": [
-      {
-        "id": "v18_unsup_0000",
-        "text": "Extrude 3 رو دوباره enable کن",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.patch",
-            "args": {
-              "feature_name": "Extrude 3",
-              "suppressed": false
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_unsup_0001",
-        "text": "راستی، Extrude 4 دوباره توی regeneration حساب بشه",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.patch",
-            "args": {
-              "feature_name": "Extrude 4",
-              "suppressed": false
-            }
-          }
-        ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_unsup_0002",
-        "text": "اگه میشه الان suppression Extrude 5 رو خاموش کن",
-        "expected": [
-          {
-            "route": "do",
-            "op": "feature.patch",
-            "args": {
-              "feature_name": "Extrude 5",
-              "suppressed": false
-            }
-          }
-        ],
-        "compiled": {
-          "route": "do",
-          "op": "feature.patch",
-          "args": {
-            "feature_name": "Extrude 5",
-            "suppressed": true
-          }
-        },
-        "outcome": "wrong_material_accepted",
-        "reason": "ok",
-        "action_families": [
-          "feature_suppression"
-        ],
         "quantity_issues": []
       }
     ],
@@ -3766,41 +811,20 @@
           }
         ],
         "compiled": {
-          "route": "fallback",
+          "route": "ask",
           "op": null,
           "args": {}
         },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
-        "quantity_issues": []
-      },
-      {
-        "id": "v18_zoom_0001",
-        "text": "راستی، فاصله دوربین با قطعه بیشتر شه",
-        "expected": [
-          {
-            "route": "do",
-            "op": "view.move",
-            "args": {
-              "action": "zoom",
-              "direction": "out"
-            }
-          }
+        "outcome": "conservative_escalation",
+        "reason": "camera-ungrounded",
+        "action_families": [
+          "camera"
         ],
-        "compiled": {
-          "route": "fallback",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
         "quantity_issues": []
       },
       {
-        "id": "v18_zoom_0002",
-        "text": "اگه میشه الان بزرگ‌نمایی رو زیاد کن",
+        "id": "v18_zoom_0004",
+        "text": "یه کار دیگه: مدل رو درشت‌تر ببینم",
         "expected": [
           {
             "route": "do",
@@ -3812,16 +836,43 @@
           }
         ],
         "compiled": {
-          "route": "fallback",
+          "route": "ask",
           "op": null,
           "args": {}
         },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
-        "action_families": [],
+        "outcome": "conservative_escalation",
+        "reason": "camera-ungrounded",
+        "action_families": [
+          "camera"
+        ],
+        "quantity_issues": []
+      },
+      {
+        "id": "v18_zoom_0008",
+        "text": "فعلاً مدل رو درشت‌تر ببینم",
+        "expected": [
+          {
+            "route": "do",
+            "op": "view.move",
+            "args": {
+              "action": "zoom",
+              "direction": "in"
+            }
+          }
+        ],
+        "compiled": {
+          "route": "ask",
+          "op": null,
+          "args": {}
+        },
+        "outcome": "conservative_escalation",
+        "reason": "camera-ungrounded",
+        "action_families": [
+          "camera"
+        ],
         "quantity_issues": []
       }
     ]
   },
-  "wall_seconds": 7.589773095999988
+  "wall_seconds": 3.5620182440000008
 }
