@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PCG Perplexity Login</title>
+<style>
+body{font-family:system-ui,sans-serif;margin:0;background:#111;color:#eee}
+header{position:sticky;top:0;background:#181818;padding:10px;z-index:2;border-bottom:1px solid #333}
+.controls{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+button,input{font:inherit;padding:8px}
+input{min-width:280px;background:#222;color:#fff;border:1px solid #555}
+#url{font-size:12px;color:#aaa;overflow-wrap:anywhere;margin-top:6px}
+#screenWrap{padding:10px}
+#screen{display:block;max-width:100%;height:auto;border:1px solid #444;cursor:crosshair;background:#000}
+.note{font-size:12px;color:#bbb;margin-top:6px}
+</style>
+</head>
+<body>
+<header>
+  <div class="controls">
+    <input id="text" type="password" autocomplete="off" placeholder="Type/paste into focused browser field">
+    <button id="send">Send text</button>
+    <button data-key="Enter">Enter</button>
+    <button data-key="Tab">Tab</button>
+    <button data-key="Backspace">Backspace</button>
+    <button data-key="Escape">Escape</button>
+    <button id="back">Back</button>
+    <button id="reload">Reload</button>
+    <button id="home">Perplexity</button>
+    <button id="up">Scroll up</button>
+    <button id="down">Scroll down</button>
+  </div>
+  <div id="url">loading…</div>
+  <div class="note">This page is loopback-only. Text is sent through your SSH tunnel directly to the VPS browser and is not sent through ChatGPT.</div>
+</header>
+<div id="screenWrap"><img id="screen" alt="browser screenshot"></div>
+<script>
+const screen=document.getElementById('screen');
+const url=document.getElementById('url');
+const text=document.getElementById('text');
+async function post(path,body={}){
+  const r=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(!r.ok) throw new Error(await r.text());
+}
+async function refreshState(){
+  try{const r=await fetch('/state',{cache:'no-store'});const j=await r.json();url.textContent=(j.title||'')+' — '+(j.url||'');}catch(e){url.textContent=String(e);}
+}
+function refreshShot(){screen.src='/shot?t='+Date.now();}
+screen.addEventListener('load',()=>setTimeout(refreshShot,600));
+screen.addEventListener('error',()=>setTimeout(refreshShot,1000));
+screen.addEventListener('click',async e=>{
+  const r=screen.getBoundingClientRect();
+  const x=(e.clientX-r.left)*(screen.naturalWidth/r.width);
+  const y=(e.clientY-r.top)*(screen.naturalHeight/r.height);
+  try{await post('/click',{x,y});setTimeout(refreshShot,150);}catch(err){url.textContent=String(err);}
+});
+document.getElementById('send').onclick=async()=>{const v=text.value;text.value='';if(v)await post('/type',{text:v});setTimeout(refreshShot,150);};
+for(const b of document.querySelectorAll('[data-key]')) b.onclick=async()=>{await post('/key',{key:b.dataset.key});setTimeout(refreshShot,150);};
+document.getElementById('back').onclick=async()=>{await post('/back');setTimeout(refreshShot,250);};
+document.getElementById('reload').onclick=async()=>{await post('/reload');setTimeout(refreshShot,500);};
+document.getElementById('home').onclick=async()=>{await post('/home');setTimeout(refreshShot,700);};
+document.getElementById('up').onclick=async()=>{await post('/scroll',{dy:-650});setTimeout(refreshShot,150);};
+document.getElementById('down').onclick=async()=>{await post('/scroll',{dy:650});setTimeout(refreshShot,150);};
+setInterval(refreshState,1200);
+refreshState();refreshShot();
+</script>
+</body>
+</html>
