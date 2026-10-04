@@ -1,0 +1,4 @@
+request_id=pcg-web-r123-perplexity-synthetic-broker
+candidate_commit=81f1efc996087c5027f186a67130b3ef5b4c9bc7
+expected_sequence=123
+expected_release=pcg-web-stage6-perplexity-synthetic-broker-r123
