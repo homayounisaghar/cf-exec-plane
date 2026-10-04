@@ -1,0 +1,2053 @@
+[
+  {
+    "case": {
+      "category": "metamorphic",
+      "id": "meta_num_01",
+      "text": "همین دوتا رو 2.5 mm فیلت کن",
+      "ctx": {
+        "selection_count": 2,
+        "selection_types": [
+          "edge",
+          "edge"
+        ]
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.from_selection",
+          "args": {
+            "feature_type": "fillet",
+            "amount": "2.5 mm"
+          }
+        }
+      ],
+      "group": "num_2_5"
+    },
+    "source": "reflex",
+    "outcome": "correct",
+    "latency_ms": 0.0,
+    "model_error": null,
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.from_selection",
+        "args": {
+          "feature_type": "fillet",
+          "amount": "2.5 mm"
+        }
+      },
+      "intent": "edge_on_selection",
+      "provenance": {
+        "feature_type": "text:edge-kind",
+        "amount": "text:q1",
+        "selection": "context:selection"
+      },
+      "model_used": false
+    },
+    "evidence": {
+      "text": "همین دوتا رو 2.5 mm فیلت کن",
+      "items": [
+        {
+          "id": "q1",
+          "kind": "quantity",
+          "value": "2.5 mm",
+          "source": "text",
+          "surface": "2.5 mm"
+        },
+        {
+          "id": "k1",
+          "kind": "count",
+          "value": 2,
+          "source": "text"
+        }
+      ],
+      "relative": null,
+      "action_signature": [
+        "edge:fillet"
+      ],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    }
+  },
+  {
+    "case": {
+      "category": "metamorphic",
+      "id": "meta_num_02",
+      "text": "همین دوتا رو دو و نیم میل فیلت کن",
+      "ctx": {
+        "selection_count": 2,
+        "selection_types": [
+          "edge",
+          "edge"
+        ]
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.from_selection",
+          "args": {
+            "feature_type": "fillet",
+            "amount": "2.5 mm"
+          }
+        }
+      ],
+      "group": "num_2_5"
+    },
+    "source": "reflex",
+    "outcome": "correct",
+    "latency_ms": 0.0,
+    "model_error": null,
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.from_selection",
+        "args": {
+          "feature_type": "fillet",
+          "amount": "2.5 mm"
+        }
+      },
+      "intent": "edge_on_selection",
+      "provenance": {
+        "feature_type": "text:edge-kind",
+        "amount": "text:q1",
+        "selection": "context:selection"
+      },
+      "model_used": false
+    },
+    "evidence": {
+      "text": "همین دوتا رو دو و نیم میل فیلت کن",
+      "items": [
+        {
+          "id": "q1",
+          "kind": "quantity",
+          "value": "2.5 mm",
+          "source": "text",
+          "surface": "دو و نیم میل"
+        },
+        {
+          "id": "k1",
+          "kind": "count",
+          "value": 2,
+          "source": "text"
+        }
+      ],
+      "relative": null,
+      "action_signature": [
+        "edge:fillet"
+      ],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    }
+  },
+  {
+    "case": {
+      "category": "metamorphic",
+      "id": "meta_num_03",
+      "text": "همین دوتا رو هشت دهم میل پخ بزن",
+      "ctx": {
+        "selection_count": 2,
+        "selection_types": [
+          "edge",
+          "edge"
+        ]
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.from_selection",
+          "args": {
+            "feature_type": "chamfer",
+            "amount": "0.8 mm"
+          }
+        }
+      ],
+      "group": "num_0_8"
+    },
+    "source": "reflex",
+    "outcome": "correct",
+    "latency_ms": 0.0,
+    "model_error": null,
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.from_selection",
+        "args": {
+          "feature_type": "chamfer",
+          "amount": "0.8 mm"
+        }
+      },
+      "intent": "edge_on_selection",
+      "provenance": {
+        "feature_type": "text:edge-kind",
+        "amount": "text:q1",
+        "selection": "context:selection"
+      },
+      "model_used": false
+    },
+    "evidence": {
+      "text": "همین دوتا رو هشت دهم میل پخ بزن",
+      "items": [
+        {
+          "id": "q1",
+          "kind": "quantity",
+          "value": "0.8 mm",
+          "source": "text",
+          "surface": "هشت دهم میل"
+        },
+        {
+          "id": "k1",
+          "kind": "count",
+          "value": 2,
+          "source": "text"
+        }
+      ],
+      "relative": null,
+      "action_signature": [
+        "edge:chamfer"
+      ],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    }
+  },
+  {
+    "case": {
+      "category": "metamorphic",
+      "id": "meta_num_04",
+      "text": "همین دوتا رو 0.8 میلی چمفر کن",
+      "ctx": {
+        "selection_count": 2,
+        "selection_types": [
+          "edge",
+          "edge"
+        ]
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.from_selection",
+          "args": {
+            "feature_type": "chamfer",
+            "amount": "0.8 mm"
+          }
+        }
+      ],
+      "group": "num_0_8"
+    },
+    "source": "reflex",
+    "outcome": "correct",
+    "latency_ms": 0.0,
+    "model_error": null,
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.from_selection",
+        "args": {
+          "feature_type": "chamfer",
+          "amount": "0.8 mm"
+        }
+      },
+      "intent": "edge_on_selection",
+      "provenance": {
+        "feature_type": "text:edge-kind",
+        "amount": "text:q1",
+        "selection": "context:selection"
+      },
+      "model_used": false
+    },
+    "evidence": {
+      "text": "همین دوتا رو 0.8 میلی چمفر کن",
+      "items": [
+        {
+          "id": "q1",
+          "kind": "quantity",
+          "value": "0.8 mm",
+          "source": "text",
+          "surface": "0.8 میلی"
+        },
+        {
+          "id": "k1",
+          "kind": "count",
+          "value": 2,
+          "source": "text"
+        }
+      ],
+      "relative": null,
+      "action_signature": [
+        "edge:chamfer"
+      ],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    }
+  },
+  {
+    "case": {
+      "category": "metamorphic",
+      "id": "meta_num_05",
+      "text": "همین دوتا رو یک و بیست و پنج صدم میلی پخ بزن",
+      "ctx": {
+        "selection_count": 2,
+        "selection_types": [
+          "edge",
+          "edge"
+        ]
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.from_selection",
+          "args": {
+            "feature_type": "chamfer",
+            "amount": "1.25 mm"
+          }
+        }
+      ],
+      "group": "num_1_25"
+    },
+    "source": "reflex",
+    "outcome": "correct",
+    "latency_ms": 0.0,
+    "model_error": null,
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.from_selection",
+        "args": {
+          "feature_type": "chamfer",
+          "amount": "1.25 mm"
+        }
+      },
+      "intent": "edge_on_selection",
+      "provenance": {
+        "feature_type": "text:edge-kind",
+        "amount": "text:q1",
+        "selection": "context:selection"
+      },
+      "model_used": false
+    },
+    "evidence": {
+      "text": "همین دوتا رو یک و بیست و پنج صدم میلی پخ بزن",
+      "items": [
+        {
+          "id": "q1",
+          "kind": "quantity",
+          "value": "1.25 mm",
+          "source": "text",
+          "surface": "یک و بیست و پنج صدم میلی"
+        },
+        {
+          "id": "k1",
+          "kind": "count",
+          "value": 2,
+          "source": "text"
+        }
+      ],
+      "relative": null,
+      "action_signature": [
+        "edge:chamfer"
+      ],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    }
+  },
+  {
+    "case": {
+      "category": "metamorphic",
+      "id": "meta_num_06",
+      "text": "همین دوتا رو 1.25 mm چمفر کن",
+      "ctx": {
+        "selection_count": 2,
+        "selection_types": [
+          "edge",
+          "edge"
+        ]
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.from_selection",
+          "args": {
+            "feature_type": "chamfer",
+            "amount": "1.25 mm"
+          }
+        }
+      ],
+      "group": "num_1_25"
+    },
+    "source": "reflex",
+    "outcome": "correct",
+    "latency_ms": 0.0,
+    "model_error": null,
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.from_selection",
+        "args": {
+          "feature_type": "chamfer",
+          "amount": "1.25 mm"
+        }
+      },
+      "intent": "edge_on_selection",
+      "provenance": {
+        "feature_type": "text:edge-kind",
+        "amount": "text:q1",
+        "selection": "context:selection"
+      },
+      "model_used": false
+    },
+    "evidence": {
+      "text": "همین دوتا رو 1.25 mm چمفر کن",
+      "items": [
+        {
+          "id": "q1",
+          "kind": "quantity",
+          "value": "1.25 mm",
+          "source": "text",
+          "surface": "1.25 mm"
+        },
+        {
+          "id": "k1",
+          "kind": "count",
+          "value": 2,
+          "source": "text"
+        }
+      ],
+      "relative": null,
+      "action_signature": [
+        "edge:chamfer"
+      ],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    }
+  },
+  {
+    "case": {
+      "category": "metamorphic",
+      "id": "meta_vis_01",
+      "text": "Part 4 رو نشون بده",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "part.visibility",
+          "args": {
+            "part_name": "Part 4",
+            "visible": true
+          }
+        }
+      ],
+      "group": "vis_flip"
+    },
+    "source": "reflex",
+    "outcome": "correct",
+    "latency_ms": 0.0,
+    "model_error": null,
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "part.visibility",
+        "args": {
+          "part_name": "Part 4",
+          "visible": true
+        }
+      },
+      "intent": "part_visibility",
+      "provenance": {
+        "part_name": "text:p1",
+        "visible": "text:s1"
+      },
+      "model_used": false
+    },
+    "evidence": {
+      "text": "Part 4 رو نشون بده",
+      "items": [
+        {
+          "id": "p1",
+          "kind": "part",
+          "value": "Part 4",
+          "source": "text",
+          "surface": "Part 4",
+          "meta": {
+            "pos": 0
+          }
+        },
+        {
+          "id": "s1",
+          "kind": "state",
+          "value": {
+            "kind": "visible",
+            "value": true
+          },
+          "source": "text"
+        }
+      ],
+      "relative": null,
+      "action_signature": [
+        "part:visibility"
+      ],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    }
+  },
+  {
+    "case": {
+      "category": "metamorphic",
+      "id": "meta_vis_02",
+      "text": "Part 4 رو نشون نده",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "part.visibility",
+          "args": {
+            "part_name": "Part 4",
+            "visible": false
+          }
+        }
+      ],
+      "group": "vis_flip"
+    },
+    "source": "reflex",
+    "outcome": "correct",
+    "latency_ms": 0.0,
+    "model_error": null,
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "part.visibility",
+        "args": {
+          "part_name": "Part 4",
+          "visible": false
+        }
+      },
+      "intent": "part_visibility",
+      "provenance": {
+        "part_name": "text:p1",
+        "visible": "text:s1"
+      },
+      "model_used": false
+    },
+    "evidence": {
+      "text": "Part 4 رو نشون نده",
+      "items": [
+        {
+          "id": "p1",
+          "kind": "part",
+          "value": "Part 4",
+          "source": "text",
+          "surface": "Part 4",
+          "meta": {
+            "pos": 0
+          }
+        },
+        {
+          "id": "s1",
+          "kind": "state",
+          "value": {
+            "kind": "visible",
+            "value": false
+          },
+          "source": "text"
+        }
+      ],
+      "relative": null,
+      "action_signature": [
+        "part:visibility"
+      ],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    }
+  },
+  {
+    "case": {
+      "category": "metamorphic",
+      "id": "meta_vis_03",
+      "text": "Part 4 رو قایم کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "part.visibility",
+          "args": {
+            "part_name": "Part 4",
+            "visible": false
+          }
+        }
+      ],
+      "group": "vis_hide_syn"
+    },
+    "source": "reflex",
+    "outcome": "correct",
+    "latency_ms": 0.0,
+    "model_error": null,
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "part.visibility",
+        "args": {
+          "part_name": "Part 4",
+          "visible": false
+        }
+      },
+      "intent": "part_visibility",
+      "provenance": {
+        "part_name": "text:p1",
+        "visible": "text:s1"
+      },
+      "model_used": false
+    },
+    "evidence": {
+      "text": "Part 4 رو قایم کن",
+      "items": [
+        {
+          "id": "p1",
+          "kind": "part",
+          "value": "Part 4",
+          "source": "text",
+          "surface": "Part 4",
+          "meta": {
+            "pos": 0
+          }
+        },
+        {
+          "id": "s1",
+          "kind": "state",
+          "value": {
+            "kind": "visible",
+            "value": false
+          },
+          "source": "text"
+        }
+      ],
+      "relative": null,
+      "action_signature": [
+        "part:visibility"
+      ],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    }
+  },
+  {
+    "case": {
+      "category": "metamorphic",
+      "id": "meta_vis_04",
+      "text": "Part 4 رو مخفی کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "part.visibility",
+          "args": {
+            "part_name": "Part 4",
+            "visible": false
+          }
+        }
+      ],
+      "group": "vis_hide_syn"
+    },
+    "source": "reflex",
+    "outcome": "correct",
+    "latency_ms": 0.0,
+    "model_error": null,
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "part.visibility",
+        "args": {
+          "part_name": "Part 4",
+          "visible": false
+        }
+      },
+      "intent": "part_visibility",
+      "provenance": {
+        "part_name": "text:p1",
+        "visible": "text:s1"
+      },
+      "model_used": false
+    },
+    "evidence": {
+      "text": "Part 4 رو مخفی کن",
+      "items": [
+        {
+          "id": "p1",
+          "kind": "part",
+          "value": "Part 4",
+          "source": "text",
+          "surface": "Part 4",
+          "meta": {
+            "pos": 0
+          }
+        },
+        {
+          "id": "s1",
+          "kind": "state",
+          "value": {
+            "kind": "visible",
+            "value": false
+          },
+          "source": "text"
+        }
+      ],
+      "relative": null,
+      "action_signature": [
+        "part:visibility"
+      ],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    }
+  },
+  {
+    "case": {
+      "category": "metamorphic",
+      "id": "meta_rel_01",
+      "text": "یه میل بیشترش کن",
+      "ctx": {
+        "last_feature": "Fillet 2",
+        "feature_parameters": {
+          "radius": "3 mm"
+        }
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.parameter.set",
+          "args": {
+            "feature_name": "Fillet 2",
+            "parameter": "radius",
+            "amount": "4 mm"
+          }
+        }
+      ],
+      "group": "relative"
+    },
+    "source": "reflex",
+    "outcome": "correct",
+    "latency_ms": 0.0,
+    "model_error": null,
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.parameter.set",
+        "args": {
+          "feature_name": "Fillet 2",
+          "parameter": "radius",
+          "amount": "4 mm"
+        }
+      },
+      "intent": "feature_parameter",
+      "provenance": {
+        "feature_name": "context:f1",
+        "parameter": "text:param-semantics",
+        "amount": [
+          "text:q1",
+          "context:feature_parameters.radius",
+          "deterministic:add"
+        ]
+      },
+      "model_used": false
+    },
+    "evidence": {
+      "text": "یه میل بیشترش کن",
+      "items": [
+        {
+          "id": "q1",
+          "kind": "quantity",
+          "value": "1 mm",
+          "source": "text",
+          "surface": "یه میل"
+        },
+        {
+          "id": "f1",
+          "kind": "feature",
+          "value": "Fillet 2",
+          "source": "context",
+          "surface": "last_feature"
+        }
+      ],
+      "relative": "add",
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    }
+  },
+  {
+    "case": {
+      "category": "metamorphic",
+      "id": "meta_rel_02",
+      "text": "یه میل کمترش کن",
+      "ctx": {
+        "last_feature": "Fillet 2",
+        "feature_parameters": {
+          "radius": "3 mm"
+        }
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.parameter.set",
+          "args": {
+            "feature_name": "Fillet 2",
+            "parameter": "radius",
+            "amount": "2 mm"
+          }
+        }
+      ],
+      "group": "relative"
+    },
+    "source": "reflex",
+    "outcome": "correct",
+    "latency_ms": 0.0,
+    "model_error": null,
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.parameter.set",
+        "args": {
+          "feature_name": "Fillet 2",
+          "parameter": "radius",
+          "amount": "2 mm"
+        }
+      },
+      "intent": "feature_parameter",
+      "provenance": {
+        "feature_name": "context:f1",
+        "parameter": "text:param-semantics",
+        "amount": [
+          "text:q1",
+          "context:feature_parameters.radius",
+          "deterministic:subtract"
+        ]
+      },
+      "model_used": false
+    },
+    "evidence": {
+      "text": "یه میل کمترش کن",
+      "items": [
+        {
+          "id": "q1",
+          "kind": "quantity",
+          "value": "1 mm",
+          "source": "text",
+          "surface": "یه میل"
+        },
+        {
+          "id": "f1",
+          "kind": "feature",
+          "value": "Fillet 2",
+          "source": "context",
+          "surface": "last_feature"
+        }
+      ],
+      "relative": "subtract",
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    }
+  },
+  {
+    "case": {
+      "category": "metamorphic",
+      "id": "meta_rel_03",
+      "text": "یه کم بیشترش کن",
+      "ctx": {
+        "last_feature": "Fillet 2",
+        "feature_parameters": {
+          "radius": "3 mm"
+        }
+      },
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ],
+      "group": "relative_vague"
+    },
+    "source": "reflex",
+    "outcome": "correct",
+    "latency_ms": 0.0,
+    "model_error": null,
+    "post": {
+      "accepted": false,
+      "reason": "relative-delta-missing",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      },
+      "intent": "feature_parameter",
+      "provenance": {},
+      "model_used": false
+    },
+    "evidence": {
+      "text": "یه کم بیشترش کن",
+      "items": [
+        {
+          "id": "f1",
+          "kind": "feature",
+          "value": "Fillet 2",
+          "source": "context",
+          "surface": "last_feature"
+        }
+      ],
+      "relative": "add",
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    }
+  },
+  {
+    "case": {
+      "category": "metamorphic",
+      "id": "meta_order_01",
+      "text": "Fillet 1 رو قبل از Extrude 2 ببر",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.reorder",
+          "args": {
+            "source_feature": "Fillet 1",
+            "target_feature": "Extrude 2",
+            "placement": "before"
+          }
+        }
+      ],
+      "group": "order_flip"
+    },
+    "source": "reflex",
+    "outcome": "correct",
+    "latency_ms": 0.0,
+    "model_error": null,
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.reorder",
+        "args": {
+          "source_feature": "Fillet 1",
+          "target_feature": "Extrude 2",
+          "placement": "before"
+        }
+      },
+      "intent": "feature_reorder",
+      "provenance": {
+        "source_feature": "text:f1",
+        "target_feature": "text:f2",
+        "placement": "text:r1"
+      },
+      "model_used": false
+    },
+    "evidence": {
+      "text": "Fillet 1 رو قبل از Extrude 2 ببر",
+      "items": [
+        {
+          "id": "f1",
+          "kind": "feature",
+          "value": "Fillet 1",
+          "source": "text",
+          "surface": "Fillet 1",
+          "meta": {
+            "pos": 0
+          }
+        },
+        {
+          "id": "f2",
+          "kind": "feature",
+          "value": "Extrude 2",
+          "source": "text",
+          "surface": "Extrude 2",
+          "meta": {
+            "pos": 19
+          }
+        },
+        {
+          "id": "r1",
+          "kind": "relation",
+          "value": "before",
+          "source": "text"
+        }
+      ],
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    }
+  },
+  {
+    "case": {
+      "category": "metamorphic",
+      "id": "meta_order_02",
+      "text": "Fillet 1 رو بعد از Extrude 2 ببر",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.reorder",
+          "args": {
+            "source_feature": "Fillet 1",
+            "target_feature": "Extrude 2",
+            "placement": "after"
+          }
+        }
+      ],
+      "group": "order_flip"
+    },
+    "source": "reflex",
+    "outcome": "correct",
+    "latency_ms": 0.0,
+    "model_error": null,
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.reorder",
+        "args": {
+          "source_feature": "Fillet 1",
+          "target_feature": "Extrude 2",
+          "placement": "after"
+        }
+      },
+      "intent": "feature_reorder",
+      "provenance": {
+        "source_feature": "text:f1",
+        "target_feature": "text:f2",
+        "placement": "text:r1"
+      },
+      "model_used": false
+    },
+    "evidence": {
+      "text": "Fillet 1 رو بعد از Extrude 2 ببر",
+      "items": [
+        {
+          "id": "f1",
+          "kind": "feature",
+          "value": "Fillet 1",
+          "source": "text",
+          "surface": "Fillet 1",
+          "meta": {
+            "pos": 0
+          }
+        },
+        {
+          "id": "f2",
+          "kind": "feature",
+          "value": "Extrude 2",
+          "source": "text",
+          "surface": "Extrude 2",
+          "meta": {
+            "pos": 19
+          }
+        },
+        {
+          "id": "r1",
+          "kind": "relation",
+          "value": "after",
+          "source": "text"
+        }
+      ],
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    }
+  },
+  {
+    "case": {
+      "category": "metamorphic",
+      "id": "meta_order_03",
+      "text": "Fillet 1 رو بالای Extrude 2 ببر",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.reorder",
+          "args": {
+            "source_feature": "Fillet 1",
+            "target_feature": "Extrude 2",
+            "placement": "before"
+          }
+        }
+      ],
+      "group": "order_syn"
+    },
+    "source": "reflex",
+    "outcome": "correct",
+    "latency_ms": 0.0,
+    "model_error": null,
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.reorder",
+        "args": {
+          "source_feature": "Fillet 1",
+          "target_feature": "Extrude 2",
+          "placement": "before"
+        }
+      },
+      "intent": "feature_reorder",
+      "provenance": {
+        "source_feature": "text:f1",
+        "target_feature": "text:f2",
+        "placement": "text:r1"
+      },
+      "model_used": false
+    },
+    "evidence": {
+      "text": "Fillet 1 رو بالای Extrude 2 ببر",
+      "items": [
+        {
+          "id": "f1",
+          "kind": "feature",
+          "value": "Fillet 1",
+          "source": "text",
+          "surface": "Fillet 1",
+          "meta": {
+            "pos": 0
+          }
+        },
+        {
+          "id": "f2",
+          "kind": "feature",
+          "value": "Extrude 2",
+          "source": "text",
+          "surface": "Extrude 2",
+          "meta": {
+            "pos": 18
+          }
+        },
+        {
+          "id": "r1",
+          "kind": "relation",
+          "value": "before",
+          "source": "text"
+        },
+        {
+          "id": "v1",
+          "kind": "direction",
+          "value": "up",
+          "source": "text_or_context"
+        }
+      ],
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    }
+  },
+  {
+    "case": {
+      "category": "metamorphic",
+      "id": "meta_order_04",
+      "text": "Fillet 1 رو زیر Extrude 2 ببر",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.reorder",
+          "args": {
+            "source_feature": "Fillet 1",
+            "target_feature": "Extrude 2",
+            "placement": "after"
+          }
+        }
+      ],
+      "group": "order_syn"
+    },
+    "source": "reflex",
+    "outcome": "correct",
+    "latency_ms": 0.0,
+    "model_error": null,
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.reorder",
+        "args": {
+          "source_feature": "Fillet 1",
+          "target_feature": "Extrude 2",
+          "placement": "after"
+        }
+      },
+      "intent": "feature_reorder",
+      "provenance": {
+        "source_feature": "text:f1",
+        "target_feature": "text:f2",
+        "placement": "text:r1"
+      },
+      "model_used": false
+    },
+    "evidence": {
+      "text": "Fillet 1 رو زیر Extrude 2 ببر",
+      "items": [
+        {
+          "id": "f1",
+          "kind": "feature",
+          "value": "Fillet 1",
+          "source": "text",
+          "surface": "Fillet 1",
+          "meta": {
+            "pos": 0
+          }
+        },
+        {
+          "id": "f2",
+          "kind": "feature",
+          "value": "Extrude 2",
+          "source": "text",
+          "surface": "Extrude 2",
+          "meta": {
+            "pos": 16
+          }
+        },
+        {
+          "id": "r1",
+          "kind": "relation",
+          "value": "after",
+          "source": "text"
+        }
+      ],
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    }
+  },
+  {
+    "case": {
+      "category": "metamorphic",
+      "id": "meta_cam_01",
+      "text": "باز یه ذره همون طرف",
+      "ctx": {
+        "last_move": {
+          "action": "orbit",
+          "direction": "right",
+          "intensity": 0.4
+        }
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "view.move",
+          "args": {
+            "action": "orbit",
+            "direction": "right"
+          }
+        }
+      ],
+      "group": "camera_inverse"
+    },
+    "source": "reflex",
+    "outcome": "correct",
+    "latency_ms": 0.0,
+    "model_error": null,
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "view.move",
+        "args": {
+          "action": "orbit",
+          "direction": "right"
+        }
+      },
+      "intent": "camera_move",
+      "provenance": {
+        "action": "text_or_context:a1",
+        "direction": "text_or_context:v1"
+      },
+      "model_used": false
+    },
+    "evidence": {
+      "text": "باز یه ذره همون طرف",
+      "items": [
+        {
+          "id": "a1",
+          "kind": "action",
+          "value": "orbit",
+          "source": "text_or_context"
+        },
+        {
+          "id": "v1",
+          "kind": "direction",
+          "value": "right",
+          "source": "text_or_context"
+        }
+      ],
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    }
+  },
+  {
+    "case": {
+      "category": "metamorphic",
+      "id": "meta_cam_02",
+      "text": "زیادی شد، برش گردون",
+      "ctx": {
+        "last_move": {
+          "action": "orbit",
+          "direction": "right",
+          "intensity": 0.4
+        }
+      },
+      "expected": [
+        {
+          "route": "do",
+          "op": "view.move",
+          "args": {
+            "action": "orbit",
+            "direction": "left"
+          }
+        }
+      ],
+      "group": "camera_inverse"
+    },
+    "source": "reflex",
+    "outcome": "correct",
+    "latency_ms": 0.0,
+    "model_error": null,
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "view.move",
+        "args": {
+          "action": "orbit",
+          "direction": "left"
+        }
+      },
+      "intent": "camera_move",
+      "provenance": {
+        "action": "text_or_context:a1",
+        "direction": "text_or_context:v1"
+      },
+      "model_used": false
+    },
+    "evidence": {
+      "text": "زیادی شد، برش گردون",
+      "items": [
+        {
+          "id": "a1",
+          "kind": "action",
+          "value": "orbit",
+          "source": "text_or_context"
+        },
+        {
+          "id": "v1",
+          "kind": "direction",
+          "value": "left",
+          "source": "text_or_context"
+        }
+      ],
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    }
+  },
+  {
+    "case": {
+      "category": "metamorphic",
+      "id": "meta_cam_03",
+      "text": "یه ربع دور به راست بچرخون",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "view.move",
+          "args": {
+            "action": "orbit",
+            "direction": "right",
+            "angle_degrees": 90
+          }
+        }
+      ],
+      "group": "camera_quarter"
+    },
+    "source": "reflex",
+    "outcome": "correct",
+    "latency_ms": 0.0,
+    "model_error": null,
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "view.move",
+        "args": {
+          "action": "orbit",
+          "direction": "right",
+          "angle_degrees": 90.0
+        }
+      },
+      "intent": "camera_move",
+      "provenance": {
+        "action": "text_or_context:a1",
+        "direction": "text_or_context:v1",
+        "angle_degrees": "text:g1"
+      },
+      "model_used": false
+    },
+    "evidence": {
+      "text": "یه ربع دور به راست بچرخون",
+      "items": [
+        {
+          "id": "q1",
+          "kind": "quantity",
+          "value": "90 deg",
+          "source": "text",
+          "surface": "ربع دور"
+        },
+        {
+          "id": "a1",
+          "kind": "action",
+          "value": "orbit",
+          "source": "text_or_context"
+        },
+        {
+          "id": "v1",
+          "kind": "direction",
+          "value": "right",
+          "source": "text_or_context"
+        },
+        {
+          "id": "g1",
+          "kind": "angle",
+          "value": 90.0,
+          "source": "text",
+          "surface": "ربع دور"
+        }
+      ],
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    }
+  },
+  {
+    "case": {
+      "category": "metamorphic",
+      "id": "meta_multi_01",
+      "text": "Part 1 رو قرمز کن و مخفیش کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ],
+      "group": "multi_block"
+    },
+    "source": "reflex",
+    "outcome": "correct",
+    "latency_ms": 0.0,
+    "model_error": null,
+    "post": {
+      "accepted": false,
+      "reason": "deterministic-ask",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      },
+      "intent": null,
+      "provenance": {},
+      "model_used": false
+    },
+    "evidence": {
+      "text": "Part 1 رو قرمز کن و مخفیش کن",
+      "items": [
+        {
+          "id": "p1",
+          "kind": "part",
+          "value": "Part 1",
+          "source": "text",
+          "surface": "Part 1",
+          "meta": {
+            "pos": 0
+          }
+        },
+        {
+          "id": "s1",
+          "kind": "state",
+          "value": {
+            "kind": "visible",
+            "value": false
+          },
+          "source": "text"
+        },
+        {
+          "id": "c1",
+          "kind": "color",
+          "value": "red",
+          "source": "text"
+        }
+      ],
+      "relative": null,
+      "action_signature": [
+        "part:color",
+        "part:visibility"
+      ],
+      "multi_action": true,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    }
+  },
+  {
+    "case": {
+      "category": "metamorphic",
+      "id": "meta_multi_02",
+      "text": "این دوتا رو دو میل فیلت و بعد یه میل پخ بزن",
+      "ctx": {
+        "selection_count": 2,
+        "selection_types": [
+          "edge",
+          "edge"
+        ]
+      },
+      "expected": [
+        {
+          "route": "ask"
+        }
+      ],
+      "group": "multi_block"
+    },
+    "source": "reflex",
+    "outcome": "correct",
+    "latency_ms": 0.0,
+    "model_error": null,
+    "post": {
+      "accepted": false,
+      "reason": "deterministic-ask",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      },
+      "intent": null,
+      "provenance": {},
+      "model_used": false
+    },
+    "evidence": {
+      "text": "این دوتا رو دو میل فیلت و بعد یه میل پخ بزن",
+      "items": [
+        {
+          "id": "q1",
+          "kind": "quantity",
+          "value": "2 mm",
+          "source": "text",
+          "surface": "دو میل"
+        },
+        {
+          "id": "q2",
+          "kind": "quantity",
+          "value": "1 mm",
+          "source": "text",
+          "surface": "یه میل"
+        },
+        {
+          "id": "r1",
+          "kind": "relation",
+          "value": "after",
+          "source": "text"
+        },
+        {
+          "id": "k1",
+          "kind": "count",
+          "value": 2,
+          "source": "text"
+        }
+      ],
+      "relative": null,
+      "action_signature": [
+        "edge:fillet",
+        "edge:chamfer"
+      ],
+      "multi_action": true,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    }
+  },
+  {
+    "case": {
+      "category": "metamorphic",
+      "id": "meta_design_01",
+      "text": "این رو حرفه‌ای‌ترش کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "think"
+        }
+      ],
+      "group": "design"
+    },
+    "source": "reflex",
+    "outcome": "correct",
+    "latency_ms": 0.0,
+    "model_error": null,
+    "post": {
+      "accepted": false,
+      "reason": "deterministic-design",
+      "compiled": {
+        "route": "think",
+        "op": null,
+        "args": {}
+      },
+      "intent": null,
+      "provenance": {},
+      "model_used": false
+    },
+    "evidence": {
+      "text": "این رو حرفه ای ترش کن",
+      "items": [],
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": true,
+      "unsupported": false,
+      "global_destructive": false
+    }
+  },
+  {
+    "case": {
+      "category": "metamorphic",
+      "id": "meta_design_02",
+      "text": "وزنشو کم کن ولی سفت بمونه",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "think"
+        }
+      ],
+      "group": "design"
+    },
+    "source": "reflex",
+    "outcome": "correct",
+    "latency_ms": 0.0,
+    "model_error": null,
+    "post": {
+      "accepted": false,
+      "reason": "deterministic-design",
+      "compiled": {
+        "route": "think",
+        "op": null,
+        "args": {}
+      },
+      "intent": null,
+      "provenance": {},
+      "model_used": false
+    },
+    "evidence": {
+      "text": "وزنشو کم کن ولی سفت بمونه",
+      "items": [],
+      "relative": "subtract",
+      "action_signature": [],
+      "multi_action": false,
+      "design": true,
+      "unsupported": false,
+      "global_destructive": false
+    }
+  },
+  {
+    "case": {
+      "category": "metamorphic",
+      "id": "meta_design_03",
+      "text": "برای تولید راحت‌ترش کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "think"
+        }
+      ],
+      "group": "design"
+    },
+    "source": "model",
+    "outcome": "route_mismatch",
+    "latency_ms": 254.97623300000782,
+    "model_error": null,
+    "post": {
+      "accepted": false,
+      "reason": "model-ask",
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      },
+      "intent": null,
+      "provenance": {},
+      "model_used": true
+    },
+    "evidence": {
+      "text": "برای تولید راحت ترش کن",
+      "items": [],
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    }
+  },
+  {
+    "case": {
+      "category": "metamorphic",
+      "id": "meta_id_01",
+      "text": "فیلت سه رو شش میل کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.parameter.set",
+          "args": {
+            "feature_name": "Fillet 3",
+            "parameter": "radius",
+            "amount": "6 mm"
+          }
+        }
+      ],
+      "group": "feature_name"
+    },
+    "source": "reflex",
+    "outcome": "correct",
+    "latency_ms": 0.0,
+    "model_error": null,
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.parameter.set",
+        "args": {
+          "feature_name": "Fillet 3",
+          "parameter": "radius",
+          "amount": "6 mm"
+        }
+      },
+      "intent": "feature_parameter",
+      "provenance": {
+        "feature_name": "text:f1",
+        "parameter": "text:param-semantics",
+        "amount": "text:q1"
+      },
+      "model_used": false
+    },
+    "evidence": {
+      "text": "فیلت سه رو شش میل کن",
+      "items": [
+        {
+          "id": "q1",
+          "kind": "quantity",
+          "value": "6 mm",
+          "source": "text",
+          "surface": "شش میل"
+        },
+        {
+          "id": "f1",
+          "kind": "feature",
+          "value": "Fillet 3",
+          "source": "text",
+          "surface": "فیلت سه",
+          "meta": {
+            "pos": 0
+          }
+        }
+      ],
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    }
+  },
+  {
+    "case": {
+      "category": "metamorphic",
+      "id": "meta_id_02",
+      "text": "Fillet 3 رو 6 mm کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "feature.parameter.set",
+          "args": {
+            "feature_name": "Fillet 3",
+            "parameter": "radius",
+            "amount": "6 mm"
+          }
+        }
+      ],
+      "group": "feature_name"
+    },
+    "source": "reflex",
+    "outcome": "correct",
+    "latency_ms": 0.0,
+    "model_error": null,
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "feature.parameter.set",
+        "args": {
+          "feature_name": "Fillet 3",
+          "parameter": "radius",
+          "amount": "6 mm"
+        }
+      },
+      "intent": "feature_parameter",
+      "provenance": {
+        "feature_name": "text:f1",
+        "parameter": "text:param-semantics",
+        "amount": "text:q1"
+      },
+      "model_used": false
+    },
+    "evidence": {
+      "text": "Fillet 3 رو 6 mm کن",
+      "items": [
+        {
+          "id": "q1",
+          "kind": "quantity",
+          "value": "6 mm",
+          "source": "text",
+          "surface": "6 mm"
+        },
+        {
+          "id": "f1",
+          "kind": "feature",
+          "value": "Fillet 3",
+          "source": "text",
+          "surface": "Fillet 3",
+          "meta": {
+            "pos": 0
+          }
+        }
+      ],
+      "relative": null,
+      "action_signature": [],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    }
+  },
+  {
+    "case": {
+      "category": "metamorphic",
+      "id": "meta_id_03",
+      "text": "پارت چهار رو قایم کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "part.visibility",
+          "args": {
+            "part_name": "Part 4",
+            "visible": false
+          }
+        }
+      ],
+      "group": "part_name"
+    },
+    "source": "reflex",
+    "outcome": "correct",
+    "latency_ms": 0.0,
+    "model_error": null,
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "part.visibility",
+        "args": {
+          "part_name": "Part 4",
+          "visible": false
+        }
+      },
+      "intent": "part_visibility",
+      "provenance": {
+        "part_name": "text:p1",
+        "visible": "text:s1"
+      },
+      "model_used": false
+    },
+    "evidence": {
+      "text": "پارت چهار رو قایم کن",
+      "items": [
+        {
+          "id": "p1",
+          "kind": "part",
+          "value": "Part 4",
+          "source": "text",
+          "surface": "پارت چهار",
+          "meta": {
+            "pos": 0
+          }
+        },
+        {
+          "id": "s1",
+          "kind": "state",
+          "value": {
+            "kind": "visible",
+            "value": false
+          },
+          "source": "text"
+        }
+      ],
+      "relative": null,
+      "action_signature": [
+        "part:visibility"
+      ],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    }
+  },
+  {
+    "case": {
+      "category": "metamorphic",
+      "id": "meta_id_04",
+      "text": "Part 4 رو قایم کن",
+      "ctx": {},
+      "expected": [
+        {
+          "route": "do",
+          "op": "part.visibility",
+          "args": {
+            "part_name": "Part 4",
+            "visible": false
+          }
+        }
+      ],
+      "group": "part_name"
+    },
+    "source": "reflex",
+    "outcome": "correct",
+    "latency_ms": 0.0,
+    "model_error": null,
+    "post": {
+      "accepted": true,
+      "reason": "ok",
+      "compiled": {
+        "route": "do",
+        "op": "part.visibility",
+        "args": {
+          "part_name": "Part 4",
+          "visible": false
+        }
+      },
+      "intent": "part_visibility",
+      "provenance": {
+        "part_name": "text:p1",
+        "visible": "text:s1"
+      },
+      "model_used": false
+    },
+    "evidence": {
+      "text": "Part 4 رو قایم کن",
+      "items": [
+        {
+          "id": "p1",
+          "kind": "part",
+          "value": "Part 4",
+          "source": "text",
+          "surface": "Part 4",
+          "meta": {
+            "pos": 0
+          }
+        },
+        {
+          "id": "s1",
+          "kind": "state",
+          "value": {
+            "kind": "visible",
+            "value": false
+          },
+          "source": "text"
+        }
+      ],
+      "relative": null,
+      "action_signature": [
+        "part:visibility"
+      ],
+      "multi_action": false,
+      "design": false,
+      "unsupported": false,
+      "global_destructive": false
+    }
+  }
+]

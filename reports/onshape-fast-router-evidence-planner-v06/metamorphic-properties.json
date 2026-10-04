@@ -1,0 +1,109 @@
+{
+  "properties": 19,
+  "passed": 18,
+  "failed": [
+    {
+      "name": "design_3_reasoning",
+      "ok": false,
+      "detail": null
+    }
+  ],
+  "all_passed": false,
+  "details": [
+    {
+      "name": "number_2_5_equivalence",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "number_0_8_equivalence",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "number_1_25_equivalence",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "negation_flips_visibility",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "hide_synonyms_equivalent",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "relative_add_subtract",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "relative_vague_fails_closed",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "before_after_flip",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "order_synonyms_before",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "order_synonyms_after",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "camera_correction_inverse",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "quarter_turn_90",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "multi_action_1_blocked",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "multi_action_2_blocked",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "design_1_reasoning",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "design_2_reasoning",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "design_3_reasoning",
+      "ok": false,
+      "detail": null
+    },
+    {
+      "name": "feature_name_word_digit_equivalent",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "part_name_word_digit_equivalent",
+      "ok": true,
+      "detail": null
+    }
+  ]
+}

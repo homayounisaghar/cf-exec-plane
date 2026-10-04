@@ -1,0 +1,36 @@
+{
+  "architecture": "typed evidence -> high-confidence reflex -> intent-only 20B fallback -> provenance compiler -> residue guard",
+  "model": "openai/gpt-oss-20b",
+  "cases": 29,
+  "exact_correct": 28,
+  "exact_accuracy": 0.9655172413793104,
+  "reflex_cases": 28,
+  "reflex_correct": 28,
+  "model_fallback_cases": 1,
+  "model_fallback_correct": 0,
+  "wrong_material_accepted": 0,
+  "wrong_material_ids": [],
+  "false_execute": 0,
+  "false_execute_ids": [],
+  "wrong_reversible_accepted": 0,
+  "wrong_reversible_ids": [],
+  "conservative_escalations": 0,
+  "conservative_ids": [],
+  "route_mismatch": 1,
+  "route_mismatch_ids": [
+    "meta_design_03"
+  ],
+  "provenance_violations": 0,
+  "multi_action_blocked": 2,
+  "model_batch_calls": 1,
+  "model_batch_p50_ms": 254.97623300000782,
+  "model_batch_p95_ms": 254.97623300000782,
+  "provider_prompt_tokens": 485,
+  "provider_completion_tokens": 36,
+  "outcomes": {
+    "correct": 28,
+    "route_mismatch": 1
+  },
+  "suite": "metamorphic29",
+  "wall_seconds": 0.2776064389999817
+}
