@@ -2,23 +2,22 @@
   "candidate_cases_before_filter": 10000,
   "filtered_before_score": 200,
   "cases": 9800,
-  "deterministic_cases": 9680,
-  "fallback_cases": 120,
-  "exact_correct": 9600,
-  "exact_accuracy": 0.9795918367346939,
-  "effect_correct": 9600,
-  "effect_accuracy": 0.9795918367346939,
-  "effect_errors": 200,
+  "deterministic_cases": 9800,
+  "fallback_cases": 0,
+  "exact_correct": 9760,
+  "exact_accuracy": 0.9959183673469387,
+  "effect_correct": 9760,
+  "effect_accuracy": 0.9959183673469387,
+  "effect_errors": 40,
   "severe_accepted_effect_errors": 0,
   "wrong_material_accepted": 0,
   "false_execute": 0,
   "wrong_reversible_accepted": 0,
-  "conservative_escalations": 80,
+  "conservative_escalations": 40,
   "route_mismatch": 0,
   "outcomes": {
-    "correct": 9600,
-    "conservative_escalation": 80,
-    "fallback": 120
+    "correct": 9760,
+    "conservative_escalation": 40
   },
   "by_category": {
     "ambiguous_target_safe_ask": {
@@ -94,8 +93,8 @@
       "correct": 200
     },
     "negation_correction": {
-      "conservative_escalation": 80,
-      "fallback": 120
+      "correct": 160,
+      "conservative_escalation": 40
     },
     "new_chamfer": {
       "correct": 200
@@ -172,37 +171,11 @@
   },
   "failure_reason_counts": {
     "negation_correction": {
-      "clarification": 80,
-      "model-fallback-required": 120
+      "clarification": 40
     }
   },
   "representative_failures": {
     "negation_correction": [
-      {
-        "id": "v18_neg_0000",
-        "text": "Part 8 رو قایم نکن؛ visible نگهش دار",
-        "expected": [
-          {
-            "route": "do",
-            "op": "part.visibility",
-            "args": {
-              "part_name": "Part 8",
-              "visible": true
-            }
-          }
-        ],
-        "compiled": {
-          "route": "ask",
-          "op": null,
-          "args": {}
-        },
-        "outcome": "conservative_escalation",
-        "reason": "clarification",
-        "action_families": [
-          "part_visibility"
-        ],
-        "quantity_issues": []
-      },
       {
         "id": "v18_neg_0001",
         "text": "راستی، zoom in نکن؛ برعکس دورتر برو",
@@ -227,26 +200,52 @@
         "quantity_issues": []
       },
       {
-        "id": "v18_neg_0002",
-        "text": "اگه میشه الان Top رو نیار؛ به جاش همه selection رو deselect کن",
+        "id": "v18_neg_0006",
+        "text": "ممکنه zoom in نکن؛ برعکس دورتر برو",
         "expected": [
           {
             "route": "do",
-            "op": "viewer.selection.clear",
-            "args": {}
+            "op": "view.move",
+            "args": {
+              "action": "zoom",
+              "direction": "out"
+            }
           }
         ],
         "compiled": {
-          "route": "fallback",
+          "route": "ask",
           "op": null,
           "args": {}
         },
-        "outcome": "fallback",
-        "reason": "model-fallback-required",
+        "outcome": "conservative_escalation",
+        "reason": "clarification",
+        "action_families": [],
+        "quantity_issues": []
+      },
+      {
+        "id": "v18_neg_0011",
+        "text": "راستی، zoom in نکن؛ برعکس دورتر برو، لطف کردی",
+        "expected": [
+          {
+            "route": "do",
+            "op": "view.move",
+            "args": {
+              "action": "zoom",
+              "direction": "out"
+            }
+          }
+        ],
+        "compiled": {
+          "route": "ask",
+          "op": null,
+          "args": {}
+        },
+        "outcome": "conservative_escalation",
+        "reason": "clarification",
         "action_families": [],
         "quantity_issues": []
       }
     ]
   },
-  "wall_seconds": 6.489370919999999
+  "wall_seconds": 3.5856852900000007
 }
