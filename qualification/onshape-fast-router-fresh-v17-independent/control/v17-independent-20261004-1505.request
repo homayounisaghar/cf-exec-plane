@@ -1,0 +1,8 @@
+{
+  "request_id": "v17-independent-20261004-1505",
+  "source_head": "b326aa84d149d41dcd4a62a393e7548f03691f02",
+  "source_file_sha": "fd8320810ae1a29a5f360c844847e48e8f534948",
+  "selftest_sha": "344f36c0bb5401721741e6eeab28fc2f7f617228",
+  "pre_score_filter": "apprentice-only",
+  "production_effects": false
+}
