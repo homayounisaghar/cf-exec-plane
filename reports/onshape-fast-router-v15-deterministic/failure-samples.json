@@ -18,6 +18,23 @@
       "action_families": []
     },
     {
+      "id": "v15_pro_0001",
+      "text": "لطفاً این sketch رو dimension کن که width پنجاه و height سی باشه؟",
+      "expected": [
+        {
+          "route": "think"
+        }
+      ],
+      "compiled": {
+        "route": "ask",
+        "op": null,
+        "args": {}
+      },
+      "reason": "clarification",
+      "intent": null,
+      "action_families": []
+    },
+    {
       "id": "v15_pro_0005",
       "text": "خب این feature رو mirror کن نسبت به Front plane",
       "expected": [
@@ -86,23 +103,6 @@
       "action_families": [
         "edge_fillet"
       ]
-    },
-    {
-      "id": "v15_pro_0015",
-      "text": "آروم Sketch 4 رو fully constrain کن",
-      "expected": [
-        {
-          "route": "think"
-        }
-      ],
-      "compiled": {
-        "route": "ask",
-        "op": null,
-        "args": {}
-      },
-      "reason": "clarification",
-      "intent": null,
-      "action_families": []
     }
   ]
 }

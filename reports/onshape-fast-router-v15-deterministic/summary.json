@@ -1,18 +1,18 @@
 {
   "cases": 10000,
-  "deterministic_cases": 9287,
-  "fallback_cases": 713,
-  "deterministic_correct": 9221,
-  "deterministic_accuracy": 0.9928932916980726,
+  "deterministic_cases": 10000,
+  "fallback_cases": 0,
+  "deterministic_correct": 9920,
+  "deterministic_accuracy": 0.992,
   "wrong_material_accepted": 0,
   "false_execute": 0,
   "wrong_reversible_accepted": 0,
   "severe_accepted_effect_errors": 0,
   "conservative_escalations": 0,
-  "route_mismatch": 66,
+  "route_mismatch": 80,
   "outcomes": {
-    "correct": 9221,
-    "route_mismatch": 66
+    "correct": 9920,
+    "route_mismatch": 80
   },
   "by_category": {
     "clear_selection": {
@@ -22,16 +22,16 @@
       "correct": 200
     },
     "context_camera": {
-      "correct": 104
+      "correct": 200
     },
     "context_relative": {
       "correct": 200
     },
     "create_part_studio": {
-      "correct": 100
+      "correct": 200
     },
     "design_judgment": {
-      "correct": 100
+      "correct": 200
     },
     "edge_chamfer": {
       "correct": 200
@@ -55,13 +55,13 @@
       "correct": 200
     },
     "feature_rename": {
-      "correct": 195
+      "correct": 200
     },
     "fit_all": {
-      "correct": 150
+      "correct": 200
     },
     "fit_selection": {
-      "correct": 150
+      "correct": 200
     },
     "follow": {
       "correct": 200
@@ -112,7 +112,7 @@
       "correct": 200
     },
     "part_delete": {
-      "correct": 150
+      "correct": 200
     },
     "part_hide": {
       "correct": 200
@@ -124,7 +124,7 @@
       "correct": 200
     },
     "part_text_meta": {
-      "correct": 175
+      "correct": 200
     },
     "pattern": {
       "correct": 200
@@ -133,20 +133,20 @@
       "correct": 200
     },
     "professional_out_of_contract": {
-      "route_mismatch": 66,
-      "correct": 106
+      "route_mismatch": 80,
+      "correct": 120
     },
     "quantity_invalid": {
-      "correct": 180
+      "correct": 200
     },
     "rename_document": {
-      "correct": 150
+      "correct": 200
     },
     "reorder": {
       "correct": 200
     },
     "rollback": {
-      "correct": 150
+      "correct": 200
     },
     "selection_ambiguous": {
       "correct": 200
@@ -158,10 +158,10 @@
       "correct": 200
     },
     "unsupported_precise": {
-      "correct": 161
+      "correct": 200
     },
     "unsuppress": {
-      "correct": 150
+      "correct": 200
     },
     "zoom": {
       "correct": 200
