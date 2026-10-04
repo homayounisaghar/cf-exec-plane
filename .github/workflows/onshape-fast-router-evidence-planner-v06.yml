@@ -1,0 +1,66 @@
+name: Onshape Fast Router Evidence Planner V06
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - qualification/onshape-fast-router-evidence-planner-v06/control/*.request
+
+permissions:
+  contents: write
+
+concurrency:
+  group: onshape-fast-router-evidence-planner-v06
+  cancel-in-progress: false
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Syntax gate
+        run: |
+          python -m py_compile qualification/onshape-fast-router-evidence-planner-v06/evidence_router.py
+          python -m py_compile qualification/onshape-fast-router-evidence-planner-v06/corpus_v02.py
+          python -m py_compile qualification/onshape-fast-router-evidence-planner-v06/synthetic_holdout.py
+          python -m py_compile qualification/onshape-fast-router-evidence-planner-v06/metamorphic.py
+          python -m py_compile qualification/onshape-fast-router-evidence-planner-v06/run_suite.py
+
+      - name: Require Groq credential
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: test -n "$GROQ_API_KEY"
+
+      - name: Run evidence planner qualification
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          BATCH_SIZE: '12'
+          MAX_BATCH_RETRIES: '8'
+          OUT_DIR: ${{ github.workspace }}/artifacts/onshape-fast-router-evidence-planner-v06
+        run: |
+          cd qualification/onshape-fast-router-evidence-planner-v06
+          python run_suite.py
+
+      - name: Publish direct readback report
+        if: always()
+        run: |
+          set -eu
+          report_dir="reports/onshape-fast-router-evidence-planner-v06"
+          mkdir -p "$report_dir"
+          cp artifacts/onshape-fast-router-evidence-planner-v06/*.json "$report_dir/"
+          printf '{"run_id":"%s","head_sha":"%s"}\n' "$GITHUB_RUN_ID" "$GITHUB_SHA" > "$report_dir/latest-meta.json"
+          git config user.name "cf-exec-plane"
+          git config user.email "actions@users.noreply.github.com"
+          git add "$report_dir"
+          git commit -m "Report: Onshape evidence planner v06" || exit 0
+          git pull --rebase origin main
+          git push origin HEAD:main
