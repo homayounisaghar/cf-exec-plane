@@ -1,0 +1,4 @@
+request_id=pvc-r211-bale-text-shape1-deploy-20261005-001
+candidate_commit=d3fc856699b17478dde03af6fcc7ab196e44764e
+expected_sequence=211
+expected_release=onshape-vps-fast-r100-direct-orbit1-paa-storage-r211-bale-text-shape1
