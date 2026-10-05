@@ -1,0 +1,4 @@
+request_id=pvc-r218-bale-whatsapp-parity-ci-20261005-001
+candidate_commit=b0c74499557281e9a09a9e62868ebc15fe2d882f
+expected_sequence=218
+expected_release=onshape-vps-fast-r100-direct-orbit1-paa-storage-r218-bale-whatsapp-parity1
