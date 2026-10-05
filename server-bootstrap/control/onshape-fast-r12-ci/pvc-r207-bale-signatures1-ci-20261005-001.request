@@ -1,0 +1,4 @@
+request_id=pvc-r207-bale-signatures1-ci-20261005-001
+candidate_commit=2ff4a2d2d3bb4882f2f9f612fd7ae7453b557d45
+expected_sequence=207
+expected_release=onshape-vps-fast-r100-direct-orbit1-paa-storage-r207-bale-signatures1
