@@ -1,0 +1,4 @@
+request_id=pvc-r206-bale-api-shape1-deploy-20261005-001
+candidate_commit=bb600151eb71739ed512d0fcc342fe4fb2d64a1a
+expected_sequence=206
+expected_release=onshape-vps-fast-r100-direct-orbit1-paa-storage-r206-bale-api-shape1
