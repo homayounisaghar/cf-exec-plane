@@ -1,0 +1,4 @@
+request_id=pcg-bale-final-cutover-20261005-001
+candidate_commit=1a3947c3f96a6ab7f13f5bc0a7f7cd54cb9447ae
+provider=bale
+action=cutover
