@@ -1,0 +1,4 @@
+request_id=pvc-r208-bale-callsite-map1-ci-20261005-001
+candidate_commit=90185150a3df569f77a03cb6f0a0c8f896ca1dee
+expected_sequence=208
+expected_release=onshape-vps-fast-r100-direct-orbit1-paa-storage-r208-bale-callsite-map1
