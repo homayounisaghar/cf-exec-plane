@@ -1,0 +1,4 @@
+request_id=pvc-r205-bale-api-probe1-ci-20261005-001
+candidate_commit=37a56137a6a6cd66f926fd86eb3dc6cda4de660b
+expected_sequence=205
+expected_release=onshape-vps-fast-r100-direct-orbit1-paa-storage-r205-bale-api-probe1
