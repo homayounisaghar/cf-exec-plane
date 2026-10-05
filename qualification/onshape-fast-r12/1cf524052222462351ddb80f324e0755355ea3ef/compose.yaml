@@ -14,10 +14,10 @@ services:
         umask 077 &&
         chmod 0700 /profile /run/onshape-secrets /agent-state &&
         mkdir -p /tmp/app &&
-        cp /release/package.json /release/server.js /release/core.js /release/browser.js /release/onshape-request.cjs /release/onshape-agent.js /release/telegram-ingress.mjs /release/bale-ingress.mjs /release/whatsapp-ingress.mjs /release/paa-bale-preload.mjs /tmp/app/ &&
+        cp /release/package.json /release/server.js /release/core.js /release/browser.js /release/onshape-request.cjs /release/onshape-agent.js /release/telegram-ingress.mjs /release/bale-ingress.mjs /release/whatsapp-ingress.mjs /release/whatsapp-preload.mjs /release/paa-bale-preload.mjs /tmp/app/ &&
         cd /tmp/app &&
         PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm install --omit=dev --ignore-scripts --no-audit --no-fund --package-lock=false &&
-        exec node --import ./paa-bale-preload.mjs server.js
+        exec node --import ./paa-bale-preload.mjs --import ./whatsapp-preload.mjs server.js
     environment:
       HOST: 127.0.0.1
       PORT: "8788"
