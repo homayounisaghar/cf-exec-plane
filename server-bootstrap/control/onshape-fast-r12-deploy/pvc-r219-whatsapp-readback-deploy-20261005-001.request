@@ -1,0 +1,4 @@
+request_id=pvc-r219-whatsapp-readback-deploy-20261005-001
+candidate_commit=a8c1e2fa855eb8a7f187d6d516b1155303117383
+expected_sequence=219
+expected_release=onshape-vps-fast-r100-direct-orbit1-paa-storage-r219-whatsapp-readback-fixes1
