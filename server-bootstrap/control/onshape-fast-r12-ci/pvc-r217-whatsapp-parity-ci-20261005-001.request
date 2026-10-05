@@ -1,0 +1,4 @@
+request_id=pvc-r217-whatsapp-parity-ci-20261005-001
+candidate_commit=600374e346ea5de4cb9b1925b594376b8219050e
+expected_sequence=217
+expected_release=onshape-vps-fast-r100-direct-orbit1-paa-storage-r217-whatsapp-parity1
