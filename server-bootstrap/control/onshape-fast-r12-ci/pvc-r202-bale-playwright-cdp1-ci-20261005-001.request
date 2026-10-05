@@ -1,0 +1,4 @@
+request_id=pvc-r202-bale-playwright-cdp1-ci-20261005-001
+candidate_commit=53f4170274d728ac49b7441ac172657764697694
+expected_sequence=202
+expected_release=onshape-vps-fast-r100-direct-orbit1-paa-storage-r202-bale-playwright-cdp1
