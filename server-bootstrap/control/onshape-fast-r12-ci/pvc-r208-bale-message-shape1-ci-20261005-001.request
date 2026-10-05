@@ -1,0 +1,4 @@
+request_id=pvc-r208-bale-message-shape1-ci-20261005-001
+candidate_commit=3770d9a14ec06271de5214370b872c8099d628a7
+expected_sequence=208
+expected_release=onshape-vps-fast-r100-direct-orbit1-paa-storage-r208-bale-message-shape1
