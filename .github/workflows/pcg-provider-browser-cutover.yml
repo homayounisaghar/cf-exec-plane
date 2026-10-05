@@ -50,7 +50,7 @@ jobs:
           [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 13
           [[ "$candidate_commit" =~ ^[0-9a-f]{40}$ ]] || exit 14
           [[ "$provider" == whatsapp || "$provider" == alibaba ]] || exit 15
-          [[ "$action" == inspect || "$action" == cutover ]] || exit 16
+          [[ "$action" == inspect || "$action" == cutover || "$action" == restart-test ]] || exit 16
 
           {
             echo "candidate_commit=$candidate_commit"
