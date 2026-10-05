@@ -1,0 +1,29 @@
+{
+  "schema": "capability-fabric.deploy.v1",
+  "sequence": 205,
+  "release_id": "onshape-vps-fast-r100-direct-orbit1-paa-storage-r205-bale-api-probe1",
+  "compose_file": "compose.yaml",
+  "health_file": "health.sh",
+  "health_timeout_seconds": 180,
+  "files": {
+    "bale-ingress.mjs": "76199f3a44acad0f5f93b235bc58207aee369162e913e4464bab3cdf12c398ef",
+    "browser.js": "5626111657f1a4fe6ccf74760f2fe6790f30b0337e55d53d1f1074e2bd1f9e2e",
+    "capability-fabric-onshape-server.service": "e810d312838a4b857870b2e0126c020e01b28ceaae1ddb9cfd66c3d29993f9f7",
+    "compose.yaml": "5625996a5760fbfd7543b6571624d423f470aa95e423d7a3645135b279948931",
+    "core.js": "4d038cae328fadaa562cac5f5165fd3cc7406c61b33f8c72c028eea1cf1cd737",
+    "gateway.js": "01224d014e62c132e54e2c457bd5310aaec3bd0195683c6f478f9fd4f235c582",
+    "health.sh": "698ef92aded9ee6318d6f6ce3cfbcc9fe1ed0e51acee56c69ed393eeda30eabd",
+    "onshape-agent.js": "670f939bdbdda73a654f4c9d9fe9cd95e17203635155f2bcd002ce4fde4603cc",
+    "onshape-agent.test.mjs": "37be14df8f50b29b20937a492bb491de2ff566d3111a8e403b9d7e343d51fa48",
+    "onshape-request.cjs": "891bd676132cba1e09ae0d3ee017ec2097c7b910fccc101803ea25731ea27abc",
+    "package.json": "72b568b2db1bd490f9cc0ce8788ff739dea81a59bb0a1aa28c379e8632e1a1cb",
+    "paa-bale-preload.mjs": "22dfc6fafd6de35899bc3fbe49dd30b05789f7dc60852202feaf85e814cee922",
+    "paa-search-preload.mjs": "36142a044029a51b18a03608f881b29ce213c4952341ad04c66bc047287198b0",
+    "release-closure.json": "9d8bf9fda3cb8f1af29efd563f8605d4d03f55a1495862338ff24a486c33d3f2",
+    "server.js": "9416ef5d2af2c38c9d4dd41c4bcb5c156c654bbce98fdc74a39f513785e7409e",
+    "telegram-ingress.mjs": "8fa2dabf8a85d907ffe8942857be8c0f1b0975841e0f83f54502b8c90a25cfe8"
+  },
+  "images": [
+    "mcr.microsoft.com/playwright:v1.62.1-resolute@sha256:aebd85bce8056dcdc2269853fd94ea432b6a201da4f0ef125b509489ecd52ddb"
+  ]
+}
