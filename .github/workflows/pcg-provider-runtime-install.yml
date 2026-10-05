@@ -91,6 +91,7 @@ jobs:
           node --check "$root/pcg_browser_provider.mjs"
           node --check "$root/pcg_wechat_runtime.mjs"
           bash -n "$root/install.sh"
+          bash -n "$root/attended_auth.sh"
           grep -q 'PCG_PROVIDER_RUNTIME_DORMANT=1' "$root/install.sh"
           if grep -Eq '^systemctl enable ' "$root/install.sh"; then
             echo "install phase must not enable provider services" >&2
@@ -138,6 +139,7 @@ jobs:
           cat > "$RUNNER_TEMP/pcg-provider-remote.sh" <<'REMOTE'
           set -euo pipefail
           [[ "$(id -u)" -eq 0 ]] || { echo "PCG_PROVIDER_INSTALL_REQUIRES_ROOT" >&2; exit 50; }
+
           stage="/tmp/pcg-provider-runtime-$CANDIDATE_COMMIT"
           rm -rf "$stage"
           mkdir -m 0700 "$stage"
@@ -149,8 +151,13 @@ jobs:
           command -v Xvfb >/dev/null
           command -v xvfb-run >/dev/null
           test -x /usr/local/lib/capability-fabric/pcg-provider-runtime/chrome-linux64/chrome
+          test -x /usr/local/lib/capability-fabric/pcg-provider-runtime/attended_auth.sh
           test -f /etc/systemd/system/capability-fabric-pcg-browser@.service
           test -f /etc/systemd/system/capability-fabric-pcg-wechat.service
+          grep -q '^User=cfop_e79aa1fde5$' /etc/systemd/system/capability-fabric-pcg-browser@.service
+          [[ "$(stat -c '%a' /var/lib/capability-fabric/pcg)" == 751 ]]
+          test -r /var/lib/capability-fabric/pcg/provider-runtime-install-status.env
+
           for provider in bale whatsapp alibaba; do
             test -d "/var/lib/capability-fabric/pcg/$provider/profile"
             unit="capability-fabric-pcg-browser@$provider.service"
@@ -163,9 +170,8 @@ jobs:
               exit 52
             fi
           done
+
           test -d /var/lib/capability-fabric/pcg/wechat/home
-          test -r /var/lib/capability-fabric/pcg/provider-runtime-install-status.env
-          grep -q '^User=cfop_e79aa1fde5
           if systemctl is-active --quiet capability-fabric-pcg-wechat.service; then
             echo "PCG_PROVIDER_INSTALL_UNEXPECTED_ACTIVE provider=wechat" >&2
             exit 53
@@ -186,38 +192,7 @@ jobs:
             -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
             -o UserKnownHostsFile="$SSH_DIR/known_hosts" \
             "$RUNNER_TEMP/pcg-provider-remote.sh" "${VPS_SSH_USER}@${VPS_HOST}:/tmp/pcg-provider-remote.sh"
-          set +e
-          ssh -i "$SSH_DIR/key" -p "$SSH_PORT" \
-            -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
-            -o UserKnownHostsFile="$SSH_DIR/known_hosts" \
-            "${VPS_SSH_USER}@${VPS_HOST}" \
-            "CANDIDATE_COMMIT='$CANDIDATE_COMMIT' bash /tmp/pcg-provider-remote.sh; rc=\$?; rm -f /tmp/pcg-provider-remote.sh; exit \$rc" </dev/null
-          remote_rc=$?
-          set -e
-          echo "PCG_PROVIDER_RUNTIME_REMOTE_EXIT=$remote_rc"
-          [[ "$remote_rc" -eq 0 ]] || exit "$remote_rc"
- /etc/systemd/system/capability-fabric-pcg-browser@.service
-          [[ "$(stat -c '%a' /var/lib/capability-fabric/pcg)" == 751 ]]
-          if systemctl is-active --quiet capability-fabric-pcg-wechat.service; then
-            echo "PCG_PROVIDER_INSTALL_UNEXPECTED_ACTIVE provider=wechat" >&2
-            exit 53
-          fi
-          if systemctl is-enabled --quiet capability-fabric-pcg-wechat.service; then
-            echo "PCG_PROVIDER_INSTALL_UNEXPECTED_ENABLED provider=wechat" >&2
-            exit 54
-          fi
 
-          rm -rf "$stage"
-          echo "PCG_PROVIDER_RUNTIME_INSTALL=success"
-          echo "PCG_PROVIDER_RUNTIME_CANDIDATE=$CANDIDATE_COMMIT"
-          echo "PCG_PROVIDER_RUNTIME_LIVE_RESTART=none"
-          echo "PCG_PROVIDER_RUNTIME_SERVICES=dormant"
-          REMOTE
-
-          scp -q -i "$SSH_DIR/key" -P "$SSH_PORT" \
-            -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
-            -o UserKnownHostsFile="$SSH_DIR/known_hosts" \
-            "$RUNNER_TEMP/pcg-provider-remote.sh" "${VPS_SSH_USER}@${VPS_HOST}:/tmp/pcg-provider-remote.sh"
           set +e
           ssh -i "$SSH_DIR/key" -p "$SSH_PORT" \
             -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
