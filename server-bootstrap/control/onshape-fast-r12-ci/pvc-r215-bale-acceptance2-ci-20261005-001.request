@@ -1,0 +1,4 @@
+request_id=pvc-r215-bale-acceptance2-ci-20261005-001
+candidate_commit=71ca8be4ef3e5a23e38ab8c55043a7d5aed14bc1
+expected_sequence=215
+expected_release=onshape-vps-fast-r100-direct-orbit1-paa-storage-r215-bale-acceptance2
