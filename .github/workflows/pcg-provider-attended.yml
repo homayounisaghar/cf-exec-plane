@@ -1,0 +1,131 @@
+name: PCG Provider Attended Login
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - server-bootstrap/control/pcg-provider-attended/*.request
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pcg-provider-attended
+  cancel-in-progress: false
+
+jobs:
+  attended:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+
+      - id: request
+        name: Validate immutable attended-login request
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || exit 10
+          IFS=$'\t' read -r status request_path <<<"${changes[0]}"
+          [[ "$status" == A ]] || exit 11
+          [[ "$request_path" == server-bootstrap/control/pcg-provider-attended/*.request ]] || exit 12
+
+          request_id="$(awk -F= '$1=="request_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          candidate_commit="$(awk -F= '$1=="candidate_commit"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          provider="$(awk -F= '$1=="provider"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          action="$(awk -F= '$1=="action"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+
+          [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 13
+          [[ "$candidate_commit" =~ ^[0-9a-f]{40}$ ]] || exit 14
+          [[ "$provider" == whatsapp ]] || exit 15
+          case "$action" in start|stop|status) ;; *) exit 16 ;; esac
+
+          {
+            echo "candidate_commit=$candidate_commit"
+            echo "provider=$provider"
+            echo "action=$action"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Fetch exact attended helper
+        env:
+          CF_REPO_READ_TOKEN: ${{ secrets.CF_REPO_READ_TOKEN }}
+          CANDIDATE_COMMIT: ${{ steps.request.outputs.candidate_commit }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          : "${CF_REPO_READ_TOKEN:?missing private repository read token}"
+          work="${RUNNER_TEMP}/pcg-provider-attended-private"
+          rm -rf "$work"
+          mkdir -m 700 "$work"
+          git init "$work" >/dev/null
+          askpass="${RUNNER_TEMP}/pcg-provider-attended-askpass"
+          cat > "$askpass" <<'ASKPASS'
+          #!/usr/bin/env bash
+          case "${1:-}" in
+            *Username*) printf '%s\n' 'x-access-token' ;;
+            *Password*) printf '%s\n' "$CF_REPO_READ_TOKEN" ;;
+            *) exit 1 ;;
+          esac
+          ASKPASS
+          chmod 700 "$askpass"
+          GIT_ASKPASS="$askpass" GIT_TERMINAL_PROMPT=0 git -C "$work" fetch --quiet --depth=1 \
+            https://github.com/homayounisaghar/capability-fabric.git "$CANDIDATE_COMMIT"
+          actual="$(git -C "$work" rev-parse FETCH_HEAD)"
+          [[ "$actual" == "$CANDIDATE_COMMIT" ]] || exit 20
+          git -C "$work" show "FETCH_HEAD:server-deploy/channels/pcg/provider-runtime/attended_auth.sh" > "$RUNNER_TEMP/attended_auth.sh"
+          rm -f "$askpass"
+          unset CF_REPO_READ_TOKEN
+          bash -n "$RUNNER_TEMP/attended_auth.sh"
+          grep -q 'PCG_ATTENDED_STARTED' "$RUNNER_TEMP/attended_auth.sh"
+          chmod 0700 "$RUNNER_TEMP/attended_auth.sh"
+
+      - name: Prepare SSH
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -n "$VPS_SSH_KEY" && -n "$VPS_HOST" && -n "$VPS_SSH_USER" && -n "$VPS_HOST_KEY" ]] || exit 30
+          port="${VPS_PORT:-22}"
+          case "$port" in ''|*[!0-9]*) exit 31 ;; esac
+          tmp="$RUNNER_TEMP/pcg-provider-attended-ssh"
+          install -d -m 0700 "$tmp"
+          printf '%s\n' "$VPS_SSH_KEY" > "$tmp/key"
+          chmod 0600 "$tmp/key"
+          host_key_line="${VPS_HOST_KEY//$'\r'/}"
+          read -r hkt hkd extra <<< "$host_key_line"
+          [[ "$hkt" == ssh-ed25519 && -n "$hkd" && -z "${extra:-}" ]] || exit 32
+          printf '%s %s %s\n' "$VPS_HOST" "$hkt" "$hkd" > "$tmp/known_hosts"
+          printf '[%s]:%s %s %s\n' "$VPS_HOST" "$port" "$hkt" "$hkd" >> "$tmp/known_hosts"
+          chmod 0600 "$tmp/known_hosts"
+          echo "SSH_DIR=$tmp" >> "$GITHUB_ENV"
+          echo "SSH_PORT=$port" >> "$GITHUB_ENV"
+
+      - name: Execute bounded attended-login action
+        env:
+          PROVIDER: ${{ steps.request.outputs.provider }}
+          ACTION: ${{ steps.request.outputs.action }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          scp -q -i "$SSH_DIR/key" -P "$SSH_PORT" \
+            -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$SSH_DIR/known_hosts" \
+            "$RUNNER_TEMP/attended_auth.sh" \
+            "${VPS_SSH_USER}@${VPS_HOST}:/tmp/pcg-attended-auth.sh"
+
+          ssh -i "$SSH_DIR/key" -p "$SSH_PORT" \
+            -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$SSH_DIR/known_hosts" \
+            "${VPS_SSH_USER}@${VPS_HOST}" \
+            "bash /tmp/pcg-attended-auth.sh '$PROVIDER' '$ACTION'; rc=\$?; rm -f /tmp/pcg-attended-auth.sh; exit \$rc" </dev/null
