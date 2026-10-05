@@ -1,0 +1,117 @@
+name: PCG Provider Runtime Refresh
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - server-bootstrap/control/pcg-provider-runtime-refresh/*.request
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pcg-provider-runtime-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+
+      - id: request
+        name: Validate immutable provider-runtime refresh request
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || exit 10
+          IFS=$'\t' read -r status request_path <<<"${changes[0]}"
+          [[ "$status" == A ]] || exit 11
+          [[ "$request_path" == server-bootstrap/control/pcg-provider-runtime-refresh/*.request ]] || exit 12
+          request_id="$(awk -F= '$1=="request_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          candidate_commit="$(awk -F= '$1=="candidate_commit"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 13
+          [[ "$candidate_commit" =~ ^[0-9a-f]{40}$ ]] || exit 14
+          echo "candidate_commit=$candidate_commit" >> "$GITHUB_OUTPUT"
+
+      - name: Fetch exact browser runtime
+        env:
+          CF_REPO_READ_TOKEN: ${{ secrets.CF_REPO_READ_TOKEN }}
+          CANDIDATE_COMMIT: ${{ steps.request.outputs.candidate_commit }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          : "${CF_REPO_READ_TOKEN:?missing private repository read token}"
+          work="${RUNNER_TEMP}/pcg-provider-refresh-private"
+          rm -rf "$work"
+          mkdir -m 700 "$work"
+          git init "$work" >/dev/null
+          askpass="${RUNNER_TEMP}/pcg-provider-refresh-askpass"
+          cat > "$askpass" <<'ASKPASS'
+          #!/usr/bin/env bash
+          case "${1:-}" in
+            *Username*) printf '%s\n' 'x-access-token' ;;
+            *Password*) printf '%s\n' "$CF_REPO_READ_TOKEN" ;;
+            *) exit 1 ;;
+          esac
+          ASKPASS
+          chmod 700 "$askpass"
+          GIT_ASKPASS="$askpass" GIT_TERMINAL_PROMPT=0 git -C "$work" fetch --quiet --depth=1 \
+            https://github.com/homayounisaghar/capability-fabric.git "$CANDIDATE_COMMIT"
+          actual="$(git -C "$work" rev-parse FETCH_HEAD)"
+          [[ "$actual" == "$CANDIDATE_COMMIT" ]] || exit 20
+          git -C "$work" show "FETCH_HEAD:server-deploy/channels/pcg/provider-runtime/pcg_browser_provider.mjs" > "$RUNNER_TEMP/pcg_browser_provider.mjs"
+          rm -f "$askpass"
+          unset CF_REPO_READ_TOKEN
+          node --check "$RUNNER_TEMP/pcg_browser_provider.mjs"
+          sha256sum "$RUNNER_TEMP/pcg_browser_provider.mjs" | awk '{print $1}' > "$RUNNER_TEMP/browser.sha256"
+
+      - name: Prepare SSH
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -n "$VPS_SSH_KEY" && -n "$VPS_HOST" && -n "$VPS_SSH_USER" && -n "$VPS_HOST_KEY" ]] || exit 30
+          port="${VPS_PORT:-22}"
+          case "$port" in ''|*[!0-9]*) exit 31 ;; esac
+          tmp="$RUNNER_TEMP/pcg-provider-refresh-ssh"
+          install -d -m 0700 "$tmp"
+          printf '%s\n' "$VPS_SSH_KEY" > "$tmp/key"
+          chmod 0600 "$tmp/key"
+          host_key_line="${VPS_HOST_KEY//$'\r'/}"
+          read -r hkt hkd extra <<< "$host_key_line"
+          [[ "$hkt" == ssh-ed25519 && -n "$hkd" && -z "${extra:-}" ]] || exit 32
+          printf '%s %s %s\n' "$VPS_HOST" "$hkt" "$hkd" > "$tmp/known_hosts"
+          printf '[%s]:%s %s %s\n' "$VPS_HOST" "$port" "$hkt" "$hkd" >> "$tmp/known_hosts"
+          chmod 0600 "$tmp/known_hosts"
+          echo "SSH_DIR=$tmp" >> "$GITHUB_ENV"
+          echo "SSH_PORT=$port" >> "$GITHUB_ENV"
+
+      - name: Refresh browser runtime without service restart
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected="$(cat "$RUNNER_TEMP/browser.sha256")"
+          scp -q -i "$SSH_DIR/key" -P "$SSH_PORT" \
+            -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$SSH_DIR/known_hosts" \
+            "$RUNNER_TEMP/pcg_browser_provider.mjs" \
+            "${VPS_SSH_USER}@${VPS_HOST}:/tmp/pcg_browser_provider.mjs"
+
+          ssh -i "$SSH_DIR/key" -p "$SSH_PORT" \
+            -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$SSH_DIR/known_hosts" \
+            "${VPS_SSH_USER}@${VPS_HOST}" \
+            "set -euo pipefail; [[ \"\$(id -u)\" -eq 0 ]]; install -m 0644 -o root -g root /tmp/pcg_browser_provider.mjs /usr/local/lib/capability-fabric/pcg-provider-runtime/pcg_browser_provider.mjs; rm -f /tmp/pcg_browser_provider.mjs; observed=\$(sha256sum /usr/local/lib/capability-fabric/pcg-provider-runtime/pcg_browser_provider.mjs | awk '{print \$1}'); [[ \"\$observed\" == '$expected' ]]; echo PCG_PROVIDER_RUNTIME_REFRESH=success; echo PCG_PROVIDER_RUNTIME_SERVICE_RESTART=none" </dev/null
