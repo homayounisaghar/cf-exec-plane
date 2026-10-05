@@ -1,0 +1,4 @@
+request_id=pvc-r213-whatsapp-list-canary1-deploy-20261005-001
+candidate_commit=5a5e0f38af448d275f79a742f758c58aa62138d1
+expected_sequence=213
+expected_release=onshape-vps-fast-r100-direct-orbit1-paa-storage-r213-whatsapp-list-canary1
