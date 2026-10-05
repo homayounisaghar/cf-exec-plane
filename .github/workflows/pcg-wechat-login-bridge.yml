@@ -1,0 +1,125 @@
+name: PCG WeChat Login Bridge
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - server-bootstrap/control/pcg-wechat-login-bridge/*.request
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pcg-wechat-login-bridge
+  cancel-in-progress: false
+
+jobs:
+  control:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+
+      - id: request
+        name: Validate immutable WeChat bridge request
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || exit 10
+          IFS=$'\t' read -r status request_path <<<"${changes[0]}"
+          [[ "$status" == A ]] || exit 11
+          [[ "$request_path" == server-bootstrap/control/pcg-wechat-login-bridge/*.request ]] || exit 12
+          request_id="$(awk -F= '$1=="request_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          action="$(awk -F= '$1=="action"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 13
+          case "$action" in start|stop|status) ;; *) exit 14 ;; esac
+          echo "action=$action" >> "$GITHUB_OUTPUT"
+
+      - name: Prepare SSH
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -n "$VPS_SSH_KEY" && -n "$VPS_HOST" && -n "$VPS_SSH_USER" && -n "$VPS_HOST_KEY" ]] || exit 20
+          port="${VPS_PORT:-22}"
+          tmp="$RUNNER_TEMP/pcg-wechat-bridge-ssh"
+          install -d -m 0700 "$tmp"
+          printf '%s\n' "$VPS_SSH_KEY" > "$tmp/key"
+          chmod 0600 "$tmp/key"
+          host_key_line="${VPS_HOST_KEY//$'\r'/}"
+          read -r hkt hkd extra <<< "$host_key_line"
+          [[ "$hkt" == ssh-ed25519 && -n "$hkd" && -z "${extra:-}" ]] || exit 21
+          printf '%s %s %s\n' "$VPS_HOST" "$hkt" "$hkd" > "$tmp/known_hosts"
+          printf '[%s]:%s %s %s\n' "$VPS_HOST" "$port" "$hkt" "$hkd" >> "$tmp/known_hosts"
+          echo "SSH_DIR=$tmp" >> "$GITHUB_ENV"
+          echo "SSH_PORT=$port" >> "$GITHUB_ENV"
+
+      - name: Control WeChat hidden login bridge
+        env:
+          ACTION: ${{ steps.request.outputs.action }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -i "$SSH_DIR/key" -p "$SSH_PORT" \
+            -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$SSH_DIR/known_hosts" \
+            "${VPS_SSH_USER}@${VPS_HOST}" "ACTION='$ACTION' bash -s" <<'REMOTE'
+          set -euo pipefail
+          [[ "$(id -u)" -eq 0 ]]
+          owner=cfop_e79aa1fde5
+          unit=capability-fabric-pcg-login-bridge-wechat.service
+          state=/var/lib/capability-fabric/pcg/wechat
+          home="$state/home"
+
+          case "$ACTION" in
+            start)
+              systemctl stop capability-fabric-pcg-wechat.service >/dev/null 2>&1 || true
+              pkill -TERM -u "$owner" -f '^/opt/wechat/wechat' >/dev/null 2>&1 || true
+              for _ in $(seq 1 20); do
+                pgrep -u "$owner" -f '^/opt/wechat/wechat' >/dev/null 2>&1 || break
+                sleep 0.5
+              done
+              pgrep -u "$owner" -f '^/opt/wechat/wechat' >/dev/null 2>&1 && exit 31
+              systemctl stop "$unit" >/dev/null 2>&1 || true
+              systemctl reset-failed "$unit" >/dev/null 2>&1 || true
+              install -d -m 0700 -o "$owner" -g "$owner" "$state" "$home" "$home/.config" "$home/.cache" "$home/.local" "$home/.local/share"
+              rm -f /tmp/.X97-lock
+              rm -f /tmp/.X11-unix/X97
+              systemd-run --quiet --unit="$unit" --uid="$owner" --collect \
+                --property=Type=simple \
+                --property=KillMode=control-group \
+                --property=WorkingDirectory="$state" \
+                --setenv=HOME="$home" \
+                --setenv=XDG_CONFIG_HOME="$home/.config" \
+                --setenv=XDG_CACHE_HOME="$home/.cache" \
+                --setenv=XDG_DATA_HOME="$home/.local/share" \
+                --setenv=QT_ACCESSIBILITY=1 \
+                --setenv=QT_LINUX_ACCESSIBILITY_ALWAYS_ON=1 \
+                /bin/bash -lc 'set -e; Xvfb :97 -screen 0 1440x1000x24 -nolisten tcp -ac & xvfb=$!; trap "kill $xvfb 2>/dev/null || true" EXIT; for i in $(seq 1 40); do [[ -S /tmp/.X11-unix/X97 ]] && break; sleep 0.1; done; export DISPLAY=:97; /usr/bin/dbus-run-session -- /opt/wechat/wechat'
+              sleep 2
+              systemctl is-active --quiet "$unit"
+              [[ -S /tmp/.X11-unix/X97 ]]
+              echo "PCG_WECHAT_LOGIN_BRIDGE=active"
+              ;;
+            stop)
+              systemctl stop "$unit" >/dev/null 2>&1 || true
+              systemctl reset-failed "$unit" >/dev/null 2>&1 || true
+              echo "PCG_WECHAT_LOGIN_BRIDGE=stopped"
+              ;;
+            status)
+              systemctl is-active "$unit" || true
+              pgrep -a -u "$owner" -f '^/opt/wechat/wechat' || true
+              ;;
+          esac
+          REMOTE
