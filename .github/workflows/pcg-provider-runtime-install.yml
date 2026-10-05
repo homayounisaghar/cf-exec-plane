@@ -148,7 +148,7 @@ jobs:
 
           command -v Xvfb >/dev/null
           command -v xvfb-run >/dev/null
-          test -x /opt/capability-fabric/pcg-provider-runtime/chrome-linux64/chrome
+          test -x /usr/local/lib/capability-fabric/pcg-provider-runtime/chrome-linux64/chrome
           test -f /etc/systemd/system/capability-fabric-pcg-browser@.service
           test -f /etc/systemd/system/capability-fabric-pcg-wechat.service
           for provider in bale whatsapp alibaba; do
@@ -164,6 +164,7 @@ jobs:
             fi
           done
           test -d /var/lib/capability-fabric/pcg/wechat/home
+          [[ "$(stat -c '%a' /var/lib/capability-fabric/pcg)" == 751 ]]
           if systemctl is-active --quiet capability-fabric-pcg-wechat.service; then
             echo "PCG_PROVIDER_INSTALL_UNEXPECTED_ACTIVE provider=wechat" >&2
             exit 53
