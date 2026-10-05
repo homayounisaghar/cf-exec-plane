@@ -1,0 +1,4 @@
+request_id=pvc-r214-shared-bale-whatsapp-deploy-20261005-001
+candidate_commit=308356974eeb92ebb570424bded2135ed811f31b
+expected_sequence=214
+expected_release=onshape-vps-fast-r100-direct-orbit1-paa-storage-r214-bale-basic-parity3
