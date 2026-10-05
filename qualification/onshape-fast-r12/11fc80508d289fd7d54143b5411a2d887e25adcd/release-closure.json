@@ -1,0 +1,34 @@
+{
+  "schema": "onshape.direct-release-closure.v1",
+  "build_id": "onshape-vps-fast-r100-direct-orbit1-paa-storage-r212-bale-basic-parity2",
+  "required_runtime_config": {
+    "browser_topology": "SINGLE_SESSION",
+    "browser_contexts": 1,
+    "api_maximum_concurrency": 1,
+    "api_minimum_interval_ms": 1000,
+    "documented_operation_path": "DIRECT_NODE_AGENT",
+    "operation_registry": "STARTUP_PREINDEXED",
+    "request_journal": "MUTATIONS_ONLY"
+  },
+  "files": [
+    "bale-ingress.mjs",
+    "browser.js",
+    "capability-fabric-onshape-server.service",
+    "compose.yaml",
+    "core.js",
+    "gateway.js",
+    "health.sh",
+    "onshape-agent.js",
+    "onshape-agent.test.mjs",
+    "onshape-request.cjs",
+    "package.json",
+    "paa-bale-preload.mjs",
+    "paa-search-preload.mjs",
+    "release-closure.json",
+    "server.js",
+    "telegram-ingress.mjs"
+  ],
+  "images": [
+    "mcr.microsoft.com/playwright:v1.62.1-resolute@sha256:aebd85bce8056dcdc2269853fd94ea432b6a201da4f0ef125b509489ecd52ddb"
+  ]
+}
