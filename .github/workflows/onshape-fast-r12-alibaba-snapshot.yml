@@ -1,0 +1,157 @@
+name: Onshape Fast R12 Alibaba Snapshot
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - server-bootstrap/control/onshape-fast-r12-alibaba-snapshot/*.request
+
+permissions:
+  contents: write
+
+concurrency:
+  group: onshape-fast-r12-alibaba-snapshot
+  cancel-in-progress: false
+
+jobs:
+  snapshot:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Validate immutable exact request
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || exit 10
+          IFS=$'\t' read -r status request_path <<<"${changes[0]}"
+          [[ "$status" == A ]] || exit 11
+          [[ "$request_path" == server-bootstrap/control/onshape-fast-r12-alibaba-snapshot/*.request ]] || exit 12
+          request_id="$(awk -F= '$1=="request_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          base_candidate="$(awk -F= '$1=="base_candidate"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          candidate_commit="$(awk -F= '$1=="candidate_commit"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          expected_sequence="$(awk -F= '$1=="expected_sequence"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          expected_release="$(awk -F= '$1=="expected_release"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 13
+          [[ "$base_candidate" =~ ^[0-9a-f]{40}$ ]] || exit 14
+          [[ "$candidate_commit" =~ ^[0-9a-f]{40}$ ]] || exit 15
+          [[ "$expected_sequence" =~ ^[0-9]+$ ]] || exit 16
+          [[ "$expected_release" =~ ^onshape-vps-fast-r100-direct-orbit1-paa-storage-r[0-9]+-alibaba-[A-Za-z0-9_.-]+$ ]] || exit 17
+          [[ -d "qualification/onshape-fast-r12/$base_candidate" ]] || exit 18
+          {
+            echo "BASE_CANDIDATE=$base_candidate"
+            echo "CANDIDATE_COMMIT=$candidate_commit"
+            echo "EXPECTED_SEQUENCE=$expected_sequence"
+            echo "EXPECTED_RELEASE=$expected_release"
+          } >> "$GITHUB_ENV"
+
+      - name: Fetch exact private Alibaba candidate
+        shell: bash
+        env:
+          CF_REPO_READ_TOKEN: ${{ secrets.CF_REPO_READ_TOKEN }}
+        run: |
+          set -euo pipefail
+          : "${CF_REPO_READ_TOKEN:?missing private repository read token}"
+          private="$RUNNER_TEMP/private-candidate"
+          mkdir -m 700 "$private"
+          git init "$private" >/dev/null
+          askpass="$RUNNER_TEMP/askpass"
+          cat > "$askpass" <<'ASKPASS'
+          #!/usr/bin/env bash
+          case "${1:-}" in
+            *Username*) printf '%s\n' 'x-access-token' ;;
+            *Password*) printf '%s\n' "$CF_REPO_READ_TOKEN" ;;
+            *) exit 1 ;;
+          esac
+          ASKPASS
+          chmod 700 "$askpass"
+          GIT_ASKPASS="$askpass" GIT_TERMINAL_PROMPT=0 git -C "$private" fetch --quiet --depth=1 \
+            https://github.com/homayounisaghar/capability-fabric.git "$CANDIDATE_COMMIT"
+          [[ "$(git -C "$private" rev-parse FETCH_HEAD)" == "$CANDIDATE_COMMIT" ]] || exit 20
+          git -C "$private" checkout --quiet --detach FETCH_HEAD
+          rm -f "$askpass"
+          unset CF_REPO_READ_TOKEN
+          src="$private/server-deploy/candidates/$EXPECTED_RELEASE"
+          for f in alibaba-ingress.mjs paa-alibaba-preload.mjs server.js compose.yaml provenance.json; do
+            [[ -f "$src/$f" ]] || { echo "missing private Alibaba candidate file: $f" >&2; exit 21; }
+          done
+          node --check "$src/alibaba-ingress.mjs"
+          node --check "$src/paa-alibaba-preload.mjs"
+          node --check "$src/server.js"
+          grep -q 'server.registerTool("alibaba_conversation_list"' "$src/alibaba-ingress.mjs"
+          grep -q 'server.registerTool("alibaba_message_replies"' "$src/alibaba-ingress.mjs"
+          grep -q 'server.registerTool("alibaba_send"' "$src/alibaba-ingress.mjs"
+          grep -q 'server.registerTool("alibaba_attachment_get"' "$src/alibaba-ingress.mjs"
+          grep -q 'server.registerTool("alibaba_image_resend"' "$src/alibaba-ingress.mjs"
+          grep -q '__cfStageAlibabaMaterialDownload' "$src/server.js"
+          grep -q -- '--import ./paa-alibaba-preload.mjs' "$src/compose.yaml"
+          echo "PRIVATE_ALIBABA_SOURCE=$src" >> "$GITHUB_ENV"
+
+      - name: Build exact public snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="qualification/onshape-fast-r12/$BASE_CANDIDATE"
+          out="qualification/onshape-fast-r12/$CANDIDATE_COMMIT"
+          rm -rf "$out"
+          cp -a "$base" "$out"
+          cp "$PRIVATE_ALIBABA_SOURCE/alibaba-ingress.mjs" "$out/alibaba-ingress.mjs"
+          cp "$PRIVATE_ALIBABA_SOURCE/paa-alibaba-preload.mjs" "$out/paa-alibaba-preload.mjs"
+          cp "$PRIVATE_ALIBABA_SOURCE/server.js" "$out/server.js"
+          cp "$PRIVATE_ALIBABA_SOURCE/compose.yaml" "$out/compose.yaml"
+          python3 - "$out" "$EXPECTED_SEQUENCE" "$EXPECTED_RELEASE" <<'PY'
+          import hashlib, json, sys
+          from pathlib import Path
+          out=Path(sys.argv[1])
+          sequence=int(sys.argv[2])
+          release=sys.argv[3]
+          closure=json.loads((out/"release-closure.json").read_text())
+          closure["build_id"]=release
+          files=set(closure["files"])
+          files.update({"alibaba-ingress.mjs","paa-alibaba-preload.mjs"})
+          closure["files"]=sorted(files)
+          (out/"release-closure.json").write_text(json.dumps(closure,indent=2)+"\n")
+          manifest=json.loads((out/"manifest.json").read_text())
+          manifest["sequence"]=sequence
+          manifest["release_id"]=release
+          manifest["files"]={}
+          for rel in closure["files"]:
+              p=out/rel
+              assert p.is_file(), rel
+              manifest["files"][rel]=hashlib.sha256(p.read_bytes()).hexdigest()
+          assert set(manifest["files"])==set(closure["files"])
+          (out/"manifest.json").write_text(json.dumps(manifest,indent=2)+"\n")
+          PY
+          node --check "$out/server.js"
+          node --check "$out/alibaba-ingress.mjs"
+          node --check "$out/paa-alibaba-preload.mjs"
+          node --check "$out/bale-ingress.mjs"
+          node --check "$out/whatsapp-ingress.mjs"
+          node --check "$out/telegram-ingress.mjs"
+          cmp -s "$base/bale-ingress.mjs" "$out/bale-ingress.mjs"
+          cmp -s "$base/paa-bale-preload.mjs" "$out/paa-bale-preload.mjs"
+          cmp -s "$base/whatsapp-ingress.mjs" "$out/whatsapp-ingress.mjs"
+          cmp -s "$base/whatsapp-preload.mjs" "$out/whatsapp-preload.mjs"
+          cmp -s "$base/telegram-ingress.mjs" "$out/telegram-ingress.mjs"
+          grep -q '/release/alibaba-ingress.mjs' "$out/compose.yaml"
+          grep -q '/release/paa-alibaba-preload.mjs' "$out/compose.yaml"
+          grep -q -- '--import ./paa-alibaba-preload.mjs' "$out/compose.yaml"
+          grep -q '__cfStageAlibabaMaterialDownload' "$out/server.js"
+          echo "ALIBABA_SNAPSHOT_GATE=pass"
+
+      - name: Commit exact snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          out="qualification/onshape-fast-r12/$CANDIDATE_COMMIT"
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A "$out"
+          git diff --cached --quiet && exit 31
+          git commit -m "snapshot Alibaba parity candidate"
+          git push origin HEAD:main
