@@ -1,0 +1,124 @@
+name: PCG WeChat R241 Live Qualification
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - server-bootstrap/control/pcg-wechat-r241-live-qual/*.request
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pcg-wechat-r241-live-qual
+  cancel-in-progress: false
+
+jobs:
+  qualify:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - id: request
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]]
+          IFS=$'\t' read -r status request_path <<<"${changes[0]}"
+          [[ "$status" == A ]]
+          [[ "$request_path" == server-bootstrap/control/pcg-wechat-r241-live-qual/*.request ]]
+          request_id="$(awk -F= '$1=="request_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          candidate_commit="$(awk -F= '$1=="candidate_commit"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          [[ "$request_id" == "$(basename "$request_path" .request)" ]]
+          [[ "$candidate_commit" =~ ^[0-9a-f]{40}$ ]]
+          echo "candidate_commit=$candidate_commit" >> "$GITHUB_OUTPUT"
+      - name: Prepare SSH
+        shell: bash
+        run: |
+          set -euo pipefail
+          port="${VPS_PORT:-22}"
+          tmp="${RUNNER_TEMP}/ssh"
+          install -d -m 0700 "$tmp"
+          printf '%s\n' "$VPS_SSH_KEY" > "$tmp/key"; chmod 0600 "$tmp/key"
+          read -r hkt hkd extra <<< "${VPS_HOST_KEY//$'\r'/}"
+          [[ "$hkt" == ssh-ed25519 && -n "$hkd" && -z "${extra:-}" ]]
+          printf '%s %s %s\n' "$VPS_HOST" "$hkt" "$hkd" > "$tmp/known_hosts"
+          printf '[%s]:%s %s %s\n' "$VPS_HOST" "$port" "$hkt" "$hkd" >> "$tmp/known_hosts"
+          echo "SSH_DIR=$tmp" >> "$GITHUB_ENV"; echo "SSH_PORT=$port" >> "$GITHUB_ENV"
+      - name: Qualify bounded live WeChat surface
+        env:
+          CANDIDATE_COMMIT: ${{ steps.request.outputs.candidate_commit }}
+        shell: bash
+        run: |
+          ssh -i "$SSH_DIR/key" -p "$SSH_PORT" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$SSH_DIR/known_hosts" "${VPS_SSH_USER}@${VPS_HOST}" "CANDIDATE_COMMIT='$CANDIDATE_COMMIT' bash -s" <<'REMOTE'
+          set -euo pipefail
+          [[ "$(id -u)" -eq 0 ]]
+          final=capability-fabric-pcg-wechat.service
+          semantic=capability-fabric-pcg-wechat-semantic.service
+          bridge=capability-fabric-pcg-login-bridge-wechat.service
+          systemctl is-active --quiet "$final"
+          systemctl is-active --quiet "$semantic"
+          ! systemctl is-active --quiet "$bridge"
+          before_pid="$(systemctl show "$final" -p MainPID --value)"
+          base=http://127.0.0.1:9337
+          curl -fsS --max-time 5 "$base/status" >/tmp/wechat-q-status.json
+          curl -fsS --max-time 30 -H 'content-type: application/json' -d '{"limit":30,"max_pages":8}' "$base/conversation-scan" >/tmp/wechat-q-scan.json
+          curl -fsS --max-time 20 -H 'content-type: application/json' -d '{"query":"slot"}' "$base/provider-search" >/tmp/wechat-q-search.json
+          curl -fsS --max-time 20 -H 'content-type: application/json' -d '{"section":"Contacts","query":"Nicole"}' "$base/navigation-probe" >/tmp/wechat-q-contacts.json
+          curl -fsS --max-time 15 -H 'content-type: application/json' -d '{"target":"File Transfer","action":"mark_unread","dry_run":true}' "$base/conversation-action" >/tmp/wechat-q-mark.json
+          curl -fsS --max-time 15 -H 'content-type: application/json' -d '{"target":"File Transfer","action":"mute","desired":true,"dry_run":true}' "$base/conversation-action" >/tmp/wechat-q-mute.json
+          curl -fsS --max-time 15 -H 'content-type: application/json' -d '{"target":"File Transfer","action":"pin","desired":true,"dry_run":true}' "$base/conversation-action" >/tmp/wechat-q-pin.json
+          curl -fsS --max-time 15 -H 'content-type: application/json' -d '{"target":"File Transfer","text":"pcg-dry-run","allow_mark_read":false,"dry_run":true}' "$base/send-text" >/tmp/wechat-q-send.json
+          file_dialog_ok=false
+          if curl -fsS --max-time 15 -H 'content-type: application/json' -d '{}' "$base/file-dialog-probe" >/tmp/wechat-q-file.json 2>/dev/null; then file_dialog_ok=true; fi
+          curl -fsS --max-time 12 "$base/screenshot" >/tmp/wechat-q-shot.png
+          python3 - "$CANDIDATE_COMMIT" "$before_pid" "$file_dialog_ok" <<'PY'
+          import json,sys,time
+          candidate,pid,file_dialog=sys.argv[1],sys.argv[2],sys.argv[3]=="true"
+          status=json.load(open("/tmp/wechat-q-status.json"))
+          scan=json.load(open("/tmp/wechat-q-scan.json"))
+          search=json.load(open("/tmp/wechat-q-search.json"))
+          contacts=json.load(open("/tmp/wechat-q-contacts.json"))
+          mark=json.load(open("/tmp/wechat-q-mark.json"))
+          mute=json.load(open("/tmp/wechat-q-mute.json"))
+          pin=json.load(open("/tmp/wechat-q-pin.json"))
+          send=json.load(open("/tmp/wechat-q-send.json"))
+          assert status.get("ok") is True and status.get("authenticated") is True
+          assert len(scan.get("conversations",[])) >= 20
+          assert scan.get("read_state_changed") is False
+          assert scan.get("provider_visible_state_changed") is False
+          assert any(x.get("category")=="Chat History" for x in search.get("results",[]))
+          assert search.get("provider_visible_state_changed") is False
+          assert any("Nicole" in str(x.get("name","")) for x in contacts.get("items",[]))
+          for p in (mark,mute,pin):
+              assert p.get("state") in ("DRY_RUN_READY","ALREADY")
+              assert p.get("effect_performed") is False
+          assert send.get("state")=="DRY_RUN_READY" and send.get("effect_performed") is False
+          png=open("/tmp/wechat-q-shot.png","rb").read(8)
+          assert png==b"\x89PNG\r\n\x1a\n"
+          out={
+            "ok":True,"candidate_commit":candidate,"wechat_main_pid":int(pid),
+            "authenticated":True,"conversation_scan_count":len(scan.get("conversations",[])),
+            "message_search_chat_history":True,"contact_search":True,
+            "mark_unread_dry_run":True,"mute_dry_run":True,"pin_dry_run":True,
+            "send_dry_run":True,"screenshot":True,"file_dialog_qualified":file_dialog,
+            "provider_visible_write_performed":False,"written_at":int(time.time())
+          }
+          open("/var/lib/capability-fabric/paa-remote/pcg-wechat-r241-live-qual-proof.json","w").write(json.dumps(out,separators=(",",":")))
+          PY
+          after_pid="$(systemctl show "$final" -p MainPID --value)"
+          [[ "$before_pid" == "$after_pid" ]]
+          chown paa_remote:paa_remote /var/lib/capability-fabric/paa-remote/pcg-wechat-r241-live-qual-proof.json
+          chmod 0600 /var/lib/capability-fabric/paa-remote/pcg-wechat-r241-live-qual-proof.json
+          REMOTE
