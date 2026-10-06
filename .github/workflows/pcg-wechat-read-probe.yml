@@ -76,7 +76,7 @@ jobs:
           ssh -i "$SSH_DIR/key" -p "$SSH_PORT" \
             -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
             -o UserKnownHostsFile="$SSH_DIR/known_hosts" \
-            "${VPS_SSH_USER}@${VPS_HOST}" bash -s <<'REMOTE'
+            "${VPS_SSH_USER}@${VPS_HOST}" "ACTION='$ACTION' bash -s" <<'REMOTE'
           set -euo pipefail
           [[ "$(id -u)" -eq 0 ]] || exit 30
           owner=cfop_e79aa1fde5
