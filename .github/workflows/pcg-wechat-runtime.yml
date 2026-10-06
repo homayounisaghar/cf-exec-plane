@@ -417,6 +417,84 @@ jobs:
               install -o paa_remote -g paa_remote -m 0600 /tmp/pcg-wechat-readchat-after.json /var/lib/capability-fabric/paa-remote/pcg-wechat-read-chat-accessibility.json
               echo "PCG_WECHAT_READ_CHAT_PROBE=success"
               ;;
+            message-structure-probe)
+              systemctl is-active --quiet "$final" || { echo "WECHAT_MESSAGE_STRUCTURE_PROBE_REQUIRES_FINAL_ACTIVE" >&2; exit 101; }
+              ! systemctl is-active --quiet "$bridge" || { echo "WECHAT_MESSAGE_STRUCTURE_PROBE_REFUSES_BRIDGE_ACTIVE" >&2; exit 102; }
+              before=/tmp/pcg-wechat-message-structure-before.json
+              after=/tmp/pcg-wechat-message-structure-after.json
+              curl -fsS --max-time 3 http://127.0.0.1:9336/accessibility > "$before"
+              read -r cx cy target64 count < <(python3 - "$before" <<'PY'
+          import base64,json,sys
+          j=json.load(open(sys.argv[1]))
+          rows=[]
+          for n in j.get("nodes",[]):
+              if n.get("role")!="list item": continue
+              st=set(n.get("states",[])); b=n.get("bounds") or {}
+              if "showing" not in st or "visible" not in st: continue
+              lines=[x.strip() for x in str(n.get("name","")).split("\n") if x.strip()]
+              if not lines: continue
+              name=lines[0]
+              if name=="File Transfer" or "selected" in st: continue
+              if len(lines)>1 and lines[1].startswith("[") and "]" in lines[1]: continue
+              if int(b.get("width",0))<20 or int(b.get("height",0))<20: continue
+              rows.append((name,b))
+          if not rows:
+              print("0 0 - 0")
+          else:
+              name,b=rows[0]
+              enc=base64.urlsafe_b64encode(name.encode()).decode().rstrip("=")
+              print(int(b["x"])+int(b["width"])//2,int(b["y"])+int(b["height"])//2,enc,1)
+          PY
+              )
+              [[ "$count" -eq 1 ]] || { echo "WECHAT_MESSAGE_STRUCTURE_NO_SAFE_READ_CHAT" >&2; exit 103; }
+              target="$(python3 - "$target64" <<'PY'
+          import base64,sys
+          s=sys.argv[1]; s += "="*((4-len(s)%4)%4)
+          print(base64.urlsafe_b64decode(s).decode())
+          PY
+              )"
+              export DISPLAY=:97
+              export XAUTHORITY="$state/Xauthority"
+              runuser -u "$owner" -- env DISPLAY="$DISPLAY" XAUTHORITY="$XAUTHORITY" xdotool mousemove "$cx" "$cy" click 1
+              sleep 2
+              curl -fsS --max-time 3 http://127.0.0.1:9336/accessibility > "$after"
+              python3 - "$after" "$target" <<'PY'
+          import json,sys
+          j=json.load(open(sys.argv[1])); target=sys.argv[2]
+          matches=[]
+          for n in j.get("nodes",[]):
+              if n.get("role")!="list item": continue
+              lines=[x.strip() for x in str(n.get("name","")).split("\n") if x.strip()]
+              if lines and lines[0]==target:
+                  matches.append((lines,set(n.get("states",[]))))
+          if len(matches)!=1: raise SystemExit(104)
+          lines,states=matches[0]
+          if len(lines)>1 and lines[1].startswith("[") and "]" in lines[1]: raise SystemExit(105)
+          if "selected" not in states: raise SystemExit(106)
+          PY
+              runuser -u "$owner" -- env DISPLAY="$DISPLAY" XAUTHORITY="$XAUTHORITY" ffmpeg -loglevel error -f x11grab -video_size 1440x1000 -i :97 -frames:v 1 -y /tmp/pcg-wechat-message-structure.png
+              install -o paa_remote -g paa_remote -m 0600 "$after" /var/lib/capability-fabric/paa-remote/pcg-wechat-message-structure.json
+              install -o paa_remote -g paa_remote -m 0600 /tmp/pcg-wechat-message-structure.png /var/lib/capability-fabric/paa-remote/pcg-wechat-message-structure.png
+              read -r rx ry rcount < <(python3 - "$after" <<'PY'
+          import json,sys
+          j=json.load(open(sys.argv[1])); rows=[]
+          for n in j.get("nodes",[]):
+              if n.get("role")!="list item": continue
+              lines=[x.strip() for x in str(n.get("name","")).split("\n") if x.strip()]
+              if not lines or lines[0]!="File Transfer": continue
+              st=set(n.get("states",[])); b=n.get("bounds") or {}
+              if "showing" in st and "visible" in st and int(b.get("width",0))>20 and int(b.get("height",0))>20:
+                  rows.append(b)
+          if len(rows)!=1: print("0 0",len(rows))
+          else:
+              b=rows[0]; print(int(b["x"])+int(b["width"])//2,int(b["y"])+int(b["height"])//2,1)
+          PY
+              )
+              [[ "$rcount" -eq 1 ]] || { echo "WECHAT_MESSAGE_STRUCTURE_RESTORE_TARGET_NOT_UNIQUE" >&2; exit 107; }
+              runuser -u "$owner" -- env DISPLAY="$DISPLAY" XAUTHORITY="$XAUTHORITY" xdotool mousemove "$rx" "$ry" click 1
+              sleep 1
+              echo "PCG_WECHAT_MESSAGE_STRUCTURE_PROBE=success"
+              ;;
             restart-test)
               systemctl is-active --quiet "$final" || { echo "WECHAT_RESTART_TEST_REQUIRES_FINAL_ACTIVE" >&2; exit 70; }
               systemctl restart "$final"
