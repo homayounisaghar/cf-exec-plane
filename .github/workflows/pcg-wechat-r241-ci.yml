@@ -81,7 +81,7 @@ jobs:
           grep -q -- "--import ./whatsapp-preload.mjs" "$base/compose.yaml"
           grep -q -- "--import ./paa-alibaba-preload.mjs" "$base/compose.yaml"
           grep -q -- "--import ./wechat-preload.mjs" "$base/compose.yaml"
-          for tool in wechat_conversation_list wechat_unread_list wechat_conversation_search wechat_contact_search wechat_message_search wechat_chat_view wechat_send wechat_mark_read wechat_mark_unread wechat_mute wechat_pin wechat_file_upload wechat_file_upload_chunk wechat_file_send; do
+          for tool in wechat_conversation_list wechat_unread_list wechat_conversation_search wechat_contact_search wechat_message_search wechat_chat_view wechat_send wechat_mark_read wechat_mark_unread wechat_mute wechat_pin; do
             grep -q "$tool" "$base/wechat-ingress.mjs"
           done
           python3 - <<'PY'
@@ -94,6 +94,8 @@ jobs:
           assert p["owner_publish_authorized"] is True
           assert p["no_generic_executor_added"] is True
           assert p["preserves_live_r240_alibaba_surface"] is True
+          assert "wechat_file_send" not in p["implemented_tools"]
+          assert "file_send" in p["explicit_gaps"]
           PY
       - name: Prepare SSH
         shell: bash
