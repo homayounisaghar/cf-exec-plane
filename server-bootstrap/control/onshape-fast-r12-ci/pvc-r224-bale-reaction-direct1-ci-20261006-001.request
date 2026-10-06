@@ -1,0 +1,4 @@
+request_id=pvc-r224-bale-reaction-direct1-ci-20261006-001
+candidate_commit=fe38317c31a82e035e9006710489ebb3a69664a3
+expected_sequence=224
+expected_release=onshape-vps-fast-r100-direct-orbit1-paa-storage-r224-bale-reaction-direct1
