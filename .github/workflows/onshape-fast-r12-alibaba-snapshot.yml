@@ -87,7 +87,9 @@ jobs:
           grep -q 'server.registerTool("alibaba_message_replies"' "$src/alibaba-ingress.mjs"
           grep -q 'server.registerTool("alibaba_send"' "$src/alibaba-ingress.mjs"
           grep -q 'server.registerTool("alibaba_attachment_get"' "$src/alibaba-ingress.mjs"
-          grep -q 'server.registerTool("alibaba_image_resend"' "$src/alibaba-ingress.mjs"
+          ! grep -q 'server.registerTool("alibaba_image_resend"' "$src/alibaba-ingress.mjs"
+          grep -q 'quoteMessage' "$src/alibaba-ingress.mjs"
+          grep -q 'messageServiceV2.recallMessage' "$src/alibaba-ingress.mjs"
           grep -q '__cfStageAlibabaMaterialDownload' "$src/server.js"
           grep -q -- '--import ./paa-alibaba-preload.mjs' "$src/compose.yaml"
           echo "PRIVATE_ALIBABA_SOURCE=$src" >> "$GITHUB_ENV"
@@ -133,11 +135,21 @@ jobs:
           node --check "$out/bale-ingress.mjs"
           node --check "$out/whatsapp-ingress.mjs"
           node --check "$out/telegram-ingress.mjs"
-          cmp -s "$base/bale-ingress.mjs" "$out/bale-ingress.mjs"
-          cmp -s "$base/paa-bale-preload.mjs" "$out/paa-bale-preload.mjs"
-          cmp -s "$base/whatsapp-ingress.mjs" "$out/whatsapp-ingress.mjs"
-          cmp -s "$base/whatsapp-preload.mjs" "$out/whatsapp-preload.mjs"
-          cmp -s "$base/telegram-ingress.mjs" "$out/telegram-ingress.mjs"
+          python3 - "$base" "$out" <<'PY'
+          import json, sys
+          from pathlib import Path
+          base=Path(sys.argv[1])
+          out=Path(sys.argv[2])
+          closure=json.loads((base/"release-closure.json").read_text())
+          allowed={"alibaba-ingress.mjs","manifest.json","release-closure.json"}
+          for rel in closure["files"]:
+              if rel in allowed:
+                  continue
+              bp=base/rel
+              op=out/rel
+              assert bp.is_file() and op.is_file(), rel
+              assert bp.read_bytes()==op.read_bytes(), f"unexpected non-Alibaba change: {rel}"
+          PY
           grep -q '/release/alibaba-ingress.mjs' "$out/compose.yaml"
           grep -q '/release/paa-alibaba-preload.mjs' "$out/compose.yaml"
           grep -q -- '--import ./paa-alibaba-preload.mjs' "$out/compose.yaml"
