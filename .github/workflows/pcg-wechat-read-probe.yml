@@ -44,7 +44,7 @@ jobs:
           request_id="$(awk -F= '$1=="request_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
           action="$(awk -F= '$1=="action"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
           [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 13
-          case "$action" in snapshot|state-index|db-schema) ;; *) exit 14 ;; esac
+          case "$action" in snapshot|state-index|db-schema|key-scan) ;; *) exit 14 ;; esac
           echo "action=$action" >> "$GITHUB_OUTPUT"
 
       - name: Prepare SSH
@@ -164,6 +164,159 @@ jobs:
           PY
               install -o paa_remote -g paa_remote -m 0600 "$tmp" "$out"
               echo "stage=success db_schema=$out" >> "$debug"
+              ;;
+            key-scan)
+              summary=/var/lib/capability-fabric/paa-remote/pcg-wechat-keyscan-summary.json
+              tmp=/tmp/pcg-wechat-keyscan-summary.json
+              python3 - "$state" "$owner" > "$tmp" <<'PY'
+          import glob, hashlib, hmac, json, os, pathlib, re, struct, sys, time
+          state=pathlib.Path(sys.argv[1])
+          owner=sys.argv[2]
+          root=state/"home"/"xwechat_files"
+          key_path=state/"db-keys.json"
+          page_size=4096
+          reserve=80
+          hmac_size=64
+          key_size=32
+          max_region=256*1024*1024
+          chunk_size=1024*1024
+          xpat=re.compile(rb"x'([0-9a-fA-F]{64,192})'")
+          rawpat=re.compile(rb"(?<![0-9a-fA-F])([0-9a-fA-F]{64})(?![0-9a-fA-F])")
+          
+          def verify(db_path, key, explicit_salt=None):
+              try:
+                  page=pathlib.Path(db_path).read_bytes()[:page_size]
+                  if len(page)<page_size: return False
+                  salt=explicit_salt if explicit_salt is not None else page[:16]
+                  if len(salt)!=16 or len(key)!=32: return False
+                  mac_salt=bytes(b ^ 0x3A for b in salt)
+                  mac_key=hashlib.pbkdf2_hmac("sha512", key, mac_salt, 2, dklen=32)
+                  data=page[16:page_size-reserve+16]
+                  stored=page[page_size-hmac_size:page_size]
+                  hm=hmac.new(mac_key, data, hashlib.sha512)
+                  hm.update(struct.pack("<I",1))
+                  return hmac.compare_digest(hm.digest(), stored)
+              except Exception:
+                  return False
+          
+          dbs=[]
+          for p in sorted(glob.glob(str(root/"**"/"*.db"), recursive=True)):
+              try:
+                  with open(p,"rb") as fh: head=fh.read(16)
+              except OSError:
+                  continue
+              if head.startswith(b"SQLite format 3"): continue
+              if "/db_storage/" not in p: continue
+              dbs.append(p)
+          
+          unresolved=set(dbs)
+          validated={}
+          seen=set()
+          pids=[]
+          for entry in pathlib.Path("/proc").iterdir():
+              if not entry.name.isdigit(): continue
+              try: cmd=(entry/"cmdline").read_bytes().replace(b"\0",b" ").decode("utf-8","ignore")
+              except Exception: continue
+              if "/opt/wechat/wechat" in cmd:
+                  pids.append(int(entry.name))
+          pids.sort()
+          
+          def consider(key_hex, salt_hex=None):
+              ident=(key_hex.lower(), salt_hex.lower() if salt_hex else None)
+              if ident in seen: return
+              seen.add(ident)
+              try: key=bytes.fromhex(ident[0])
+              except Exception: return
+              salt=None
+              if ident[1]:
+                  try: salt=bytes.fromhex(ident[1])
+                  except Exception: salt=None
+              for db in list(unresolved):
+                  if verify(db,key,None):
+                      validated[db]={"key_hex":ident[0],"salt_hex":None}
+                      unresolved.remove(db)
+                      continue
+                  if salt is not None and verify(db,key,salt):
+                      validated[db]={"key_hex":ident[0],"salt_hex":ident[1]}
+                      unresolved.remove(db)
+          
+          regions_scanned=0
+          bytes_scanned=0
+          errors=[]
+          for pid in pids:
+              try: lines=pathlib.Path(f"/proc/{pid}/maps").read_text().splitlines()
+              except Exception as exc:
+                  errors.append(f"maps:{pid}:{type(exc).__name__}"); continue
+              try: mem=open(f"/proc/{pid}/mem","rb",buffering=0)
+              except Exception as exc:
+                  errors.append(f"mem:{pid}:{type(exc).__name__}"); continue
+              try:
+                  for line in lines:
+                      if not unresolved: break
+                      parts=line.split()
+                      if len(parts)<2 or "r" not in parts[1]: continue
+                      start_s,end_s=parts[0].split("-")
+                      start,end=int(start_s,16),int(end_s,16)
+                      size=end-start
+                      if size<32 or size>max_region: continue
+                      path_name=parts[-1] if len(parts)>=6 else ""
+                      allowed=(not path_name or path_name=="[heap]" or path_name.startswith("[anon:") or path_name.startswith("/opt/wechat"))
+                      if not allowed: continue
+                      regions_scanned+=1
+                      pos=start
+                      overlap=b""
+                      while pos<end and unresolved:
+                          want=min(chunk_size,end-pos)
+                          try:
+                              mem.seek(pos); data=mem.read(want)
+                          except (OSError,OverflowError):
+                              break
+                          if not data: break
+                          bytes_scanned+=len(data)
+                          scan=overlap+data
+                          for m in xpat.finditer(scan):
+                              inner=m.group(1).decode("ascii").lower()
+                              if len(inner)>=96: consider(inner[:64],inner[-32:])
+                              elif len(inner)==64: consider(inner,None)
+                          for m in rawpat.finditer(scan):
+                              consider(m.group(1).decode("ascii"),None)
+                          overlap=scan[-256:]
+                          pos+=len(data)
+              finally:
+                  mem.close()
+              if not unresolved: break
+          
+          payload={
+            "schema":"pcg.wechat.db_keys.v1",
+            "generated_at_ms":int(time.time()*1000),
+            "pid_candidates":pids,
+            "db_count":len(dbs),
+            "validated_count":len(validated),
+            "keys":validated
+          }
+          tmp=key_path.with_suffix(".tmp")
+          tmp.write_text(json.dumps(payload,separators=(",",":")),encoding="utf-8")
+          os.chmod(tmp,0o600)
+          os.replace(tmp,key_path)
+          summary={
+            "ok":bool(validated),
+            "pid_count":len(pids),
+            "db_count":len(dbs),
+            "validated_count":len(validated),
+            "validated_relative_paths":[str(pathlib.Path(p).relative_to(root)) for p in sorted(validated)],
+            "unresolved_relative_paths":[str(pathlib.Path(p).relative_to(root)) for p in sorted(unresolved)],
+            "regions_scanned":regions_scanned,
+            "bytes_scanned":bytes_scanned,
+            "candidate_count":len(seen),
+            "errors":errors[:20]
+          }
+          print(json.dumps(summary,ensure_ascii=False))
+          PY
+              chown "$owner:$owner" "$state/db-keys.json"
+              chmod 0600 "$state/db-keys.json"
+              install -o paa_remote -g paa_remote -m 0600 "$tmp" "$summary"
+              python3 -c 'import json,sys; p=json.load(open(sys.argv[1])); assert p.get("validated_count",0) > 0' "$summary"
+              echo "stage=success keyscan_summary=$summary" >> "$debug"
               ;;
             state-index)
               out=/var/lib/capability-fabric/paa-remote/pcg-wechat-state-index.txt
