@@ -1,0 +1,14 @@
+[Unit]
+Description=Capability Fabric single-session Onshape server
+After=network-online.target docker.service
+Wants=network-online.target
+Requires=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/sh -c '/usr/bin/docker inspect -f "{{.State.Running}}" capability-fabric-onshape-server 2>/dev/null | /usr/bin/grep -qx true || /usr/bin/docker start capability-fabric-onshape-server'
+ExecStop=/usr/bin/docker stop -t 15 capability-fabric-onshape-server
+
+[Install]
+WantedBy=multi-user.target
