@@ -90,7 +90,7 @@ export function createOwnerAuthGate({ stateDir, buildId = "unknown" }) {
     const created = nowIso();
     atomicWriteJson(stateFile, {
       schema: SCHEMA,
-      mode: "disabled",
+      mode: "observe",
       owners: [],
       organization_fingerprints: [],
       created_at: created,
