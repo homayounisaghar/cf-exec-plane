@@ -11,7 +11,7 @@ permissions:
 
 concurrency:
   group: pcg-alibaba-android-control-recovery
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   control:
