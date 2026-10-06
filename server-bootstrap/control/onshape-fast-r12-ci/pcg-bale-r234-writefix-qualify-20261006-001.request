@@ -1,0 +1,4 @@
+request_id=pcg-bale-r234-writefix-qualify-20261006-001
+candidate_commit=0bdcc4353053ed70073eef11592933b6b086bf5f
+expected_sequence=234
+expected_release=onshape-vps-fast-r100-direct-orbit1-paa-storage-r234-bale-writefix1
