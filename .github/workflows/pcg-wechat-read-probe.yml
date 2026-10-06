@@ -44,7 +44,7 @@ jobs:
           request_id="$(awk -F= '$1=="request_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
           action="$(awk -F= '$1=="action"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
           [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 13
-          case "$action" in snapshot|state-index|db-schema|key-scan) ;; *) exit 14 ;; esac
+          case "$action" in snapshot|state-index|db-schema|key-scan|semantic-inspect) ;; *) exit 14 ;; esac
           echo "action=$action" >> "$GITHUB_OUTPUT"
 
       - name: Prepare SSH
@@ -317,6 +317,73 @@ jobs:
               install -o paa_remote -g paa_remote -m 0600 "$tmp" "$summary"
               python3 -c 'import json,sys; p=json.load(open(sys.argv[1])); assert p.get("validated_count",0) > 0' "$summary"
               echo "stage=success keyscan_summary=$summary" >> "$debug"
+              ;;
+            semantic-inspect)
+              out=/var/lib/capability-fabric/paa-remote/pcg-wechat-semantic-inspect.json
+              tmp=/tmp/pcg-wechat-semantic-inspect.json
+              pid=""
+              dbus=""
+              for p in $(pgrep -u "$owner" -f '/opt/wechat/wechat' 2>/dev/null || true); do
+                [[ -r "/proc/$p/environ" ]] || continue
+                candidate="$(tr '\0' '\n' < "/proc/$p/environ" | awk -F= '$1=="DBUS_SESSION_BUS_ADDRESS"{sub(/^[^=]*=/,""); print; exit}')"
+                if [[ -n "$candidate" ]]; then pid="$p"; dbus="$candidate"; break; fi
+              done
+              [[ -n "$pid" && -n "$dbus" ]] || exit 41
+              runuser -u "$owner" -- env DISPLAY=:97 XAUTHORITY="$state/Xauthority" DBUS_SESSION_BUS_ADDRESS="$dbus" python3 - > "$tmp" <<'PY'
+          import json, gi
+          gi.require_version("Atspi","2.0")
+          from gi.repository import Atspi
+          wanted={"Search","Chats","Messages","Navigation"}
+          rows=[]
+          desktop=Atspi.get_desktop(0)
+          stack=[]
+          for i in range(desktop.get_child_count()-1,-1,-1):
+              try: stack.append((desktop.get_child_at_index(i),0))
+              except Exception: pass
+          seen=0
+          while stack and seen<3000:
+              obj,depth=stack.pop(); seen+=1
+              try: role=obj.get_role_name() or ""
+              except Exception: role=""
+              try: name=obj.get_name() or ""
+              except Exception: name=""
+              try: states=obj.get_state_set().get_states()
+              except Exception: states=[]
+              state_names=[]
+              for s in states:
+                  try: state_names.append(s.value_nick)
+                  except Exception: state_names.append(str(s))
+              try: interfaces=[str(x) for x in obj.get_interfaces()]
+              except Exception: interfaces=[]
+              if name in wanted or role in {"text","entry","list","list box"}:
+                  text_value=None
+                  char_count=None
+                  try:
+                      if obj.is_text():
+                          char_count=obj.get_character_count()
+                          text_value=obj.get_text(0,min(char_count,256)) if char_count else ""
+                  except Exception: pass
+                  actions=[]
+                  try:
+                      if obj.is_action():
+                          actions=[obj.get_action_name(i) for i in range(obj.get_n_actions())]
+                  except Exception: pass
+                  attrs={}
+                  try:
+                      raw=obj.get_attributes()
+                      if isinstance(raw,dict): attrs={str(k):str(v) for k,v in raw.items()}
+                  except Exception: pass
+                  rows.append({"depth":depth,"role":role,"name":name if name in wanted else ("<redacted>" if name else ""),"states":state_names,"interfaces":interfaces,"actions":actions,"text":text_value if name in wanted else None,"attributes":attrs})
+              try: count=obj.get_child_count()
+              except Exception: count=0
+              if depth<20:
+                  for i in range(min(count,250)-1,-1,-1):
+                      try: stack.append((obj.get_child_at_index(i),depth+1))
+                      except Exception: pass
+          print(json.dumps({"ok":True,"nodes_scanned":seen,"interesting":rows},ensure_ascii=False))
+          PY
+              install -o paa_remote -g paa_remote -m 0600 "$tmp" "$out"
+              echo "stage=success semantic_inspect=$out" >> "$debug"
               ;;
             state-index)
               out=/var/lib/capability-fabric/paa-remote/pcg-wechat-state-index.txt
