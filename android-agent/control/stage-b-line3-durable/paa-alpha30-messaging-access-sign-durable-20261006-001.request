@@ -1,0 +1,5 @@
+request_id=paa-alpha30-messaging-access-sign-durable-20261006-001
+stage_a_request_id=paa-alpha30-messaging-access-durable-20261006-001
+candidate_commit=509ed781919824d3ffb290596e8d7197276f0243
+version_code=30
+version_name=0.1.0-alpha30
