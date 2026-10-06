@@ -47,7 +47,7 @@ jobs:
           action="$(awk -F= '$1=="action"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
           [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 13
           [[ "$candidate_commit" =~ ^[0-9a-f]{40}$ ]] || exit 14
-          case "$action" in install|inspect|cutover|restart-test|login-resume|diagnose|cursor-park|self-chat-probe|read-chat-probe) ;; *) exit 15 ;; esac
+          case "$action" in install|inspect|cutover|restart-test|login-resume|diagnose|cursor-park|self-chat-probe|read-chat-probe|semantic-install) ;; *) exit 15 ;; esac
           {
             echo "candidate_commit=$candidate_commit"
             echo "action=$action"
@@ -81,7 +81,7 @@ jobs:
           root="$work/runtime"
           mkdir "$root"
           base="server-deploy/channels/pcg/provider-runtime"
-          for f in pcg_wechat_runtime.mjs wechat_session.sh wechat_atspi_snapshot.py capability-fabric-pcg-wechat.service; do
+          for f in pcg_wechat_runtime.mjs wechat_session.sh wechat_atspi_snapshot.py capability-fabric-pcg-wechat.service wechat_semantic_helper.py wechat_semantic_helper.sh capability-fabric-pcg-wechat-semantic.service; do
             git -C "$work" show "FETCH_HEAD:$base/$f" > "$root/$f"
           done
           rm -f "$askpass"
@@ -90,7 +90,920 @@ jobs:
           bash -n "$root/wechat_session.sh"
           python3 -m py_compile "$root/wechat_atspi_snapshot.py"
           grep -q '^User=cfop_e79aa1fde5$' "$root/capability-fabric-pcg-wechat.service"
-          grep -q '^Environment=HOME=/var/lib/capability-fabric/pcg/wechat/home$' "$root/capability-fabric-pcg-wechat.service"
+          grep -q '^Environment=HOME=/var/lib/capability-fabric/pcg/wechat/home
+
+      - name: Prepare SSH
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -n "$VPS_SSH_KEY" && -n "$VPS_HOST" && -n "$VPS_SSH_USER" && -n "$VPS_HOST_KEY" ]] || exit 30
+          port="${VPS_PORT:-22}"
+          case "$port" in ''|*[!0-9]*) exit 31 ;; esac
+          tmp="${RUNNER_TEMP}/pcg-wechat-ssh"
+          install -d -m 0700 "$tmp"
+          printf '%s\n' "$VPS_SSH_KEY" > "$tmp/key"
+          chmod 0600 "$tmp/key"
+          host_key_line="${VPS_HOST_KEY//$'\r'/}"
+          read -r hkt hkd extra <<< "$host_key_line"
+          [[ "$hkt" == ssh-ed25519 && -n "$hkd" && -z "${extra:-}" ]] || exit 32
+          printf '%s %s %s\n' "$VPS_HOST" "$hkt" "$hkd" > "$tmp/known_hosts"
+          printf '[%s]:%s %s %s\n' "$VPS_HOST" "$port" "$hkt" "$hkd" >> "$tmp/known_hosts"
+          chmod 0600 "$tmp/known_hosts"
+          echo "SSH_DIR=$tmp" >> "$GITHUB_ENV"
+          echo "SSH_PORT=$port" >> "$GITHUB_ENV"
+
+      - name: Upload bounded WeChat payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          scp -q -i "$SSH_DIR/key" -P "$SSH_PORT" \
+            -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$SSH_DIR/known_hosts" \
+            "${RUNNER_TEMP}/pcg-wechat-runtime.tgz" \
+            "${VPS_SSH_USER}@${VPS_HOST}:/tmp/pcg-wechat-runtime.tgz"
+
+      - name: Execute bounded WeChat runtime action
+        env:
+          ACTION: ${{ steps.request.outputs.action }}
+          CANDIDATE_COMMIT: ${{ steps.request.outputs.candidate_commit }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -i "$SSH_DIR/key" -p "$SSH_PORT" \
+            -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$SSH_DIR/known_hosts" \
+            "${VPS_SSH_USER}@${VPS_HOST}" "ACTION='$ACTION' CANDIDATE_COMMIT='$CANDIDATE_COMMIT' bash -s" <<'REMOTE'
+          set -euo pipefail
+          [[ "$(id -u)" -eq 0 ]] || exit 40
+
+          owner=cfop_e79aa1fde5
+          state=/var/lib/capability-fabric/pcg/wechat
+          home="$state/home"
+          runtime=/usr/local/lib/capability-fabric/pcg-provider-runtime
+          bridge=capability-fabric-pcg-login-bridge-wechat.service
+          final=capability-fabric-pcg-wechat.service
+          semantic=capability-fabric-pcg-wechat-semantic.service
+          stage="/tmp/pcg-wechat-runtime-$CANDIDATE_COMMIT"
+
+          rm -rf "$stage"
+          mkdir -m 0700 "$stage"
+          tar -xzf /tmp/pcg-wechat-runtime.tgz -C "$stage"
+          rm -f /tmp/pcg-wechat-runtime.tgz
+
+          start_bridge() {
+            systemctl stop "$bridge" >/dev/null 2>&1 || true
+            systemctl reset-failed "$bridge" >/dev/null 2>&1 || true
+            rm -f /tmp/.X97-lock /tmp/.X11-unix/X97
+            systemd-run --quiet --unit="$bridge" --uid="$owner" --collect \
+              --property=Type=simple \
+              --property=KillMode=control-group \
+              --property=WorkingDirectory="$state" \
+              --setenv=HOME="$home" \
+              --setenv=XDG_CONFIG_HOME="$home/.config" \
+              --setenv=XDG_CACHE_HOME="$home/.cache" \
+              --setenv=XDG_DATA_HOME="$home/.local/share" \
+              --setenv=QT_ACCESSIBILITY=1 \
+              --setenv=QT_LINUX_ACCESSIBILITY_ALWAYS_ON=1 \
+              /bin/bash -lc 'set -e; Xvfb :97 -screen 0 1440x1000x24 -nolisten tcp -ac & xvfb=$!; trap "kill $xvfb 2>/dev/null || true" EXIT; for i in $(seq 1 40); do [[ -S /tmp/.X11-unix/X97 ]] && break; sleep 0.1; done; export DISPLAY=:97; /usr/bin/dbus-run-session -- /opt/wechat/wechat'
+          }
+
+          wait_final() {
+            for _ in $(seq 1 60); do
+              if systemctl is-active --quiet "$final" && curl -fsS --max-time 1 http://127.0.0.1:9336/status >/tmp/pcg-wechat-status.json 2>/dev/null; then
+                if python3 - <<'PY'
+          import json
+          p=json.load(open('/tmp/pcg-wechat-status.json'))
+          raise SystemExit(0 if p.get('accessibility_available') else 1)
+          PY
+                then
+                  return 0
+                fi
+              fi
+              sleep 1
+            done
+            return 1
+          }
+
+          inspect() {
+            echo "WECHAT_BRIDGE_ACTIVE=$(systemctl is-active "$bridge" 2>/dev/null || true)"
+            echo "WECHAT_FINAL_ACTIVE=$(systemctl is-active "$final" 2>/dev/null || true)"
+            echo "WECHAT_FINAL_ENABLED=$(systemctl is-enabled "$final" 2>/dev/null || true)"
+            echo "WECHAT_HOME_OWNER=$(stat -c '%U:%G' "$home" 2>/dev/null || true)"
+            echo "WECHAT_HOME_MODE=$(stat -c '%a' "$home" 2>/dev/null || true)"
+            curl -fsS --max-time 2 http://127.0.0.1:9336/status 2>/dev/null || true
+            echo
+          }
+
+          case "$ACTION" in
+            install)
+              systemctl is-active --quiet "$bridge" || { echo "WECHAT_INSTALL_REQUIRES_ACTIVE_AUTH_BRIDGE" >&2; exit 50; }
+              ! systemctl is-active --quiet "$final" || { echo "WECHAT_INSTALL_REFUSES_FINAL_ACTIVE" >&2; exit 51; }
+              export DEBIAN_FRONTEND=noninteractive
+              if ! python3 -c 'import gi; gi.require_version("Atspi","2.0"); from gi.repository import Atspi' >/dev/null 2>&1; then
+                apt-get update -qq
+                apt-get install -y -qq --no-install-recommends at-spi2-core python3-gi gir1.2-atspi-2.0 xauth xvfb dbus-x11
+              fi
+              install -d -m 0755 -o root -g root "$runtime"
+              install -m 0644 -o root -g root "$stage/pcg_wechat_runtime.mjs" "$runtime/pcg_wechat_runtime.mjs"
+              install -m 0755 -o root -g root "$stage/wechat_session.sh" "$runtime/wechat_session.sh"
+              install -m 0755 -o root -g root "$stage/wechat_atspi_snapshot.py" "$runtime/wechat_atspi_snapshot.py"
+              install -m 0644 -o root -g root "$stage/capability-fabric-pcg-wechat.service" /etc/systemd/system/capability-fabric-pcg-wechat.service
+              systemctl daemon-reload
+              systemctl disable "$final" >/dev/null 2>&1 || true
+              systemctl is-active --quiet "$bridge"
+              echo "PCG_WECHAT_RUNTIME_INSTALL=success"
+              echo "PCG_WECHAT_RUNTIME_SERVICE_RESTART=none"
+              ;;
+            semantic-install)
+              systemctl is-active --quiet "$final" || { echo "WECHAT_SEMANTIC_INSTALL_REQUIRES_FINAL_ACTIVE" >&2; exit 98; }
+              ! systemctl is-active --quiet "$bridge" || { echo "WECHAT_SEMANTIC_INSTALL_REFUSES_BRIDGE_ACTIVE" >&2; exit 99; }
+              before_pid="$(systemctl show "$final" -p MainPID --value)"
+              install -m 0644 -o root -g root "$stage/wechat_semantic_helper.py" "$runtime/wechat_semantic_helper.py"
+              install -m 0755 -o root -g root "$stage/wechat_semantic_helper.sh" "$runtime/wechat_semantic_helper.sh"
+              install -m 0644 -o root -g root "$stage/capability-fabric-pcg-wechat-semantic.service" /etc/systemd/system/capability-fabric-pcg-wechat-semantic.service
+              systemctl daemon-reload
+              systemctl enable "$semantic" >/dev/null
+              systemctl restart "$semantic"
+              for _ in $(seq 1 30); do
+                if curl -fsS --max-time 2 http://127.0.0.1:9337/status >/tmp/pcg-wechat-semantic-status.json 2>/dev/null; then
+                  break
+                fi
+                sleep 1
+              done
+              test -s /tmp/pcg-wechat-semantic-status.json
+              python3 -c 'import json; p=json.load(open("/tmp/pcg-wechat-semantic-status.json")); assert p.get("ok") is True; assert p.get("provider")=="wechat"; assert p.get("authenticated") is True'
+              after_pid="$(systemctl show "$final" -p MainPID --value)"
+              [[ -n "$before_pid" && "$before_pid" == "$after_pid" ]] || { echo "WECHAT_FINAL_PID_CHANGED_DURING_SEMANTIC_INSTALL" >&2; exit 100; }
+              echo "PCG_WECHAT_SEMANTIC_INSTALL=success"
+              cat /tmp/pcg-wechat-semantic-status.json
+              ;;
+            inspect)
+              inspect
+              ;;
+            cutover)
+              systemctl is-active --quiet "$bridge" || { echo "WECHAT_CUTOVER_REQUIRES_ACTIVE_BRIDGE" >&2; exit 60; }
+              ! systemctl is-active --quiet "$final" || { echo "WECHAT_CUTOVER_REFUSES_DUPLICATE_FINAL" >&2; exit 61; }
+              [[ "$(systemctl show "$bridge" -p Environment --value)" == *"HOME=$home"* ]] || { echo "WECHAT_BRIDGE_HOME_MISMATCH" >&2; exit 62; }
+              systemctl stop "$bridge"
+              systemctl reset-failed "$bridge" >/dev/null 2>&1 || true
+              rm -f /tmp/.X97-lock /tmp/.X11-unix/X97
+              systemctl enable "$final" >/dev/null
+              systemctl start "$final"
+              if ! wait_final; then
+                echo "WECHAT_FINAL_QUALIFICATION_START_FAILED" >&2
+                systemctl disable --now "$final" >/dev/null 2>&1 || true
+                start_bridge
+                exit 63
+              fi
+              echo "PCG_WECHAT_CUTOVER=success"
+              inspect
+              ;;
+            diagnose)
+              {
+                echo "===UTC==="
+                date -u
+                echo "===FINAL_SHOW==="
+                systemctl show "$final" -p ActiveState -p SubState -p Result -p NRestarts -p MainPID -p ExecMainCode -p ExecMainStatus -p UnitFileState -p Environment -p ExecStart
+                echo "===FINAL_STATUS==="
+                systemctl status "$final" --no-pager --full 2>&1 || true
+                echo "===FINAL_JOURNAL==="
+                journalctl -u "$final" -n 120 --no-pager 2>&1 || true
+              } > /var/lib/capability-fabric/paa-remote/pcg-wechat-final-diagnostic.txt
+              chmod 0644 /var/lib/capability-fabric/paa-remote/pcg-wechat-final-diagnostic.txt
+              echo "PCG_WECHAT_DIAGNOSTIC=written"
+              ;;
+            login-resume)
+              systemctl is-active --quiet "$bridge" || { echo "WECHAT_LOGIN_RESUME_REQUIRES_BRIDGE" >&2; exit 72; }
+              ! systemctl is-active --quiet "$final" || { echo "WECHAT_LOGIN_RESUME_REFUSES_FINAL_ACTIVE" >&2; exit 73; }
+              if ! command -v xdotool >/dev/null 2>&1; then
+                export DEBIAN_FRONTEND=noninteractive
+                apt-get update -qq
+                apt-get install -y -qq --no-install-recommends xdotool
+              fi
+              export DISPLAY=:97
+              mapfile -t login_windows < <(xdotool search --onlyvisible --class wechat 2>/dev/null || true)
+              [[ "${#login_windows[@]}" -eq 1 ]] || { echo "WECHAT_LOGIN_RESUME_WINDOW_NOT_UNIQUE count=${#login_windows[@]}" >&2; exit 74; }
+              wid="${login_windows[0]}"
+              eval "$(xdotool getwindowgeometry --shell "$wid")"
+              [[ "$WIDTH" -ge 280 && "$WIDTH" -le 310 && "$HEIGHT" -ge 380 && "$HEIGHT" -le 410 ]] || { echo "WECHAT_LOGIN_RESUME_GEOMETRY_UNEXPECTED ${WIDTH}x${HEIGHT}" >&2; exit 75; }
+              x=$((WIDTH / 2))
+              y=$((HEIGHT * 78 / 100))
+              xdotool mousemove --window "$wid" "$x" "$y"
+              xdotool click --window "$wid" 1
+              for _ in $(seq 1 30); do
+                if xwininfo -root -tree 2>/dev/null | grep -q '"Weixin".*916x666'; then
+                  echo "PCG_WECHAT_LOGIN_RESUME=success"
+                  exit 0
+                fi
+                sleep 1
+              done
+              echo "PCG_WECHAT_LOGIN_RESUME=human_auth_required"
+              exit 76
+              ;;
+            cursor-park)
+              command -v xdotool >/dev/null 2>&1 || { echo "WECHAT_CURSOR_PARK_XDOTOOL_MISSING" >&2; exit 86; }
+              export DISPLAY=:97
+              export XAUTHORITY="$state/Xauthority"
+              runuser -u "$owner" -- env DISPLAY="$DISPLAY" XAUTHORITY="$XAUTHORITY" xdotool mousemove 1435 995
+              runuser -u "$owner" -- env DISPLAY="$DISPLAY" XAUTHORITY="$XAUTHORITY" ffmpeg -loglevel error -f x11grab -video_size 1440x1000 -i :97 -frames:v 1 -y /var/lib/capability-fabric/paa-remote/wechat-cursor-park.png
+              chmod 0644 /var/lib/capability-fabric/paa-remote/wechat-cursor-park.png
+              echo "PCG_WECHAT_CURSOR_PARK=success"
+              ;;
+            self-chat-probe)
+              systemctl is-active --quiet "$final" || { echo "WECHAT_SELF_CHAT_PROBE_REQUIRES_FINAL_ACTIVE" >&2; exit 87; }
+              ! systemctl is-active --quiet "$bridge" || { echo "WECHAT_SELF_CHAT_PROBE_REFUSES_BRIDGE_ACTIVE" >&2; exit 88; }
+              snapshot=/tmp/pcg-wechat-self-before.json
+              curl -fsS --max-time 3 http://127.0.0.1:9336/accessibility > "$snapshot"
+              read -r cx cy count < <(python3 - "$snapshot" <<'PY'
+          import json,sys
+          j=json.load(open(sys.argv[1]))
+          rows=[]
+          for n in j.get("nodes",[]):
+              if n.get("role")!="list item" or str(n.get("name","")).split("\n",1)[0].strip()!="File Transfer":
+                  continue
+              st=set(n.get("states",[]))
+              b=n.get("bounds") or {}
+              if "showing" in st and "visible" in st and int(b.get("width",0))>20 and int(b.get("height",0))>20:
+                  rows.append(b)
+          if len(rows)!=1:
+              print("0 0",len(rows))
+          else:
+              b=rows[0]
+              print(int(b["x"])+int(b["width"])//2, int(b["y"])+int(b["height"])//2, 1)
+          PY
+              )
+              [[ "$count" -eq 1 ]] || { echo "WECHAT_SELF_CHAT_NOT_UNIQUE count=$count" >&2; exit 89; }
+              export DISPLAY=:97
+              export XAUTHORITY="$state/Xauthority"
+              runuser -u "$owner" -- env DISPLAY="$DISPLAY" XAUTHORITY="$XAUTHORITY" xdotool mousemove "$cx" "$cy" click 1
+              sleep 2
+              curl -fsS --max-time 3 http://127.0.0.1:9336/accessibility > /tmp/pcg-wechat-self-after.json
+              python3 - /tmp/pcg-wechat-self-after.json <<'PY'
+          import json,sys
+          j=json.load(open(sys.argv[1]))
+          visible=[n for n in j.get("nodes",[]) if "showing" in set(n.get("states",[])) and "visible" in set(n.get("states",[]))]
+          if not any(n.get("role")=="frame" and n.get("name")=="WeChat" for n in visible):
+              raise SystemExit(90)
+          PY
+              install -o paa_remote -g paa_remote -m 0600 /tmp/pcg-wechat-self-after.json /var/lib/capability-fabric/paa-remote/pcg-wechat-self-chat-accessibility.json
+              echo "PCG_WECHAT_SELF_CHAT_PROBE=success"
+              ;;
+            read-chat-probe)
+              systemctl is-active --quiet "$final" || { echo "WECHAT_READ_CHAT_PROBE_REQUIRES_FINAL_ACTIVE" >&2; exit 91; }
+              ! systemctl is-active --quiet "$bridge" || { echo "WECHAT_READ_CHAT_PROBE_REFUSES_BRIDGE_ACTIVE" >&2; exit 92; }
+              snapshot=/tmp/pcg-wechat-readchat-before.json
+              curl -fsS --max-time 3 http://127.0.0.1:9336/accessibility > "$snapshot"
+              read -r cx cy count < <(python3 - "$snapshot" <<'PY'
+          import json,sys
+          target="Yishang Metal  & ESFA"
+          j=json.load(open(sys.argv[1]))
+          rows=[]
+          for n in j.get("nodes",[]):
+              if n.get("role")!="list item":
+                  continue
+              lines=[x.strip() for x in str(n.get("name","")).split("\n") if x.strip()]
+              if not lines or lines[0]!=target:
+                  continue
+              if any(x.startswith("[") and "]" in x for x in lines[1:2]):
+                  raise SystemExit(93)
+              st=set(n.get("states",[])); b=n.get("bounds") or {}
+              if "showing" in st and "visible" in st and int(b.get("width",0))>20 and int(b.get("height",0))>20:
+                  rows.append(b)
+          if len(rows)!=1: print("0 0",len(rows))
+          else:
+              b=rows[0]
+              print(int(b["x"])+int(b["width"])//2, int(b["y"])+int(b["height"])//2, 1)
+          PY
+              )
+              [[ "$count" -eq 1 ]] || { echo "WECHAT_READ_CHAT_NOT_UNIQUE count=$count" >&2; exit 94; }
+              export DISPLAY=:97
+              export XAUTHORITY="$state/Xauthority"
+              runuser -u "$owner" -- env DISPLAY="$DISPLAY" XAUTHORITY="$XAUTHORITY" xdotool mousemove "$cx" "$cy" click 1
+              sleep 3
+              curl -fsS --max-time 3 http://127.0.0.1:9336/accessibility > /tmp/pcg-wechat-readchat-after.json
+              python3 - /tmp/pcg-wechat-readchat-after.json <<'PY'
+          import json,sys
+          target="Yishang Metal  & ESFA"
+          j=json.load(open(sys.argv[1]))
+          rows=[]
+          for n in j.get("nodes",[]):
+              if n.get("role")=="list item":
+                  lines=[x.strip() for x in str(n.get("name","")).split("\n") if x.strip()]
+                  if lines and lines[0]==target:
+                      rows.append((lines,n.get("states",[])))
+          if len(rows)!=1: raise SystemExit(95)
+          lines,states=rows[0]
+          if any(x.startswith("[") and "]" in x for x in lines[1:2]): raise SystemExit(96)
+          if "selected" not in states: raise SystemExit(97)
+          PY
+              install -o paa_remote -g paa_remote -m 0600 /tmp/pcg-wechat-readchat-after.json /var/lib/capability-fabric/paa-remote/pcg-wechat-read-chat-accessibility.json
+              echo "PCG_WECHAT_READ_CHAT_PROBE=success"
+              ;;
+            restart-test)
+              systemctl is-active --quiet "$final" || { echo "WECHAT_RESTART_TEST_REQUIRES_FINAL_ACTIVE" >&2; exit 70; }
+              systemctl restart "$final"
+              wait_final || { echo "WECHAT_RESTART_TEST_FAILED" >&2; exit 71; }
+              echo "PCG_WECHAT_RESTART_TEST=success"
+              inspect
+              ;;
+          esac
+          rm -rf "$stage"
+          REMOTE
+ "$root/capability-fabric-pcg-wechat.service"
+          python3 -m py_compile "$root/wechat_semantic_helper.py"
+          bash -n "$root/wechat_semantic_helper.sh"
+          grep -q '^IPAddressDeny=any
+
+      - name: Prepare SSH
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -n "$VPS_SSH_KEY" && -n "$VPS_HOST" && -n "$VPS_SSH_USER" && -n "$VPS_HOST_KEY" ]] || exit 30
+          port="${VPS_PORT:-22}"
+          case "$port" in ''|*[!0-9]*) exit 31 ;; esac
+          tmp="${RUNNER_TEMP}/pcg-wechat-ssh"
+          install -d -m 0700 "$tmp"
+          printf '%s\n' "$VPS_SSH_KEY" > "$tmp/key"
+          chmod 0600 "$tmp/key"
+          host_key_line="${VPS_HOST_KEY//$'\r'/}"
+          read -r hkt hkd extra <<< "$host_key_line"
+          [[ "$hkt" == ssh-ed25519 && -n "$hkd" && -z "${extra:-}" ]] || exit 32
+          printf '%s %s %s\n' "$VPS_HOST" "$hkt" "$hkd" > "$tmp/known_hosts"
+          printf '[%s]:%s %s %s\n' "$VPS_HOST" "$port" "$hkt" "$hkd" >> "$tmp/known_hosts"
+          chmod 0600 "$tmp/known_hosts"
+          echo "SSH_DIR=$tmp" >> "$GITHUB_ENV"
+          echo "SSH_PORT=$port" >> "$GITHUB_ENV"
+
+      - name: Upload bounded WeChat payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          scp -q -i "$SSH_DIR/key" -P "$SSH_PORT" \
+            -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$SSH_DIR/known_hosts" \
+            "${RUNNER_TEMP}/pcg-wechat-runtime.tgz" \
+            "${VPS_SSH_USER}@${VPS_HOST}:/tmp/pcg-wechat-runtime.tgz"
+
+      - name: Execute bounded WeChat runtime action
+        env:
+          ACTION: ${{ steps.request.outputs.action }}
+          CANDIDATE_COMMIT: ${{ steps.request.outputs.candidate_commit }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -i "$SSH_DIR/key" -p "$SSH_PORT" \
+            -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$SSH_DIR/known_hosts" \
+            "${VPS_SSH_USER}@${VPS_HOST}" "ACTION='$ACTION' CANDIDATE_COMMIT='$CANDIDATE_COMMIT' bash -s" <<'REMOTE'
+          set -euo pipefail
+          [[ "$(id -u)" -eq 0 ]] || exit 40
+
+          owner=cfop_e79aa1fde5
+          state=/var/lib/capability-fabric/pcg/wechat
+          home="$state/home"
+          runtime=/usr/local/lib/capability-fabric/pcg-provider-runtime
+          bridge=capability-fabric-pcg-login-bridge-wechat.service
+          final=capability-fabric-pcg-wechat.service
+          stage="/tmp/pcg-wechat-runtime-$CANDIDATE_COMMIT"
+
+          rm -rf "$stage"
+          mkdir -m 0700 "$stage"
+          tar -xzf /tmp/pcg-wechat-runtime.tgz -C "$stage"
+          rm -f /tmp/pcg-wechat-runtime.tgz
+
+          start_bridge() {
+            systemctl stop "$bridge" >/dev/null 2>&1 || true
+            systemctl reset-failed "$bridge" >/dev/null 2>&1 || true
+            rm -f /tmp/.X97-lock /tmp/.X11-unix/X97
+            systemd-run --quiet --unit="$bridge" --uid="$owner" --collect \
+              --property=Type=simple \
+              --property=KillMode=control-group \
+              --property=WorkingDirectory="$state" \
+              --setenv=HOME="$home" \
+              --setenv=XDG_CONFIG_HOME="$home/.config" \
+              --setenv=XDG_CACHE_HOME="$home/.cache" \
+              --setenv=XDG_DATA_HOME="$home/.local/share" \
+              --setenv=QT_ACCESSIBILITY=1 \
+              --setenv=QT_LINUX_ACCESSIBILITY_ALWAYS_ON=1 \
+              /bin/bash -lc 'set -e; Xvfb :97 -screen 0 1440x1000x24 -nolisten tcp -ac & xvfb=$!; trap "kill $xvfb 2>/dev/null || true" EXIT; for i in $(seq 1 40); do [[ -S /tmp/.X11-unix/X97 ]] && break; sleep 0.1; done; export DISPLAY=:97; /usr/bin/dbus-run-session -- /opt/wechat/wechat'
+          }
+
+          wait_final() {
+            for _ in $(seq 1 60); do
+              if systemctl is-active --quiet "$final" && curl -fsS --max-time 1 http://127.0.0.1:9336/status >/tmp/pcg-wechat-status.json 2>/dev/null; then
+                if python3 - <<'PY'
+          import json
+          p=json.load(open('/tmp/pcg-wechat-status.json'))
+          raise SystemExit(0 if p.get('accessibility_available') else 1)
+          PY
+                then
+                  return 0
+                fi
+              fi
+              sleep 1
+            done
+            return 1
+          }
+
+          inspect() {
+            echo "WECHAT_BRIDGE_ACTIVE=$(systemctl is-active "$bridge" 2>/dev/null || true)"
+            echo "WECHAT_FINAL_ACTIVE=$(systemctl is-active "$final" 2>/dev/null || true)"
+            echo "WECHAT_FINAL_ENABLED=$(systemctl is-enabled "$final" 2>/dev/null || true)"
+            echo "WECHAT_HOME_OWNER=$(stat -c '%U:%G' "$home" 2>/dev/null || true)"
+            echo "WECHAT_HOME_MODE=$(stat -c '%a' "$home" 2>/dev/null || true)"
+            curl -fsS --max-time 2 http://127.0.0.1:9336/status 2>/dev/null || true
+            echo
+          }
+
+          case "$ACTION" in
+            install)
+              systemctl is-active --quiet "$bridge" || { echo "WECHAT_INSTALL_REQUIRES_ACTIVE_AUTH_BRIDGE" >&2; exit 50; }
+              ! systemctl is-active --quiet "$final" || { echo "WECHAT_INSTALL_REFUSES_FINAL_ACTIVE" >&2; exit 51; }
+              export DEBIAN_FRONTEND=noninteractive
+              if ! python3 -c 'import gi; gi.require_version("Atspi","2.0"); from gi.repository import Atspi' >/dev/null 2>&1; then
+                apt-get update -qq
+                apt-get install -y -qq --no-install-recommends at-spi2-core python3-gi gir1.2-atspi-2.0 xauth xvfb dbus-x11
+              fi
+              install -d -m 0755 -o root -g root "$runtime"
+              install -m 0644 -o root -g root "$stage/pcg_wechat_runtime.mjs" "$runtime/pcg_wechat_runtime.mjs"
+              install -m 0755 -o root -g root "$stage/wechat_session.sh" "$runtime/wechat_session.sh"
+              install -m 0755 -o root -g root "$stage/wechat_atspi_snapshot.py" "$runtime/wechat_atspi_snapshot.py"
+              install -m 0644 -o root -g root "$stage/capability-fabric-pcg-wechat.service" /etc/systemd/system/capability-fabric-pcg-wechat.service
+              systemctl daemon-reload
+              systemctl disable "$final" >/dev/null 2>&1 || true
+              systemctl is-active --quiet "$bridge"
+              echo "PCG_WECHAT_RUNTIME_INSTALL=success"
+              echo "PCG_WECHAT_RUNTIME_SERVICE_RESTART=none"
+              ;;
+            inspect)
+              inspect
+              ;;
+            cutover)
+              systemctl is-active --quiet "$bridge" || { echo "WECHAT_CUTOVER_REQUIRES_ACTIVE_BRIDGE" >&2; exit 60; }
+              ! systemctl is-active --quiet "$final" || { echo "WECHAT_CUTOVER_REFUSES_DUPLICATE_FINAL" >&2; exit 61; }
+              [[ "$(systemctl show "$bridge" -p Environment --value)" == *"HOME=$home"* ]] || { echo "WECHAT_BRIDGE_HOME_MISMATCH" >&2; exit 62; }
+              systemctl stop "$bridge"
+              systemctl reset-failed "$bridge" >/dev/null 2>&1 || true
+              rm -f /tmp/.X97-lock /tmp/.X11-unix/X97
+              systemctl enable "$final" >/dev/null
+              systemctl start "$final"
+              if ! wait_final; then
+                echo "WECHAT_FINAL_QUALIFICATION_START_FAILED" >&2
+                systemctl disable --now "$final" >/dev/null 2>&1 || true
+                start_bridge
+                exit 63
+              fi
+              echo "PCG_WECHAT_CUTOVER=success"
+              inspect
+              ;;
+            diagnose)
+              {
+                echo "===UTC==="
+                date -u
+                echo "===FINAL_SHOW==="
+                systemctl show "$final" -p ActiveState -p SubState -p Result -p NRestarts -p MainPID -p ExecMainCode -p ExecMainStatus -p UnitFileState -p Environment -p ExecStart
+                echo "===FINAL_STATUS==="
+                systemctl status "$final" --no-pager --full 2>&1 || true
+                echo "===FINAL_JOURNAL==="
+                journalctl -u "$final" -n 120 --no-pager 2>&1 || true
+              } > /var/lib/capability-fabric/paa-remote/pcg-wechat-final-diagnostic.txt
+              chmod 0644 /var/lib/capability-fabric/paa-remote/pcg-wechat-final-diagnostic.txt
+              echo "PCG_WECHAT_DIAGNOSTIC=written"
+              ;;
+            login-resume)
+              systemctl is-active --quiet "$bridge" || { echo "WECHAT_LOGIN_RESUME_REQUIRES_BRIDGE" >&2; exit 72; }
+              ! systemctl is-active --quiet "$final" || { echo "WECHAT_LOGIN_RESUME_REFUSES_FINAL_ACTIVE" >&2; exit 73; }
+              if ! command -v xdotool >/dev/null 2>&1; then
+                export DEBIAN_FRONTEND=noninteractive
+                apt-get update -qq
+                apt-get install -y -qq --no-install-recommends xdotool
+              fi
+              export DISPLAY=:97
+              mapfile -t login_windows < <(xdotool search --onlyvisible --class wechat 2>/dev/null || true)
+              [[ "${#login_windows[@]}" -eq 1 ]] || { echo "WECHAT_LOGIN_RESUME_WINDOW_NOT_UNIQUE count=${#login_windows[@]}" >&2; exit 74; }
+              wid="${login_windows[0]}"
+              eval "$(xdotool getwindowgeometry --shell "$wid")"
+              [[ "$WIDTH" -ge 280 && "$WIDTH" -le 310 && "$HEIGHT" -ge 380 && "$HEIGHT" -le 410 ]] || { echo "WECHAT_LOGIN_RESUME_GEOMETRY_UNEXPECTED ${WIDTH}x${HEIGHT}" >&2; exit 75; }
+              x=$((WIDTH / 2))
+              y=$((HEIGHT * 78 / 100))
+              xdotool mousemove --window "$wid" "$x" "$y"
+              xdotool click --window "$wid" 1
+              for _ in $(seq 1 30); do
+                if xwininfo -root -tree 2>/dev/null | grep -q '"Weixin".*916x666'; then
+                  echo "PCG_WECHAT_LOGIN_RESUME=success"
+                  exit 0
+                fi
+                sleep 1
+              done
+              echo "PCG_WECHAT_LOGIN_RESUME=human_auth_required"
+              exit 76
+              ;;
+            cursor-park)
+              command -v xdotool >/dev/null 2>&1 || { echo "WECHAT_CURSOR_PARK_XDOTOOL_MISSING" >&2; exit 86; }
+              export DISPLAY=:97
+              export XAUTHORITY="$state/Xauthority"
+              runuser -u "$owner" -- env DISPLAY="$DISPLAY" XAUTHORITY="$XAUTHORITY" xdotool mousemove 1435 995
+              runuser -u "$owner" -- env DISPLAY="$DISPLAY" XAUTHORITY="$XAUTHORITY" ffmpeg -loglevel error -f x11grab -video_size 1440x1000 -i :97 -frames:v 1 -y /var/lib/capability-fabric/paa-remote/wechat-cursor-park.png
+              chmod 0644 /var/lib/capability-fabric/paa-remote/wechat-cursor-park.png
+              echo "PCG_WECHAT_CURSOR_PARK=success"
+              ;;
+            self-chat-probe)
+              systemctl is-active --quiet "$final" || { echo "WECHAT_SELF_CHAT_PROBE_REQUIRES_FINAL_ACTIVE" >&2; exit 87; }
+              ! systemctl is-active --quiet "$bridge" || { echo "WECHAT_SELF_CHAT_PROBE_REFUSES_BRIDGE_ACTIVE" >&2; exit 88; }
+              snapshot=/tmp/pcg-wechat-self-before.json
+              curl -fsS --max-time 3 http://127.0.0.1:9336/accessibility > "$snapshot"
+              read -r cx cy count < <(python3 - "$snapshot" <<'PY'
+          import json,sys
+          j=json.load(open(sys.argv[1]))
+          rows=[]
+          for n in j.get("nodes",[]):
+              if n.get("role")!="list item" or str(n.get("name","")).split("\n",1)[0].strip()!="File Transfer":
+                  continue
+              st=set(n.get("states",[]))
+              b=n.get("bounds") or {}
+              if "showing" in st and "visible" in st and int(b.get("width",0))>20 and int(b.get("height",0))>20:
+                  rows.append(b)
+          if len(rows)!=1:
+              print("0 0",len(rows))
+          else:
+              b=rows[0]
+              print(int(b["x"])+int(b["width"])//2, int(b["y"])+int(b["height"])//2, 1)
+          PY
+              )
+              [[ "$count" -eq 1 ]] || { echo "WECHAT_SELF_CHAT_NOT_UNIQUE count=$count" >&2; exit 89; }
+              export DISPLAY=:97
+              export XAUTHORITY="$state/Xauthority"
+              runuser -u "$owner" -- env DISPLAY="$DISPLAY" XAUTHORITY="$XAUTHORITY" xdotool mousemove "$cx" "$cy" click 1
+              sleep 2
+              curl -fsS --max-time 3 http://127.0.0.1:9336/accessibility > /tmp/pcg-wechat-self-after.json
+              python3 - /tmp/pcg-wechat-self-after.json <<'PY'
+          import json,sys
+          j=json.load(open(sys.argv[1]))
+          visible=[n for n in j.get("nodes",[]) if "showing" in set(n.get("states",[])) and "visible" in set(n.get("states",[]))]
+          if not any(n.get("role")=="frame" and n.get("name")=="WeChat" for n in visible):
+              raise SystemExit(90)
+          PY
+              install -o paa_remote -g paa_remote -m 0600 /tmp/pcg-wechat-self-after.json /var/lib/capability-fabric/paa-remote/pcg-wechat-self-chat-accessibility.json
+              echo "PCG_WECHAT_SELF_CHAT_PROBE=success"
+              ;;
+            read-chat-probe)
+              systemctl is-active --quiet "$final" || { echo "WECHAT_READ_CHAT_PROBE_REQUIRES_FINAL_ACTIVE" >&2; exit 91; }
+              ! systemctl is-active --quiet "$bridge" || { echo "WECHAT_READ_CHAT_PROBE_REFUSES_BRIDGE_ACTIVE" >&2; exit 92; }
+              snapshot=/tmp/pcg-wechat-readchat-before.json
+              curl -fsS --max-time 3 http://127.0.0.1:9336/accessibility > "$snapshot"
+              read -r cx cy count < <(python3 - "$snapshot" <<'PY'
+          import json,sys
+          target="Yishang Metal  & ESFA"
+          j=json.load(open(sys.argv[1]))
+          rows=[]
+          for n in j.get("nodes",[]):
+              if n.get("role")!="list item":
+                  continue
+              lines=[x.strip() for x in str(n.get("name","")).split("\n") if x.strip()]
+              if not lines or lines[0]!=target:
+                  continue
+              if any(x.startswith("[") and "]" in x for x in lines[1:2]):
+                  raise SystemExit(93)
+              st=set(n.get("states",[])); b=n.get("bounds") or {}
+              if "showing" in st and "visible" in st and int(b.get("width",0))>20 and int(b.get("height",0))>20:
+                  rows.append(b)
+          if len(rows)!=1: print("0 0",len(rows))
+          else:
+              b=rows[0]
+              print(int(b["x"])+int(b["width"])//2, int(b["y"])+int(b["height"])//2, 1)
+          PY
+              )
+              [[ "$count" -eq 1 ]] || { echo "WECHAT_READ_CHAT_NOT_UNIQUE count=$count" >&2; exit 94; }
+              export DISPLAY=:97
+              export XAUTHORITY="$state/Xauthority"
+              runuser -u "$owner" -- env DISPLAY="$DISPLAY" XAUTHORITY="$XAUTHORITY" xdotool mousemove "$cx" "$cy" click 1
+              sleep 3
+              curl -fsS --max-time 3 http://127.0.0.1:9336/accessibility > /tmp/pcg-wechat-readchat-after.json
+              python3 - /tmp/pcg-wechat-readchat-after.json <<'PY'
+          import json,sys
+          target="Yishang Metal  & ESFA"
+          j=json.load(open(sys.argv[1]))
+          rows=[]
+          for n in j.get("nodes",[]):
+              if n.get("role")=="list item":
+                  lines=[x.strip() for x in str(n.get("name","")).split("\n") if x.strip()]
+                  if lines and lines[0]==target:
+                      rows.append((lines,n.get("states",[])))
+          if len(rows)!=1: raise SystemExit(95)
+          lines,states=rows[0]
+          if any(x.startswith("[") and "]" in x for x in lines[1:2]): raise SystemExit(96)
+          if "selected" not in states: raise SystemExit(97)
+          PY
+              install -o paa_remote -g paa_remote -m 0600 /tmp/pcg-wechat-readchat-after.json /var/lib/capability-fabric/paa-remote/pcg-wechat-read-chat-accessibility.json
+              echo "PCG_WECHAT_READ_CHAT_PROBE=success"
+              ;;
+            restart-test)
+              systemctl is-active --quiet "$final" || { echo "WECHAT_RESTART_TEST_REQUIRES_FINAL_ACTIVE" >&2; exit 70; }
+              systemctl restart "$final"
+              wait_final || { echo "WECHAT_RESTART_TEST_FAILED" >&2; exit 71; }
+              echo "PCG_WECHAT_RESTART_TEST=success"
+              inspect
+              ;;
+          esac
+          rm -rf "$stage"
+          REMOTE
+ "$root/capability-fabric-pcg-wechat-semantic.service"
+          grep -q '^IPAddressAllow=localhost
+
+      - name: Prepare SSH
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -n "$VPS_SSH_KEY" && -n "$VPS_HOST" && -n "$VPS_SSH_USER" && -n "$VPS_HOST_KEY" ]] || exit 30
+          port="${VPS_PORT:-22}"
+          case "$port" in ''|*[!0-9]*) exit 31 ;; esac
+          tmp="${RUNNER_TEMP}/pcg-wechat-ssh"
+          install -d -m 0700 "$tmp"
+          printf '%s\n' "$VPS_SSH_KEY" > "$tmp/key"
+          chmod 0600 "$tmp/key"
+          host_key_line="${VPS_HOST_KEY//$'\r'/}"
+          read -r hkt hkd extra <<< "$host_key_line"
+          [[ "$hkt" == ssh-ed25519 && -n "$hkd" && -z "${extra:-}" ]] || exit 32
+          printf '%s %s %s\n' "$VPS_HOST" "$hkt" "$hkd" > "$tmp/known_hosts"
+          printf '[%s]:%s %s %s\n' "$VPS_HOST" "$port" "$hkt" "$hkd" >> "$tmp/known_hosts"
+          chmod 0600 "$tmp/known_hosts"
+          echo "SSH_DIR=$tmp" >> "$GITHUB_ENV"
+          echo "SSH_PORT=$port" >> "$GITHUB_ENV"
+
+      - name: Upload bounded WeChat payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          scp -q -i "$SSH_DIR/key" -P "$SSH_PORT" \
+            -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$SSH_DIR/known_hosts" \
+            "${RUNNER_TEMP}/pcg-wechat-runtime.tgz" \
+            "${VPS_SSH_USER}@${VPS_HOST}:/tmp/pcg-wechat-runtime.tgz"
+
+      - name: Execute bounded WeChat runtime action
+        env:
+          ACTION: ${{ steps.request.outputs.action }}
+          CANDIDATE_COMMIT: ${{ steps.request.outputs.candidate_commit }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -i "$SSH_DIR/key" -p "$SSH_PORT" \
+            -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$SSH_DIR/known_hosts" \
+            "${VPS_SSH_USER}@${VPS_HOST}" "ACTION='$ACTION' CANDIDATE_COMMIT='$CANDIDATE_COMMIT' bash -s" <<'REMOTE'
+          set -euo pipefail
+          [[ "$(id -u)" -eq 0 ]] || exit 40
+
+          owner=cfop_e79aa1fde5
+          state=/var/lib/capability-fabric/pcg/wechat
+          home="$state/home"
+          runtime=/usr/local/lib/capability-fabric/pcg-provider-runtime
+          bridge=capability-fabric-pcg-login-bridge-wechat.service
+          final=capability-fabric-pcg-wechat.service
+          stage="/tmp/pcg-wechat-runtime-$CANDIDATE_COMMIT"
+
+          rm -rf "$stage"
+          mkdir -m 0700 "$stage"
+          tar -xzf /tmp/pcg-wechat-runtime.tgz -C "$stage"
+          rm -f /tmp/pcg-wechat-runtime.tgz
+
+          start_bridge() {
+            systemctl stop "$bridge" >/dev/null 2>&1 || true
+            systemctl reset-failed "$bridge" >/dev/null 2>&1 || true
+            rm -f /tmp/.X97-lock /tmp/.X11-unix/X97
+            systemd-run --quiet --unit="$bridge" --uid="$owner" --collect \
+              --property=Type=simple \
+              --property=KillMode=control-group \
+              --property=WorkingDirectory="$state" \
+              --setenv=HOME="$home" \
+              --setenv=XDG_CONFIG_HOME="$home/.config" \
+              --setenv=XDG_CACHE_HOME="$home/.cache" \
+              --setenv=XDG_DATA_HOME="$home/.local/share" \
+              --setenv=QT_ACCESSIBILITY=1 \
+              --setenv=QT_LINUX_ACCESSIBILITY_ALWAYS_ON=1 \
+              /bin/bash -lc 'set -e; Xvfb :97 -screen 0 1440x1000x24 -nolisten tcp -ac & xvfb=$!; trap "kill $xvfb 2>/dev/null || true" EXIT; for i in $(seq 1 40); do [[ -S /tmp/.X11-unix/X97 ]] && break; sleep 0.1; done; export DISPLAY=:97; /usr/bin/dbus-run-session -- /opt/wechat/wechat'
+          }
+
+          wait_final() {
+            for _ in $(seq 1 60); do
+              if systemctl is-active --quiet "$final" && curl -fsS --max-time 1 http://127.0.0.1:9336/status >/tmp/pcg-wechat-status.json 2>/dev/null; then
+                if python3 - <<'PY'
+          import json
+          p=json.load(open('/tmp/pcg-wechat-status.json'))
+          raise SystemExit(0 if p.get('accessibility_available') else 1)
+          PY
+                then
+                  return 0
+                fi
+              fi
+              sleep 1
+            done
+            return 1
+          }
+
+          inspect() {
+            echo "WECHAT_BRIDGE_ACTIVE=$(systemctl is-active "$bridge" 2>/dev/null || true)"
+            echo "WECHAT_FINAL_ACTIVE=$(systemctl is-active "$final" 2>/dev/null || true)"
+            echo "WECHAT_FINAL_ENABLED=$(systemctl is-enabled "$final" 2>/dev/null || true)"
+            echo "WECHAT_HOME_OWNER=$(stat -c '%U:%G' "$home" 2>/dev/null || true)"
+            echo "WECHAT_HOME_MODE=$(stat -c '%a' "$home" 2>/dev/null || true)"
+            curl -fsS --max-time 2 http://127.0.0.1:9336/status 2>/dev/null || true
+            echo
+          }
+
+          case "$ACTION" in
+            install)
+              systemctl is-active --quiet "$bridge" || { echo "WECHAT_INSTALL_REQUIRES_ACTIVE_AUTH_BRIDGE" >&2; exit 50; }
+              ! systemctl is-active --quiet "$final" || { echo "WECHAT_INSTALL_REFUSES_FINAL_ACTIVE" >&2; exit 51; }
+              export DEBIAN_FRONTEND=noninteractive
+              if ! python3 -c 'import gi; gi.require_version("Atspi","2.0"); from gi.repository import Atspi' >/dev/null 2>&1; then
+                apt-get update -qq
+                apt-get install -y -qq --no-install-recommends at-spi2-core python3-gi gir1.2-atspi-2.0 xauth xvfb dbus-x11
+              fi
+              install -d -m 0755 -o root -g root "$runtime"
+              install -m 0644 -o root -g root "$stage/pcg_wechat_runtime.mjs" "$runtime/pcg_wechat_runtime.mjs"
+              install -m 0755 -o root -g root "$stage/wechat_session.sh" "$runtime/wechat_session.sh"
+              install -m 0755 -o root -g root "$stage/wechat_atspi_snapshot.py" "$runtime/wechat_atspi_snapshot.py"
+              install -m 0644 -o root -g root "$stage/capability-fabric-pcg-wechat.service" /etc/systemd/system/capability-fabric-pcg-wechat.service
+              systemctl daemon-reload
+              systemctl disable "$final" >/dev/null 2>&1 || true
+              systemctl is-active --quiet "$bridge"
+              echo "PCG_WECHAT_RUNTIME_INSTALL=success"
+              echo "PCG_WECHAT_RUNTIME_SERVICE_RESTART=none"
+              ;;
+            inspect)
+              inspect
+              ;;
+            cutover)
+              systemctl is-active --quiet "$bridge" || { echo "WECHAT_CUTOVER_REQUIRES_ACTIVE_BRIDGE" >&2; exit 60; }
+              ! systemctl is-active --quiet "$final" || { echo "WECHAT_CUTOVER_REFUSES_DUPLICATE_FINAL" >&2; exit 61; }
+              [[ "$(systemctl show "$bridge" -p Environment --value)" == *"HOME=$home"* ]] || { echo "WECHAT_BRIDGE_HOME_MISMATCH" >&2; exit 62; }
+              systemctl stop "$bridge"
+              systemctl reset-failed "$bridge" >/dev/null 2>&1 || true
+              rm -f /tmp/.X97-lock /tmp/.X11-unix/X97
+              systemctl enable "$final" >/dev/null
+              systemctl start "$final"
+              if ! wait_final; then
+                echo "WECHAT_FINAL_QUALIFICATION_START_FAILED" >&2
+                systemctl disable --now "$final" >/dev/null 2>&1 || true
+                start_bridge
+                exit 63
+              fi
+              echo "PCG_WECHAT_CUTOVER=success"
+              inspect
+              ;;
+            diagnose)
+              {
+                echo "===UTC==="
+                date -u
+                echo "===FINAL_SHOW==="
+                systemctl show "$final" -p ActiveState -p SubState -p Result -p NRestarts -p MainPID -p ExecMainCode -p ExecMainStatus -p UnitFileState -p Environment -p ExecStart
+                echo "===FINAL_STATUS==="
+                systemctl status "$final" --no-pager --full 2>&1 || true
+                echo "===FINAL_JOURNAL==="
+                journalctl -u "$final" -n 120 --no-pager 2>&1 || true
+              } > /var/lib/capability-fabric/paa-remote/pcg-wechat-final-diagnostic.txt
+              chmod 0644 /var/lib/capability-fabric/paa-remote/pcg-wechat-final-diagnostic.txt
+              echo "PCG_WECHAT_DIAGNOSTIC=written"
+              ;;
+            login-resume)
+              systemctl is-active --quiet "$bridge" || { echo "WECHAT_LOGIN_RESUME_REQUIRES_BRIDGE" >&2; exit 72; }
+              ! systemctl is-active --quiet "$final" || { echo "WECHAT_LOGIN_RESUME_REFUSES_FINAL_ACTIVE" >&2; exit 73; }
+              if ! command -v xdotool >/dev/null 2>&1; then
+                export DEBIAN_FRONTEND=noninteractive
+                apt-get update -qq
+                apt-get install -y -qq --no-install-recommends xdotool
+              fi
+              export DISPLAY=:97
+              mapfile -t login_windows < <(xdotool search --onlyvisible --class wechat 2>/dev/null || true)
+              [[ "${#login_windows[@]}" -eq 1 ]] || { echo "WECHAT_LOGIN_RESUME_WINDOW_NOT_UNIQUE count=${#login_windows[@]}" >&2; exit 74; }
+              wid="${login_windows[0]}"
+              eval "$(xdotool getwindowgeometry --shell "$wid")"
+              [[ "$WIDTH" -ge 280 && "$WIDTH" -le 310 && "$HEIGHT" -ge 380 && "$HEIGHT" -le 410 ]] || { echo "WECHAT_LOGIN_RESUME_GEOMETRY_UNEXPECTED ${WIDTH}x${HEIGHT}" >&2; exit 75; }
+              x=$((WIDTH / 2))
+              y=$((HEIGHT * 78 / 100))
+              xdotool mousemove --window "$wid" "$x" "$y"
+              xdotool click --window "$wid" 1
+              for _ in $(seq 1 30); do
+                if xwininfo -root -tree 2>/dev/null | grep -q '"Weixin".*916x666'; then
+                  echo "PCG_WECHAT_LOGIN_RESUME=success"
+                  exit 0
+                fi
+                sleep 1
+              done
+              echo "PCG_WECHAT_LOGIN_RESUME=human_auth_required"
+              exit 76
+              ;;
+            cursor-park)
+              command -v xdotool >/dev/null 2>&1 || { echo "WECHAT_CURSOR_PARK_XDOTOOL_MISSING" >&2; exit 86; }
+              export DISPLAY=:97
+              export XAUTHORITY="$state/Xauthority"
+              runuser -u "$owner" -- env DISPLAY="$DISPLAY" XAUTHORITY="$XAUTHORITY" xdotool mousemove 1435 995
+              runuser -u "$owner" -- env DISPLAY="$DISPLAY" XAUTHORITY="$XAUTHORITY" ffmpeg -loglevel error -f x11grab -video_size 1440x1000 -i :97 -frames:v 1 -y /var/lib/capability-fabric/paa-remote/wechat-cursor-park.png
+              chmod 0644 /var/lib/capability-fabric/paa-remote/wechat-cursor-park.png
+              echo "PCG_WECHAT_CURSOR_PARK=success"
+              ;;
+            self-chat-probe)
+              systemctl is-active --quiet "$final" || { echo "WECHAT_SELF_CHAT_PROBE_REQUIRES_FINAL_ACTIVE" >&2; exit 87; }
+              ! systemctl is-active --quiet "$bridge" || { echo "WECHAT_SELF_CHAT_PROBE_REFUSES_BRIDGE_ACTIVE" >&2; exit 88; }
+              snapshot=/tmp/pcg-wechat-self-before.json
+              curl -fsS --max-time 3 http://127.0.0.1:9336/accessibility > "$snapshot"
+              read -r cx cy count < <(python3 - "$snapshot" <<'PY'
+          import json,sys
+          j=json.load(open(sys.argv[1]))
+          rows=[]
+          for n in j.get("nodes",[]):
+              if n.get("role")!="list item" or str(n.get("name","")).split("\n",1)[0].strip()!="File Transfer":
+                  continue
+              st=set(n.get("states",[]))
+              b=n.get("bounds") or {}
+              if "showing" in st and "visible" in st and int(b.get("width",0))>20 and int(b.get("height",0))>20:
+                  rows.append(b)
+          if len(rows)!=1:
+              print("0 0",len(rows))
+          else:
+              b=rows[0]
+              print(int(b["x"])+int(b["width"])//2, int(b["y"])+int(b["height"])//2, 1)
+          PY
+              )
+              [[ "$count" -eq 1 ]] || { echo "WECHAT_SELF_CHAT_NOT_UNIQUE count=$count" >&2; exit 89; }
+              export DISPLAY=:97
+              export XAUTHORITY="$state/Xauthority"
+              runuser -u "$owner" -- env DISPLAY="$DISPLAY" XAUTHORITY="$XAUTHORITY" xdotool mousemove "$cx" "$cy" click 1
+              sleep 2
+              curl -fsS --max-time 3 http://127.0.0.1:9336/accessibility > /tmp/pcg-wechat-self-after.json
+              python3 - /tmp/pcg-wechat-self-after.json <<'PY'
+          import json,sys
+          j=json.load(open(sys.argv[1]))
+          visible=[n for n in j.get("nodes",[]) if "showing" in set(n.get("states",[])) and "visible" in set(n.get("states",[]))]
+          if not any(n.get("role")=="frame" and n.get("name")=="WeChat" for n in visible):
+              raise SystemExit(90)
+          PY
+              install -o paa_remote -g paa_remote -m 0600 /tmp/pcg-wechat-self-after.json /var/lib/capability-fabric/paa-remote/pcg-wechat-self-chat-accessibility.json
+              echo "PCG_WECHAT_SELF_CHAT_PROBE=success"
+              ;;
+            read-chat-probe)
+              systemctl is-active --quiet "$final" || { echo "WECHAT_READ_CHAT_PROBE_REQUIRES_FINAL_ACTIVE" >&2; exit 91; }
+              ! systemctl is-active --quiet "$bridge" || { echo "WECHAT_READ_CHAT_PROBE_REFUSES_BRIDGE_ACTIVE" >&2; exit 92; }
+              snapshot=/tmp/pcg-wechat-readchat-before.json
+              curl -fsS --max-time 3 http://127.0.0.1:9336/accessibility > "$snapshot"
+              read -r cx cy count < <(python3 - "$snapshot" <<'PY'
+          import json,sys
+          target="Yishang Metal  & ESFA"
+          j=json.load(open(sys.argv[1]))
+          rows=[]
+          for n in j.get("nodes",[]):
+              if n.get("role")!="list item":
+                  continue
+              lines=[x.strip() for x in str(n.get("name","")).split("\n") if x.strip()]
+              if not lines or lines[0]!=target:
+                  continue
+              if any(x.startswith("[") and "]" in x for x in lines[1:2]):
+                  raise SystemExit(93)
+              st=set(n.get("states",[])); b=n.get("bounds") or {}
+              if "showing" in st and "visible" in st and int(b.get("width",0))>20 and int(b.get("height",0))>20:
+                  rows.append(b)
+          if len(rows)!=1: print("0 0",len(rows))
+          else:
+              b=rows[0]
+              print(int(b["x"])+int(b["width"])//2, int(b["y"])+int(b["height"])//2, 1)
+          PY
+              )
+              [[ "$count" -eq 1 ]] || { echo "WECHAT_READ_CHAT_NOT_UNIQUE count=$count" >&2; exit 94; }
+              export DISPLAY=:97
+              export XAUTHORITY="$state/Xauthority"
+              runuser -u "$owner" -- env DISPLAY="$DISPLAY" XAUTHORITY="$XAUTHORITY" xdotool mousemove "$cx" "$cy" click 1
+              sleep 3
+              curl -fsS --max-time 3 http://127.0.0.1:9336/accessibility > /tmp/pcg-wechat-readchat-after.json
+              python3 - /tmp/pcg-wechat-readchat-after.json <<'PY'
+          import json,sys
+          target="Yishang Metal  & ESFA"
+          j=json.load(open(sys.argv[1]))
+          rows=[]
+          for n in j.get("nodes",[]):
+              if n.get("role")=="list item":
+                  lines=[x.strip() for x in str(n.get("name","")).split("\n") if x.strip()]
+                  if lines and lines[0]==target:
+                      rows.append((lines,n.get("states",[])))
+          if len(rows)!=1: raise SystemExit(95)
+          lines,states=rows[0]
+          if any(x.startswith("[") and "]" in x for x in lines[1:2]): raise SystemExit(96)
+          if "selected" not in states: raise SystemExit(97)
+          PY
+              install -o paa_remote -g paa_remote -m 0600 /tmp/pcg-wechat-readchat-after.json /var/lib/capability-fabric/paa-remote/pcg-wechat-read-chat-accessibility.json
+              echo "PCG_WECHAT_READ_CHAT_PROBE=success"
+              ;;
+            restart-test)
+              systemctl is-active --quiet "$final" || { echo "WECHAT_RESTART_TEST_REQUIRES_FINAL_ACTIVE" >&2; exit 70; }
+              systemctl restart "$final"
+              wait_final || { echo "WECHAT_RESTART_TEST_FAILED" >&2; exit 71; }
+              echo "PCG_WECHAT_RESTART_TEST=success"
+              inspect
+              ;;
+          esac
+          rm -rf "$stage"
+          REMOTE
+ "$root/capability-fabric-pcg-wechat-semantic.service"
           tar -C "$root" -czf "${RUNNER_TEMP}/pcg-wechat-runtime.tgz" .
 
       - name: Prepare SSH
