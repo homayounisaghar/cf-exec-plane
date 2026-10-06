@@ -1,0 +1,4 @@
+request_id=pvc-r222-bale-reaction-provider1-ci-20261006-001
+candidate_commit=d70e0c66e57ab4b48f4b4efa9b7a7de47988abfb
+expected_sequence=222
+expected_release=onshape-vps-fast-r100-direct-orbit1-paa-storage-r222-bale-reaction-provider1
