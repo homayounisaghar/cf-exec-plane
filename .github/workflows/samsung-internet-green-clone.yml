@@ -47,40 +47,55 @@ jobs:
           from pathlib import Path
           from bs4 import BeautifulSoup
           from justapk.utils import create_cf_session, download_file
+          import html as htmlmod
+          import re
 
-          BASE="https://www.apkmirror.com"
-          VARIANT=BASE+"/apk/samsung-electronics-co-ltd/samsung-internet-for-android/samsung-browser-30-0-0-67-release/samsung-browser-30-0-0-67-3-android-apk-download/"
+          PAGE="https://apkpure.net/samsung-browser/com.sec.android.app.sbrowser/download/30.0.0.67"
           s=create_cf_session()
 
-          r=s.get(VARIANT, timeout=30)
-          print("variant_status",r.status_code,r.url)
+          r=s.get(PAGE, timeout=30)
+          print("page_status",r.status_code,r.url)
           r.raise_for_status()
-          soup=BeautifulSoup(r.text,"lxml")
-          btn=soup.select_one("a.downloadButton[href]")
-          if not btn:
-              raise SystemExit("download button missing")
-          href=btn.get("href","")
-          gate=href if href.startswith("http") else BASE+href
-          print("gate",gate)
+          body=r.text
+          print("page_len",len(body))
 
-          r=s.get(gate, timeout=30)
-          print("gate_status",r.status_code,r.url)
-          r.raise_for_status()
-          soup=BeautifulSoup(r.text,"lxml")
+          soup=BeautifulSoup(body,"lxml")
+          candidates=[]
+          for tag in soup.find_all(True):
+              for attr in ("href","data-url","data-download-url","data-dt-url"):
+                  u=tag.get(attr)
+                  if not u:
+                      continue
+                  u=htmlmod.unescape(str(u))
+                  if "d.apkpure" in u or "/b/APK/" in u or ".apk" in u.lower():
+                      candidates.append(u)
 
-          final=None
-          for a in soup.select("a[href*='key=']"):
-              href=a.get("href","")
-              if "download" in href:
-                  final=href if href.startswith("http") else BASE+href
+          for m in re.finditer(r'https?[^"\'<> ]+',body):
+              u=htmlmod.unescape(m.group(0).replace("\\/","/"))
+              if "d.apkpure" in u or "/b/APK/" in u:
+                  candidates.append(u)
+
+          dedup=[]
+          for u in candidates:
+              if u not in dedup:
+                  dedup.append(u)
+          for u in dedup:
+              print("candidate",u)
+
+          direct=None
+          for u in dedup:
+              if "d.apkpure" in u and ("com.sec.android.app.sbrowser" in u or "/b/APK/" in u):
+                  direct=u
                   break
-          if not final:
-              raise SystemExit("final key link missing")
-          print("final",final)
+          if not direct:
+              raise SystemExit("exact APKPure download link missing")
 
+          rr=s.get(direct, headers={"Referer":PAGE}, timeout=60, allow_redirects=True)
+          print("apk_status",rr.status_code,rr.url,rr.headers.get("content-length"),rr.headers.get("content-type"))
+          rr.raise_for_status()
           out=Path("fetched/source.apk")
-          size=download_file(final,out,s)
-          print("downloaded_bytes",size)
+          out.write_bytes(rr.content)
+          print("downloaded_bytes",out.stat().st_size)
           PY
 
           BT="$ANDROID_HOME/build-tools/35.0.0"
