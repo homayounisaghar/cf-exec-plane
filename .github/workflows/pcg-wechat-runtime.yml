@@ -245,8 +245,8 @@ jobs:
                 systemctl status "$final" --no-pager --full 2>&1 || true
                 echo "===FINAL_JOURNAL==="
                 journalctl -u "$final" -n 120 --no-pager 2>&1 || true
-              } > /tmp/pcg-wechat-final-diagnostic.txt
-              chmod 0644 /tmp/pcg-wechat-final-diagnostic.txt
+              } > /var/lib/capability-fabric/paa-remote/pcg-wechat-final-diagnostic.txt
+              chmod 0644 /var/lib/capability-fabric/paa-remote/pcg-wechat-final-diagnostic.txt
               echo "PCG_WECHAT_DIAGNOSTIC=written"
               ;;
             login-resume)
