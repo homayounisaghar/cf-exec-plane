@@ -1,0 +1,4 @@
+request_id=pvc-r241-wechat-parity1-deploy-20261007-001
+candidate_commit=8331cbefdad3eed5cbdd73e310eb7b2987a3c274
+expected_sequence=241
+expected_release=onshape-vps-fast-r100-direct-orbit1-paa-storage-r241-wechat-parity1
