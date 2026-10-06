@@ -1,0 +1,1 @@
+package: name='com.homayounisaghar.androidagent' versionCode='31' versionName='0.1.0-alpha31' platformBuildVersionName='15' platformBuildVersionCode='35' compileSdkVersion='35' compileSdkVersionCodename='15'

@@ -1,0 +1,8 @@
+{
+  "schema": "capability-fabric.android-standard-app-receipt.v1",
+  "requestId": "paa-alpha31-parallel-sms-conversations-durable-20261006-001",
+  "projectId": "personal-android-agent",
+  "checkoutRef": "b3f8d5b0b5766f6e13fa580dcbfbc5775d45ea3d",
+  "operation": "unit-test-and-build-signing-kit",
+  "result": "SUCCESS"
+}

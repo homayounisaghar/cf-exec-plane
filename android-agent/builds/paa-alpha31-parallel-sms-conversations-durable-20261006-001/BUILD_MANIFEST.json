@@ -1,0 +1,21 @@
+{
+  "schema": "capability-fabric.android-standard-app-output.v1",
+  "requestId": "paa-alpha31-parallel-sms-conversations-durable-20261006-001",
+  "projectId": "personal-android-agent",
+  "checkoutRef": "b3f8d5b0b5766f6e13fa580dcbfbc5775d45ea3d",
+  "application": {
+    "packageId": "com.homayounisaghar.androidagent",
+    "versionName": "0.1.0-alpha31",
+    "versionCode": 31
+  },
+  "expectedSigner": {
+    "alias": "personal_android_agent_line3",
+    "certificateSha256": "e5b102356f271078a3d03e982782c3776e3d9f301c1b24c0e7194f06e5a001fa"
+  },
+  "result": "SUCCESS",
+  "artifact": {
+    "file": "personal-android-agent-release-unsigned.apk",
+    "sha256": "f985ba93639444a55bcb60c879053738b449e62da41eb6e481088644dbc9bdb3",
+    "installable": false
+  }
+}
