@@ -38,7 +38,7 @@ source = source.replace(ownerAuthJsonNeedle, ownerAuthJsonNeedle + '\napp.use((r
   const composeFile = path.join(destDir, "compose.yaml");
   let compose = fs.readFileSync(composeFile, "utf8");
   if (!compose.includes("/release/owner-auth.mjs")) {
-    compose = one(compose, "/release/paa-bale-preload.mjs /tmp/app/", "/release/paa-bale-preload.mjs /release/owner-auth.mjs /tmp/app/", "compose copy list");
+    compose = one(compose, " /tmp/app/ &&", " /release/owner-auth.mjs /tmp/app/ &&", "compose copy destination");
     fs.writeFileSync(composeFile, compose);
   }
 
