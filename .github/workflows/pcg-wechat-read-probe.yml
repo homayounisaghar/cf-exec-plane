@@ -44,7 +44,8 @@ jobs:
           request_id="$(awk -F= '$1=="request_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
           action="$(awk -F= '$1=="action"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
           [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 13
-          [[ "$action" == "snapshot" ]] || exit 14
+          case "$action" in snapshot|state-index) ;; *) exit 14 ;; esac
+          echo "action=$action" >> "$GITHUB_OUTPUT"
 
       - name: Prepare SSH
         shell: bash
@@ -66,7 +67,9 @@ jobs:
           echo "SSH_DIR=$tmp" >> "$GITHUB_ENV"
           echo "SSH_PORT=$port" >> "$GITHUB_ENV"
 
-      - name: Capture bounded WeChat accessibility snapshot
+      - name: Run bounded WeChat read probe
+        env:
+          ACTION: ${{ steps.request.outputs.action }}
         shell: bash
         run: |
           set -euo pipefail
@@ -77,39 +80,72 @@ jobs:
           set -euo pipefail
           [[ "$(id -u)" -eq 0 ]] || exit 30
           owner=cfop_e79aa1fde5
-          unit=capability-fabric-pcg-login-bridge-wechat.service
+          bridge=capability-fabric-pcg-login-bridge-wechat.service
+          final=capability-fabric-pcg-wechat.service
           state=/var/lib/capability-fabric/pcg/wechat
           debug=/var/lib/capability-fabric/paa-remote/pcg-wechat-read-probe-debug.txt
-          snapshot="$state/bridge-accessibility-snapshot.json"
           : > "$debug"
           chown paa_remote:paa_remote "$debug"
           chmod 0600 "$debug"
-          echo "stage=start" >> "$debug"
-          echo "bridge=$(systemctl is-active "$unit" 2>/dev/null || true)" >> "$debug"
-          pgrep -a -u "$owner" -f '/opt/wechat/wechat' >> "$debug" 2>&1 || true
-          systemctl is-active --quiet "$unit" || { echo "stage=bridge_inactive" >> "$debug"; exit 31; }
-          pid=""
-          dbus=""
-          for p in $(pgrep -u "$owner" -f '/opt/wechat/wechat' 2>/dev/null || true); do
-            [[ -r "/proc/$p/environ" ]] || continue
-            candidate="$(tr '\0' '\n' < "/proc/$p/environ" | awk -F= '$1=="DBUS_SESSION_BUS_ADDRESS"{sub(/^[^=]*=/,""); print; exit}')"
-            if [[ -n "$candidate" ]]; then
-              pid="$p"
-              dbus="$candidate"
-              break
-            fi
-          done
-          echo "pid=$pid dbus_set=$([[ -n "$dbus" ]] && echo 1 || echo 0)" >> "$debug"
-          [[ -n "$pid" && -n "$dbus" ]] || { echo "stage=dbus_unavailable" >> "$debug"; exit 32; }
-          rm -f "$snapshot" /var/lib/capability-fabric/paa-remote/pcg-wechat-bridge-accessibility.json
-          set +e
-          timeout 7s runuser -u "$owner" -- env DISPLAY=:97 DBUS_SESSION_BUS_ADDRESS="$dbus" QT_ACCESSIBILITY=1 QT_LINUX_ACCESSIBILITY_ALWAYS_ON=1 NO_AT_BRIDGE=0 python3 /usr/local/lib/capability-fabric/pcg-provider-runtime/wechat_atspi_snapshot.py "$snapshot" >> "$debug" 2>&1
-          probe_rc=$?
-          set -e
-          echo "probe_rc=$probe_rc snapshot=$([[ -s "$snapshot" ]] && echo present || echo missing)" >> "$debug"
-          [[ "$probe_rc" -eq 0 || "$probe_rc" -eq 124 ]]
-          test -s "$snapshot"
-          python3 -c 'import json,sys; p=json.load(open(sys.argv[1])); print("ok=%s node_count=%s error=%s" % (p.get("ok"),p.get("node_count"),p.get("error"))); assert p.get("ok") is True; assert int(p.get("node_count",0)) > 0' "$snapshot" >> "$debug" 2>&1
-          install -o paa_remote -g paa_remote -m 0600 "$snapshot" /var/lib/capability-fabric/paa-remote/pcg-wechat-bridge-accessibility.json
-          echo "stage=success" >> "$debug"
+          echo "stage=start action=$ACTION" >> "$debug"
+          echo "bridge=$(systemctl is-active "$bridge" 2>/dev/null || true) final=$(systemctl is-active "$final" 2>/dev/null || true)" >> "$debug"
+
+          case "$ACTION" in
+            snapshot)
+              snapshot="$state/accessibility-snapshot.json"
+              if systemctl is-active --quiet "$final" && curl -fsS --max-time 2 http://127.0.0.1:9336/accessibility >/tmp/pcg-wechat-accessibility.json 2>/dev/null; then
+                python3 -c 'import json; p=json.load(open("/tmp/pcg-wechat-accessibility.json")); assert p.get("ok") is True; assert int(p.get("node_count",0)) > 0'
+                install -o paa_remote -g paa_remote -m 0600 /tmp/pcg-wechat-accessibility.json /var/lib/capability-fabric/paa-remote/pcg-wechat-accessibility.json
+                echo "stage=success source=final_status" >> "$debug"
+                exit 0
+              fi
+
+              systemctl is-active --quiet "$bridge" || { echo "stage=no_active_wechat_runtime" >> "$debug"; exit 31; }
+              pid=""
+              dbus=""
+              for p in $(pgrep -u "$owner" -f '/opt/wechat/wechat' 2>/dev/null || true); do
+                [[ -r "/proc/$p/environ" ]] || continue
+                candidate="$(tr '\0' '\n' < "/proc/$p/environ" | awk -F= '$1=="DBUS_SESSION_BUS_ADDRESS"{sub(/^[^=]*=/,""); print; exit}')"
+                if [[ -n "$candidate" ]]; then
+                  pid="$p"
+                  dbus="$candidate"
+                  break
+                fi
+              done
+              [[ -n "$pid" && -n "$dbus" ]] || { echo "stage=dbus_unavailable" >> "$debug"; exit 32; }
+              rm -f "$snapshot"
+              set +e
+              timeout 7s runuser -u "$owner" -- env DISPLAY=:97 DBUS_SESSION_BUS_ADDRESS="$dbus" QT_ACCESSIBILITY=1 QT_LINUX_ACCESSIBILITY_ALWAYS_ON=1 NO_AT_BRIDGE=0 python3 /usr/local/lib/capability-fabric/pcg-provider-runtime/wechat_atspi_snapshot.py "$snapshot" >> "$debug" 2>&1
+              probe_rc=$?
+              set -e
+              [[ "$probe_rc" -eq 0 || "$probe_rc" -eq 124 ]]
+              test -s "$snapshot"
+              python3 -c 'import json,sys; p=json.load(open(sys.argv[1])); assert p.get("ok") is True; assert int(p.get("node_count",0)) > 0' "$snapshot"
+              install -o paa_remote -g paa_remote -m 0600 "$snapshot" /var/lib/capability-fabric/paa-remote/pcg-wechat-accessibility.json
+              echo "stage=success source=bridge_atspi" >> "$debug"
+              ;;
+            state-index)
+              out=/var/lib/capability-fabric/paa-remote/pcg-wechat-state-index.txt
+              tmp=/tmp/pcg-wechat-state-index.txt
+              : > "$tmp"
+              {
+                echo "WECHAT_STATE_INDEX_V1"
+                echo "bridge=$(systemctl is-active "$bridge" 2>/dev/null || true)"
+                echo "final=$(systemctl is-active "$final" 2>/dev/null || true)"
+                echo "home=$state/home"
+                echo "FILES"
+                find "$state/home" -xdev -maxdepth 8 -type f -printf '%s\t%TY-%Tm-%TdT%TH:%TM:%TS\t%p\n' 2>/dev/null | sort -k3
+                echo "DIRECTORIES_WITH_LEVELDB_MARKERS"
+                find "$state/home" -xdev -maxdepth 8 -type f \( -name CURRENT -o -name MANIFEST-\* -o -name LOG \) -printf '%h\n' 2>/dev/null | sort -u
+                echo "SQLITE_CANDIDATES"
+                find "$state/home" -xdev -maxdepth 8 -type f \( -iname '*.db' -o -iname '*.sqlite' -o -iname '*.sqlite3' \) -print 2>/dev/null | sort
+                echo "OPEN_WECHAT_FILES"
+                for p in $(pgrep -u "$owner" -f '/opt/wechat/wechat' 2>/dev/null || true); do
+                  find "/proc/$p/fd" -maxdepth 1 -type l -printf '%l\n' 2>/dev/null | grep '^/var/lib/capability-fabric/pcg/wechat/' || true
+                done | sort -u
+              } > "$tmp"
+              install -o paa_remote -g paa_remote -m 0600 "$tmp" "$out"
+              echo "stage=success state_index=$out" >> "$debug"
+              ;;
+          esac
           REMOTE
