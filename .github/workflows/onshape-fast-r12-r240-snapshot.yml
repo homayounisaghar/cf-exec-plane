@@ -1,0 +1,127 @@
+name: Onshape Fast R12 R240 Snapshot
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - server-bootstrap/control/onshape-fast-r12-snapshot-r240/*.request
+
+permissions:
+  contents: write
+
+concurrency:
+  group: onshape-fast-r12-r240-snapshot
+  cancel-in-progress: false
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Validate immutable exact request
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || exit 10
+          IFS=$'\t' read -r status request_path <<<"${changes[0]}"
+          [[ "$status" == A ]] || exit 11
+          [[ "$request_path" == server-bootstrap/control/onshape-fast-r12-snapshot-r240/*.request ]] || exit 12
+          request_id="$(awk -F= '$1=="request_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          base_candidate="$(awk -F= '$1=="base_candidate"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          candidate_commit="$(awk -F= '$1=="candidate_commit"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          expected_sequence="$(awk -F= '$1=="expected_sequence"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          expected_release="$(awk -F= '$1=="expected_release"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 13
+          [[ "$base_candidate" == "a965b4c0141bd2d501b9d175b8dec7879a70d9c0" ]] || exit 14
+          [[ "$candidate_commit" == "37e7e9ab8461c320a0a4b1f5c009896aab7177ca" ]] || exit 15
+          [[ "$expected_sequence" == "240" ]] || exit 16
+          [[ "$expected_release" == "onshape-vps-fast-r100-direct-orbit1-paa-storage-r240-whatsapp-closeout1" ]] || exit 17
+          echo "BASE_CANDIDATE=$base_candidate" >> "$GITHUB_ENV"
+          echo "CANDIDATE_COMMIT=$candidate_commit" >> "$GITHUB_ENV"
+          echo "EXPECTED_SEQUENCE=$expected_sequence" >> "$GITHUB_ENV"
+          echo "EXPECTED_RELEASE=$expected_release" >> "$GITHUB_ENV"
+
+      - name: Fetch exact private WhatsApp candidate
+        shell: bash
+        env:
+          CF_REPO_READ_TOKEN: ${{ secrets.CF_REPO_READ_TOKEN }}
+        run: |
+          set -euo pipefail
+          : "${CF_REPO_READ_TOKEN:?missing private repository read token}"
+          private="$RUNNER_TEMP/private-candidate"
+          mkdir -m 700 "$private"
+          git init "$private" >/dev/null
+          askpass="$RUNNER_TEMP/askpass"
+          cat > "$askpass" <<'ASKPASS'
+          #!/usr/bin/env bash
+          case "${1:-}" in
+            *Username*) printf '%s\n' 'x-access-token' ;;
+            *Password*) printf '%s\n' "$CF_REPO_READ_TOKEN" ;;
+            *) exit 1 ;;
+          esac
+          ASKPASS
+          chmod 700 "$askpass"
+          GIT_ASKPASS="$askpass" GIT_TERMINAL_PROMPT=0 git -C "$private" fetch --quiet --depth=1 \
+            https://github.com/homayounisaghar/capability-fabric.git "$CANDIDATE_COMMIT"
+          [[ "$(git -C "$private" rev-parse FETCH_HEAD)" == "$CANDIDATE_COMMIT" ]] || exit 20
+          git -C "$private" checkout --quiet --detach FETCH_HEAD
+          rm -f "$askpass"
+          unset CF_REPO_READ_TOKEN
+          src="$private/server-deploy/candidates/onshape-vps-fast-r100-direct-orbit1-paa-storage-r240-whatsapp-closeout1/whatsapp-ingress.mjs"
+          [[ -f "$src" ]] || exit 21
+          node --check "$src"
+          echo "PRIVATE_WA_SOURCE=$src" >> "$GITHUB_ENV"
+
+      - name: Build exact public snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="qualification/onshape-fast-r12/$BASE_CANDIDATE"
+          out="qualification/onshape-fast-r12/$CANDIDATE_COMMIT"
+          [[ -d "$base" ]] || exit 30
+          rm -rf "$out"
+          cp -a "$base" "$out"
+          cp "$PRIVATE_WA_SOURCE" "$out/whatsapp-ingress.mjs"
+          python3 - "$out" "$EXPECTED_SEQUENCE" "$EXPECTED_RELEASE" <<'PY'
+          import hashlib, json, sys
+          from pathlib import Path
+          out=Path(sys.argv[1])
+          sequence=int(sys.argv[2])
+          release=sys.argv[3]
+          closure=json.loads((out/"release-closure.json").read_text())
+          closure["build_id"]=release
+          (out/"release-closure.json").write_text(json.dumps(closure,indent=2)+"\n")
+          manifest=json.loads((out/"manifest.json").read_text())
+          manifest["sequence"]=sequence
+          manifest["release_id"]=release
+          for rel in closure["files"]:
+              p=out/rel
+              assert p.is_file(), rel
+              manifest["files"][rel]=hashlib.sha256(p.read_bytes()).hexdigest()
+          assert set(manifest["files"])==set(closure["files"])
+          (out/"manifest.json").write_text(json.dumps(manifest,indent=2)+"\n")
+          PY
+          node --check "$out/whatsapp-ingress.mjs"
+          cmp -s "$base/bale-ingress.mjs" "$out/bale-ingress.mjs"
+          cmp -s "$base/telegram-ingress.mjs" "$out/telegram-ingress.mjs"
+          grep -q 'WAWebForwardMessagesToChat' "$out/whatsapp-ingress.mjs"
+          grep -q 'PROVIDER_FRESH_RECEIPT_QUALIFIED' "$out/whatsapp-ingress.mjs"
+          grep -q 'WAWebHandleMsgReceiptParser' "$out/whatsapp-ingress.mjs"
+          echo "R240_SNAPSHOT_GATE=pass"
+
+      - name: Commit exact snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          out="qualification/onshape-fast-r12/$CANDIDATE_COMMIT"
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A "$out"
+          git diff --cached --quiet && exit 31
+          git commit -m "snapshot r240 WhatsApp closeout"
+          git push origin HEAD:main
