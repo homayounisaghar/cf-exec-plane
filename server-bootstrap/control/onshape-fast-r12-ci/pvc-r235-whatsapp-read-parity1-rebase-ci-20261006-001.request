@@ -1,0 +1,4 @@
+request_id=pvc-r235-whatsapp-read-parity1-rebase-ci-20261006-001
+candidate_commit=4f0f7286631f6dceca6764a07d2044ba4e3f64c6
+expected_sequence=235
+expected_release=onshape-vps-fast-r100-direct-orbit1-paa-storage-r235-whatsapp-read-parity1
