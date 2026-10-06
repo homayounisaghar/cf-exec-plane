@@ -244,11 +244,7 @@ jobs:
                 apt-get install -y -qq --no-install-recommends xdotool
               fi
               export DISPLAY=:97
-              mapfile -t login_windows < <(xdotool search --onlyvisible --name '^WeChat
-          esac
-          rm -rf "$stage"
-          REMOTE
- 2>/dev/null || true)
+              mapfile -t login_windows < <(xdotool search --onlyvisible --class wechat 2>/dev/null || true)
               [[ "${#login_windows[@]}" -eq 1 ]] || { echo "WECHAT_LOGIN_RESUME_WINDOW_NOT_UNIQUE count=${#login_windows[@]}" >&2; exit 74; }
               wid="${login_windows[0]}"
               eval "$(xdotool getwindowgeometry --shell "$wid")"
