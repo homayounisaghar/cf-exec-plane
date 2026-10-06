@@ -149,6 +149,38 @@ def validate(req):
             raise ValueError("limit")
         if not p["query"].strip() and not p["extension"].strip(".") and not p["alternate_queries"]:
             raise ValueError("search_query_required")
+    elif action=="sms.status":
+        if p: raise ValueError("sms_status_parameters")
+    elif action=="sms.list":
+        if set(p)!={"box","limit","address","unread_only","since_ms"}: raise ValueError("sms_list_parameters")
+        if p["box"] not in {"any","inbox","sent","draft","outbox","failed","queued"}: raise ValueError("box")
+        if not isinstance(p["limit"],int) or isinstance(p["limit"],bool) or not 1<=p["limit"]<=50: raise ValueError("limit")
+        if not isinstance(p["address"],str) or len(p["address"])>160: raise ValueError("address")
+        if not isinstance(p["unread_only"],bool): raise ValueError("unread_only")
+        if not isinstance(p["since_ms"],int) or isinstance(p["since_ms"],bool) or p["since_ms"]<0: raise ValueError("since_ms")
+    elif action=="sms.search":
+        if set(p)!={"query","box","limit","since_ms"}: raise ValueError("sms_search_parameters")
+        if not isinstance(p["query"],str) or not 1<=len(p["query"])<=300: raise ValueError("query")
+        if p["box"] not in {"any","inbox","sent","draft","outbox","failed","queued"}: raise ValueError("box")
+        if not isinstance(p["limit"],int) or isinstance(p["limit"],bool) or not 1<=p["limit"]<=50: raise ValueError("limit")
+        if not isinstance(p["since_ms"],int) or isinstance(p["since_ms"],bool) or p["since_ms"]<0: raise ValueError("since_ms")
+    elif action=="contacts.search":
+        if set(p)!={"query","limit"}: raise ValueError("contacts_search_parameters")
+        if not isinstance(p["query"],str) or not 1<=len(p["query"])<=200: raise ValueError("query")
+        if not isinstance(p["limit"],int) or isinstance(p["limit"],bool) or not 1<=p["limit"]<=50: raise ValueError("limit")
+    elif action=="sms.send":
+        if set(p)!={"recipient","body","subscription_id"}: raise ValueError("sms_send_parameters")
+        if not isinstance(p["recipient"],str) or not 1<=len(p["recipient"])<=160: raise ValueError("recipient")
+        if not isinstance(p["body"],str) or not 1<=len(p["body"])<=10000: raise ValueError("body")
+        if not isinstance(p["subscription_id"],int) or isinstance(p["subscription_id"],bool) or p["subscription_id"] < -1: raise ValueError("subscription_id")
+    elif action=="sms.mark_read":
+        if set(p)!={"message_id","read"}: raise ValueError("sms_mark_read_parameters")
+        if not isinstance(p["message_id"],str) or not re.fullmatch(r"[0-9]{1,19}",p["message_id"]): raise ValueError("message_id")
+        if not isinstance(p["read"],bool): raise ValueError("read")
+    elif action=="sms.delete":
+        if set(p)!={"message_id","confirm"}: raise ValueError("sms_delete_parameters")
+        if not isinstance(p["message_id"],str) or not re.fullmatch(r"[0-9]{1,19}",p["message_id"]): raise ValueError("message_id")
+        if p["confirm"] is not True: raise ValueError("confirmation_required")
     elif action=="storage.file.save_from_url":
         if set(p)!={"url","sha256","size_bytes","directory","filename","mime"}: raise ValueError("storage_save_parameters")
         https_url(p["url"],r"/mcp/telegram-file/")
