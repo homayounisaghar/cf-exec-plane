@@ -557,6 +557,38 @@ jobs:
               sleep 1
               echo "PCG_WECHAT_MESSAGE_STRUCTURE_PROBE=success"
               ;;
+            modal-confirm-cancel)
+              systemctl is-active --quiet "$final" || { echo "WECHAT_MODAL_CONFIRM_CANCEL_REQUIRES_FINAL_ACTIVE" >&2; exit 115; }
+              snapshot=/tmp/pcg-wechat-modal-confirm-cancel.json
+              curl -fsS --max-time 3 http://127.0.0.1:9336/accessibility > "$snapshot"
+              python3 - "$snapshot" <<'PY'
+          import json,sys
+          prompt="You won't be notified of any new messages after logging out. Log out?"
+          j=json.load(open(sys.argv[1]))
+          visible=lambda n: "showing" in set(n.get("states",[])) and "visible" in set(n.get("states",[]))
+          prompts=[n for n in j.get("nodes",[]) if n.get("role")=="label" and n.get("name")==prompt and visible(n)]
+          cancels=[n for n in j.get("nodes",[]) if n.get("role")=="button" and n.get("name")=="Cancel" and visible(n)]
+          if len(prompts)!=1 or len(cancels)!=1 or "focused" not in set(cancels[0].get("states",[])):
+              raise SystemExit(116)
+          PY
+              runuser -u "$owner" -- env DISPLAY=:97 XAUTHORITY="$state/Xauthority" xdotool key Return
+              for _ in $(seq 1 20); do
+                sleep 0.2
+                curl -fsS --max-time 3 http://127.0.0.1:9336/accessibility > "$snapshot"
+                if python3 - "$snapshot" <<'PY'
+          import json,sys
+          prompt="You won't be notified of any new messages after logging out. Log out?"
+          j=json.load(open(sys.argv[1]))
+          alive=any(n.get("role")=="label" and n.get("name")==prompt and "showing" in set(n.get("states",[])) for n in j.get("nodes",[]))
+          raise SystemExit(1 if alive else 0)
+          PY
+                then
+                  echo "PCG_WECHAT_MODAL_CONFIRM_CANCEL=success"
+                  exit 0
+                fi
+              done
+              exit 117
+              ;;
             modal-cancel)
               systemctl is-active --quiet "$final" || { echo "WECHAT_MODAL_CANCEL_REQUIRES_FINAL_ACTIVE" >&2; exit 108; }
               snapshot=/tmp/pcg-wechat-modal-cancel.json
