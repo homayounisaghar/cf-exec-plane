@@ -1,0 +1,247 @@
+name: PCG WeChat Runtime
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - server-bootstrap/control/pcg-wechat-runtime/*.request
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pcg-wechat-runtime
+  cancel-in-progress: false
+
+jobs:
+  control:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+
+      - id: request
+        name: Validate immutable WeChat runtime request
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || { echo "request commit must add exactly one file" >&2; exit 10; }
+          IFS=$'\t' read -r status request_path <<<"${changes[0]}"
+          [[ "$status" == A ]] || exit 11
+          [[ "$request_path" == server-bootstrap/control/pcg-wechat-runtime/*.request ]] || exit 12
+
+          request_id="$(awk -F= '$1=="request_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          candidate_commit="$(awk -F= '$1=="candidate_commit"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          action="$(awk -F= '$1=="action"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 13
+          [[ "$candidate_commit" =~ ^[0-9a-f]{40}$ ]] || exit 14
+          case "$action" in install|inspect|cutover|restart-test) ;; *) exit 15 ;; esac
+          {
+            echo "candidate_commit=$candidate_commit"
+            echo "action=$action"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Fetch exact private WeChat runtime candidate
+        env:
+          CF_REPO_READ_TOKEN: ${{ secrets.CF_REPO_READ_TOKEN }}
+          CANDIDATE_COMMIT: ${{ steps.request.outputs.candidate_commit }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          : "${CF_REPO_READ_TOKEN:?missing private repository read token}"
+          work="${RUNNER_TEMP}/pcg-wechat-private"
+          rm -rf "$work"
+          mkdir -m 700 "$work"
+          git init "$work" >/dev/null
+          askpass="${RUNNER_TEMP}/pcg-wechat-askpass"
+          cat > "$askpass" <<'ASKPASS'
+          #!/usr/bin/env bash
+          case "${1:-}" in
+            *Username*) printf '%s\n' 'x-access-token' ;;
+            *Password*) printf '%s\n' "$CF_REPO_READ_TOKEN" ;;
+            *) exit 1 ;;
+          esac
+          ASKPASS
+          chmod 700 "$askpass"
+          GIT_ASKPASS="$askpass" GIT_TERMINAL_PROMPT=0 git -C "$work" fetch --quiet --depth=1 \
+            https://github.com/homayounisaghar/capability-fabric.git "$CANDIDATE_COMMIT"
+          [[ "$(git -C "$work" rev-parse FETCH_HEAD)" == "$CANDIDATE_COMMIT" ]] || exit 20
+          root="$work/runtime"
+          mkdir "$root"
+          base="server-deploy/channels/pcg/provider-runtime"
+          for f in pcg_wechat_runtime.mjs wechat_session.sh wechat_atspi_snapshot.py capability-fabric-pcg-wechat.service; do
+            git -C "$work" show "FETCH_HEAD:$base/$f" > "$root/$f"
+          done
+          rm -f "$askpass"
+          unset CF_REPO_READ_TOKEN
+          node --check "$root/pcg_wechat_runtime.mjs"
+          bash -n "$root/wechat_session.sh"
+          python3 -m py_compile "$root/wechat_atspi_snapshot.py"
+          grep -q '^User=cfop_e79aa1fde5$' "$root/capability-fabric-pcg-wechat.service"
+          grep -q '^Environment=HOME=/var/lib/capability-fabric/pcg/wechat/home$' "$root/capability-fabric-pcg-wechat.service"
+          tar -C "$root" -czf "${RUNNER_TEMP}/pcg-wechat-runtime.tgz" .
+
+      - name: Prepare SSH
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -n "$VPS_SSH_KEY" && -n "$VPS_HOST" && -n "$VPS_SSH_USER" && -n "$VPS_HOST_KEY" ]] || exit 30
+          port="${VPS_PORT:-22}"
+          case "$port" in ''|*[!0-9]*) exit 31 ;; esac
+          tmp="${RUNNER_TEMP}/pcg-wechat-ssh"
+          install -d -m 0700 "$tmp"
+          printf '%s\n' "$VPS_SSH_KEY" > "$tmp/key"
+          chmod 0600 "$tmp/key"
+          host_key_line="${VPS_HOST_KEY//$'\r'/}"
+          read -r hkt hkd extra <<< "$host_key_line"
+          [[ "$hkt" == ssh-ed25519 && -n "$hkd" && -z "${extra:-}" ]] || exit 32
+          printf '%s %s %s\n' "$VPS_HOST" "$hkt" "$hkd" > "$tmp/known_hosts"
+          printf '[%s]:%s %s %s\n' "$VPS_HOST" "$port" "$hkt" "$hkd" >> "$tmp/known_hosts"
+          chmod 0600 "$tmp/known_hosts"
+          echo "SSH_DIR=$tmp" >> "$GITHUB_ENV"
+          echo "SSH_PORT=$port" >> "$GITHUB_ENV"
+
+      - name: Upload bounded WeChat payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          scp -q -i "$SSH_DIR/key" -P "$SSH_PORT" \
+            -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$SSH_DIR/known_hosts" \
+            "${RUNNER_TEMP}/pcg-wechat-runtime.tgz" \
+            "${VPS_SSH_USER}@${VPS_HOST}:/tmp/pcg-wechat-runtime.tgz"
+
+      - name: Execute bounded WeChat runtime action
+        env:
+          ACTION: ${{ steps.request.outputs.action }}
+          CANDIDATE_COMMIT: ${{ steps.request.outputs.candidate_commit }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -i "$SSH_DIR/key" -p "$SSH_PORT" \
+            -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$SSH_DIR/known_hosts" \
+            "${VPS_SSH_USER}@${VPS_HOST}" "ACTION='$ACTION' CANDIDATE_COMMIT='$CANDIDATE_COMMIT' bash -s" <<'REMOTE'
+          set -euo pipefail
+          [[ "$(id -u)" -eq 0 ]] || exit 40
+
+          owner=cfop_e79aa1fde5
+          state=/var/lib/capability-fabric/pcg/wechat
+          home="$state/home"
+          runtime=/usr/local/lib/capability-fabric/pcg-provider-runtime
+          bridge=capability-fabric-pcg-login-bridge-wechat.service
+          final=capability-fabric-pcg-wechat.service
+          stage="/tmp/pcg-wechat-runtime-$CANDIDATE_COMMIT"
+
+          rm -rf "$stage"
+          mkdir -m 0700 "$stage"
+          tar -xzf /tmp/pcg-wechat-runtime.tgz -C "$stage"
+          rm -f /tmp/pcg-wechat-runtime.tgz
+
+          start_bridge() {
+            systemctl stop "$bridge" >/dev/null 2>&1 || true
+            systemctl reset-failed "$bridge" >/dev/null 2>&1 || true
+            rm -f /tmp/.X97-lock /tmp/.X11-unix/X97
+            systemd-run --quiet --unit="$bridge" --uid="$owner" --collect \
+              --property=Type=simple \
+              --property=KillMode=control-group \
+              --property=WorkingDirectory="$state" \
+              --setenv=HOME="$home" \
+              --setenv=XDG_CONFIG_HOME="$home/.config" \
+              --setenv=XDG_CACHE_HOME="$home/.cache" \
+              --setenv=XDG_DATA_HOME="$home/.local/share" \
+              --setenv=QT_ACCESSIBILITY=1 \
+              --setenv=QT_LINUX_ACCESSIBILITY_ALWAYS_ON=1 \
+              /bin/bash -lc 'set -e; Xvfb :97 -screen 0 1440x1000x24 -nolisten tcp -ac & xvfb=$!; trap "kill $xvfb 2>/dev/null || true" EXIT; for i in $(seq 1 40); do [[ -S /tmp/.X11-unix/X97 ]] && break; sleep 0.1; done; export DISPLAY=:97; /usr/bin/dbus-run-session -- /opt/wechat/wechat'
+          }
+
+          wait_final() {
+            for _ in $(seq 1 60); do
+              if systemctl is-active --quiet "$final" && curl -fsS --max-time 1 http://127.0.0.1:9336/status >/tmp/pcg-wechat-status.json 2>/dev/null; then
+                if python3 - <<'PY'
+import json
+p=json.load(open('/tmp/pcg-wechat-status.json'))
+raise SystemExit(0 if p.get('accessibility_available') else 1)
+PY
+                then
+                  return 0
+                fi
+              fi
+              sleep 1
+            done
+            return 1
+          }
+
+          inspect() {
+            echo "WECHAT_BRIDGE_ACTIVE=$(systemctl is-active "$bridge" 2>/dev/null || true)"
+            echo "WECHAT_FINAL_ACTIVE=$(systemctl is-active "$final" 2>/dev/null || true)"
+            echo "WECHAT_FINAL_ENABLED=$(systemctl is-enabled "$final" 2>/dev/null || true)"
+            echo "WECHAT_HOME_OWNER=$(stat -c '%U:%G' "$home" 2>/dev/null || true)"
+            echo "WECHAT_HOME_MODE=$(stat -c '%a' "$home" 2>/dev/null || true)"
+            curl -fsS --max-time 2 http://127.0.0.1:9336/status 2>/dev/null || true
+            echo
+          }
+
+          case "$ACTION" in
+            install)
+              systemctl is-active --quiet "$bridge" || { echo "WECHAT_INSTALL_REQUIRES_ACTIVE_AUTH_BRIDGE" >&2; exit 50; }
+              ! systemctl is-active --quiet "$final" || { echo "WECHAT_INSTALL_REFUSES_FINAL_ACTIVE" >&2; exit 51; }
+              export DEBIAN_FRONTEND=noninteractive
+              if ! python3 -c 'import gi; gi.require_version("Atspi","2.0"); from gi.repository import Atspi' >/dev/null 2>&1; then
+                apt-get update -qq
+                apt-get install -y -qq --no-install-recommends at-spi2-core python3-gi gir1.2-atspi-2.0 xauth xvfb dbus-x11
+              fi
+              install -d -m 0755 -o root -g root "$runtime"
+              install -m 0644 -o root -g root "$stage/pcg_wechat_runtime.mjs" "$runtime/pcg_wechat_runtime.mjs"
+              install -m 0755 -o root -g root "$stage/wechat_session.sh" "$runtime/wechat_session.sh"
+              install -m 0755 -o root -g root "$stage/wechat_atspi_snapshot.py" "$runtime/wechat_atspi_snapshot.py"
+              install -m 0644 -o root -g root "$stage/capability-fabric-pcg-wechat.service" /etc/systemd/system/capability-fabric-pcg-wechat.service
+              systemctl daemon-reload
+              systemctl disable "$final" >/dev/null 2>&1 || true
+              systemctl is-active --quiet "$bridge"
+              echo "PCG_WECHAT_RUNTIME_INSTALL=success"
+              echo "PCG_WECHAT_RUNTIME_SERVICE_RESTART=none"
+              ;;
+            inspect)
+              inspect
+              ;;
+            cutover)
+              systemctl is-active --quiet "$bridge" || { echo "WECHAT_CUTOVER_REQUIRES_ACTIVE_BRIDGE" >&2; exit 60; }
+              ! systemctl is-active --quiet "$final" || { echo "WECHAT_CUTOVER_REFUSES_DUPLICATE_FINAL" >&2; exit 61; }
+              [[ "$(systemctl show "$bridge" -p Environment --value)" == *"HOME=$home"* ]] || { echo "WECHAT_BRIDGE_HOME_MISMATCH" >&2; exit 62; }
+              systemctl stop "$bridge"
+              systemctl reset-failed "$bridge" >/dev/null 2>&1 || true
+              rm -f /tmp/.X97-lock /tmp/.X11-unix/X97
+              systemctl enable "$final" >/dev/null
+              systemctl start "$final"
+              if ! wait_final; then
+                echo "WECHAT_FINAL_QUALIFICATION_START_FAILED" >&2
+                systemctl disable --now "$final" >/dev/null 2>&1 || true
+                start_bridge
+                exit 63
+              fi
+              echo "PCG_WECHAT_CUTOVER=success"
+              inspect
+              ;;
+            restart-test)
+              systemctl is-active --quiet "$final" || { echo "WECHAT_RESTART_TEST_REQUIRES_FINAL_ACTIVE" >&2; exit 70; }
+              systemctl restart "$final"
+              wait_final || { echo "WECHAT_RESTART_TEST_FAILED" >&2; exit 71; }
+              echo "PCG_WECHAT_RESTART_TEST=success"
+              inspect
+              ;;
+          esac
+          rm -rf "$stage"
+          REMOTE
