@@ -1,0 +1,5 @@
+request_id=pvc-r245-alibaba-closeout1-snapshot-20261007-001
+base_candidate=9b2685de993a10a4da7a0704296ce9f1c96b7363
+candidate_commit=78ca003fa0b954b836b473787bf8937fa64f5ffc
+expected_sequence=245
+expected_release=onshape-vps-fast-r100-direct-orbit1-paa-storage-r245-alibaba-closeout1
