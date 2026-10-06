@@ -1,0 +1,4 @@
+request_id=pvc-r239-bale-parity1-deploy-20261006-001
+candidate_commit=a965b4c0141bd2d501b9d175b8dec7879a70d9c0
+expected_sequence=239
+expected_release=onshape-vps-fast-r100-direct-orbit1-paa-storage-r239-bale-parity1
