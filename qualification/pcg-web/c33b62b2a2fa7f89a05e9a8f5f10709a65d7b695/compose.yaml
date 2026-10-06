@@ -1,0 +1,297 @@
+services:
+  pcg_telegram:
+    container_name: capability-fabric-pcg-telegram
+    image: ghcr.io/homayounisaghar/pcg-tdlib-python@sha256:eccb8b5e73ac504aafd8a8b316e2fda951bd7cb23280cccf99c5e6206c4826e4
+    user: "65534:65534"
+    working_dir: /release
+    command:
+      - python
+      - /release/pcg_telegram_provisioning_runtime.py
+    environment:
+      PCG_TELEGRAM_SOCKET: /run/pcg/telegram.sock
+      PCG_TDLIB_EXPECTED_VERSION: "1.8.67"
+      PCG_TELEGRAM_API_FILE: /api-credentials/telegram-api.json
+      PCG_TDLIB_DB_KEY_FILE: /db-key/tdlib-db-key
+      PCG_TDLIB_DB_DIR: /state/tdlib-db
+      PCG_TDLIB_FILES_DIR: /state/tdlib-files
+      PCG_PROVISION_TOKEN_FILE: /provision/token
+      PCG_PROVISION_COMPLETE_FILE: /run/pcg/provision-complete
+      PCG_PROVISION_PORT: "8766"
+      PCG_PROVISION_TTL_SECONDS: "900"
+      PYTHONDONTWRITEBYTECODE: "1"
+      PYTHONUNBUFFERED: "1"
+      HOME: /tmp
+    volumes:
+      - ./:/release:ro
+      - /var/lib/capability-fabric/pcg/run:/run/pcg:rw
+      - /var/lib/capability-fabric/pcg/telegram-state:/state:rw
+      - /var/lib/capability-fabric/pcg/api-credentials:/api-credentials:rw
+      - /var/lib/capability-fabric/pcg/db-key:/db-key:ro
+      - /run/capability-fabric/pcg-provision:/provision:ro
+    network_mode: bridge
+    ports:
+      - "127.0.0.1:8766:8766"
+    tmpfs:
+      - /tmp
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 256m
+    cpus: "0.50"
+    pids_limit: 96
+    stop_grace_period: 12s
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import json,socket; s=socket.socket(socket.AF_UNIX); s.settimeout(2); s.connect('/run/pcg/telegram.sock'); s.sendall(b'{\"op\":\"health\"}'); d=json.loads(s.recv(4096)); s.close(); assert d['ok'] is True and d['mode']=='REAL_TDLIB_PROVISIONABLE' and d['tdlib_version']=='1.8.67' and d['authorization'] in ('PROVISIONING_REQUIRED','PROVISIONING_INCOMPLETE','READY') and d['material_send_admission']=='CLOSED' and d['model_content_admission']=='CLOSED' and d['presence_control']=='NOT_INVOKED'"
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 8s
+
+  pcg_audio_transform:
+    container_name: capability-fabric-pcg-audio-transform
+    image: ghcr.io/homayounisaghar/pcg-asr-faster-whisper:medium-4f262d8e7247
+    user: "65534:65534"
+    working_dir: /release
+    entrypoint:
+      - python
+      - /release/pcg_audio_transform.py
+    environment:
+      PCG_AUDIO_TRANSFORM_SOCKET: /run/pcg/audio-transform.sock
+      PCG_AUDIO_TRANSFORM_MATERIAL_ROOT: /run/pcg/material-files
+      PYTHONDONTWRITEBYTECODE: "1"
+      PYTHONUNBUFFERED: "1"
+      HOME: /tmp
+    volumes:
+      - ./:/release:ro
+      - /var/lib/capability-fabric/pcg/run:/run/pcg:rw
+    network_mode: none
+    tmpfs:
+      - /tmp
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 768m
+    cpus: "1.00"
+    pids_limit: 64
+    stop_grace_period: 20s
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import json,socket; s=socket.socket(socket.AF_UNIX,socket.SOCK_STREAM); s.settimeout(3); s.connect('/run/pcg/audio-transform.sock'); s.sendall(b'{\"op\":\"health\"}\\n'); d=json.loads(s.recv(65536).split(b'\\n',1)[0]); s.close(); assert d['ok'] is True and d['state']=='READY' and d['opus_encoder'] is True and d['sample_rate']==48000 and d['bitrate_bps']==128000"
+      interval: 5s
+      timeout: 4s
+      retries: 24
+      start_period: 10s
+
+  pcg_asr:
+    container_name: capability-fabric-pcg-asr
+    image: ghcr.io/homayounisaghar/pcg-asr-faster-whisper:medium-4f262d8e7247
+    user: "65534:65534"
+    environment:
+      PCG_ASR_SOCKET: /run/pcg/asr.sock
+      PCG_ASR_MATERIAL_ROOT: /run/pcg/material-files
+      PCG_ASR_STATE_ROOT: /run/pcg/asr-state
+      PCG_ASR_MODEL_PATH: /models/model
+      PCG_ASR_MODEL_META: /opt/pcg/model-meta.json
+      PCG_ASR_CPU_THREADS: "1"
+      HOME: /tmp
+    volumes:
+      - /var/lib/capability-fabric/pcg/run:/run/pcg:rw
+    network_mode: none
+    tmpfs:
+      - /tmp
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 2560m
+    cpus: "1.00"
+    pids_limit: 128
+    stop_grace_period: 20s
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import json,socket; s=socket.socket(socket.AF_UNIX,socket.SOCK_STREAM); s.settimeout(2); s.connect('/run/pcg/asr.sock'); s.sendall(b'{\"op\":\"health\"}\\n'); d=json.loads(s.recv(262144).split(b'\\n',1)[0]); s.close(); assert d['ok'] is True and d['state']=='READY' and d['engine_id']=='faster-whisper'"
+      interval: 5s
+      timeout: 3s
+      retries: 24
+      start_period: 60s
+
+  pcg_perplexity_asr:
+    container_name: capability-fabric-pcg-perplexity-asr
+    image: mcr.microsoft.com/playwright:v1.62.1-resolute@sha256:aebd85bce8056dcdc2269853fd94ea432b6a201da4f0ef125b509489ecd52ddb
+    user: "65534:65534"
+    working_dir: /tmp
+    command:
+      - sh
+      - -lc
+      - >-
+        umask 077 &&
+        rm -rf /tmp/pcg-perplexity-asr-app &&
+        mkdir -m 0700 /tmp/pcg-perplexity-asr-app &&
+        cp /release/pcg_perplexity_asr.mjs /tmp/pcg-perplexity-asr-app/ &&
+        cp /release/pcg_web_package.json /tmp/pcg-perplexity-asr-app/package.json &&
+        cd /tmp/pcg-perplexity-asr-app &&
+        PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm install --omit=dev --ignore-scripts --no-audit --no-fund --package-lock=false &&
+        exec node pcg_perplexity_asr.mjs
+    environment:
+      PCG_PERPLEXITY_ASR_SOCKET: /run/pcg/perplexity-asr.sock
+      PCG_PERPLEXITY_ASR_MATERIAL_ROOT: /run/pcg/material-files
+      PCG_PERPLEXITY_ASR_STATE_ROOT: /run/pcg/perplexity-asr-state
+      PCG_PERPLEXITY_PROFILE_DIR: /run/pcg/perplexity-profile
+      PCG_PERPLEXITY_LOGIN_PORT: "8767"
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+      NPM_CONFIG_CACHE: /tmp/npm-cache
+      HOME: /tmp
+      NODE_ENV: production
+    volumes:
+      - ./:/release:ro
+      - /var/lib/capability-fabric/pcg/run:/run/pcg:rw
+    network_mode: bridge
+    ports:
+      - "127.0.0.1:8767:8767"
+    tmpfs:
+      - /tmp
+    shm_size: "256m"
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 1536m
+    cpus: "0.75"
+    pids_limit: 160
+    stop_grace_period: 20s
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "const n=require('net');const s=n.createConnection({path:'/run/pcg/perplexity-asr.sock'});s.setTimeout(3000);s.on('connect',()=>s.write(JSON.stringify({op:'health'})+'\\n'));let b='';s.on('data',c=>{b+=c;if(b.includes('\\n')){const d=JSON.parse(b.split('\\n')[0]);process.exit(d.ok===true&&d.state==='READY'?0:1)}});s.on('error',()=>process.exit(1));s.on('timeout',()=>process.exit(1));"
+      interval: 10s
+      timeout: 5s
+      retries: 18
+      start_period: 45s
+
+  pcg_web:
+    container_name: capability-fabric-pcg-web
+    image: mcr.microsoft.com/playwright:v1.62.1-resolute@sha256:aebd85bce8056dcdc2269853fd94ea432b6a201da4f0ef125b509489ecd52ddb
+    user: "65534:65534"
+    working_dir: /tmp
+    depends_on:
+      pcg_asr:
+        condition: service_healthy
+      pcg_audio_transform:
+        condition: service_healthy
+    command:
+      - sh
+      - -lc
+      - >-
+        umask 077 &&
+        chmod 0700 /profile &&
+        rm -rf /tmp/pcg-web-app &&
+        mkdir -m 0700 /tmp/pcg-web-app &&
+        cp /release/pcg_web_*.mjs /tmp/pcg-web-app/ &&
+        cp /release/pcg_web_package.json /tmp/pcg-web-app/package.json &&
+        cd /tmp/pcg-web-app &&
+        PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm install --omit=dev --ignore-scripts --no-audit --no-fund --package-lock=false &&
+        exec node pcg_web_browser.mjs
+    environment:
+      PCG_WEB_PROFILE_DIR: /profile
+      PCG_WEB_SOCKET: /run/pcg/web.sock
+      PCG_ASR_SOCKET: /run/pcg/asr.sock
+      PCG_AUDIO_TRANSFORM_SOCKET: /run/pcg/audio-transform.sock
+      PCG_PERPLEXITY_ASR_SOCKET: /run/pcg/perplexity-asr.sock
+      PCG_WEB_DOWNLOAD_BROKER: /run/pcg/ingress/downloads
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+      NPM_CONFIG_CACHE: /tmp/npm-cache
+      HOME: /tmp
+      NODE_ENV: production
+    volumes:
+      - ./:/release:ro
+      - /var/lib/capability-fabric/pcg/run:/run/pcg:rw
+      - /var/lib/capability-fabric/pcg/telegram-web-profile:/profile:rw
+    network_mode: bridge
+    tmpfs:
+      - /tmp
+    shm_size: "256m"
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 1536m
+    cpus: "1.00"
+    pids_limit: 160
+    stop_grace_period: 20s
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - "test -S /run/pcg/web.sock"
+      interval: 5s
+      timeout: 2s
+      retries: 12
+      start_period: 15s
+
+  pcg_core:
+    container_name: capability-fabric-pcg-core
+    image: python:3.12-slim-bookworm@sha256:392307d22300de8b5986851a12d9176dfc0fc073e65bf6523ebd7dcbeb23564e
+    user: "65534:65534"
+    working_dir: /release
+    command:
+      - python
+      - /release/pcg_core_stub.py
+    depends_on:
+      pcg_telegram:
+        condition: service_healthy
+    environment:
+      PCG_TELEGRAM_SOCKET: /run/pcg/telegram.sock
+      PCG_CORE_HEALTH: /state/core-health.json
+      PYTHONDONTWRITEBYTECODE: "1"
+      PYTHONUNBUFFERED: "1"
+      HOME: /tmp
+    volumes:
+      - ./:/release:ro
+      - /var/lib/capability-fabric/pcg/run:/run/pcg:rw
+      - /var/lib/capability-fabric/pcg/core-state:/state:rw
+    network_mode: none
+    tmpfs:
+      - /tmp
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 128m
+    cpus: "0.25"
+    pids_limit: 64
+    stop_grace_period: 10s
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import json,time; d=json.load(open('/state/core-health.json')); assert d['ok'] is True and d['telegram_runtime']=='REACHABLE' and d['telegram_runtime_mode']=='REAL_TDLIB_PROVISIONABLE' and d['material_send_admission']=='CLOSED' and time.time()-d['updated_at'] < 10"
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
