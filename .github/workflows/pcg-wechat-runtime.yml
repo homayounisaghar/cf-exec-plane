@@ -83,7 +83,7 @@ jobs:
           mkdir "$root"
           base="server-deploy/channels/pcg/provider-runtime"
           case "$ACTION" in
-            mirror-stop)
+            mirror-stop|modal-cancel-relative)
               :
               ;;
             semantic-*)
