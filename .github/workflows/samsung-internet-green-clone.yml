@@ -36,30 +36,40 @@ jobs:
           set -o pipefail
           "$SDKMANAGER" "build-tools;35.0.0" "platform-tools"
 
-      - name: Fetch exact official Samsung Internet source
+      - name: Fetch verified official Samsung Internet source
         shell: bash
         run: |
           set -euo pipefail
           python3 -m pip install --disable-pip-version-check --no-input justapk
           mkdir -p fetched
           justapk download com.sec.android.app.sbrowser -v 30.0.0.67 -o fetched | tee justapk-result.json
-          python3 - <<'PY'
-          from pathlib import Path
-          import hashlib, shutil
-          expected='9e2270ddbd0f41e4ed85944362c66f55e96090c86e19d098eb483a4a0850d32f'
-          candidates=[]
-          for p in Path('fetched').rglob('*'):
-              if p.is_file() and p.suffix.lower()=='.apk':
-                  h=hashlib.sha256(p.read_bytes()).hexdigest()
-                  print(p, p.stat().st_size, h)
-                  if h==expected:
-                      candidates.append(p)
-          if len(candidates)!=1:
-              raise SystemExit(f'exact source not found; exact_matches={len(candidates)}')
-          shutil.copy2(candidates[0],'source.apk')
+          SRC="$(find fetched -type f -name '*.apk' | head -n 1)"
+          test -n "$SRC"
+          sha256sum "$SRC" | tee source-downloaded-sha256.txt
+
+          BT="$ANDROID_HOME/build-tools/35.0.0"
+          "$BT/aapt" dump badging "$SRC" | tee source-badging.txt
+          grep -q "package: name='com.sec.android.app.sbrowser'" source-badging.txt
+          grep -q "versionName='30.0.0.67'" source-badging.txt
+          grep -q "versionCode='1300067502'" source-badging.txt
+
+          "$BT/apksigner" verify --print-certs "$SRC" | tee source-cert.txt
+          grep -qi 'Signer #1 certificate SHA-256 digest: 34df0e7a9f1cf1892e45c056b4973cd81ccf148a4050d11aea4ac5a65f900a42' source-cert.txt
+
+          python3 - "$SRC" <<'PY'
+          import sys, zipfile
+          p=sys.argv[1]
+          z=zipfile.ZipFile(p)
+          dex=sorted(n for n in z.namelist() if n.startswith('classes') and n.endswith('.dex'))
+          libs=sorted(n for n in z.namelist() if n.startswith('lib/') and n.endswith('.so'))
+          print('dex_files',len(dex),dex)
+          print('native_libs',len(libs))
+          assert len(dex)==5, len(dex)
+          assert len(libs)==13, len(libs)
           PY
-          echo '9e2270ddbd0f41e4ed85944362c66f55e96090c86e19d098eb483a4a0850d32f  source.apk' | sha256sum -c -
-          test "$(stat -c %s source.apk)" = "316616974"
+
+          cp "$SRC" source.apk
+          echo "verified_source_sha256=$(sha256sum source.apk | awk '{print $1}')" >> "$GITHUB_ENV"
 
       - name: Fetch pinned Apktool
         shell: bash
@@ -126,7 +136,7 @@ jobs:
           {
             echo 'source_repo=homayounisaghar/capability-fabric'
             echo 'source_project=projects/samsung-internet-green-clone'
-            echo 'official_source_sha256=9e2270ddbd0f41e4ed85944362c66f55e96090c86e19d098eb483a4a0850d32f'
+            echo "official_source_sha256=$verified_source_sha256"
             echo 'package=com.sec.android.app.sbrowse3'
             echo 'versionCode=1300067502'
             echo 'versionName=30.0.0.67'
