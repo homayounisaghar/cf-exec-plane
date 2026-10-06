@@ -16,9 +16,9 @@ function call(name, subject, organization) {
   return { method: "tools/call", params: { name, _meta: meta } };
 }
 
-test("starts disabled and fingerprint is stable", () => {
+test("starts observe and fingerprint is stable", () => {
   const gate = fixture();
-  assert.equal(gate.readState().mode, "disabled");
+  assert.equal(gate.readState().mode, "observe");
   assert.equal(gate.subjectFingerprint("a"), gate.subjectFingerprint("a"));
   assert.notEqual(gate.subjectFingerprint("a"), gate.subjectFingerprint("b"));
 });
