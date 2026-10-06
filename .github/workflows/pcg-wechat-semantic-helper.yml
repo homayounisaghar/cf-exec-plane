@@ -1,0 +1,152 @@
+name: PCG WeChat Semantic Helper
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - server-bootstrap/control/pcg-wechat-semantic-helper/*.request
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pcg-wechat-semantic-helper
+  cancel-in-progress: false
+
+jobs:
+  control:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+
+      - id: request
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || exit 10
+          IFS=$'\t' read -r status request_path <<<"${changes[0]}"
+          [[ "$status" == A ]] || exit 11
+          [[ "$request_path" == server-bootstrap/control/pcg-wechat-semantic-helper/*.request ]] || exit 12
+          request_id="$(awk -F= '$1=="request_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          candidate_commit="$(awk -F= '$1=="candidate_commit"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          action="$(awk -F= '$1=="action"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 13
+          [[ "$candidate_commit" =~ ^[0-9a-f]{40}$ ]] || exit 14
+          case "$action" in install|status|dismiss-login-modal) ;; *) exit 15 ;; esac
+          {
+            echo "candidate_commit=$candidate_commit"
+            echo "action=$action"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Fetch exact helper source
+        if: steps.request.outputs.action == 'install'
+        env:
+          CF_REPO_READ_TOKEN: ${{ secrets.CF_REPO_READ_TOKEN }}
+          CANDIDATE_COMMIT: ${{ steps.request.outputs.candidate_commit }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          work="${RUNNER_TEMP}/wechat-semantic"
+          git init "$work" >/dev/null
+          askpass="${RUNNER_TEMP}/askpass"
+          cat > "$askpass" <<'ASKPASS'
+          #!/usr/bin/env bash
+          case "${1:-}" in
+            *Username*) printf '%s\n' 'x-access-token' ;;
+            *Password*) printf '%s\n' "$CF_REPO_READ_TOKEN" ;;
+            *) exit 1 ;;
+          esac
+          ASKPASS
+          chmod 700 "$askpass"
+          GIT_ASKPASS="$askpass" GIT_TERMINAL_PROMPT=0 git -C "$work" fetch --quiet --depth=1             https://github.com/homayounisaghar/capability-fabric.git "$CANDIDATE_COMMIT"
+          [[ "$(git -C "$work" rev-parse FETCH_HEAD)" == "$CANDIDATE_COMMIT" ]]
+          base="server-deploy/channels/pcg/provider-runtime"
+          mkdir "$work/out"
+          for f in wechat_semantic_helper.py wechat_semantic_helper.sh capability-fabric-pcg-wechat-semantic.service; do
+            git -C "$work" show "FETCH_HEAD:$base/$f" > "$work/out/$f"
+          done
+          python3 -m py_compile "$work/out/wechat_semantic_helper.py"
+          bash -n "$work/out/wechat_semantic_helper.sh"
+          tar -C "$work/out" -czf "${RUNNER_TEMP}/wechat-semantic.tgz" .
+
+      - name: Prepare SSH
+        shell: bash
+        run: |
+          set -euo pipefail
+          port="${VPS_PORT:-22}"
+          tmp="${RUNNER_TEMP}/ssh"
+          install -d -m 0700 "$tmp"
+          printf '%s\n' "$VPS_SSH_KEY" > "$tmp/key"
+          chmod 0600 "$tmp/key"
+          read -r hkt hkd extra <<< "${VPS_HOST_KEY//$'\r'/}"
+          [[ "$hkt" == ssh-ed25519 && -n "$hkd" && -z "${extra:-}" ]]
+          printf '%s %s %s\n' "$VPS_HOST" "$hkt" "$hkd" > "$tmp/known_hosts"
+          printf '[%s]:%s %s %s\n' "$VPS_HOST" "$port" "$hkt" "$hkd" >> "$tmp/known_hosts"
+          echo "SSH_DIR=$tmp" >> "$GITHUB_ENV"
+          echo "SSH_PORT=$port" >> "$GITHUB_ENV"
+
+      - name: Upload helper
+        if: steps.request.outputs.action == 'install'
+        shell: bash
+        run: |
+          scp -q -i "$SSH_DIR/key" -P "$SSH_PORT" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$SSH_DIR/known_hosts"             "${RUNNER_TEMP}/wechat-semantic.tgz" "${VPS_SSH_USER}@${VPS_HOST}:/tmp/wechat-semantic.tgz"
+
+      - name: Apply bounded action
+        env:
+          ACTION: ${{ steps.request.outputs.action }}
+        shell: bash
+        run: |
+          ssh -i "$SSH_DIR/key" -p "$SSH_PORT" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$SSH_DIR/known_hosts"             "${VPS_SSH_USER}@${VPS_HOST}" "ACTION='$ACTION' bash -s" <<'REMOTE'
+          set -euo pipefail
+          [[ "$(id -u)" -eq 0 ]]
+          semantic=capability-fabric-pcg-wechat-semantic.service
+          wechat=capability-fabric-pcg-wechat.service
+          runtime=/usr/local/lib/capability-fabric/pcg-provider-runtime
+          case "$ACTION" in
+            install)
+              systemctl is-active --quiet "$wechat"
+              before="$(systemctl show "$wechat" -p MainPID --value)"
+              mkdir -p /tmp/wechat-semantic-stage
+              rm -rf /tmp/wechat-semantic-stage/*
+              tar -xzf /tmp/wechat-semantic.tgz -C /tmp/wechat-semantic-stage
+              rm -f /tmp/wechat-semantic.tgz
+              install -m 0644 -o root -g root /tmp/wechat-semantic-stage/wechat_semantic_helper.py "$runtime/wechat_semantic_helper.py"
+              install -m 0755 -o root -g root /tmp/wechat-semantic-stage/wechat_semantic_helper.sh "$runtime/wechat_semantic_helper.sh"
+              install -m 0644 -o root -g root /tmp/wechat-semantic-stage/capability-fabric-pcg-wechat-semantic.service /etc/systemd/system/capability-fabric-pcg-wechat-semantic.service
+              rm -rf /tmp/wechat-semantic-stage
+              systemctl daemon-reload
+              systemctl enable "$semantic" >/dev/null
+              systemctl restart "$semantic"
+              for _ in $(seq 1 30); do
+                if curl -fsS --max-time 2 http://127.0.0.1:9337/status >/tmp/wechat-semantic-status.json 2>/dev/null; then break; fi
+                sleep 1
+              done
+              test -s /tmp/wechat-semantic-status.json
+              python3 -c 'import json; p=json.load(open("/tmp/wechat-semantic-status.json")); assert p.get("ok") is True; assert p.get("authenticated") is True'
+              after="$(systemctl show "$wechat" -p MainPID --value)"
+              [[ "$before" == "$after" ]]
+              cat /tmp/wechat-semantic-status.json
+              ;;
+            status)
+              systemctl is-active "$wechat"
+              systemctl is-active "$semantic"
+              curl -fsS --max-time 3 http://127.0.0.1:9337/status
+              ;;
+            dismiss-login-modal)
+              curl -fsS --max-time 10 -H 'content-type: application/json' -d '{}' http://127.0.0.1:9337/dismiss-logout-confirmation
+              ;;
+          esac
+          REMOTE
