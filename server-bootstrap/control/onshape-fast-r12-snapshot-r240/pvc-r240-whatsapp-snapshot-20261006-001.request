@@ -1,0 +1,5 @@
+request_id=pvc-r240-whatsapp-snapshot-20261006-001
+base_candidate=a965b4c0141bd2d501b9d175b8dec7879a70d9c0
+candidate_commit=37e7e9ab8461c320a0a4b1f5c009896aab7177ca
+expected_sequence=240
+expected_release=onshape-vps-fast-r100-direct-orbit1-paa-storage-r240-whatsapp-closeout1
