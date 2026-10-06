@@ -36,7 +36,7 @@ jobs:
           set -o pipefail
           "$SDKMANAGER" "build-tools;35.0.0" "platform-tools"
 
-      - name: Fetch exact AppLoko Samsung 30.0.0.67 source
+      - name: Capture AppLoko Samsung page
         shell: bash
         run: |
           set -euo pipefail
@@ -45,59 +45,41 @@ jobs:
           curl -fL --retry 4 --retry-all-errors --connect-timeout 30 \
             -A 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/152 Safari/537.36' \
             "$PAGE" -o fetched/page.html
-
           python3 - <<'PY'
           from pathlib import Path
           from urllib.parse import urljoin
           import html,re
           body=Path('fetched/page.html').read_text(errors='replace')
-          print('page_bytes',len(body))
           vals=[]
-          pats=[
+          for pat in [
               r'''(?:href|src|action|data-url|data-href|data-download|data-download-url)=["']([^"']+)["']''',
               r'''https?://[^"'<>\\ ]+''',
-          ]
-          for pat in pats:
+              r'''fetch\(["']([^"']+)["']''',
+          ]:
               for m in re.finditer(pat,body,re.I):
                   v=m.group(1) if m.lastindex else m.group(0)
                   v=html.unescape(v).replace('\\/','/')
-                  if any(k in v.lower() for k in ('download','apk','file','cdn','storage','media')):
+                  if any(k in v.lower() for k in ('download','apk','file','cdn','storage','media','api')):
                       vals.append(urljoin('https://apploko.com/',v))
           out=[]
           for v in vals:
               if v not in out: out.append(v)
           Path('fetched/candidates.txt').write_text('\n'.join(out)+'\n')
-          print('candidate_count',len(out))
-          for i,v in enumerate(out[:150]): print(f'CANDIDATE[{i}]={v}')
+          print('page_bytes',len(body),'candidate_count',len(out))
+          for i,v in enumerate(out[:200]): print(f'CANDIDATE[{i}]={v}')
           PY
+          exit 42
 
-          EXPECTED='1d93a2f72dede907d0430090b0edad1ce7c91797bd31b42c64035d1d65a14c27'
-          FOUND=0
-          i=0
-          while IFS= read -r CAND; do
-            i=$((i+1))
-            [ "$i" -le 150 ] || break
-            echo "TRY[$i]=$CAND"
-            rm -f fetched/candidate.bin
-            set +e
-            curl -fL --retry 2 --retry-all-errors --connect-timeout 20 \
-              -A 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/152 Safari/537.36' \
-              -e "$PAGE" "$CAND" -o fetched/candidate.bin
-            RC=$?
-            set -e
-            [ "$RC" -eq 0 ] || continue
-            SIZE="$(stat -c %s fetched/candidate.bin)"
-            echo "candidate_size=$SIZE"
-            [ "$SIZE" -gt 250000000 ] || continue
-            HASH="$(sha256sum fetched/candidate.bin | awk '{print $1}')"
-            echo "candidate_sha256=$HASH"
-            if [ "$HASH" = "$EXPECTED" ]; then
-              mv fetched/candidate.bin fetched/source.apk
-              FOUND=1
-              break
-            fi
-          done < fetched/candidates.txt
-          test "$FOUND" = 1
+      - name: Upload AppLoko page diagnostic
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: samsung-apploko-page-diagnostic
+          retention-days: 3
+          if-no-files-found: error
+          path: |
+            fetched/page.html
+            fetched/candidates.txt
 
       - name: Verify AppLoko Samsung source structure
         shell: bash
