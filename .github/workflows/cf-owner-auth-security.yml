@@ -1,0 +1,33 @@
+name: CF Owner Auth Security
+
+on:
+  pull_request:
+    paths:
+      - security/cf-owner-auth/**
+      - .github/workflows/onshape-fast-r12-ci.yml
+      - .github/workflows/onshape-fast-r12-deploy.yml
+      - .github/workflows/cf-owner-auth-security.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  owner-auth:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Syntax and unit tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check security/cf-owner-auth/owner-auth.mjs
+          node --check security/cf-owner-auth/apply-owner-auth-overlay.mjs
+          node --check security/cf-owner-auth/verify-owner-auth-snapshot.mjs
+          node --test security/cf-owner-auth/owner-auth.test.mjs

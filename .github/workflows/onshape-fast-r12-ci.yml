@@ -59,6 +59,14 @@ jobs:
             node --check "$SNAPSHOT/$f"
           done
           node --check "$SNAPSHOT/onshape-request.cjs"
+          node --check "$SNAPSHOT/owner-auth.mjs"
+
+      - name: Owner authorization security gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          node security/cf-owner-auth/verify-owner-auth-snapshot.mjs "$SNAPSHOT"
+          node --test "$SNAPSHOT/owner-auth.test.mjs"
 
       - name: Lean direct-agent unit gate
         shell: bash

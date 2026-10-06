@@ -1,0 +1,16 @@
+import crypto from "node:crypto";
+import fs from "node:fs";
+import path from "node:path";
+const root = path.resolve(process.argv[2] || "");
+const fail = m => { throw new Error(`CF_OWNER_AUTH_SNAPSHOT_INVALID: ${m}`); };
+const sha = f => crypto.createHash("sha256").update(fs.readFileSync(f)).digest("hex");
+for (const rel of ["server.js","compose.yaml","manifest.json","release-closure.json","owner-auth.mjs","owner-auth.test.mjs"]) if (!fs.existsSync(path.join(root, rel))) fail(`missing ${rel}`);
+const server = fs.readFileSync(path.join(root, "server.js"), "utf8");
+for (const marker of ["createOwnerAuthGate","registerOwnerAuthTools","ownerAuth.authorizeToolCall","ownerAuth.deniedRpc"]) if (!server.includes(marker)) fail(`server missing ${marker}`);
+if (!fs.readFileSync(path.join(root, "compose.yaml"), "utf8").includes("/release/owner-auth.mjs")) fail("compose missing owner-auth runtime copy");
+const manifest = JSON.parse(fs.readFileSync(path.join(root, "manifest.json"), "utf8"));
+const closure = JSON.parse(fs.readFileSync(path.join(root, "release-closure.json"), "utf8"));
+for (const rel of ["owner-auth.mjs","owner-auth.test.mjs","server.js","compose.yaml","release-closure.json"]) if (manifest.files?.[rel] !== sha(path.join(root, rel))) fail(`manifest hash mismatch ${rel}`);
+for (const rel of ["owner-auth.mjs","owner-auth.test.mjs"]) if (!closure.files?.includes(rel)) fail(`closure missing ${rel}`);
+if (manifest.release_id !== closure.build_id) fail("release identity mismatch");
+console.log("CF_OWNER_AUTH_SNAPSHOT=pass");
