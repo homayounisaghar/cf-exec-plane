@@ -47,7 +47,7 @@ jobs:
           action="$(awk -F= '$1=="action"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
           [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 13
           [[ "$candidate_commit" =~ ^[0-9a-f]{40}$ ]] || exit 14
-          case "$action" in install|inspect|cutover|restart-test|login-resume|diagnose) ;; *) exit 15 ;; esac
+          case "$action" in install|inspect|cutover|restart-test|login-resume|diagnose|cursor-park) ;; *) exit 15 ;; esac
           {
             echo "candidate_commit=$candidate_commit"
             echo "action=$action"
@@ -276,6 +276,13 @@ jobs:
               done
               echo "PCG_WECHAT_LOGIN_RESUME=human_auth_required"
               exit 76
+              ;;
+            cursor-park)
+              command -v xdotool >/dev/null 2>&1 || { echo "WECHAT_CURSOR_PARK_XDOTOOL_MISSING" >&2; exit 86; }
+              export DISPLAY=:97
+              export XAUTHORITY="$state/Xauthority"
+              runuser -u "$owner" -- env DISPLAY="$DISPLAY" XAUTHORITY="$XAUTHORITY" xdotool mousemove 1435 995
+              echo "PCG_WECHAT_CURSOR_PARK=success"
               ;;
             restart-test)
               systemctl is-active --quiet "$final" || { echo "WECHAT_RESTART_TEST_REQUIRES_FINAL_ACTIVE" >&2; exit 70; }
