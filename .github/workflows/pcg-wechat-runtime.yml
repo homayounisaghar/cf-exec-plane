@@ -548,6 +548,47 @@ jobs:
               sleep 1
               echo "PCG_WECHAT_MESSAGE_STRUCTURE_PROBE=success"
               ;;
+            modal-cancel)
+              systemctl is-active --quiet "$final" || { echo "WECHAT_MODAL_CANCEL_REQUIRES_FINAL_ACTIVE" >&2; exit 108; }
+              snapshot=/tmp/pcg-wechat-modal-cancel.json
+              curl -fsS --max-time 3 http://127.0.0.1:9336/accessibility > "$snapshot"
+              read -r cx cy count < <(python3 - "$snapshot" <<'PY'
+          import json,sys
+          prompt="You won't be notified of any new messages after logging out. Log out?"
+          j=json.load(open(sys.argv[1]))
+          visible=lambda n: "showing" in set(n.get("states",[])) and "visible" in set(n.get("states",[]))
+          prompts=[n for n in j.get("nodes",[]) if n.get("role")=="label" and n.get("name")==prompt and visible(n)]
+          cancels=[n for n in j.get("nodes",[]) if n.get("role")=="button" and n.get("name")=="Cancel" and visible(n)]
+          if len(prompts)!=1 or len(cancels)!=1:
+              print("0 0 0")
+          else:
+              b=cancels[0].get("bounds") or {}
+              if int(b.get("width",0))<20 or int(b.get("height",0))<15:
+                  print("0 0 0")
+              else:
+                  print(int(b["x"])+int(b["width"])//2,int(b["y"])+int(b["height"])//2,1)
+          PY
+              )
+              [[ "$count" -eq 1 ]] || { echo "WECHAT_MODAL_CANCEL_EXACT_PROMPT_NOT_FOUND" >&2; exit 109; }
+              runuser -u "$owner" -- env DISPLAY=:97 XAUTHORITY="$state/Xauthority" xdotool mousemove "$cx" "$cy" click 1
+              for _ in $(seq 1 20); do
+                curl -fsS --max-time 3 http://127.0.0.1:9336/accessibility > "$snapshot"
+                if python3 - "$snapshot" <<'PY'
+          import json,sys
+          prompt="You won't be notified of any new messages after logging out. Log out?"
+          j=json.load(open(sys.argv[1]))
+          alive=any(n.get("role")=="label" and n.get("name")==prompt and "showing" in set(n.get("states",[])) for n in j.get("nodes",[]))
+          raise SystemExit(1 if alive else 0)
+          PY
+                then
+                  echo "PCG_WECHAT_MODAL_CANCEL=success"
+                  exit 0
+                fi
+                sleep 0.2
+              done
+              echo "WECHAT_MODAL_CANCEL_FAILED" >&2
+              exit 110
+              ;;
             restart-test)
               systemctl is-active --quiet "$final" || { echo "WECHAT_RESTART_TEST_REQUIRES_FINAL_ACTIVE" >&2; exit 70; }
               systemctl restart "$final"
