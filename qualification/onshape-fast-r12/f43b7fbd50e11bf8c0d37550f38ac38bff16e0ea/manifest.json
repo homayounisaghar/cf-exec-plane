@@ -1,0 +1,31 @@
+{
+  "schema": "capability-fabric.deploy.v1",
+  "sequence": 229,
+  "release_id": "onshape-vps-fast-r100-direct-orbit1-paa-storage-r229-android-sms1",
+  "compose_file": "compose.yaml",
+  "health_file": "health.sh",
+  "health_timeout_seconds": 180,
+  "files": {
+    "bale-ingress.mjs": "2e3153169329dc29f0b2e6dc32ee621371d0197f74b2671214492a8e152d6fa3",
+    "browser.js": "5626111657f1a4fe6ccf74760f2fe6790f30b0337e55d53d1f1074e2bd1f9e2e",
+    "capability-fabric-onshape-server.service": "e810d312838a4b857870b2e0126c020e01b28ceaae1ddb9cfd66c3d29993f9f7",
+    "compose.yaml": "c6138204b041f2a3e1f2037b19b6d8476162dc8aa9a279a668a9873252905c0c",
+    "core.js": "4d038cae328fadaa562cac5f5165fd3cc7406c61b33f8c72c028eea1cf1cd737",
+    "gateway.js": "01224d014e62c132e54e2c457bd5310aaec3bd0195683c6f478f9fd4f235c582",
+    "health.sh": "698ef92aded9ee6318d6f6ce3cfbcc9fe1ed0e51acee56c69ed393eeda30eabd",
+    "onshape-agent.js": "670f939bdbdda73a654f4c9d9fe9cd95e17203635155f2bcd002ce4fde4603cc",
+    "onshape-agent.test.mjs": "37be14df8f50b29b20937a492bb491de2ff566d3111a8e403b9d7e343d51fa48",
+    "onshape-request.cjs": "891bd676132cba1e09ae0d3ee017ec2097c7b910fccc101803ea25731ea27abc",
+    "paa-bale-preload.mjs": "915f175fe523406d57d85948cafda55e901392a9cc4809de992ed00bab13e66d",
+    "paa-search-preload.mjs": "36142a044029a51b18a03608f881b29ce213c4952341ad04c66bc047287198b0",
+    "package.json": "72b568b2db1bd490f9cc0ce8788ff739dea81a59bb0a1aa28c379e8632e1a1cb",
+    "release-closure.json": "8146065506d9ec489607b81b24d29384ea694f835f787d4e0d29dc9a3c2cc707",
+    "server.js": "9416ef5d2af2c38c9d4dd41c4bcb5c156c654bbce98fdc74a39f513785e7409e",
+    "telegram-ingress.mjs": "2744b2db25ff6fe9814db1d6da02a74c563a9ea8a7f48aa74a0c7ec5920286c1",
+    "whatsapp-ingress.mjs": "3faff7e28528fa3dfe79c71381bd915198d9d9636a04aa807896229bebc455e0",
+    "whatsapp-preload.mjs": "6b682cd0b4d5dcb7a13a8cbb5c1716bf7f28753106fd4b636bb6824cecd0afce"
+  },
+  "images": [
+    "mcr.microsoft.com/playwright:v1.62.1-resolute@sha256:aebd85bce8056dcdc2269853fd94ea432b6a201da4f0ef125b509489ecd52ddb"
+  ]
+}
