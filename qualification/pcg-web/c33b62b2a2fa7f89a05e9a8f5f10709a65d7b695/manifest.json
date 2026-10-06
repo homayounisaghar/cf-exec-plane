@@ -1,0 +1,42 @@
+{
+  "schema": "capability-fabric.deploy.v1",
+  "sequence": 130,
+  "release_id": "pcg-web-stage6-material-share-r130",
+  "compose_file": "compose.yaml",
+  "health_file": "health.sh",
+  "health_timeout_seconds": 240,
+  "files": {
+    "compose.yaml": "5c49bdbaea98a571ff2565a0da5248c2ebddba104fc5cd33f152ef4e2d9c3493",
+    "health.sh": "3d57bd29fc4a24f1f4cdc5b958ee53e85854b86d5eee2852ea284c4a7e6bf5f7",
+    "pcg_core_stub.py": "2456952dcd43d974386958c2361c626e57a9653931be1381d9524a571b1953a3",
+    "pcg_telegram_provisioning_runtime.py": "40337a8a6101111d1680676b8675d710bc6390e3af76b64ee5b9bbb64d76c41f",
+    "pcg_web_browser.mjs": "f60a6ebbef4d49af77641b7fbb607b98f196f082326142ae4b70e0fed8dce78b",
+    "pcg_web_identity.mjs": "3edac6cb6a5c405fcfb2d57b671a2f98c2a419d071f40a7d1de70a590a142aa9",
+    "pcg_web_primitives.mjs": "fd4d3c2b813f6f1cd432ab8177eae9b78986aef9f0241f5adb43cba6bd79ffc1",
+    "pcg_web_selectors.mjs": "d0c86b9f43ade028732f2fcf037c6b2f01f76d2f365c5ba778cee6ccda398922",
+    "pcg_web_semantic_ops.mjs": "6d52aaf64e82ccee7bbe078f8f2d42092e2dd5248efbdf02dd5d0a2f9dee1a59",
+    "pcg_web_package.json": "87f6b60a634930dfec5964515d162ec5c4b01eb33c442deb0e77c5e6c6cfc5d7",
+    "pcg_web_webk_bridge.mjs": "63e1a5ea63c18ea9f278b0e7ed519c8c2acd75547c3bb2c577fbf32ffdc8ffde",
+    "pcg_web_file_broker.mjs": "eea58848190011f2fb97a275ced85c4ab302c49dbe9e431d7b8ba246dbea3619",
+    "pcg_web_composer.mjs": "ff9a4e557a3d66a44c96c4dc8d79c5c19c875f94c04c79df5ed4ca82cc968260",
+    "pcg_web_send.mjs": "368f74c282e55e837da75939839a67614ab1bb11fa173e6c731b2b0a381a5d3e",
+    "pcg_web_structure.mjs": "d3bb9617cf4b67be0c9d4751ccf1a1e3071f64f6e926c10e7aed193a5faf39e6",
+    "pcg_web_gap_ledger.mjs": "0e1f3e1650685f8ae3d6e624f377c225758af9f3d27cb937867748db0d0b2c41",
+    "pcg_web_provider_model.mjs": "11ffc91aab5f5f88738ad70bb79e5f45a0eb1b587dd6d78af63b6e24ee40be38",
+    "pcg_web_audio.mjs": "48827598414b226ab710cca4fd8ebb8e66ae2c4c357335ac91bbbe9c6005714e",
+    "pcg_web_asr.mjs": "6c04470de78daa136a80b1d6e9c9b5fa0b3ab6e0d6a0f4ea6f1343a90219fad0",
+    "pcg_web_material_ingress.mjs": "2ef11ac90a02cb48fcdde0ab9db2df4b5734094e11d1be78f2a79d36af969a90",
+    "pcg_web_asr_client.mjs": "a2216c1d947431f62937ab4200c945385281ad4813dfb3acb46bad09a2e0b8d4",
+    "pcg_perplexity_asr.mjs": "bf52f91cfe06fc0333a7a64da81a3fcd1ad8839bdb4d7840121ba22e8b36a71a",
+    "pcg_web_perplexity_asr_client.mjs": "2a1847204ae55ea04f0b642a4d2b27348b2653bb4ef260990a6ed6c57803d72e",
+    "pcg_perplexity_login.html": "471c0d95412e25f53359ee357238a2f18f99a6b82a36f425ca139cc8abcb35d7",
+    "pcg_web_audio_transform_client.mjs": "2c1fd3036eb076cc97cdf6b2be1a8317f3cb191ff31efa18b59968fa5d7b04af",
+    "pcg_audio_transform.py": "ed4ef1ea57d6368b0712d473123cbdb08a845f5bd376d2788eec5d9e32c19c06"
+  },
+  "images": [
+    "ghcr.io/homayounisaghar/pcg-tdlib-python@sha256:eccb8b5e73ac504aafd8a8b316e2fda951bd7cb23280cccf99c5e6206c4826e4",
+    "mcr.microsoft.com/playwright:v1.62.1-resolute@sha256:aebd85bce8056dcdc2269853fd94ea432b6a201da4f0ef125b509489ecd52ddb",
+    "python:3.12-slim-bookworm@sha256:392307d22300de8b5986851a12d9176dfc0fc073e65bf6523ebd7dcbeb23564e",
+    "ghcr.io/homayounisaghar/pcg-asr-faster-whisper:medium-4f262d8e7247"
+  ]
+}
