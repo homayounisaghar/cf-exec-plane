@@ -1,0 +1,8 @@
+{
+  "schema": "capability-fabric.android-standard-app-receipt.v1",
+  "requestId": "paa-alpha30-messaging-access-durable-20261006-002",
+  "projectId": "personal-android-agent",
+  "checkoutRef": "f9023f5611e83071c8d76e6c484d4a9aaf89cdc4",
+  "operation": "unit-test-and-build-signing-kit",
+  "result": "SUCCESS"
+}

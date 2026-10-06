@@ -1,0 +1,21 @@
+{
+  "schema": "capability-fabric.android-standard-app-output.v1",
+  "requestId": "paa-alpha30-messaging-access-durable-20261006-002",
+  "projectId": "personal-android-agent",
+  "checkoutRef": "f9023f5611e83071c8d76e6c484d4a9aaf89cdc4",
+  "application": {
+    "packageId": "com.homayounisaghar.androidagent",
+    "versionName": "0.1.0-alpha30",
+    "versionCode": 30
+  },
+  "expectedSigner": {
+    "alias": "personal_android_agent_line3",
+    "certificateSha256": "e5b102356f271078a3d03e982782c3776e3d9f301c1b24c0e7194f06e5a001fa"
+  },
+  "result": "SUCCESS",
+  "artifact": {
+    "file": "personal-android-agent-release-unsigned.apk",
+    "sha256": "2ce510892c4e0b6090a9b4df084e66886bd503bfa2e948ac08130088a8be6cda",
+    "installable": false
+  }
+}
