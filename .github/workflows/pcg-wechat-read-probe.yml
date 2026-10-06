@@ -130,38 +130,38 @@ jobs:
               root="$state/home/xwechat_files"
               : > "$tmp"
               python3 - "$root" > "$tmp" <<'PY'
-import os, sys, sqlite3, json, glob, binascii
-root=sys.argv[1]
-print("WECHAT_DB_SCHEMA_V1")
-for p in sorted(glob.glob(root + "/**/*.db", recursive=True)):
-    print("\nDB", p)
-    try:
-        with open(p, "rb") as f:
-            hdr=f.read(32)
-        print("HEADER_HEX", binascii.hexlify(hdr).decode())
-        print("HEADER_ASCII", hdr[:16].decode("ascii","replace"))
-    except Exception as e:
-        print("HEADER_ERROR", type(e).__name__, str(e))
-        continue
-    try:
-        uri="file:" + p + "?mode=ro"
-        con=sqlite3.connect(uri, uri=True, timeout=2)
-        con.execute("PRAGMA query_only=ON")
-        rows=con.execute("SELECT type,name,tbl_name,sql FROM sqlite_master WHERE type IN ('table','index','view','trigger') ORDER BY type,name").fetchall()
-        print("SCHEMA_OBJECTS", len(rows))
-        for typ,name,tbl,sql in rows:
-            print("OBJECT", json.dumps({"type":typ,"name":name,"table":tbl,"sql":sql}, ensure_ascii=False))
-        for typ,name,tbl,sql in rows:
-            if typ=="table" and name and not name.startswith("sqlite_"):
-                try:
-                    cols=con.execute("PRAGMA table_info(" + json.dumps(name) + ")").fetchall()
-                    print("COLUMNS", json.dumps({"table":name,"columns":[{"cid":r[0],"name":r[1],"type":r[2],"notnull":r[3],"default":r[4],"pk":r[5]} for r in cols]}, ensure_ascii=False))
-                except Exception as e:
-                    print("COLUMNS_ERROR", name, type(e).__name__, str(e))
-        con.close()
-    except Exception as e:
-        print("SQLITE_ERROR", type(e).__name__, str(e))
-PY
+          import os, sys, sqlite3, json, glob, binascii
+          root=sys.argv[1]
+          print("WECHAT_DB_SCHEMA_V1")
+          for p in sorted(glob.glob(root + "/**/*.db", recursive=True)):
+              print("\nDB", p)
+              try:
+                  with open(p, "rb") as f:
+                      hdr=f.read(32)
+                  print("HEADER_HEX", binascii.hexlify(hdr).decode())
+                  print("HEADER_ASCII", hdr[:16].decode("ascii","replace"))
+              except Exception as e:
+                  print("HEADER_ERROR", type(e).__name__, str(e))
+                  continue
+              try:
+                  uri="file:" + p + "?mode=ro"
+                  con=sqlite3.connect(uri, uri=True, timeout=2)
+                  con.execute("PRAGMA query_only=ON")
+                  rows=con.execute("SELECT type,name,tbl_name,sql FROM sqlite_master WHERE type IN ('table','index','view','trigger') ORDER BY type,name").fetchall()
+                  print("SCHEMA_OBJECTS", len(rows))
+                  for typ,name,tbl,sql in rows:
+                      print("OBJECT", json.dumps({"type":typ,"name":name,"table":tbl,"sql":sql}, ensure_ascii=False))
+                  for typ,name,tbl,sql in rows:
+                      if typ=="table" and name and not name.startswith("sqlite_"):
+                          try:
+                              cols=con.execute("PRAGMA table_info(" + json.dumps(name) + ")").fetchall()
+                              print("COLUMNS", json.dumps({"table":name,"columns":[{"cid":r[0],"name":r[1],"type":r[2],"notnull":r[3],"default":r[4],"pk":r[5]} for r in cols]}, ensure_ascii=False))
+                          except Exception as e:
+                              print("COLUMNS_ERROR", name, type(e).__name__, str(e))
+                  con.close()
+              except Exception as e:
+                  print("SQLITE_ERROR", type(e).__name__, str(e))
+          PY
               install -o paa_remote -g paa_remote -m 0600 "$tmp" "$out"
               echo "stage=success db_schema=$out" >> "$debug"
               ;;
