@@ -43,7 +43,7 @@ jobs:
           action="$(awk -F= '$1=="action"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
           mode="$(awk -F= '$1=="mode"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
           [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 13
-          [[ "$action" =~ ^(bootstrap|disable)$ ]] || exit 14
+          [[ "$action" =~ ^(bootstrap|disable|status|observed)$ ]] || exit 14
           if [[ "$action" == bootstrap ]]; then
             [[ "$mode" =~ ^(observe|enforce)$ ]] || exit 15
             mapfile -t owners < <(awk -F= '$1=="owner"{print $2}' "$request_path" | tr -d '[:space:]')
@@ -89,10 +89,18 @@ jobs:
               if [[ "$key" == organization ]]; then remote_args+=(--organization "$value"); fi
             done < "$REQUEST_PATH"
             remote_args+=(--mode "$MODE")
-          else
+            printf '%q ' "${remote_args[@]}" > "$RUNNER_TEMP/remote-command"
+          elif [[ "$ACTION" == disable ]]; then
             remote_args+=(disable)
+            printf '%q ' "${remote_args[@]}" > "$RUNNER_TEMP/remote-command"
+          elif [[ "$ACTION" == status ]]; then
+            remote_args+=(status)
+            printf '%q ' "${remote_args[@]}" > "$RUNNER_TEMP/remote-command"
+          else
+            printf '%q ' docker logs capability-fabric-onshape-server --since 15m > "$RUNNER_TEMP/remote-command"
+            printf '%q ' grep cf_owner_auth_observe >> "$RUNNER_TEMP/remote-command"
+            printf '%q ' tail -20 >> "$RUNNER_TEMP/remote-command"
           fi
-          printf '%q ' "${remote_args[@]}" > "$RUNNER_TEMP/remote-command"
           ssh -i "$SSH_DIR/key" -p "$SSH_PORT" \
             -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
             -o UserKnownHostsFile="$SSH_DIR/known_hosts" \
