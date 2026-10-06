@@ -40,11 +40,24 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          URL='https://d.apkpure.com/b/APK/com.sec.android.app.sbrowser?versionCode=1300067502'
-          curl -fL --retry 5 --retry-all-errors --connect-timeout 30 \
-            -A 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/152 Safari/537.36' \
-            -e 'https://apkpure.net/' \
-            "$URL" -o source.apk
+          python3 -m pip install --disable-pip-version-check --no-input justapk
+          mkdir -p fetched
+          justapk download com.sec.android.app.sbrowser -v 30.0.0.67 -o fetched | tee justapk-result.json
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, shutil
+          expected='9e2270ddbd0f41e4ed85944362c66f55e96090c86e19d098eb483a4a0850d32f'
+          candidates=[]
+          for p in Path('fetched').rglob('*'):
+              if p.is_file() and p.suffix.lower()=='.apk':
+                  h=hashlib.sha256(p.read_bytes()).hexdigest()
+                  print(p, p.stat().st_size, h)
+                  if h==expected:
+                      candidates.append(p)
+          if len(candidates)!=1:
+              raise SystemExit(f'exact source not found; exact_matches={len(candidates)}')
+          shutil.copy2(candidates[0],'source.apk')
+          PY
           echo '9e2270ddbd0f41e4ed85944362c66f55e96090c86e19d098eb483a4a0850d32f  source.apk' | sha256sum -c -
           test "$(stat -c %s source.apk)" = "316616974"
 
