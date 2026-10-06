@@ -36,34 +36,96 @@ jobs:
           set -o pipefail
           "$SDKMANAGER" "build-tools;35.0.0" "platform-tools"
 
-      - name: Fetch verified official Samsung Internet source
+      - name: Resolve APK Gold gate
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p fetched
           URL='https://apk.gold/download?file_id=3480809%2Fsamsung-internet'
-          curl -fL --retry 5 --retry-all-errors --connect-timeout 30 \
+          curl -fL --retry 3 --retry-all-errors --connect-timeout 30 \
             -A 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/152 Safari/537.36' \
             -e 'https://samsung-internet.apk.gold/android-14' \
-            "$URL" -o fetched/source.apk
+            "$URL" -o fetched/gate.html
 
+          python3 - <<'PY'
+          from pathlib import Path
+          import html, re
+          from urllib.parse import urljoin
+          body=Path('fetched/gate.html').read_text(errors='replace')
+          print('gate_bytes',len(body))
+          vals=[]
+          for pat in [
+              r'''(?:href|src|data-url|data-download-url|data-href)=["']([^"']+)["']''',
+              r'''https?://[^"'<>\\ ]+''',
+              r'''window\.location(?:\.href)?\s*=\s*["']([^"']+)["']''',
+          ]:
+              for m in re.finditer(pat, body, re.I):
+                  v=m.group(1) if m.lastindex else m.group(0)
+                  v=html.unescape(v).replace('\\/','/')
+                  if any(k in v.lower() for k in ('download','apk','file_id','amazonaws','cloudfront','storage','cdn')):
+                      vals.append(urljoin('https://apk.gold/',v))
+          out=[]
+          for v in vals:
+              if v not in out:
+                  out.append(v)
+          print('candidate_count',len(out))
+          for i,v in enumerate(out[:120]):
+              print(f'CANDIDATE[{i}]={v}')
+          if not out:
+              raise SystemExit('no gate candidates')
+          Path('fetched/candidates.txt').write_text('\n'.join(out)+'\n')
+          PY
+
+          # Try candidates until one is the exact historical APK.
+          EXPECTED='9e2270ddbd0f41e4ed85944362c66f55e96090c86e19d098eb483a4a0850d32f'
+          FOUND=0
+          i=0
+          while IFS= read -r CAND; do
+            i=$((i+1))
+            [ "$i" -le 120 ] || break
+            case "$CAND" in
+              *apk.gold/download*file_id=3480809*) continue ;;
+            esac
+            echo "TRY[$i]=$CAND"
+            rm -f fetched/candidate.bin
+            set +e
+            curl -fL --retry 2 --retry-all-errors --connect-timeout 20 \
+              -A 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/152 Safari/537.36' \
+              -e 'https://apk.gold/download?file_id=3480809%2Fsamsung-internet' \
+              "$CAND" -o fetched/candidate.bin
+            RC=$?
+            set -e
+            [ "$RC" -eq 0 ] || continue
+            SIZE="$(stat -c %s fetched/candidate.bin)"
+            echo "candidate_size=$SIZE"
+            [ "$SIZE" -gt 300000000 ] || continue
+            HASH="$(sha256sum fetched/candidate.bin | awk '{print $1}')"
+            echo "candidate_sha256=$HASH"
+            if [ "$HASH" = "$EXPECTED" ]; then
+              mv fetched/candidate.bin fetched/source.apk
+              FOUND=1
+              break
+            fi
+          done < fetched/candidates.txt
+          test "$FOUND" = 1
+
+      - name: Verify exact official Samsung Internet source
+        shell: bash
+        run: |
+          set -euo pipefail
           BT="$ANDROID_HOME/build-tools/35.0.0"
           SRC="fetched/source.apk"
           test -s "$SRC"
-          sha256sum "$SRC" | tee source-downloaded-sha256.txt
           echo '9e2270ddbd0f41e4ed85944362c66f55e96090c86e19d098eb483a4a0850d32f  fetched/source.apk' | sha256sum -c -
           "$BT/aapt" dump badging "$SRC" | tee source-badging.txt
           grep -q "package: name='com.sec.android.app.sbrowser'" source-badging.txt
           grep -q "versionName='30.0.0.67'" source-badging.txt
           grep -q "versionCode='1300067502'" source-badging.txt
-
           "$BT/apksigner" verify --print-certs "$SRC" | tee source-cert.txt
           grep -qi 'Signer #1 certificate SHA-256 digest: 34df0e7a9f1cf1892e45c056b4973cd81ccf148a4050d11aea4ac5a65f900a42' source-cert.txt
-
           python3 - "$SRC" <<'PY'
           import sys, zipfile
-          p=sys.argv[1]
-          z=zipfile.ZipFile(p)
+          z=zipfile.ZipFile(sys.argv[1])
           dex=sorted(n for n in z.namelist() if n.startswith('classes') and n.endswith('.dex'))
           libs=sorted(n for n in z.namelist() if n.startswith('lib/') and n.endswith('.so'))
           print('dex_files',len(dex),dex)
@@ -71,7 +133,6 @@ jobs:
           assert len(dex)==5, len(dex)
           assert len(libs)==13, len(libs)
           PY
-
           cp "$SRC" source.apk
           echo "verified_source_sha256=$(sha256sum source.apk | awk '{print $1}')" >> "$GITHUB_ENV"
 
