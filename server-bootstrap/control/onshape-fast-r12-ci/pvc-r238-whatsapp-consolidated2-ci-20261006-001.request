@@ -1,0 +1,4 @@
+request_id=pvc-r238-whatsapp-consolidated2-ci-20261006-001
+candidate_commit=2947bfb6ce2933a8db2fbd6a2b1dfc0abfe02834
+expected_sequence=238
+expected_release=onshape-vps-fast-r100-direct-orbit1-paa-storage-r238-whatsapp-consolidated2
