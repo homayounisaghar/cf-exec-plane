@@ -1,0 +1,4 @@
+request_id=pvc-r225-bale-reaction-apiprobe1-ci-20261006-001
+candidate_commit=ae5ea6c863d8a3c39580de827de6eb1d4ec78269
+expected_sequence=225
+expected_release=onshape-vps-fast-r100-direct-orbit1-paa-storage-r225-bale-reaction-apiprobe1
