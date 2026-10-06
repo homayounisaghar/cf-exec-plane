@@ -1,0 +1,4 @@
+request_id=pvc-r227-bale-reaction-mid1-deploy-20261006-001
+candidate_commit=8a6dc2f804da171d7c27beda323b90a9caaa40f3
+expected_sequence=227
+expected_release=onshape-vps-fast-r100-direct-orbit1-paa-storage-r227-bale-reaction-mid1
