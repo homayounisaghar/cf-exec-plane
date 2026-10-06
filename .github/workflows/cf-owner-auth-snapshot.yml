@@ -1,0 +1,83 @@
+name: CF Owner Auth Snapshot
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - server-bootstrap/control/cf-owner-auth-snapshot/*.request
+
+permissions:
+  contents: write
+
+concurrency:
+  group: cf-owner-auth-snapshot
+  cancel-in-progress: false
+
+jobs:
+  snapshot:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Validate immutable snapshot request
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || { echo "snapshot request commit must add exactly one file" >&2; exit 10; }
+          IFS=$'\t' read -r status request_path <<<"${changes[0]}"
+          [[ "$status" == A ]] || exit 11
+          [[ "$request_path" == server-bootstrap/control/cf-owner-auth-snapshot/*.request ]] || exit 12
+          request_id="$(awk -F= '$1=="request_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          base_candidate="$(awk -F= '$1=="base_candidate"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          candidate_commit="$(awk -F= '$1=="candidate_commit"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          sequence="$(awk -F= '$1=="sequence"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          release_id="$(awk -F= '$1=="release_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 13
+          [[ "$base_candidate" =~ ^[0-9a-f]{40}$ ]] || exit 14
+          [[ "$candidate_commit" =~ ^[0-9a-f]{40}$ ]] || exit 15
+          [[ "$sequence" =~ ^[0-9]+$ ]] || exit 16
+          [[ "$release_id" =~ ^[A-Za-z0-9_.-]{8,120}$ ]] || exit 17
+          source="qualification/onshape-fast-r12/$base_candidate"
+          dest="qualification/onshape-fast-r12/$candidate_commit"
+          [[ -d "$source" ]] || { echo "base snapshot missing" >&2; exit 18; }
+          [[ ! -e "$dest" ]] || { echo "destination already exists" >&2; exit 19; }
+          {
+            echo "BASE_CANDIDATE=$base_candidate"
+            echo "CANDIDATE_COMMIT=$candidate_commit"
+            echo "SEQUENCE=$sequence"
+            echo "RELEASE_ID=$release_id"
+            echo "SOURCE=$source"
+            echo "DEST=$dest"
+          } >> "$GITHUB_ENV"
+
+      - name: Build and verify owner-auth snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          node security/cf-owner-auth/apply-owner-auth-overlay.mjs "$SOURCE" "$DEST" "$SEQUENCE" "$RELEASE_ID"
+          node security/cf-owner-auth/verify-owner-auth-snapshot.mjs "$DEST"
+          node --check "$DEST/server.js"
+          node --check "$DEST/owner-auth.mjs"
+          node --test "$DEST/owner-auth.test.mjs"
+          node --test "$DEST/onshape-agent.test.mjs"
+
+      - name: Publish immutable snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "homayounisaghar"
+          git config user.email "actions@users.noreply.github.com"
+          git add "$DEST"
+          git commit -m "snapshot r${SEQUENCE} owner auth candidate"
+          git pull --rebase origin main
+          git push origin HEAD:main
