@@ -51,7 +51,7 @@ jobs:
             {org:"samsung-electronics-co-ltd", repo:"samsung-internet-for-android"},
             {
               version:"30.0.0.67",
-              arch:"arm64-v8a",
+              arch:"arm64-v8a + armeabi-v7a",
               dpi:"nodpi",
               type:"apk",
               outFile:"samsung-browser-30.0.0.67"
