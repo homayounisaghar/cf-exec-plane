@@ -1,0 +1,4 @@
+request_id=pvc-r224-bale-reaction-reconcile1-ci-20261006-001
+candidate_commit=dd660fef91da362816f1b2cf1d104931cc90cd40
+expected_sequence=224
+expected_release=onshape-vps-fast-r100-direct-orbit1-paa-storage-r224-bale-reaction-reconcile1
