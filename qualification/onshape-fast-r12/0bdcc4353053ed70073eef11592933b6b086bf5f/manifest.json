@@ -1,0 +1,31 @@
+{
+  "schema": "capability-fabric.deploy.v1",
+  "sequence": 234,
+  "release_id": "onshape-vps-fast-r100-direct-orbit1-paa-storage-r234-bale-writefix1",
+  "compose_file": "compose.yaml",
+  "health_file": "health.sh",
+  "health_timeout_seconds": 180,
+  "files": {
+    "bale-ingress.mjs": "112c6569afef9b37dfb8a2a03a89873f2a58831b2540a47fb7ebe58d853d3371",
+    "browser.js": "5626111657f1a4fe6ccf74760f2fe6790f30b0337e55d53d1f1074e2bd1f9e2e",
+    "capability-fabric-onshape-server.service": "e810d312838a4b857870b2e0126c020e01b28ceaae1ddb9cfd66c3d29993f9f7",
+    "compose.yaml": "c6138204b041f2a3e1f2037b19b6d8476162dc8aa9a279a668a9873252905c0c",
+    "core.js": "4d038cae328fadaa562cac5f5165fd3cc7406c61b33f8c72c028eea1cf1cd737",
+    "gateway.js": "01224d014e62c132e54e2c457bd5310aaec3bd0195683c6f478f9fd4f235c582",
+    "health.sh": "698ef92aded9ee6318d6f6ce3cfbcc9fe1ed0e51acee56c69ed393eeda30eabd",
+    "onshape-agent.js": "670f939bdbdda73a654f4c9d9fe9cd95e17203635155f2bcd002ce4fde4603cc",
+    "onshape-agent.test.mjs": "37be14df8f50b29b20937a492bb491de2ff566d3111a8e403b9d7e343d51fa48",
+    "onshape-request.cjs": "891bd676132cba1e09ae0d3ee017ec2097c7b910fccc101803ea25731ea27abc",
+    "paa-bale-preload.mjs": "af0cf38abb1dee0ea17e04f135bb58e048dbfff0d80f3617e3dd77f1b8dc9ea2",
+    "paa-search-preload.mjs": "36142a044029a51b18a03608f881b29ce213c4952341ad04c66bc047287198b0",
+    "package.json": "72b568b2db1bd490f9cc0ce8788ff739dea81a59bb0a1aa28c379e8632e1a1cb",
+    "release-closure.json": "598f00819238a8d3d5a51d8b8beee78679a2eb0f8e006b37b3ec74b7f33c47a5",
+    "server.js": "5cfd385f997200eaaaf62715effa9c1324b4b3b94c23337ee5ada2c710de990f",
+    "telegram-ingress.mjs": "ff4d0cb16c8cb94af9f0e65f6f167cafa3dfc23a0c307fec009cd964d3625ff4",
+    "whatsapp-ingress.mjs": "1005f46062e689d9754d15a1f3be53a255a1b4c5065df17fe2edeb96ed97e157",
+    "whatsapp-preload.mjs": "6b682cd0b4d5dcb7a13a8cbb5c1716bf7f28753106fd4b636bb6824cecd0afce"
+  },
+  "images": [
+    "mcr.microsoft.com/playwright:v1.62.1-resolute@sha256:aebd85bce8056dcdc2269853fd94ea432b6a201da4f0ef125b509489ecd52ddb"
+  ]
+}
