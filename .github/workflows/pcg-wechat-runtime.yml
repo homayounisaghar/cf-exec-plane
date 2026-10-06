@@ -47,7 +47,7 @@ jobs:
           action="$(awk -F= '$1=="action"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
           [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 13
           [[ "$candidate_commit" =~ ^[0-9a-f]{40}$ ]] || exit 14
-          case "$action" in install|inspect|cutover|restart-test|login-resume|diagnose|cursor-park|self-chat-probe|read-chat-probe|message-structure-probe|semantic-install|semantic-diagnose) ;; *) exit 15 ;; esac
+          case "$action" in install|inspect|cutover|restart-test|login-resume|diagnose|cursor-park|self-chat-probe|read-chat-probe|message-structure-probe|semantic-install|semantic-diagnose|semantic-file-dialog-probe|semantic-scroll-top) ;; *) exit 15 ;; esac
           {
             echo "candidate_commit=$candidate_commit"
             echo "action=$action"
@@ -254,6 +254,24 @@ jobs:
               chown paa_remote:paa_remote /var/lib/capability-fabric/paa-remote/pcg-wechat-semantic-diagnostic.txt
               chmod 0600 /var/lib/capability-fabric/paa-remote/pcg-wechat-semantic-diagnostic.txt
               echo "PCG_WECHAT_SEMANTIC_DIAGNOSE=written"
+              ;;
+            semantic-file-dialog-probe)
+              systemctl is-active --quiet "$final" || { echo "WECHAT_FILE_DIALOG_PROBE_REQUIRES_FINAL_ACTIVE" >&2; exit 108; }
+              systemctl is-active --quiet "$semantic" || { echo "WECHAT_FILE_DIALOG_PROBE_REQUIRES_SEMANTIC_ACTIVE" >&2; exit 109; }
+              curl -fsS --max-time 12 -H 'content-type: application/json' -d '{}' http://127.0.0.1:9337/file-dialog-probe > /tmp/pcg-wechat-file-dialog-probe.json
+              python3 -c 'import json; p=json.load(open("/tmp/pcg-wechat-file-dialog-probe.json")); assert p.get("ok") is True; assert p.get("provider_visible_state_changed") is False'
+              install -o paa_remote -g paa_remote -m 0600 /tmp/pcg-wechat-file-dialog-probe.json /var/lib/capability-fabric/paa-remote/pcg-wechat-file-dialog-probe.json
+              echo "PCG_WECHAT_FILE_DIALOG_PROBE=success"
+              ;;
+            semantic-scroll-top)
+              systemctl is-active --quiet "$final" || { echo "WECHAT_SCROLL_TOP_REQUIRES_FINAL_ACTIVE" >&2; exit 110; }
+              export DISPLAY=:97
+              export XAUTHORITY="$state/Xauthority"
+              runuser -u "$owner" -- env DISPLAY="$DISPLAY" XAUTHORITY="$XAUTHORITY" xdotool mousemove 430 520 click --repeat 120 --delay 20 4
+              sleep 1
+              curl -fsS --max-time 5 http://127.0.0.1:9337/conversations > /tmp/pcg-wechat-scroll-top.json
+              install -o paa_remote -g paa_remote -m 0600 /tmp/pcg-wechat-scroll-top.json /var/lib/capability-fabric/paa-remote/pcg-wechat-scroll-top.json
+              echo "PCG_WECHAT_SCROLL_TOP=success"
               ;;
             inspect)
               inspect
