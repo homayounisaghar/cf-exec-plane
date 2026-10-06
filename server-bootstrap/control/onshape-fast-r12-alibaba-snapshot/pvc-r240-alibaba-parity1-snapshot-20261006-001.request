@@ -1,0 +1,5 @@
+request_id=pvc-r240-alibaba-parity1-snapshot-20261006-001
+base_candidate=a965b4c0141bd2d501b9d175b8dec7879a70d9c0
+candidate_commit=fa49b8d23493621a2e9a7a1096542bda31b39b25
+expected_sequence=240
+expected_release=onshape-vps-fast-r100-direct-orbit1-paa-storage-r240-alibaba-parity1
