@@ -1,0 +1,134 @@
+name: Samsung Internet Green Clone Rebuild
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'samsung-internet-clone/**'
+      - '.github/workflows/samsung-internet-green-clone.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout execution snapshot
+        uses: actions/checkout@v6
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Prepare Android build tools
+        shell: bash
+        run: |
+          set -eu
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          test -x "$SDKMANAGER"
+          "$SDKMANAGER" --version
+          set +o pipefail
+          yes | "$SDKMANAGER" --licenses >/dev/null
+          set -o pipefail
+          "$SDKMANAGER" "build-tools;35.0.0" "platform-tools"
+
+      - name: Fetch exact official Samsung Internet source
+        shell: bash
+        run: |
+          set -euo pipefail
+          URL='https://d.apkpure.com/b/APK/com.sec.android.app.sbrowser?version=30.0.0.67'
+          curl -fL --retry 5 --retry-all-errors --connect-timeout 30 \
+            -A 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/152 Safari/537.36' \
+            "$URL" -o source.apk
+          echo '9e2270ddbd0f41e4ed85944362c66f55e96090c86e19d098eb483a4a0850d32f  source.apk' | sha256sum -c -
+          test "$(stat -c %s source.apk)" = "316616974"
+
+      - name: Fetch pinned Apktool
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fL --retry 5 --retry-all-errors \
+            'https://github.com/iBotPeaches/Apktool/releases/download/v2.12.1/apktool_2.12.1.jar' \
+            -o apktool.jar
+          java -jar apktool.jar --version
+
+      - name: Decode without resource/source rewriting
+        shell: bash
+        run: |
+          set -euo pipefail
+          java -jar apktool.jar d -f -r -s source.apk -o work
+          test -f work/AndroidManifest.xml
+          test "$(find work -maxdepth 1 -name 'classes*.dex' | wc -l)" -eq 5
+
+      - name: Apply precise clone/provider remap
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 samsung-internet-clone/build_clone.py work
+          cat work/CLONE_PATCH_REPORT.txt
+          grep -q '^provider_authorities_active_in_dex=19$' work/CLONE_PATCH_REPORT.txt
+          grep -q 'com.sec.android.app.sbrowser.mostvisited -> com.sec.android.app.sbrowser.mostvisite3' work/CLONE_PATCH_REPORT.txt
+
+      - name: Rebuild unsigned clone
+        shell: bash
+        run: |
+          set -euo pipefail
+          java -jar apktool.jar b work -o clone-unsigned-unaligned.apk
+
+      - name: Verify native payloads preserved
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib, zipfile
+          src=zipfile.ZipFile('source.apk')
+          out=zipfile.ZipFile('clone-unsigned-unaligned.apk')
+          libs=sorted(n for n in src.namelist() if n.startswith('lib/') and n.endswith('.so'))
+          assert len(libs)==13, len(libs)
+          for n in libs:
+              a=hashlib.sha256(src.read(n)).hexdigest()
+              b=hashlib.sha256(out.read(n)).hexdigest()
+              assert a==b,(n,a,b)
+          print('native_payloads_byte_exact=13')
+          PY
+
+      - name: Align and verify clone metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          BT="$ANDROID_HOME/build-tools/35.0.0"
+          "$BT/zipalign" -f 4 clone-unsigned-unaligned.apk Samsung_Internet_Green_Clone_30.0.0.67_Rebuild_unsigned.apk
+          "$BT/zipalign" -c 4 Samsung_Internet_Green_Clone_30.0.0.67_Rebuild_unsigned.apk
+          "$BT/aapt" dump badging Samsung_Internet_Green_Clone_30.0.0.67_Rebuild_unsigned.apk | tee badging.txt
+          grep -q "package: name='com.sec.android.app.sbrowse3'" badging.txt
+          grep -q "versionCode='1300067502'" badging.txt
+          grep -q "versionName='30.0.0.67'" badging.txt
+          sha256sum Samsung_Internet_Green_Clone_30.0.0.67_Rebuild_unsigned.apk > SHA256SUMS.txt
+          cp work/CLONE_PATCH_REPORT.txt .
+          {
+            echo 'source_repo=homayounisaghar/capability-fabric'
+            echo 'source_project=projects/samsung-internet-green-clone'
+            echo 'official_source_sha256=9e2270ddbd0f41e4ed85944362c66f55e96090c86e19d098eb483a4a0850d32f'
+            echo 'package=com.sec.android.app.sbrowse3'
+            echo 'versionCode=1300067502'
+            echo 'versionName=30.0.0.67'
+            echo 'signing=unsigned-stage-a'
+            echo "exec_commit=$GITHUB_SHA"
+          } > BUILD-METADATA.txt
+
+      - name: Upload unsigned signing kit
+        uses: actions/upload-artifact@v4
+        with:
+          name: Samsung-Internet-Green-Clone-Rebuild-signing-kit
+          retention-days: 30
+          if-no-files-found: error
+          path: |
+            Samsung_Internet_Green_Clone_30.0.0.67_Rebuild_unsigned.apk
+            CLONE_PATCH_REPORT.txt
+            BUILD-METADATA.txt
+            SHA256SUMS.txt
+            badging.txt
