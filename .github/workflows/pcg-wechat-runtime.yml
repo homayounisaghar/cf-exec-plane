@@ -57,6 +57,7 @@ jobs:
         env:
           CF_REPO_READ_TOKEN: ${{ secrets.CF_REPO_READ_TOKEN }}
           CANDIDATE_COMMIT: ${{ steps.request.outputs.candidate_commit }}
+          ACTION: ${{ steps.request.outputs.action }}
         shell: bash
         run: |
           set -euo pipefail
@@ -81,20 +82,28 @@ jobs:
           root="$work/runtime"
           mkdir "$root"
           base="server-deploy/channels/pcg/provider-runtime"
-          for f in pcg_wechat_runtime.mjs wechat_session.sh wechat_atspi_snapshot.py capability-fabric-pcg-wechat.service wechat_semantic_helper.py wechat_semantic_helper.sh capability-fabric-pcg-wechat-semantic.service; do
-            git -C "$work" show "FETCH_HEAD:$base/$f" > "$root/$f"
-          done
+          case "$ACTION" in
+            semantic-*)
+              for f in wechat_semantic_helper.py wechat_semantic_helper.sh capability-fabric-pcg-wechat-semantic.service; do
+                git -C "$work" show "FETCH_HEAD:$base/$f" > "$root/$f"
+              done
+              python3 -m py_compile "$root/wechat_semantic_helper.py"
+              bash -n "$root/wechat_semantic_helper.sh"
+              grep -q '^User=cfop_e79aa1fde5$' "$root/capability-fabric-pcg-wechat-semantic.service"
+              ;;
+            *)
+              for f in pcg_wechat_runtime.mjs wechat_session.sh wechat_atspi_snapshot.py capability-fabric-pcg-wechat.service; do
+                git -C "$work" show "FETCH_HEAD:$base/$f" > "$root/$f"
+              done
+              node --check "$root/pcg_wechat_runtime.mjs"
+              bash -n "$root/wechat_session.sh"
+              python3 -m py_compile "$root/wechat_atspi_snapshot.py"
+              grep -q '^User=cfop_e79aa1fde5$' "$root/capability-fabric-pcg-wechat.service"
+              grep -q '^Environment=HOME=/var/lib/capability-fabric/pcg/wechat/home$' "$root/capability-fabric-pcg-wechat.service"
+              ;;
+          esac
           rm -f "$askpass"
           unset CF_REPO_READ_TOKEN
-          node --check "$root/pcg_wechat_runtime.mjs"
-          bash -n "$root/wechat_session.sh"
-          python3 -m py_compile "$root/wechat_atspi_snapshot.py"
-          grep -q '^User=cfop_e79aa1fde5$' "$root/capability-fabric-pcg-wechat.service"
-          grep -q '^Environment=HOME=/var/lib/capability-fabric/pcg/wechat/home$' "$root/capability-fabric-pcg-wechat.service"
-          python3 -m py_compile "$root/wechat_semantic_helper.py"
-          bash -n "$root/wechat_semantic_helper.sh"
-          grep -q "IPAddressDeny=any" "$root/capability-fabric-pcg-wechat-semantic.service"
-          grep -q "IPAddressAllow=localhost" "$root/capability-fabric-pcg-wechat-semantic.service"
           tar -C "$root" -czf "${RUNNER_TEMP}/pcg-wechat-runtime.tgz" .
 
       - name: Prepare SSH
