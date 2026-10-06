@@ -1,0 +1,55 @@
+name: PCG Alibaba ARMVM Run Recovery
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - server-bootstrap/control/pcg-alibaba-armvm-recover/*.request
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  recover:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+
+      - name: Validate immutable recovery request
+        id: request
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || exit 10
+          IFS=$'\t' read -r status request_path <<<"${changes[0]}"
+          [[ "$status" == A ]] || exit 11
+          [[ "$request_path" == server-bootstrap/control/pcg-alibaba-armvm-recover/*.request ]] || exit 12
+          request_id="$(awk -F= '$1=="request_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          run_ids="$(awk -F= '$1=="run_ids"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 13
+          [[ "$run_ids" =~ ^[0-9]+(,[0-9]+)*$ ]] || exit 14
+          echo "run_ids=$run_ids" >> "$GITHUB_OUTPUT"
+
+      - name: Cancel only requested stale ARMVM runs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_IDS: ${{ steps.request.outputs.run_ids }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          IFS=',' read -ra ids <<<"$RUN_IDS"
+          for id in "${ids[@]}"; do
+            name="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$id" --jq '.name')"
+            status="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$id" --jq '.status')"
+            [[ "$name" == "PCG Alibaba ARM64 VM Control" ]] || { echo "refusing non-ARMVM run $id: $name" >&2; exit 20; }
+            case "$status" in
+              completed) echo "run $id already completed" ;;
+              *) gh api --method POST "repos/$GITHUB_REPOSITORY/actions/runs/$id/cancel" >/dev/null ;;
+            esac
+          done
