@@ -40,9 +40,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          URL='https://d.apkpure.com/b/APK/com.sec.android.app.sbrowser?version=30.0.0.67'
+          URL='https://d.apkpure.com/b/APK/com.sec.android.app.sbrowser?versionCode=1300067502'
           curl -fL --retry 5 --retry-all-errors --connect-timeout 30 \
             -A 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/152 Safari/537.36' \
+            -e 'https://apkpure.net/' \
             "$URL" -o source.apk
           echo '9e2270ddbd0f41e4ed85944362c66f55e96090c86e19d098eb483a4a0850d32f  source.apk' | sha256sum -c -
           test "$(stat -c %s source.apk)" = "316616974"
