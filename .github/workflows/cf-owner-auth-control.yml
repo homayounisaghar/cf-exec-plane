@@ -97,15 +97,13 @@ jobs:
             remote_args+=(status)
             printf '%q ' "${remote_args[@]}" > "$RUNNER_TEMP/remote-command"
           else
-            printf '%q ' docker logs capability-fabric-onshape-server --since 15m > "$RUNNER_TEMP/remote-command"
-            printf '%q ' grep cf_owner_auth_observe >> "$RUNNER_TEMP/remote-command"
-            printf '%q ' tail -20 >> "$RUNNER_TEMP/remote-command"
+            printf '%s\n' 'docker logs capability-fabric-onshape-server --since 15m 2>&1 | grep cf_owner_auth_observe | tail -20' > "$RUNNER_TEMP/remote-command"
           fi
           ssh -i "$SSH_DIR/key" -p "$SSH_PORT" \
             -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
             -o UserKnownHostsFile="$SSH_DIR/known_hosts" \
             "${VPS_SSH_USER}@${VPS_HOST}" \
-            "bash -lc '$(cat "$RUNNER_TEMP/remote-command")'" </dev/null
+            "bash -lc \"$(cat "$RUNNER_TEMP/remote-command")\"" </dev/null
 
       - name: Verify owner-auth state
         shell: bash
