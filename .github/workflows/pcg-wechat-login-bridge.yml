@@ -126,24 +126,12 @@ jobs:
               snapshot="$state/bridge-accessibility-snapshot.json"
               rm -f "$snapshot" /tmp/pcg-wechat-bridge-accessibility.json
               set +e
-              timeout 7s runuser -u "$owner" -- env \
-                DISPLAY=:97 \
-                DBUS_SESSION_BUS_ADDRESS="$dbus" \
-                QT_ACCESSIBILITY=1 \
-                QT_LINUX_ACCESSIBILITY_ALWAYS_ON=1 \
-                NO_AT_BRIDGE=0 \
-                python3 /usr/local/lib/capability-fabric/pcg-provider-runtime/wechat_atspi_snapshot.py "$snapshot"
+              timeout 7s runuser -u "$owner" -- env DISPLAY=:97 DBUS_SESSION_BUS_ADDRESS="$dbus" QT_ACCESSIBILITY=1 QT_LINUX_ACCESSIBILITY_ALWAYS_ON=1 NO_AT_BRIDGE=0 python3 /usr/local/lib/capability-fabric/pcg-provider-runtime/wechat_atspi_snapshot.py "$snapshot"
               probe_rc=$?
               set -e
               [[ "$probe_rc" -eq 0 || "$probe_rc" -eq 124 ]]
               test -s "$snapshot"
-              python3 - "$snapshot" <<'PY'
-          import json,sys
-          p=json.load(open(sys.argv[1]))
-          assert p.get("ok") is True
-          assert int(p.get("node_count",0)) > 0
-          print("PCG_WECHAT_ATSPI_NODE_COUNT=%s" % p.get("node_count"))
-          PY
+              python3 -c 'import json,sys; p=json.load(open(sys.argv[1])); assert p.get("ok") is True; assert int(p.get("node_count",0)) > 0; print("PCG_WECHAT_ATSPI_NODE_COUNT=%s" % p.get("node_count"))' "$snapshot"
               install -o paa_remote -g paa_remote -m 0600 "$snapshot" /tmp/pcg-wechat-bridge-accessibility.json
               echo "PCG_WECHAT_ATSPI_PROBE=success"
               ;;
