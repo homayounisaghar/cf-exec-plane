@@ -1,0 +1,166 @@
+name: PCG WeChat R241 Snapshot
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - server-bootstrap/control/pcg-wechat-r241-snapshot/*.request
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pcg-wechat-r241-snapshot
+  cancel-in-progress: false
+
+jobs:
+  snapshot:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      BASE_CANDIDATE: fa49b8d23493621a2e9a7a1096542bda31b39b25
+      BASE_RELEASE: onshape-vps-fast-r100-direct-orbit1-paa-storage-r240-alibaba-parity1
+      TARGET_SEQUENCE: "241"
+      TARGET_RELEASE: onshape-vps-fast-r100-direct-orbit1-paa-storage-r241-wechat-parity1
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - id: request
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || exit 10
+          IFS=$'\t' read -r status request_path <<<"${changes[0]}"
+          [[ "$status" == A ]] || exit 11
+          [[ "$request_path" == server-bootstrap/control/pcg-wechat-r241-snapshot/*.request ]] || exit 12
+          request_id="$(awk -F= '$1=="request_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          candidate_commit="$(awk -F= '$1=="candidate_commit"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 13
+          [[ "$candidate_commit" =~ ^[0-9a-f]{40}$ ]] || exit 14
+          echo "candidate_commit=$candidate_commit" >> "$GITHUB_OUTPUT"
+
+      - name: Fetch exact private WeChat candidate
+        env:
+          CF_REPO_READ_TOKEN: ${{ secrets.CF_REPO_READ_TOKEN }}
+          CANDIDATE_COMMIT: ${{ steps.request.outputs.candidate_commit }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          : "${CF_REPO_READ_TOKEN:?missing private repo token}"
+          work="${RUNNER_TEMP}/wechat-r241-private"
+          git init "$work" >/dev/null
+          askpass="${RUNNER_TEMP}/askpass"
+          cat > "$askpass" <<'ASKPASS'
+          #!/usr/bin/env bash
+          case "${1:-}" in
+            *Username*) printf '%s\n' 'x-access-token' ;;
+            *Password*) printf '%s\n' "$CF_REPO_READ_TOKEN" ;;
+            *) exit 1 ;;
+          esac
+          ASKPASS
+          chmod 700 "$askpass"
+          GIT_ASKPASS="$askpass" GIT_TERMINAL_PROMPT=0 git -C "$work" fetch --quiet --depth=1 https://github.com/homayounisaghar/capability-fabric.git "$CANDIDATE_COMMIT"
+          [[ "$(git -C "$work" rev-parse FETCH_HEAD)" == "$CANDIDATE_COMMIT" ]]
+          echo "PRIVATE_WORK=$work" >> "$GITHUB_ENV"
+
+      - name: Assemble immutable public snapshot
+        env:
+          CANDIDATE_COMMIT: ${{ steps.request.outputs.candidate_commit }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="qualification/onshape-fast-r12/$BASE_CANDIDATE"
+          target="qualification/onshape-fast-r12/$CANDIDATE_COMMIT"
+          private_base="server-deploy/candidates/$TARGET_RELEASE"
+          [[ -d "$base" ]]
+          [[ ! -e "$target" ]] || { echo "snapshot already exists" >&2; exit 20; }
+          mkdir -p "$target"
+          cp -a "$base/." "$target/"
+
+          for f in compose.yaml wechat-ingress.mjs wechat-preload.mjs; do
+            git -C "$PRIVATE_WORK" show "FETCH_HEAD:$private_base/$f" > "$target/$f"
+          done
+
+          python3 - "$target" "$CANDIDATE_COMMIT" "$BASE_CANDIDATE" "$BASE_RELEASE" "$TARGET_SEQUENCE" "$TARGET_RELEASE" <<'PY'
+          import hashlib,json,pathlib,sys
+          target=pathlib.Path(sys.argv[1])
+          candidate,base_candidate,base_release,sequence,release=sys.argv[2:]
+          provenance_path=pathlib.Path(__import__("os").environ["PRIVATE_WORK"])/"provenance-placeholder"
+          closure=json.loads((target/"release-closure.json").read_text())
+          closure["build_id"]=release
+          files=list(closure["files"])
+          for name in ("wechat-ingress.mjs","wechat-preload.mjs"):
+              if name not in files:
+                  files.append(name)
+          closure["files"]=files
+          (target/"release-closure.json").write_text(json.dumps(closure,indent=2)+"\n")
+
+          manifest=json.loads((target/"manifest.json").read_text())
+          manifest["sequence"]=int(sequence)
+          manifest["release_id"]=release
+          manifest["files"]={}
+          for rel in closure["files"]:
+              p=target/rel
+              if not p.is_file():
+                  raise SystemExit(f"missing runtime file: {rel}")
+              manifest["files"][rel]=hashlib.sha256(p.read_bytes()).hexdigest()
+          (target/"manifest.json").write_text(json.dumps(manifest,indent=2)+"\n")
+
+          assert closure["build_id"]==release
+          assert set(manifest["files"])==set(closure["files"])
+          compose=(target/"compose.yaml").read_text()
+          for needle in (
+              "--import ./paa-bale-preload.mjs",
+              "--import ./whatsapp-preload.mjs",
+              "--import ./paa-alibaba-preload.mjs",
+              "--import ./wechat-preload.mjs",
+              "wechat-ingress.mjs",
+          ):
+              assert needle in compose, needle
+          PY
+
+          # Base runtime payload must remain byte-identical except files intentionally overlaid/derived.
+          for rel in $(python3 - "$base/release-closure.json" <<'PY'
+          import json,sys
+          for x in json.load(open(sys.argv[1]))["files"]:
+              if x not in {"compose.yaml","release-closure.json"}:
+                  print(x)
+          PY
+          ); do
+            cmp -s "$base/$rel" "$target/$rel" || { echo "unexpected base regression: $rel" >&2; exit 21; }
+          done
+
+          python3 - "$target" <<'PY'
+          import hashlib,json,pathlib,sys
+          root=pathlib.Path(sys.argv[1])
+          m=json.loads((root/"manifest.json").read_text())
+          c=json.loads((root/"release-closure.json").read_text())
+          assert m["sequence"]==241
+          assert m["release_id"]=="onshape-vps-fast-r100-direct-orbit1-paa-storage-r241-wechat-parity1"
+          assert c["build_id"]==m["release_id"]
+          assert set(m["files"])==set(c["files"])
+          for rel,want in m["files"].items():
+              got=hashlib.sha256((root/rel).read_bytes()).hexdigest()
+              assert got==want,(rel,got,want)
+          PY
+          echo "SNAPSHOT_DIR=$target" >> "$GITHUB_ENV"
+
+      - name: Commit snapshot
+        env:
+          CANDIDATE_COMMIT: ${{ steps.request.outputs.candidate_commit }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "capability-fabric-bot"
+          git config user.email "capability-fabric-bot@users.noreply.github.com"
+          git add "$SNAPSHOT_DIR"
+          git diff --cached --quiet && { echo "no snapshot changes" >&2; exit 30; }
+          git commit -m "pcg: publish WeChat r241 qualified snapshot $CANDIDATE_COMMIT"
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
