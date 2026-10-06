@@ -171,10 +171,10 @@ jobs:
             for _ in $(seq 1 60); do
               if systemctl is-active --quiet "$final" && curl -fsS --max-time 1 http://127.0.0.1:9336/status >/tmp/pcg-wechat-status.json 2>/dev/null; then
                 if python3 - <<'PY'
-import json
-p=json.load(open('/tmp/pcg-wechat-status.json'))
-raise SystemExit(0 if p.get('accessibility_available') else 1)
-PY
+          import json
+          p=json.load(open('/tmp/pcg-wechat-status.json'))
+          raise SystemExit(0 if p.get('accessibility_available') else 1)
+          PY
                 then
                   return 0
                 fi
