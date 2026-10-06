@@ -1,0 +1,90 @@
+name: PCG WeChat R240 Candidate CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - server-bootstrap/control/pcg-wechat-r240-ci/*.request
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pcg-wechat-r240-ci
+  cancel-in-progress: false
+
+jobs:
+  test:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - id: request
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]]
+          IFS=$'\t' read -r status request_path <<<"${changes[0]}"
+          [[ "$status" == A ]]
+          [[ "$request_path" == server-bootstrap/control/pcg-wechat-r240-ci/*.request ]]
+          request_id="$(awk -F= '$1=="request_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          candidate_commit="$(awk -F= '$1=="candidate_commit"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          [[ "$request_id" == "$(basename "$request_path" .request)" ]]
+          [[ "$candidate_commit" =~ ^[0-9a-f]{40}$ ]]
+          echo "candidate_commit=$candidate_commit" >> "$GITHUB_OUTPUT"
+      - name: Fetch exact private candidate
+        env:
+          CF_REPO_READ_TOKEN: ${{ secrets.CF_REPO_READ_TOKEN }}
+          CANDIDATE_COMMIT: ${{ steps.request.outputs.candidate_commit }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          work="${RUNNER_TEMP}/wechat-r240"
+          git init "$work" >/dev/null
+          askpass="${RUNNER_TEMP}/askpass"
+          cat > "$askpass" <<'ASKPASS'
+          #!/usr/bin/env bash
+          case "${1:-}" in
+            *Username*) printf '%s\n' 'x-access-token' ;;
+            *Password*) printf '%s\n' "$CF_REPO_READ_TOKEN" ;;
+            *) exit 1 ;;
+          esac
+          ASKPASS
+          chmod 700 "$askpass"
+          GIT_ASKPASS="$askpass" GIT_TERMINAL_PROMPT=0 git -C "$work" fetch --quiet --depth=1 https://github.com/homayounisaghar/capability-fabric.git "$CANDIDATE_COMMIT"
+          [[ "$(git -C "$work" rev-parse FETCH_HEAD)" == "$CANDIDATE_COMMIT" ]]
+          git -C "$work" checkout --quiet --detach FETCH_HEAD
+          rm -f "$askpass"
+          echo "WORK=$work" >> "$GITHUB_ENV"
+      - name: Validate candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="$WORK/server-deploy/candidates/onshape-vps-fast-r100-direct-orbit1-paa-storage-r240-wechat1"
+          node --check "$base/wechat-ingress.mjs"
+          node --check "$base/wechat-preload.mjs"
+          node "$base/wechat-ingress.test.mjs"
+          grep -q -- "--import ./wechat-preload.mjs" "$base/compose.yaml"
+          grep -q "wechat-ingress.mjs" "$base/compose.yaml"
+          python3 - <<'PY'
+          import json, os
+          base=os.environ["WORK"]+"/server-deploy/candidates/onshape-vps-fast-r100-direct-orbit1-paa-storage-r240-wechat1"
+          p=json.load(open(base+"/provenance.json"))
+          assert p["wechat_only"] is True
+          assert p["provider_visible_writes_added"] is True
+          assert p["generic_gui_executor_exposed"] is False
+          assert p["base_live_candidate"]=="a965b4c0141bd2d501b9d175b8dec7879a70d9c0"
+          assert p["write_contract"]=="ACKNOWLEDGED_UNVERIFIED_OR_IN_DOUBT_UNTIL_INDEPENDENT_PROVIDER_FRESH_VERIFIER_EXISTS"
+          assert len(p["exposed_candidate_tools"])>=15
+          PY
+          helper="$WORK/server-deploy/channels/pcg/provider-runtime/wechat_semantic_helper.py"
+          python3 -m py_compile "$helper"
+          grep -q "def provider_search" "$helper"
+          grep -q "def conversation_action" "$helper"
+          grep -q "def file_dialog_probe" "$helper"
+          echo "WECHAT_R240_CI=pass"
