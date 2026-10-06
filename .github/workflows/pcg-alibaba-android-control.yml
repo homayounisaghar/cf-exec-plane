@@ -10,8 +10,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: pcg-alibaba-android-control
-  cancel-in-progress: true
+  group: pcg-alibaba-android-control-recovery
+  cancel-in-progress: false
 
 jobs:
   control:
