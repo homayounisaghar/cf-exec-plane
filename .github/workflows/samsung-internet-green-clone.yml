@@ -40,46 +40,38 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python3 -m pip install --disable-pip-version-check --no-input justapk
-          BT="$ANDROID_HOME/build-tools/35.0.0"
           mkdir -p fetched
-          FOUND=0
+          npm init -y >/dev/null
+          npm install --no-audit --no-fund apkmirror-downloader@2.0.3
 
-          for SRCNAME in apkcombo uptodown apkpure; do
-            echo "=== trying $SRCNAME ==="
-            rm -rf "fetched/$SRCNAME"
-            mkdir -p "fetched/$SRCNAME"
-            set +e
-            justapk download com.sec.android.app.sbrowser -v 30.0.0.67 -s "$SRCNAME" -o "fetched/$SRCNAME" >"justapk-$SRCNAME.json" 2>"justapk-$SRCNAME.err"
-            RC=$?
-            set -e
-            cat "justapk-$SRCNAME.err" || true
-            cat "justapk-$SRCNAME.json" || true
-            if [ "$RC" -ne 0 ]; then
-              continue
-            fi
+          node --input-type=module - <<'NODE'
+          import { APKMirrorDownloader } from "apkmirror-downloader";
+          const apkmd = new APKMirrorDownloader({outDir:"./fetched"});
+          await apkmd.download(
+            {org:"samsung-electronics-co-ltd", repo:"samsung-internet-for-android"},
+            {
+              version:"30.0.0.67",
+              arch:"arm64-v8a",
+              dpi:"nodpi",
+              type:"apk",
+              outFile:"samsung-browser-30.0.0.67"
+            }
+          );
+          NODE
 
-            CAND="$(find "fetched/$SRCNAME" -type f -name '*.apk' | head -n 1)"
-            [ -n "$CAND" ] || continue
-            sha256sum "$CAND" || true
+          BT="$ANDROID_HOME/build-tools/35.0.0"
+          SRC="$(find fetched -type f -name '*.apk' | head -n 1)"
+          test -n "$SRC"
+          sha256sum "$SRC" | tee source-downloaded-sha256.txt
+          "$BT/aapt" dump badging "$SRC" | tee source-badging.txt
+          grep -q "package: name='com.sec.android.app.sbrowser'" source-badging.txt
+          grep -q "versionName='30.0.0.67'" source-badging.txt
+          grep -q "versionCode='1300067502'" source-badging.txt
 
-            set +e
-            "$BT/aapt" dump badging "$CAND" > candidate-badging.txt 2>&1
-            BADGE_RC=$?
-            "$BT/apksigner" verify --print-certs "$CAND" > candidate-cert.txt 2>&1
-            SIGN_RC=$?
-            set -e
-            cat candidate-badging.txt || true
-            cat candidate-cert.txt || true
-            [ "$BADGE_RC" -eq 0 ] || continue
-            [ "$SIGN_RC" -eq 0 ] || continue
+          "$BT/apksigner" verify --print-certs "$SRC" | tee source-cert.txt
+          grep -qi 'Signer #1 certificate SHA-256 digest: 34df0e7a9f1cf1892e45c056b4973cd81ccf148a4050d11aea4ac5a65f900a42' source-cert.txt
 
-            grep -q "package: name='com.sec.android.app.sbrowser'" candidate-badging.txt || continue
-            grep -q "versionName='30.0.0.67'" candidate-badging.txt || continue
-            grep -q "versionCode='1300067502'" candidate-badging.txt || continue
-            grep -qi 'Signer #1 certificate SHA-256 digest: 34df0e7a9f1cf1892e45c056b4973cd81ccf148a4050d11aea4ac5a65f900a42' candidate-cert.txt || continue
-
-            python3 - "$CAND" <<'PY'
+          python3 - "$SRC" <<'PY'
           import sys, zipfile
           p=sys.argv[1]
           z=zipfile.ZipFile(p)
@@ -91,16 +83,7 @@ jobs:
           assert len(libs)==13, len(libs)
           PY
 
-            cp "$CAND" source.apk
-            cp candidate-badging.txt source-badging.txt
-            cp candidate-cert.txt source-cert.txt
-            echo "$SRCNAME" > source-provider.txt
-            FOUND=1
-            break
-          done
-
-          test "$FOUND" = 1
-          sha256sum source.apk | tee source-downloaded-sha256.txt
+          cp "$SRC" source.apk
           echo "verified_source_sha256=$(sha256sum source.apk | awk '{print $1}')" >> "$GITHUB_ENV"
 
       - name: Fetch pinned Apktool
