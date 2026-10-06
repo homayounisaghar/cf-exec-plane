@@ -47,7 +47,7 @@ jobs:
           action="$(awk -F= '$1=="action"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
           [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 13
           [[ "$candidate_commit" =~ ^[0-9a-f]{40}$ ]] || exit 14
-          case "$action" in install|inspect|cutover|restart-test|login-resume|diagnose|cursor-park|self-chat-probe|read-chat-probe|message-structure-probe|semantic-install|semantic-diagnose|semantic-file-dialog-probe|semantic-scroll-top) ;; *) exit 15 ;; esac
+          case "$action" in install|inspect|cutover|restart-test|login-resume|diagnose|cursor-park|self-chat-probe|read-chat-probe|message-structure-probe|semantic-install|semantic-diagnose|semantic-file-dialog-probe|semantic-cancel-dialog|semantic-scroll-top) ;; *) exit 15 ;; esac
           {
             echo "candidate_commit=$candidate_commit"
             echo "action=$action"
@@ -262,6 +262,41 @@ jobs:
               python3 -c 'import json; p=json.load(open("/tmp/pcg-wechat-file-dialog-probe.json")); assert p.get("ok") is True; assert p.get("provider_visible_state_changed") is False'
               install -o paa_remote -g paa_remote -m 0600 /tmp/pcg-wechat-file-dialog-probe.json /var/lib/capability-fabric/paa-remote/pcg-wechat-file-dialog-probe.json
               echo "PCG_WECHAT_FILE_DIALOG_PROBE=success"
+              ;;
+            semantic-cancel-dialog)
+              systemctl is-active --quiet "$final" || { echo "WECHAT_CANCEL_DIALOG_REQUIRES_FINAL_ACTIVE" >&2; exit 111; }
+              export DISPLAY=:97
+              export XAUTHORITY="$state/Xauthority"
+              snap=/tmp/pcg-wechat-cancel-dialog-before.json
+              curl -fsS --max-time 3 http://127.0.0.1:9336/accessibility > "$snap"
+              read -r cx cy count < <(python3 - "$snap" <<'PY'
+          import json,sys
+          j=json.load(open(sys.argv[1])); rows=[]
+          prompt=False
+          for n in j.get("nodes",[]):
+              st=set(n.get("states",[]))
+              if "showing" not in st or "visible" not in st: continue
+              if "Log out?" in str(n.get("name","")): prompt=True
+              if n.get("role")=="button" and n.get("name")=="Cancel":
+                  b=n.get("bounds") or {}
+                  if int(b.get("width",0))>20 and int(b.get("height",0))>15: rows.append(b)
+          if not prompt or len(rows)!=1: print("0 0",0)
+          else:
+              b=rows[0]; print(int(b["x"])+int(b["width"])//2,int(b["y"])+int(b["height"])//2,1)
+          PY
+              )
+              [[ "$count" -eq 1 ]] || { echo "WECHAT_CANCEL_DIALOG_NOT_EXACT" >&2; exit 112; }
+              runuser -u "$owner" -- env DISPLAY="$DISPLAY" XAUTHORITY="$XAUTHORITY" xdotool mousemove "$cx" "$cy" click 1
+              sleep 0.4
+              curl -fsS --max-time 3 http://127.0.0.1:9336/accessibility > /tmp/pcg-wechat-cancel-dialog-after.json
+              python3 - /tmp/pcg-wechat-cancel-dialog-after.json <<'PY'
+          import json,sys
+          j=json.load(open(sys.argv[1]))
+          visible=[str(n.get("name","")) for n in j.get("nodes",[]) if "showing" in set(n.get("states",[])) and "visible" in set(n.get("states",[]))]
+          assert not any("Log out?" in x for x in visible)
+          assert "Chats" in visible
+          PY
+              echo "PCG_WECHAT_CANCEL_DIALOG=success"
               ;;
             semantic-scroll-top)
               systemctl is-active --quiet "$final" || { echo "WECHAT_SCROLL_TOP_REQUIRES_FINAL_ACTIVE" >&2; exit 110; }
