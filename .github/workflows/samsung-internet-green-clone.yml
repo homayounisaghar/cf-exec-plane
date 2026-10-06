@@ -36,84 +36,20 @@ jobs:
           set -o pipefail
           "$SDKMANAGER" "build-tools;35.0.0" "platform-tools"
 
-      - name: Resolve AppLoko download endpoint
+      - name: Fetch exact AppLoko Samsung 30.0.0.67 source
         shell: bash
         run: |
           set -euo pipefail
-          rm -rf fetched
-          mkdir -p fetched/chunks
-          PAGE='https://apploko.com/en/product/samsung-browser'
-          curl -fL --retry 4 --retry-all-errors --connect-timeout 30 \
+          mkdir -p fetched
+          URL='https://apploko.com/api/v1/apps/samsung-browser/download/?redirect=1&lang=en'
+          curl -fL --retry 5 --retry-all-errors --connect-timeout 30 \
             -A 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/152 Safari/537.36' \
-            "$PAGE" -o fetched/page.html
-
-          python3 - <<'PY'
-          from pathlib import Path
-          import re,html,subprocess
-          page=Path('fetched/page.html').read_text(errors='replace')
-          srcs=[]
-          for m in re.finditer(r'<script[^>]+src="([^"]+)"',page,re.I):
-              u=html.unescape(m.group(1))
-              if '/_next/static/chunks/' in u and u not in srcs:
-                  srcs.append(u)
-          print('chunk_count',len(srcs))
-          Path('fetched/chunk-urls.txt').write_text('\n'.join(srcs)+'\n')
-          PY
-
-          i=0
-          while IFS= read -r SRC; do
-            i=$((i+1))
-            URL="$SRC"
-            case "$URL" in
-              http*) ;;
-              *) URL="https://apploko.com$URL" ;;
-            esac
-            curl -fL --retry 2 --retry-all-errors --connect-timeout 20 \
-              -A 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/152 Safari/537.36' \
-              -e "$PAGE" "$URL" -o "fetched/chunks/$i.js"
-          done < fetched/chunk-urls.txt
-
-          python3 - <<'PY'
-          from pathlib import Path
-          import re,json
-          hits=[]
-          pats=[
-              r'''["']([^"']*(?:download|Download|DOWNLOAD)[^"']*)["']''',
-              r'''["']([^"']*(?:/api/|api/)[^"']*)["']''',
-              r'''["']([^"']*(?:file|File)[^"']*(?:url|Url|URL)[^"']*)["']''',
-          ]
-          for p in sorted(Path('fetched/chunks').glob('*.js')):
-              s=p.read_text(errors='replace')
-              for pat in pats:
-                  for m in re.finditer(pat,s):
-                      v=m.group(1)
-                      if len(v) <= 500:
-                          hits.append((p.name,v))
-          seen=set()
-          out=[]
-          for item in hits:
-              if item in seen: continue
-              seen.add(item); out.append(item)
-          for p,v in out[:400]:
-              print(f'{p}: {v}')
-          Path('fetched/chunk-hits.txt').write_text(
-              '\n'.join(f'{p}: {v}' for p,v in out)+'\n'
-          )
-          PY
-          exit 42
-
-      - name: Upload AppLoko endpoint diagnostic
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: samsung-apploko-endpoint-diagnostic
-          retention-days: 3
-          if-no-files-found: error
-          path: |
-            fetched/page.html
-            fetched/chunk-urls.txt
-            fetched/chunk-hits.txt
-            fetched/chunks/
+            -e 'https://apploko.com/en/product/samsung-browser' \
+            "$URL" -o fetched/source.apk
+          SIZE="$(stat -c %s fetched/source.apk)"
+          echo "downloaded_bytes=$SIZE"
+          test "$SIZE" = "292162762"
+          echo '1d93a2f72dede907d0430090b0edad1ce7c91797bd31b42c64035d1d65a14c27  fetched/source.apk' | sha256sum -c -
 
       - name: Verify AppLoko Samsung source structure
         shell: bash
