@@ -1,0 +1,4 @@
+request_id=pvc-r237-whatsapp-writefix1-ci-20261006-001
+candidate_commit=c6935043430833c5574f3ddb193ee22f182b08cb
+expected_sequence=237
+expected_release=onshape-vps-fast-r100-direct-orbit1-paa-storage-r237-whatsapp-writefix1
