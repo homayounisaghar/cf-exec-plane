@@ -70,17 +70,19 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          base="$WORK/server-deploy/candidates/onshape-vps-fast-r100-direct-orbit1-paa-storage-r238-wechat-read1"
+          base="$WORK/server-deploy/candidates/onshape-vps-fast-r100-direct-orbit1-paa-storage-r239-wechat-read1"
           node --check "$base/wechat-ingress.mjs"
           node --check "$base/wechat-preload.mjs"
           node "$base/wechat-ingress.test.mjs"
+          grep -q -- "--import ./wechat-preload.mjs" "$base/compose.yaml"
+          grep -q "/run/pcg-material-files" "$base/compose.yaml"
           python3 - <<'PY'
           import json, os
-          base=os.environ["WORK"]+"/server-deploy/candidates/onshape-vps-fast-r100-direct-orbit1-paa-storage-r238-wechat-read1"
+          base=os.environ["WORK"]+"/server-deploy/candidates/onshape-vps-fast-r100-direct-orbit1-paa-storage-r239-wechat-read1"
           p=json.load(open(base+"/provenance.json"))
           assert p["wechat_only"] is True
-          assert p["provider_visible_effects_added"] is False
-          assert p["generic_gui_executor_exposed"] is False
-          assert p["base_live_candidate"]=="8852ba737da768a9f48e2da48f264a068faffff2"
+          assert p["writes_added"] is False
+          assert p["generic_gui_tool"] is False
+          assert p["base_live_candidate"]=="2947bfb6ce2933a8db2fbd6a2b1dfc0abfe02834"
           PY
           echo "WECHAT_READ_CANDIDATE_CI=pass"
