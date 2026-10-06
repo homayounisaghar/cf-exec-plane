@@ -42,7 +42,7 @@ jobs:
           set -euo pipefail
           mkdir -p fetched
           npm init -y >/dev/null
-          npm install --no-audit --no-fund apkmirror-downloader@2.0.3
+          npm install --no-audit --no-fund apkmirror-downloader@2.0.3 cheerio@1.0.0-rc.12
 
           node --input-type=module - <<'NODE'
           import { APKMirrorDownloader } from "apkmirror-downloader";
