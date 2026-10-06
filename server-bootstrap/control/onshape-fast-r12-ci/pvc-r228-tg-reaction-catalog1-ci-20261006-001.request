@@ -1,0 +1,4 @@
+request_id=pvc-r228-tg-reaction-catalog1-ci-20261006-001
+candidate_commit=8de3ec4334cdce2e8d34206beeea364c2884e60f
+expected_sequence=228
+expected_release=onshape-vps-fast-r100-direct-orbit1-paa-storage-r228-tg-reaction-catalog1
