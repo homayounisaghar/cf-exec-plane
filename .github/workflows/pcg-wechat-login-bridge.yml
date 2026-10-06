@@ -138,12 +138,12 @@ jobs:
               [[ "$probe_rc" -eq 0 || "$probe_rc" -eq 124 ]]
               test -s "$snapshot"
               python3 - "$snapshot" <<'PY'
-import json,sys
-p=json.load(open(sys.argv[1]))
-assert p.get("ok") is True
-assert int(p.get("node_count",0)) > 0
-print("PCG_WECHAT_ATSPI_NODE_COUNT=%s" % p.get("node_count"))
-PY
+          import json,sys
+          p=json.load(open(sys.argv[1]))
+          assert p.get("ok") is True
+          assert int(p.get("node_count",0)) > 0
+          print("PCG_WECHAT_ATSPI_NODE_COUNT=%s" % p.get("node_count"))
+          PY
               install -o paa_remote -g paa_remote -m 0600 "$snapshot" /tmp/pcg-wechat-bridge-accessibility.json
               echo "PCG_WECHAT_ATSPI_PROBE=success"
               ;;
