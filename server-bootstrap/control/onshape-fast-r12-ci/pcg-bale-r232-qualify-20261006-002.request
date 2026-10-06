@@ -1,0 +1,4 @@
+request_id=pcg-bale-r232-qualify-20261006-002
+candidate_commit=df2128edcf91e0c874025c2440eedcd426b11b73
+expected_sequence=232
+expected_release=onshape-vps-fast-r100-direct-orbit1-paa-storage-r232-bale-final-runtime1
