@@ -79,7 +79,7 @@ jobs:
           owner=cfop_e79aa1fde5
           unit=capability-fabric-pcg-login-bridge-wechat.service
           state=/var/lib/capability-fabric/pcg/wechat
-          debug=/tmp/pcg-wechat-read-probe-debug.txt
+          debug=/var/lib/capability-fabric/paa-remote/pcg-wechat-read-probe-debug.txt
           snapshot="$state/bridge-accessibility-snapshot.json"
           : > "$debug"
           chown paa_remote:paa_remote "$debug"
@@ -101,7 +101,7 @@ jobs:
           done
           echo "pid=$pid dbus_set=$([[ -n "$dbus" ]] && echo 1 || echo 0)" >> "$debug"
           [[ -n "$pid" && -n "$dbus" ]] || { echo "stage=dbus_unavailable" >> "$debug"; exit 32; }
-          rm -f "$snapshot" /tmp/pcg-wechat-bridge-accessibility.json
+          rm -f "$snapshot" /var/lib/capability-fabric/paa-remote/pcg-wechat-bridge-accessibility.json
           set +e
           timeout 7s runuser -u "$owner" -- env DISPLAY=:97 DBUS_SESSION_BUS_ADDRESS="$dbus" QT_ACCESSIBILITY=1 QT_LINUX_ACCESSIBILITY_ALWAYS_ON=1 NO_AT_BRIDGE=0 python3 /usr/local/lib/capability-fabric/pcg-provider-runtime/wechat_atspi_snapshot.py "$snapshot" >> "$debug" 2>&1
           probe_rc=$?
@@ -110,6 +110,6 @@ jobs:
           [[ "$probe_rc" -eq 0 || "$probe_rc" -eq 124 ]]
           test -s "$snapshot"
           python3 -c 'import json,sys; p=json.load(open(sys.argv[1])); print("ok=%s node_count=%s error=%s" % (p.get("ok"),p.get("node_count"),p.get("error"))); assert p.get("ok") is True; assert int(p.get("node_count",0)) > 0' "$snapshot" >> "$debug" 2>&1
-          install -o paa_remote -g paa_remote -m 0600 "$snapshot" /tmp/pcg-wechat-bridge-accessibility.json
+          install -o paa_remote -g paa_remote -m 0600 "$snapshot" /var/lib/capability-fabric/paa-remote/pcg-wechat-bridge-accessibility.json
           echo "stage=success" >> "$debug"
           REMOTE
