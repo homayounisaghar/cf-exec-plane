@@ -1,0 +1,21 @@
+{
+  "schema": "personal-android-agent.signed-apk.v1",
+  "request_id": "paa-alpha31-parallel-sms-conversations-sign-durable-20261006-001",
+  "candidate_commit": "b3f8d5b0b5766f6e13fa580dcbfbc5775d45ea3d",
+  "unsigned_sha256": "f985ba93639444a55bcb60c879053738b449e62da41eb6e481088644dbc9bdb3",
+  "signed_sha256": "5e942627e501967fe2a85aa71f5e53a31c7da09f9f16388612889460792909ab",
+  "package_id": "com.homayounisaghar.androidagent",
+  "version_code": 31,
+  "version_name": "0.1.0-alpha31",
+  "signer_alias": "personal_android_agent_line3",
+  "signer_certificate_sha256": "e5b102356f271078a3d03e982782c3776e3d9f301c1b24c0e7194f06e5a001fa",
+  "signature_schemes": [
+    "v1",
+    "v2",
+    "v3"
+  ],
+  "payload_identity": "verified-by-stage-a-digest",
+  "zip_integrity": "pass",
+  "alignment": "pass",
+  "result": "SUCCESS"
+}
