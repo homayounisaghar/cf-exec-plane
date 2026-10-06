@@ -154,4 +154,6 @@ jobs:
           git add -A "$out"
           git diff --cached --quiet && exit 31
           git commit -m "snapshot Alibaba parity candidate"
+          git fetch --quiet origin main
+          git rebase origin/main
           git push origin HEAD:main
