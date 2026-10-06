@@ -47,7 +47,7 @@ jobs:
           action="$(awk -F= '$1=="action"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
           [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 13
           [[ "$candidate_commit" =~ ^[0-9a-f]{40}$ ]] || exit 14
-          case "$action" in install|inspect|cutover|restart-test|login-resume|diagnose|cursor-park|self-chat-probe|read-chat-probe|message-structure-probe|semantic-install|semantic-diagnose|semantic-file-dialog-probe|semantic-cancel-dialog|semantic-scroll-top|semantic-material-locate|mirror-stop) ;; *) exit 15 ;; esac
+          case "$action" in install|inspect|cutover|restart-test|login-resume|diagnose|cursor-park|self-chat-probe|read-chat-probe|message-structure-probe|semantic-install|semantic-diagnose|semantic-file-dialog-probe|semantic-cancel-dialog|semantic-scroll-top|semantic-material-locate|mirror-stop|modal-cancel-relative) ;; *) exit 15 ;; esac
           {
             echo "candidate_commit=$candidate_commit"
             echo "action=$action"
@@ -658,6 +658,58 @@ jobs:
                 exit 115
               fi
               echo "PCG_WECHAT_MIRROR_STOP=success"
+              ;;
+            modal-cancel-relative)
+              systemctl is-active --quiet "$final" || { echo "WECHAT_MODAL_CANCEL_REQUIRES_FINAL_ACTIVE" >&2; exit 116; }
+              snap=/tmp/pcg-wechat-modal-relative.json
+              curl -fsS --max-time 3 http://127.0.0.1:9336/accessibility > "$snap"
+              read -r relx rely count < <(python3 - "$snap" <<'PY'
+          import json,sys
+          prompt="You won't be notified of any new messages after logging out. Log out?"
+          j=json.load(open(sys.argv[1]))
+          def vis(n):
+              s=set(n.get("states",[]))
+              return "showing" in s and "visible" in s
+          frames=[n for n in j.get("nodes",[]) if n.get("role")=="frame" and n.get("name")=="WeChat" and vis(n)]
+          cancels=[n for n in j.get("nodes",[]) if n.get("role")=="button" and n.get("name")=="Cancel" and vis(n)]
+          prompts=[n for n in j.get("nodes",[]) if n.get("role")=="label" and n.get("name")==prompt and vis(n)]
+          if len(frames)!=1 or len(cancels)!=1 or len(prompts)!=1:
+              print("0 0 0")
+          else:
+              f=frames[0]["bounds"]; b=cancels[0]["bounds"]
+              print(int(b["x"])+int(b["width"])//2-int(f["x"]), int(b["y"])+int(b["height"])//2-int(f["y"]), 1)
+          PY
+              )
+              [[ "$count" -eq 1 ]] || { echo "WECHAT_MODAL_CANCEL_SHAPE_INVALID" >&2; exit 117; }
+              export DISPLAY=:97
+              export XAUTHORITY="$state/Xauthority"
+              mapfile -t wins < <(runuser -u "$owner" -- env DISPLAY="$DISPLAY" XAUTHORITY="$XAUTHORITY" xdotool search --onlyvisible --class wechat 2>/dev/null || true)
+              [[ "${#wins[@]}" -eq 1 ]] || { echo "WECHAT_MODAL_CANCEL_WINDOW_NOT_UNIQUE count=${#wins[@]}" >&2; exit 118; }
+              wid="${wins[0]}"
+              runuser -u "$owner" -- env DISPLAY="$DISPLAY" XAUTHORITY="$XAUTHORITY" xdotool windowactivate "$wid" mousemove --window "$wid" "$relx" "$rely" click 1
+              sleep 0.8
+              curl -fsS --max-time 3 http://127.0.0.1:9336/accessibility > "$snap"
+              if python3 - "$snap" <<'PY'
+          import json,sys
+          prompt="You won't be notified of any new messages after logging out. Log out?"
+          j=json.load(open(sys.argv[1]))
+          alive=any(n.get("role")=="label" and n.get("name")==prompt and "showing" in set(n.get("states",[])) for n in j.get("nodes",[]))
+          raise SystemExit(1 if alive else 0)
+          PY
+              then
+                echo "PCG_WECHAT_MODAL_CANCEL_RELATIVE=success"
+                exit 0
+              fi
+              runuser -u "$owner" -- env DISPLAY="$DISPLAY" XAUTHORITY="$XAUTHORITY" xdotool key Escape
+              sleep 0.5
+              curl -fsS --max-time 3 http://127.0.0.1:9336/accessibility > "$snap"
+              python3 - "$snap" <<'PY'
+          import json,sys
+          prompt="You won't be notified of any new messages after logging out. Log out?"
+          j=json.load(open(sys.argv[1]))
+          assert not any(n.get("role")=="label" and n.get("name")==prompt and "showing" in set(n.get("states",[])) for n in j.get("nodes",[]))
+          PY
+              echo "PCG_WECHAT_MODAL_CANCEL_RELATIVE=success_after_escape"
               ;;
             restart-test)
               systemctl is-active --quiet "$final" || { echo "WECHAT_RESTART_TEST_REQUIRES_FINAL_ACTIVE" >&2; exit 70; }
