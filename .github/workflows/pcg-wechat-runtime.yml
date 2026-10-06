@@ -282,6 +282,8 @@ jobs:
               export DISPLAY=:97
               export XAUTHORITY="$state/Xauthority"
               runuser -u "$owner" -- env DISPLAY="$DISPLAY" XAUTHORITY="$XAUTHORITY" xdotool mousemove 1435 995
+              runuser -u "$owner" -- env DISPLAY="$DISPLAY" XAUTHORITY="$XAUTHORITY" ffmpeg -loglevel error -f x11grab -video_size 1440x1000 -i :97 -frames:v 1 -y /var/lib/capability-fabric/paa-remote/wechat-cursor-park.png
+              chmod 0644 /var/lib/capability-fabric/paa-remote/wechat-cursor-park.png
               echo "PCG_WECHAT_CURSOR_PARK=success"
               ;;
             restart-test)
