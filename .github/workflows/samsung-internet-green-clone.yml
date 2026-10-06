@@ -36,34 +36,83 @@ jobs:
           set -o pipefail
           "$SDKMANAGER" "build-tools;35.0.0" "platform-tools"
 
-      - name: Fetch exact AppLoko Samsung 30.0.0.67 source
+      - name: Fetch exact Samsung source from apk.house
         shell: bash
         run: |
           set -euo pipefail
+          rm -rf fetched
           mkdir -p fetched
-          URL='https://apploko.com/api/v1/apps/samsung-browser/download/?redirect=1&lang=en'
-          curl -fL --retry 5 --retry-all-errors --connect-timeout 30 \
+          PAGE='https://apk.house/samsung-internet/samsung/galaxy-a7'
+          curl -fL --retry 4 --retry-all-errors --connect-timeout 30 \
             -A 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/152 Safari/537.36' \
-            -e 'https://apploko.com/en/product/samsung-browser' \
-            "$URL" -o fetched/source.apk
-          SIZE="$(stat -c %s fetched/source.apk)"
-          echo "downloaded_bytes=$SIZE"
-          test "$SIZE" = "292162762"
-          echo '1d93a2f72dede907d0430090b0edad1ce7c91797bd31b42c64035d1d65a14c27  fetched/source.apk' | sha256sum -c -
+            "$PAGE" -o fetched/page.html
 
-      - name: Verify AppLoko Samsung source structure
+          python3 - <<'PY'
+          from pathlib import Path
+          from urllib.parse import urljoin
+          import html,re
+          body=Path('fetched/page.html').read_text(errors='replace')
+          vals=[]
+          for pat in [
+              r'''(?:href|src|action|data-url|data-href|data-download|data-download-url)=["']([^"']+)["']''',
+              r'''https?://[^"'<>\\ ]+''',
+          ]:
+              for m in re.finditer(pat,body,re.I):
+                  v=m.group(1) if m.lastindex else m.group(0)
+                  v=html.unescape(v).replace('\\/','/')
+                  low=v.lower()
+                  if any(k in low for k in ('download','file_id','1300067502','samsung-internet','apk')):
+                      vals.append(urljoin('https://apk.house/',v))
+          out=[]
+          for v in vals:
+              if v not in out: out.append(v)
+          Path('fetched/candidates.txt').write_text('\n'.join(out)+'\n')
+          print('page_bytes',len(body),'candidate_count',len(out))
+          for i,v in enumerate(out[:160]): print(f'CANDIDATE[{i}]={v}')
+          PY
+
+          EXPECTED='9e2270ddbd0f41e4ed85944362c66f55e96090c86e19d098eb483a4a0850d32f'
+          FOUND=0
+          i=0
+          while IFS= read -r CAND; do
+            i=$((i+1))
+            [ "$i" -le 160 ] || break
+            echo "TRY[$i]=$CAND"
+            rm -f fetched/candidate.bin
+            set +e
+            curl -fL --retry 2 --retry-all-errors --connect-timeout 20 \
+              -A 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/152 Safari/537.36' \
+              -e "$PAGE" "$CAND" -o fetched/candidate.bin
+            RC=$?
+            set -e
+            [ "$RC" -eq 0 ] || continue
+            SIZE="$(stat -c %s fetched/candidate.bin)"
+            echo "candidate_size=$SIZE"
+            [ "$SIZE" -gt 300000000 ] || continue
+            HASH="$(sha256sum fetched/candidate.bin | awk '{print $1}')"
+            echo "candidate_sha256=$HASH"
+            if [ "$HASH" = "$EXPECTED" ]; then
+              mv fetched/candidate.bin fetched/source.apk
+              FOUND=1
+              break
+            fi
+          done < fetched/candidates.txt
+          test "$FOUND" = 1
+
+      - name: Verify exact official Samsung Internet source
         shell: bash
         run: |
           set -euo pipefail
           BT="$ANDROID_HOME/build-tools/35.0.0"
           SRC="fetched/source.apk"
           test -s "$SRC"
-          echo '1d93a2f72dede907d0430090b0edad1ce7c91797bd31b42c64035d1d65a14c27  fetched/source.apk' | sha256sum -c -
+          echo '9e2270ddbd0f41e4ed85944362c66f55e96090c86e19d098eb483a4a0850d32f  fetched/source.apk' | sha256sum -c -
           "$BT/aapt" dump badging "$SRC" | tee source-badging.txt
           grep -q "package: name='com.sec.android.app.sbrowser'" source-badging.txt
           grep -q "versionName='30.0.0.67'" source-badging.txt
           grep -q "versionCode='1300067502'" source-badging.txt
           "$BT/apksigner" verify --print-certs "$SRC" | tee source-cert.txt
+          grep -qi 'Signer #1 certificate SHA-256 digest: 34df0e7a9f1cf1892e45c056b4973cd81ccf148a4050d11aea4ac5a65f900a42' source-cert.txt
           python3 - "$SRC" <<'PY'
           import sys,zipfile
           z=zipfile.ZipFile(sys.argv[1])
@@ -76,7 +125,7 @@ jobs:
           PY
           cp "$SRC" source.apk
           echo "verified_source_sha256=$(sha256sum source.apk | awk '{print $1}')" >> "$GITHUB_ENV"
-          echo "source_kind=apploko-repackaged-30.0.0.67" >> "$GITHUB_ENV"
+          echo "source_kind=official-samsung-exact-historical-apk" >> "$GITHUB_ENV"
 
       - name: Fetch pinned Apktool
         shell: bash
