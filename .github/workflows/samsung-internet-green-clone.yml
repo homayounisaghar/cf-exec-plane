@@ -40,55 +40,54 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          python3 -m pip install --disable-pip-version-check --no-input justapk
           mkdir -p fetched
-          npm init -y >/dev/null
-          npm install --no-audit --no-fund cheerio@1.0.0-rc.12
 
-          node --input-type=module - <<'NODE'
-          import * as cheerio from "cheerio";
-          import {createWriteStream} from "node:fs";
-          import {Readable} from "node:stream";
-          import {finished} from "node:stream/promises";
+          python3 - <<'PY'
+          from pathlib import Path
+          from bs4 import BeautifulSoup
+          from justapk.utils import create_cf_session, download_file
 
-          const base="https://www.apkmirror.com";
-          const variant=base+"/apk/samsung-electronics-co-ltd/samsung-internet-for-android/samsung-browser-30-0-0-67-release/samsung-browser-30-0-0-67-3-android-apk-download/";
-          const headers={
-            "user-agent":"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
-            "accept-language":"en-US,en;q=0.9"
-          };
-          const abs=(u)=>u.startsWith("http")?u:(u.startsWith("/")?base+u:base+"/"+u);
+          BASE="https://www.apkmirror.com"
+          VARIANT=BASE+"/apk/samsung-electronics-co-ltd/samsung-internet-for-android/samsung-browser-30-0-0-67-release/samsung-browser-30-0-0-67-3-android-apk-download/"
+          s=create_cf_session()
 
-          const r1=await fetch(variant,{headers,redirect:"follow"});
-          console.log("variant_status",r1.status,r1.url);
-          if(!r1.ok) throw new Error("variant page HTTP "+r1.status);
-          const h1=await r1.text();
-          const href1=cheerio.load(h1)("a.downloadButton").attr("href");
-          if(!href1) throw new Error("downloadButton href missing");
-          const gate=abs(href1);
-          console.log("gate_url",gate);
+          r=s.get(VARIANT, timeout=30)
+          print("variant_status",r.status_code,r.url)
+          r.raise_for_status()
+          soup=BeautifulSoup(r.text,"lxml")
+          btn=soup.select_one("a.downloadButton[href]")
+          if not btn:
+              raise SystemExit("download button missing")
+          href=btn.get("href","")
+          gate=href if href.startswith("http") else BASE+href
+          print("gate",gate)
 
-          await new Promise(resolve=>setTimeout(resolve,16000));
-          const r2=await fetch(gate,{headers:{...headers,referer:variant},redirect:"follow"});
-          console.log("gate_status",r2.status,r2.url);
-          if(!r2.ok) throw new Error("gate page HTTP "+r2.status);
-          const h2=await r2.text();
-          const $2=cheerio.load(h2);
-          let href2=$2(".card-with-tabs a[href]").first().attr("href");
-          if(!href2) href2=$2('a[href*="download"]').filter((i,e)=>$2(e).text().toLowerCase().includes("download")).first().attr("href");
-          if(!href2) throw new Error("final download href missing");
-          const finalUrl=abs(href2);
-          console.log("final_url",finalUrl);
+          r=s.get(gate, timeout=30)
+          print("gate_status",r.status_code,r.url)
+          r.raise_for_status()
+          soup=BeautifulSoup(r.text,"lxml")
 
-          const r3=await fetch(finalUrl,{headers:{...headers,referer:r2.url},redirect:"follow"});
-          console.log("apk_status",r3.status,r3.url,r3.headers.get("content-length"),r3.headers.get("content-type"));
-          if(!r3.ok||!r3.body) throw new Error("APK HTTP "+r3.status);
-          await finished(Readable.fromWeb(r3.body).pipe(createWriteStream("fetched/source.apk")));
-          NODE
+          final=None
+          for a in soup.select("a[href*='key=']"):
+              href=a.get("href","")
+              if "download" in href:
+                  final=href if href.startswith("http") else BASE+href
+                  break
+          if not final:
+              raise SystemExit("final key link missing")
+          print("final",final)
+
+          out=Path("fetched/source.apk")
+          size=download_file(final,out,s)
+          print("downloaded_bytes",size)
+          PY
 
           BT="$ANDROID_HOME/build-tools/35.0.0"
           SRC="fetched/source.apk"
           test -s "$SRC"
           sha256sum "$SRC" | tee source-downloaded-sha256.txt
+          echo '9e2270ddbd0f41e4ed85944362c66f55e96090c86e19d098eb483a4a0850d32f  fetched/source.apk' | sha256sum -c -
           "$BT/aapt" dump badging "$SRC" | tee source-badging.txt
           grep -q "package: name='com.sec.android.app.sbrowser'" source-badging.txt
           grep -q "versionName='30.0.0.67'" source-badging.txt
