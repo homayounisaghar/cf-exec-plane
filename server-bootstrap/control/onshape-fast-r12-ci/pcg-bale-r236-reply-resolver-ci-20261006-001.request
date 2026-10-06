@@ -1,0 +1,4 @@
+request_id=pcg-bale-r236-reply-resolver-ci-20261006-001
+candidate_commit=ed07703372116ef4635efc06129b838ad82e0e61
+expected_sequence=236
+expected_release=onshape-vps-fast-r100-direct-orbit1-paa-storage-r236-bale-reply-resolver1
