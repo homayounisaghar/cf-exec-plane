@@ -1,0 +1,35 @@
+{
+  "schema": "capability-fabric.deploy.v1",
+  "sequence": 241,
+  "release_id": "onshape-vps-fast-r100-direct-orbit1-paa-storage-r241-wechat-parity1",
+  "compose_file": "compose.yaml",
+  "health_file": "health.sh",
+  "health_timeout_seconds": 180,
+  "files": {
+    "alibaba-ingress.mjs": "c8be9ce3c88a11fb3798f8141e1959df2e05d1b14916855f75140cc2f0a0cb25",
+    "bale-ingress.mjs": "dda02e8b77fa66f907a4d1e1f689dfea07593c5188f308a3c7fba096034f9fa8",
+    "browser.js": "5626111657f1a4fe6ccf74760f2fe6790f30b0337e55d53d1f1074e2bd1f9e2e",
+    "capability-fabric-onshape-server.service": "e810d312838a4b857870b2e0126c020e01b28ceaae1ddb9cfd66c3d29993f9f7",
+    "compose.yaml": "4c2a10336bf0354fbeca936a82af2b6ca5d07607209e2ecb9cb47343ba3b7814",
+    "core.js": "4d038cae328fadaa562cac5f5165fd3cc7406c61b33f8c72c028eea1cf1cd737",
+    "gateway.js": "01224d014e62c132e54e2c457bd5310aaec3bd0195683c6f478f9fd4f235c582",
+    "health.sh": "698ef92aded9ee6318d6f6ce3cfbcc9fe1ed0e51acee56c69ed393eeda30eabd",
+    "onshape-agent.js": "670f939bdbdda73a654f4c9d9fe9cd95e17203635155f2bcd002ce4fde4603cc",
+    "onshape-agent.test.mjs": "37be14df8f50b29b20937a492bb491de2ff566d3111a8e403b9d7e343d51fa48",
+    "onshape-request.cjs": "891bd676132cba1e09ae0d3ee017ec2097c7b910fccc101803ea25731ea27abc",
+    "paa-alibaba-preload.mjs": "f33df6ebdbe4e1c7e9ab44946883edca2a8ba9e997ad419a8059ebe1d655ada9",
+    "paa-bale-preload.mjs": "b34889a00ca610b57534a0c89df87ae91080e3992ba77f8fdfa5fb8c4a2101c7",
+    "paa-search-preload.mjs": "36142a044029a51b18a03608f881b29ce213c4952341ad04c66bc047287198b0",
+    "package.json": "72b568b2db1bd490f9cc0ce8788ff739dea81a59bb0a1aa28c379e8632e1a1cb",
+    "release-closure.json": "1a8e8dc4d7b033f5612c03cf105d24effa8a8361447f02d5755f01df8e3fd25c",
+    "server.js": "b039e91a5976a35e15b22d1a47ecd595d4e0446aa255ad9b91d46033f56507a2",
+    "telegram-ingress.mjs": "ff4d0cb16c8cb94af9f0e65f6f167cafa3dfc23a0c307fec009cd964d3625ff4",
+    "whatsapp-ingress.mjs": "712120714f2add6efb9672cb8b04b6030e55fe37799e642c8e065fff4eef5ef8",
+    "whatsapp-preload.mjs": "98f4caab7b473eaf5d1e7aec025f2c6ee7a99e7d3b6f6b132dae71e49f3b47a9",
+    "wechat-ingress.mjs": "bf2c4e8d579b6885e26cf332a9745ccf7fc3a0c9eae19bd755746d37d9bdb5e3",
+    "wechat-preload.mjs": "6445449686b88316a3cb6b41f117205e309a6286b35d4ac095f552f360e592ee"
+  },
+  "images": [
+    "mcr.microsoft.com/playwright:v1.62.1-resolute@sha256:aebd85bce8056dcdc2269853fd94ea432b6a201da4f0ef125b509489ecd52ddb"
+  ]
+}
