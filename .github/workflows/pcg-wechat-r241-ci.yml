@@ -1,0 +1,126 @@
+name: PCG WeChat R241 CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - server-bootstrap/control/pcg-wechat-r241-ci/*.request
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pcg-wechat-r241-ci
+  cancel-in-progress: false
+
+jobs:
+  qualify:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - id: request
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]]
+          IFS=$'\t' read -r status request_path <<<"${changes[0]}"
+          [[ "$status" == A ]]
+          [[ "$request_path" == server-bootstrap/control/pcg-wechat-r241-ci/*.request ]]
+          request_id="$(awk -F= '$1=="request_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          candidate_commit="$(awk -F= '$1=="candidate_commit"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          [[ "$request_id" == "$(basename "$request_path" .request)" ]]
+          [[ "$candidate_commit" =~ ^[0-9a-f]{40}$ ]]
+          echo "candidate_commit=$candidate_commit" >> "$GITHUB_OUTPUT"
+      - name: Fetch exact candidate
+        env:
+          CF_REPO_READ_TOKEN: ${{ secrets.CF_REPO_READ_TOKEN }}
+          CANDIDATE_COMMIT: ${{ steps.request.outputs.candidate_commit }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          work="${RUNNER_TEMP}/wechat-r241"
+          git init "$work" >/dev/null
+          askpass="${RUNNER_TEMP}/askpass"
+          cat > "$askpass" <<'ASKPASS'
+          #!/usr/bin/env bash
+          case "${1:-}" in
+            *Username*) printf '%s\n' 'x-access-token' ;;
+            *Password*) printf '%s\n' "$CF_REPO_READ_TOKEN" ;;
+            *) exit 1 ;;
+          esac
+          ASKPASS
+          chmod 700 "$askpass"
+          GIT_ASKPASS="$askpass" GIT_TERMINAL_PROMPT=0 git -C "$work" fetch --quiet --depth=1 https://github.com/homayounisaghar/capability-fabric.git "$CANDIDATE_COMMIT"
+          [[ "$(git -C "$work" rev-parse FETCH_HEAD)" == "$CANDIDATE_COMMIT" ]]
+          git -C "$work" checkout --quiet --detach FETCH_HEAD
+          echo "WORK=$work" >> "$GITHUB_ENV"
+      - name: Validate exact WeChat overlay
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="$WORK/server-deploy/candidates/onshape-vps-fast-r100-direct-orbit1-paa-storage-r241-wechat-parity1"
+          node --check "$base/wechat-ingress.mjs"
+          node --check "$base/wechat-preload.mjs"
+          node "$base/wechat-ingress.test.mjs"
+          helper="$WORK/server-deploy/channels/pcg/provider-runtime/wechat_semantic_helper.py"
+          python3 -m py_compile "$helper"
+          bash -n "$WORK/server-deploy/channels/pcg/provider-runtime/wechat_semantic_helper.sh"
+          grep -q -- "--import ./paa-bale-preload.mjs" "$base/compose.yaml"
+          grep -q -- "--import ./whatsapp-preload.mjs" "$base/compose.yaml"
+          grep -q -- "--import ./paa-alibaba-preload.mjs" "$base/compose.yaml"
+          grep -q -- "--import ./wechat-preload.mjs" "$base/compose.yaml"
+          for tool in wechat_conversation_list wechat_unread_list wechat_conversation_search wechat_contact_search wechat_message_search wechat_chat_view wechat_send wechat_mark_read wechat_mark_unread wechat_mute wechat_pin wechat_file_upload wechat_file_upload_chunk wechat_file_send; do
+            grep -q "$tool" "$base/wechat-ingress.mjs"
+          done
+          python3 - <<'PY'
+          import json,os
+          base=os.environ["WORK"]+"/server-deploy/candidates/onshape-vps-fast-r100-direct-orbit1-paa-storage-r241-wechat-parity1"
+          p=json.load(open(base+"/provenance.json"))
+          assert p["base_live_candidate"]=="fa49b8d23493621a2e9a7a1096542bda31b39b25"
+          assert p["base_live_release"]=="onshape-vps-fast-r100-direct-orbit1-paa-storage-r240-alibaba-parity1"
+          assert p["target_release"]=="onshape-vps-fast-r100-direct-orbit1-paa-storage-r241-wechat-parity1"
+          assert p["owner_publish_authorized"] is True
+          assert p["no_generic_executor_added"] is True
+          assert p["preserves_live_r240_alibaba_surface"] is True
+          PY
+      - name: Prepare SSH
+        shell: bash
+        run: |
+          set -euo pipefail
+          port="${VPS_PORT:-22}"
+          tmp="${RUNNER_TEMP}/ssh"
+          install -d -m 0700 "$tmp"
+          printf '%s\n' "$VPS_SSH_KEY" > "$tmp/key"; chmod 0600 "$tmp/key"
+          read -r hkt hkd extra <<< "${VPS_HOST_KEY//$'\r'/}"
+          [[ "$hkt" == ssh-ed25519 && -n "$hkd" && -z "${extra:-}" ]]
+          printf '%s %s %s\n' "$VPS_HOST" "$hkt" "$hkd" > "$tmp/known_hosts"
+          printf '[%s]:%s %s %s\n' "$VPS_HOST" "$port" "$hkt" "$hkd" >> "$tmp/known_hosts"
+          echo "SSH_DIR=$tmp" >> "$GITHUB_ENV"; echo "SSH_PORT=$port" >> "$GITHUB_ENV"
+      - name: Write direct proof marker
+        env:
+          CANDIDATE_COMMIT: ${{ steps.request.outputs.candidate_commit }}
+        shell: bash
+        run: |
+          ssh -i "$SSH_DIR/key" -p "$SSH_PORT" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$SSH_DIR/known_hosts" "${VPS_SSH_USER}@${VPS_HOST}" "CANDIDATE_COMMIT='$CANDIDATE_COMMIT' bash -s" <<'REMOTE'
+          set -euo pipefail
+          [[ "$(id -u)" -eq 0 ]]
+          python3 - "$CANDIDATE_COMMIT" <<'PY'
+          import json,sys,time
+          p={"ok":True,"candidate_commit":sys.argv[1],"source_ci":"pass","written_at":int(time.time())}
+          open("/var/lib/capability-fabric/paa-remote/pcg-wechat-r241-ci-proof.json","w").write(json.dumps(p,separators=(",",":")))
+          PY
+          chown paa_remote:paa_remote /var/lib/capability-fabric/paa-remote/pcg-wechat-r241-ci-proof.json
+          chmod 0600 /var/lib/capability-fabric/paa-remote/pcg-wechat-r241-ci-proof.json
+          REMOTE
