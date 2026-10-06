@@ -1,0 +1,115 @@
+name: PCG WeChat Read Probe
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - server-bootstrap/control/pcg-wechat-read-probe/*.request
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pcg-wechat-read-probe
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+
+      - id: request
+        name: Validate immutable WeChat read-probe request
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || exit 10
+          IFS=$'\t' read -r status request_path <<<"${changes[0]}"
+          [[ "$status" == A ]] || exit 11
+          [[ "$request_path" == server-bootstrap/control/pcg-wechat-read-probe/*.request ]] || exit 12
+          request_id="$(awk -F= '$1=="request_id"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          action="$(awk -F= '$1=="action"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+          [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 13
+          [[ "$action" == "snapshot" ]] || exit 14
+
+      - name: Prepare SSH
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -n "$VPS_SSH_KEY" && -n "$VPS_HOST" && -n "$VPS_SSH_USER" && -n "$VPS_HOST_KEY" ]] || exit 20
+          port="${VPS_PORT:-22}"
+          case "$port" in ''|*[!0-9]*) exit 21 ;; esac
+          tmp="${RUNNER_TEMP}/pcg-wechat-read-probe-ssh"
+          install -d -m 0700 "$tmp"
+          printf '%s\n' "$VPS_SSH_KEY" > "$tmp/key"
+          chmod 0600 "$tmp/key"
+          host_key_line="${VPS_HOST_KEY//$'\r'/}"
+          read -r hkt hkd extra <<< "$host_key_line"
+          [[ "$hkt" == ssh-ed25519 && -n "$hkd" && -z "${extra:-}" ]] || exit 22
+          printf '%s %s %s\n' "$VPS_HOST" "$hkt" "$hkd" > "$tmp/known_hosts"
+          printf '[%s]:%s %s %s\n' "$VPS_HOST" "$port" "$hkt" "$hkd" >> "$tmp/known_hosts"
+          chmod 0600 "$tmp/known_hosts"
+          echo "SSH_DIR=$tmp" >> "$GITHUB_ENV"
+          echo "SSH_PORT=$port" >> "$GITHUB_ENV"
+
+      - name: Capture bounded WeChat accessibility snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh -i "$SSH_DIR/key" -p "$SSH_PORT" \
+            -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$SSH_DIR/known_hosts" \
+            "${VPS_SSH_USER}@${VPS_HOST}" bash -s <<'REMOTE'
+          set -euo pipefail
+          [[ "$(id -u)" -eq 0 ]] || exit 30
+          owner=cfop_e79aa1fde5
+          unit=capability-fabric-pcg-login-bridge-wechat.service
+          state=/var/lib/capability-fabric/pcg/wechat
+          debug=/tmp/pcg-wechat-read-probe-debug.txt
+          snapshot="$state/bridge-accessibility-snapshot.json"
+          : > "$debug"
+          chown paa_remote:paa_remote "$debug"
+          chmod 0600 "$debug"
+          echo "stage=start" >> "$debug"
+          echo "bridge=$(systemctl is-active "$unit" 2>/dev/null || true)" >> "$debug"
+          pgrep -a -u "$owner" -f '/opt/wechat/wechat' >> "$debug" 2>&1 || true
+          systemctl is-active --quiet "$unit" || { echo "stage=bridge_inactive" >> "$debug"; exit 31; }
+          pid=""
+          dbus=""
+          for p in $(pgrep -u "$owner" -f '/opt/wechat/wechat' 2>/dev/null || true); do
+            [[ -r "/proc/$p/environ" ]] || continue
+            candidate="$(tr '\0' '\n' < "/proc/$p/environ" | awk -F= '$1=="DBUS_SESSION_BUS_ADDRESS"{sub(/^[^=]*=/,""); print; exit}')"
+            if [[ -n "$candidate" ]]; then
+              pid="$p"
+              dbus="$candidate"
+              break
+            fi
+          done
+          echo "pid=$pid dbus_set=$([[ -n "$dbus" ]] && echo 1 || echo 0)" >> "$debug"
+          [[ -n "$pid" && -n "$dbus" ]] || { echo "stage=dbus_unavailable" >> "$debug"; exit 32; }
+          rm -f "$snapshot" /tmp/pcg-wechat-bridge-accessibility.json
+          set +e
+          timeout 7s runuser -u "$owner" -- env DISPLAY=:97 DBUS_SESSION_BUS_ADDRESS="$dbus" QT_ACCESSIBILITY=1 QT_LINUX_ACCESSIBILITY_ALWAYS_ON=1 NO_AT_BRIDGE=0 python3 /usr/local/lib/capability-fabric/pcg-provider-runtime/wechat_atspi_snapshot.py "$snapshot" >> "$debug" 2>&1
+          probe_rc=$?
+          set -e
+          echo "probe_rc=$probe_rc snapshot=$([[ -s "$snapshot" ]] && echo present || echo missing)" >> "$debug"
+          [[ "$probe_rc" -eq 0 || "$probe_rc" -eq 124 ]]
+          test -s "$snapshot"
+          python3 -c 'import json,sys; p=json.load(open(sys.argv[1])); print("ok=%s node_count=%s error=%s" % (p.get("ok"),p.get("node_count"),p.get("error"))); assert p.get("ok") is True; assert int(p.get("node_count",0)) > 0' "$snapshot" >> "$debug" 2>&1
+          install -o paa_remote -g paa_remote -m 0600 "$snapshot" /tmp/pcg-wechat-bridge-accessibility.json
+          echo "stage=success" >> "$debug"
+          REMOTE
