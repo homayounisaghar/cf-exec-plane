@@ -36,52 +36,20 @@ jobs:
           set -o pipefail
           "$SDKMANAGER" "build-tools;35.0.0" "platform-tools"
 
-      - name: Resolve APK Gold gate
+      - name: Fetch exact APK Gold Samsung variant
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p fetched
-          URL='https://apk.gold/download?file_id=3480809%2Fsamsung-internet'
-          curl -fL --retry 3 --retry-all-errors --connect-timeout 30 \
+          URL='https://apk.gold/download?file_id=3480809/samsung-internet'
+          curl -fL --retry 5 --retry-all-errors --connect-timeout 30 \
             -A 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/152 Safari/537.36' \
             -e 'https://samsung-internet.apk.gold/android-14' \
-            "$URL" -o fetched/gate.html
-          python3 - <<'PY'
-          from pathlib import Path
-          import html, re
-          from urllib.parse import urljoin
-          body=Path('fetched/gate.html').read_text(errors='replace')
-          vals=[]
-          for pat in [
-              r'''(?:href|src|data-url|data-download-url|data-href)=["']([^"']+)["']''',
-              r'''https?://[^"'<>\\ ]+''',
-              r'''window\.location(?:\.href)?\s*=\s*["']([^"']+)["']''',
-          ]:
-              for m in re.finditer(pat, body, re.I):
-                  v=m.group(1) if m.lastindex else m.group(0)
-                  v=html.unescape(v).replace('\\/','/')
-                  if any(k in v.lower() for k in ('download','apk','file_id','amazonaws','cloudfront','storage','cdn')):
-                      vals.append(urljoin('https://apk.gold/',v))
-          out=[]
-          for v in vals:
-              if v not in out: out.append(v)
-          Path('fetched/candidates.txt').write_text('\n'.join(out)+'\n')
-          print('gate_bytes',len(body),'candidate_count',len(out))
-          for i,v in enumerate(out[:120]): print(f'CANDIDATE[{i}]={v}')
-          PY
-          # Diagnostic-only stop; artifact is uploaded by the next always() step.
-          exit 42
-
-      - name: Upload APK Gold gate diagnostic
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: samsung-apkgold-gate-diagnostic
-          retention-days: 3
-          if-no-files-found: error
-          path: |
-            fetched/gate.html
-            fetched/candidates.txt
+            "$URL" -o fetched/source.apk
+          SIZE="$(stat -c %s fetched/source.apk)"
+          echo "downloaded_bytes=$SIZE"
+          test "$SIZE" -gt 300000000
+          echo '9e2270ddbd0f41e4ed85944362c66f55e96090c86e19d098eb483a4a0850d32f  fetched/source.apk' | sha256sum -c -
 
       - name: Verify exact official Samsung Internet source
         shell: bash
