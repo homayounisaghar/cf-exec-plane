@@ -11,7 +11,7 @@ permissions:
 
 concurrency:
   group: pcg-alibaba-armvm-control
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   control:
