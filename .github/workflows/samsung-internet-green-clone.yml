@@ -42,26 +42,52 @@ jobs:
           set -euo pipefail
           mkdir -p fetched
           npm init -y >/dev/null
-          npm install --no-audit --no-fund apkmirror-downloader@2.0.3 cheerio@1.0.0-rc.12
+          npm install --no-audit --no-fund cheerio@1.0.0-rc.12
 
           node --input-type=module - <<'NODE'
-          import { APKMirrorDownloader } from "apkmirror-downloader";
-          const apkmd = new APKMirrorDownloader({outDir:"./fetched"});
-          await apkmd.download(
-            {org:"samsung-electronics-co-ltd", repo:"samsung-internet-for-android"},
-            {
-              version:"30.0.0.67",
-              arch:"arm64-v8a + armeabi-v7a",
-              dpi:"nodpi",
-              type:"apk",
-              outFile:"samsung-browser-30.0.0.67"
-            }
-          );
+          import * as cheerio from "cheerio";
+          import {createWriteStream} from "node:fs";
+          import {Readable} from "node:stream";
+          import {finished} from "node:stream/promises";
+
+          const base="https://www.apkmirror.com";
+          const variant=base+"/apk/samsung-electronics-co-ltd/samsung-internet-for-android/samsung-browser-30-0-0-67-release/samsung-browser-30-0-0-67-3-android-apk-download/";
+          const headers={
+            "user-agent":"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
+            "accept-language":"en-US,en;q=0.9"
+          };
+          const abs=(u)=>u.startsWith("http")?u:(u.startsWith("/")?base+u:base+"/"+u);
+
+          const r1=await fetch(variant,{headers,redirect:"follow"});
+          console.log("variant_status",r1.status,r1.url);
+          if(!r1.ok) throw new Error("variant page HTTP "+r1.status);
+          const h1=await r1.text();
+          const href1=cheerio.load(h1)("a.downloadButton").attr("href");
+          if(!href1) throw new Error("downloadButton href missing");
+          const gate=abs(href1);
+          console.log("gate_url",gate);
+
+          await new Promise(resolve=>setTimeout(resolve,16000));
+          const r2=await fetch(gate,{headers:{...headers,referer:variant},redirect:"follow"});
+          console.log("gate_status",r2.status,r2.url);
+          if(!r2.ok) throw new Error("gate page HTTP "+r2.status);
+          const h2=await r2.text();
+          const $2=cheerio.load(h2);
+          let href2=$2(".card-with-tabs a[href]").first().attr("href");
+          if(!href2) href2=$2('a[href*="download"]').filter((i,e)=>$2(e).text().toLowerCase().includes("download")).first().attr("href");
+          if(!href2) throw new Error("final download href missing");
+          const finalUrl=abs(href2);
+          console.log("final_url",finalUrl);
+
+          const r3=await fetch(finalUrl,{headers:{...headers,referer:r2.url},redirect:"follow"});
+          console.log("apk_status",r3.status,r3.url,r3.headers.get("content-length"),r3.headers.get("content-type"));
+          if(!r3.ok||!r3.body) throw new Error("APK HTTP "+r3.status);
+          await finished(Readable.fromWeb(r3.body).pipe(createWriteStream("fetched/source.apk")));
           NODE
 
           BT="$ANDROID_HOME/build-tools/35.0.0"
-          SRC="$(find fetched -type f -name '*.apk' | head -n 1)"
-          test -n "$SRC"
+          SRC="fetched/source.apk"
+          test -s "$SRC"
           sha256sum "$SRC" | tee source-downloaded-sha256.txt
           "$BT/aapt" dump badging "$SRC" | tee source-badging.txt
           grep -q "package: name='com.sec.android.app.sbrowser'" source-badging.txt
