@@ -42,7 +42,7 @@ jobs:
           set -euo pipefail
           python3 -m pip install --disable-pip-version-check --no-input justapk
           mkdir -p fetched
-          justapk download com.sec.android.app.sbrowser -v 30.0.0.67 -o fetched | tee justapk-result.json
+          justapk download com.sec.android.app.sbrowser -v 30.0.0.67 -s apkmirror -o fetched | tee justapk-result.json
           SRC="$(find fetched -type f -name '*.apk' | head -n 1)"
           test -n "$SRC"
           sha256sum "$SRC" | tee source-downloaded-sha256.txt
