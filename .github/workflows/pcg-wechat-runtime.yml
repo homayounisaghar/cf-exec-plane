@@ -47,7 +47,7 @@ jobs:
           action="$(awk -F= '$1=="action"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
           [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 13
           [[ "$candidate_commit" =~ ^[0-9a-f]{40}$ ]] || exit 14
-          case "$action" in install|inspect|cutover|restart-test) ;; *) exit 15 ;; esac
+          case "$action" in install|inspect|cutover|restart-test|login-resume) ;; *) exit 15 ;; esac
           {
             echo "candidate_commit=$candidate_commit"
             echo "action=$action"
@@ -234,6 +234,38 @@ jobs:
               fi
               echo "PCG_WECHAT_CUTOVER=success"
               inspect
+              ;;
+            login-resume)
+              systemctl is-active --quiet "$bridge" || { echo "WECHAT_LOGIN_RESUME_REQUIRES_BRIDGE" >&2; exit 72; }
+              ! systemctl is-active --quiet "$final" || { echo "WECHAT_LOGIN_RESUME_REFUSES_FINAL_ACTIVE" >&2; exit 73; }
+              if ! command -v xdotool >/dev/null 2>&1; then
+                export DEBIAN_FRONTEND=noninteractive
+                apt-get update -qq
+                apt-get install -y -qq --no-install-recommends xdotool
+              fi
+              export DISPLAY=:97
+              mapfile -t login_windows < <(xdotool search --onlyvisible --name '^WeChat
+          esac
+          rm -rf "$stage"
+          REMOTE
+ 2>/dev/null || true)
+              [[ "${#login_windows[@]}" -eq 1 ]] || { echo "WECHAT_LOGIN_RESUME_WINDOW_NOT_UNIQUE count=${#login_windows[@]}" >&2; exit 74; }
+              wid="${login_windows[0]}"
+              eval "$(xdotool getwindowgeometry --shell "$wid")"
+              [[ "$WIDTH" -ge 280 && "$WIDTH" -le 310 && "$HEIGHT" -ge 380 && "$HEIGHT" -le 410 ]] || { echo "WECHAT_LOGIN_RESUME_GEOMETRY_UNEXPECTED ${WIDTH}x${HEIGHT}" >&2; exit 75; }
+              x=$((WIDTH / 2))
+              y=$((HEIGHT * 78 / 100))
+              xdotool mousemove --window "$wid" "$x" "$y"
+              xdotool click --window "$wid" 1
+              for _ in $(seq 1 30); do
+                if xwininfo -root -tree 2>/dev/null | grep -q '"Weixin".*916x666'; then
+                  echo "PCG_WECHAT_LOGIN_RESUME=success"
+                  exit 0
+                fi
+                sleep 1
+              done
+              echo "PCG_WECHAT_LOGIN_RESUME=human_auth_required"
+              exit 76
               ;;
             restart-test)
               systemctl is-active --quiet "$final" || { echo "WECHAT_RESTART_TEST_REQUIRES_FINAL_ACTIVE" >&2; exit 70; }
