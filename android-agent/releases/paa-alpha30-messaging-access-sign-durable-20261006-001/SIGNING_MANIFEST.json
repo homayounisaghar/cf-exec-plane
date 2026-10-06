@@ -1,0 +1,21 @@
+{
+  "schema": "personal-android-agent.signed-apk.v1",
+  "request_id": "paa-alpha30-messaging-access-sign-durable-20261006-001",
+  "candidate_commit": "509ed781919824d3ffb290596e8d7197276f0243",
+  "unsigned_sha256": "93fee108c4b988cb5655a430c86c77b17643b06e64f8660b6a2e66a98ab80dc9",
+  "signed_sha256": "ff4bfaebf71a3ed217dfda6a62c30577fdd521d16c2f95dc3884449710bcb262",
+  "package_id": "com.homayounisaghar.androidagent",
+  "version_code": 30,
+  "version_name": "0.1.0-alpha30",
+  "signer_alias": "personal_android_agent_line3",
+  "signer_certificate_sha256": "e5b102356f271078a3d03e982782c3776e3d9f301c1b24c0e7194f06e5a001fa",
+  "signature_schemes": [
+    "v1",
+    "v2",
+    "v3"
+  ],
+  "payload_identity": "verified-by-stage-a-digest",
+  "zip_integrity": "pass",
+  "alignment": "pass",
+  "result": "SUCCESS"
+}
