@@ -47,7 +47,7 @@ jobs:
           action="$(awk -F= '$1=="action"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
           [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 13
           [[ "$candidate_commit" =~ ^[0-9a-f]{40}$ ]] || exit 14
-          case "$action" in install|inspect|cutover|restart-test|login-resume|diagnose|cursor-park|self-chat-probe) ;; *) exit 15 ;; esac
+          case "$action" in install|inspect|cutover|restart-test|login-resume|diagnose|cursor-park|self-chat-probe|read-chat-probe) ;; *) exit 15 ;; esac
           {
             echo "candidate_commit=$candidate_commit"
             echo "action=$action"
@@ -324,6 +324,57 @@ jobs:
           PY
               install -o paa_remote -g paa_remote -m 0600 /tmp/pcg-wechat-self-after.json /var/lib/capability-fabric/paa-remote/pcg-wechat-self-chat-accessibility.json
               echo "PCG_WECHAT_SELF_CHAT_PROBE=success"
+              ;;
+            read-chat-probe)
+              systemctl is-active --quiet "$final" || { echo "WECHAT_READ_CHAT_PROBE_REQUIRES_FINAL_ACTIVE" >&2; exit 91; }
+              ! systemctl is-active --quiet "$bridge" || { echo "WECHAT_READ_CHAT_PROBE_REFUSES_BRIDGE_ACTIVE" >&2; exit 92; }
+              snapshot=/tmp/pcg-wechat-readchat-before.json
+              curl -fsS --max-time 3 http://127.0.0.1:9336/accessibility > "$snapshot"
+              read -r cx cy count < <(python3 - "$snapshot" <<'PY'
+          import json,sys
+          target="Yishang Metal  & ESFA"
+          j=json.load(open(sys.argv[1]))
+          rows=[]
+          for n in j.get("nodes",[]):
+              if n.get("role")!="list item":
+                  continue
+              lines=[x.strip() for x in str(n.get("name","")).split("\n") if x.strip()]
+              if not lines or lines[0]!=target:
+                  continue
+              if any(x.startswith("[") and "]" in x for x in lines[1:2]):
+                  raise SystemExit(93)
+              st=set(n.get("states",[])); b=n.get("bounds") or {}
+              if "showing" in st and "visible" in st and int(b.get("width",0))>20 and int(b.get("height",0))>20:
+                  rows.append(b)
+          if len(rows)!=1: print("0 0",len(rows))
+          else:
+              b=rows[0]
+              print(int(b["x"])+int(b["width"])//2, int(b["y"])+int(b["height"])//2, 1)
+          PY
+              )
+              [[ "$count" -eq 1 ]] || { echo "WECHAT_READ_CHAT_NOT_UNIQUE count=$count" >&2; exit 94; }
+              export DISPLAY=:97
+              export XAUTHORITY="$state/Xauthority"
+              runuser -u "$owner" -- env DISPLAY="$DISPLAY" XAUTHORITY="$XAUTHORITY" xdotool mousemove "$cx" "$cy" click 1
+              sleep 3
+              curl -fsS --max-time 3 http://127.0.0.1:9336/accessibility > /tmp/pcg-wechat-readchat-after.json
+              python3 - /tmp/pcg-wechat-readchat-after.json <<'PY'
+          import json,sys
+          target="Yishang Metal  & ESFA"
+          j=json.load(open(sys.argv[1]))
+          rows=[]
+          for n in j.get("nodes",[]):
+              if n.get("role")=="list item":
+                  lines=[x.strip() for x in str(n.get("name","")).split("\n") if x.strip()]
+                  if lines and lines[0]==target:
+                      rows.append((lines,n.get("states",[])))
+          if len(rows)!=1: raise SystemExit(95)
+          lines,states=rows[0]
+          if any(x.startswith("[") and "]" in x for x in lines[1:2]): raise SystemExit(96)
+          if "selected" not in states: raise SystemExit(97)
+          PY
+              install -o paa_remote -g paa_remote -m 0600 /tmp/pcg-wechat-readchat-after.json /var/lib/capability-fabric/paa-remote/pcg-wechat-read-chat-accessibility.json
+              echo "PCG_WECHAT_READ_CHAT_PROBE=success"
               ;;
             restart-test)
               systemctl is-active --quiet "$final" || { echo "WECHAT_RESTART_TEST_REQUIRES_FINAL_ACTIVE" >&2; exit 70; }
