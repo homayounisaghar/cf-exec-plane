@@ -158,6 +158,9 @@ def validate(req):
         if not isinstance(p["address"],str) or len(p["address"])>160: raise ValueError("address")
         if not isinstance(p["unread_only"],bool): raise ValueError("unread_only")
         if not isinstance(p["since_ms"],int) or isinstance(p["since_ms"],bool) or p["since_ms"]<0: raise ValueError("since_ms")
+    elif action=="sms.conversation_list":
+        if set(p)!={"limit"}: raise ValueError("sms_conversation_list_parameters")
+        if not isinstance(p["limit"],int) or isinstance(p["limit"],bool) or not 1<=p["limit"]<=50: raise ValueError("limit")
     elif action=="sms.search":
         if set(p)!={"query","box","limit","since_ms"}: raise ValueError("sms_search_parameters")
         if not isinstance(p["query"],str) or not 1<=len(p["query"])<=300: raise ValueError("query")
@@ -180,6 +183,10 @@ def validate(req):
     elif action=="sms.delete":
         if set(p)!={"message_id","confirm"}: raise ValueError("sms_delete_parameters")
         if not isinstance(p["message_id"],str) or not re.fullmatch(r"[0-9]{1,19}",p["message_id"]): raise ValueError("message_id")
+        if p["confirm"] is not True: raise ValueError("confirmation_required")
+    elif action=="sms.thread_delete":
+        if set(p)!={"thread_id","confirm"}: raise ValueError("sms_thread_delete_parameters")
+        if not isinstance(p["thread_id"],str) or not re.fullmatch(r"[0-9]{1,19}",p["thread_id"]): raise ValueError("thread_id")
         if p["confirm"] is not True: raise ValueError("confirmation_required")
     elif action=="storage.file.save_from_url":
         if set(p)!={"url","sha256","size_bytes","directory","filename","mime"}: raise ValueError("storage_save_parameters")
