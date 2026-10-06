@@ -9,8 +9,8 @@ This directory contains the temporary multi-owner authorization layer for the pe
 - Multiple owners are represented by an allowlist of `cfsub_<sha256>` fingerprints.
 - Optional `openai/organization` pinning uses the same HMAC approach.
 - Modes:
-  - `disabled`: exact current behavior; no authorization blocking.
-  - `observe`: never blocks; logs only anonymized caller fingerprints.
+  - `disabled`: authorization completely bypassed; root recovery can use this.
+  - `observe`: default first-deploy state; never blocks and logs only anonymized caller fingerprints.
   - `enforce`: all MCP tool calls except `cf_auth_status` require an authorized owner.
 - `cf_auth_status` stays available so a prospective owner can obtain their anonymized fingerprint.
 - The first owner can only be bootstrapped through the root/server CLI. There is no "first caller wins" path.
@@ -33,7 +33,7 @@ Do not build a permanent candidate from an old live release. At cutover time:
    `node --test <new-snapshot>/owner-auth.test.mjs`
    plus the ordinary Onshape Fast R12 qualification.
 6. Re-read the live build immediately before publishing. If production moved, discard the stale candidate and reapply the overlay to the new latest snapshot.
-7. Merge the security workflow guard and publish the owner-auth candidate together. The candidate starts in `disabled`, so existing chats remain functional after the brief service restart.
+7. Merge the security workflow guard and publish the owner-auth candidate together. A fresh owner-auth state starts in `observe`, so existing chats remain functional after the brief service restart.
 8. From each intended owner chat, call `cf_auth_status` and collect its `subject_fingerprint`.
 9. On the VPS/root path, atomically bootstrap all intended owners. Recommended first pass is `observe`.
 10. Confirm expected owner fingerprints and organization behavior, then switch to `enforce`.
