@@ -70,7 +70,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          base="$WORK/server-deploy/candidates/onshape-vps-fast-r100-direct-orbit1-paa-storage-r239-wechat-read1"
+          base="$WORK/server-deploy/candidates/onshape-vps-fast-r100-direct-orbit1-paa-storage-r239-wechat1"
           node --check "$base/wechat-ingress.mjs"
           node --check "$base/wechat-preload.mjs"
           node "$base/wechat-ingress.test.mjs"
@@ -78,11 +78,12 @@ jobs:
           grep -q "/run/pcg-material-files" "$base/compose.yaml"
           python3 - <<'PY'
           import json, os
-          base=os.environ["WORK"]+"/server-deploy/candidates/onshape-vps-fast-r100-direct-orbit1-paa-storage-r239-wechat-read1"
+          base=os.environ["WORK"]+"/server-deploy/candidates/onshape-vps-fast-r100-direct-orbit1-paa-storage-r239-wechat1"
           p=json.load(open(base+"/provenance.json"))
           assert p["wechat_only"] is True
-          assert p["writes_added"] is False
-          assert p["generic_gui_tool"] is False
+          assert p["provider_visible_writes_added"] is True
+          assert p["generic_gui_executor_exposed"] is False
+          assert p["write_contract"]=="ACKNOWLEDGED_UNVERIFIED_OR_IN_DOUBT_UNTIL_INDEPENDENT_PROVIDER_FRESH_VERIFIER_EXISTS"
           assert p["base_live_candidate"]=="2947bfb6ce2933a8db2fbd6a2b1dfc0abfe02834"
           PY
-          echo "WECHAT_READ_CANDIDATE_CI=pass"
+          echo "WECHAT_R239_CANDIDATE_CI=pass"
