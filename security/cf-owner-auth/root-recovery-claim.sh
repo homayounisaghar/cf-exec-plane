@@ -2,12 +2,15 @@
 set -euo pipefail
 
 : "${RECOVERY_TOOL:?RECOVERY_TOOL is required}"
+RECOVERY_MODE="${RECOVERY_MODE:-claim}"
+[[ "$RECOVERY_MODE" == "claim" || "$RECOVERY_MODE" == "prune" ]] || { echo "invalid RECOVERY_MODE" >&2; exit 2; }
 
 container="capability-fabric-onshape-server"
 state_dir="/agent-state/owner-auth"
 open_script='import { createOwnerAuthGate } from "/tmp/app/owner-auth.mjs"; const gate=createOwnerAuthGate({stateDir:"/agent-state/owner-auth",buildId:"root-recovery"}); const state=gate.readState(); const result=await gate.adminBootstrap({ownerFingerprints:state.owners.map((x)=>x.subject_fingerprint),organizationFingerprints:state.organization_fingerprints,mode:"observe"}); console.log(JSON.stringify(result));'
 close_script='import { createOwnerAuthGate } from "/tmp/app/owner-auth.mjs"; const gate=createOwnerAuthGate({stateDir:"/agent-state/owner-auth",buildId:"root-recovery"}); const state=gate.readState(); const result=await gate.adminBootstrap({ownerFingerprints:state.owners.map((x)=>x.subject_fingerprint),organizationFingerprints:state.organization_fingerprints,mode:"enforce"}); console.log(JSON.stringify(result));'
 claim_script='import { createOwnerAuthGate } from "/tmp/app/owner-auth.mjs"; const gate=createOwnerAuthGate({stateDir:"/agent-state/owner-auth",buildId:"root-recovery"}); const state=gate.readState(); const fp=process.env.CF_RECOVERY_FP; const owners=[...new Set([...state.owners.map((x)=>x.subject_fingerprint),fp])]; const result=await gate.adminBootstrap({ownerFingerprints:owners,organizationFingerprints:state.organization_fingerprints,mode:"enforce"}); console.log(JSON.stringify({mode:result.mode,owner_count:result.owner_count,organization_pin_count:result.organization_pin_count,recovery_added:true}));'
+prune_script='import { createOwnerAuthGate } from "/tmp/app/owner-auth.mjs"; const gate=createOwnerAuthGate({stateDir:"/agent-state/owner-auth",buildId:"root-recovery"}); const state=gate.readState(); const fp=process.env.CF_RECOVERY_FP; const result=await gate.adminBootstrap({ownerFingerprints:[fp],organizationFingerprints:state.organization_fingerprints,mode:"enforce"}); console.log(JSON.stringify({mode:result.mode,owner_count:result.owner_count,organization_pin_count:result.organization_pin_count,pruned_to_current:true})); if (result.owner_count !== 1) process.exit(44);'
 
 docker exec -e CF_OWNER_AUTH_STATE_DIR="$state_dir" "$container" node --input-type=module -e "$open_script"
 since="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
@@ -23,7 +26,11 @@ trap cleanup EXIT
 for _ in $(seq 1 60); do
   fp="$(docker logs "$container" --since "$since" 2>&1 | grep '"event":"cf_owner_auth_observe"' | grep -F "\"tool\":\"${RECOVERY_TOOL}\"" | grep -oE 'cfsub_[0-9a-f]{64}' | tail -1 || true)"
   if [[ "$fp" =~ ^cfsub_[0-9a-f]{64}$ ]]; then
-    docker exec -e CF_OWNER_AUTH_STATE_DIR="$state_dir" -e CF_RECOVERY_FP="$fp" "$container" node --input-type=module -e "$claim_script"
+    if [[ "$RECOVERY_MODE" == "prune" ]]; then
+      docker exec -e CF_OWNER_AUTH_STATE_DIR="$state_dir" -e CF_RECOVERY_FP="$fp" "$container" node --input-type=module -e "$prune_script"
+    else
+      docker exec -e CF_OWNER_AUTH_STATE_DIR="$state_dir" -e CF_RECOVERY_FP="$fp" "$container" node --input-type=module -e "$claim_script"
+    fi
     claimed=1
     exit 0
   fi
