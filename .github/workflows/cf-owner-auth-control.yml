@@ -15,7 +15,6 @@ concurrency:
 
 jobs:
   control:
-    if: github.actor == 'homayounisaghar'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     env:
