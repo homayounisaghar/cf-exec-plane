@@ -42,7 +42,7 @@ jobs:
           action="$(awk -F= '$1=="action"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
           mode="$(awk -F= '$1=="mode"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
           [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 13
-          [[ "$action" =~ ^(bootstrap|disable|status|observed|recovery-open|recovery-claim)$ ]] || exit 14
+          [[ "$action" =~ ^(bootstrap|disable|status|observed|recovery-open|recovery-claim|recovery-close)$ ]] || exit 14
           if [[ "$action" == bootstrap ]]; then
             [[ "$mode" =~ ^(observe|enforce)$ ]] || exit 15
             mapfile -t owners < <(awk -F= '$1=="owner"{print $2}' "$request_path" | tr -d '[:space:]')
@@ -102,6 +102,10 @@ jobs:
             printf '%q ' "${remote_args[@]}" > "$RUNNER_TEMP/remote-command"
           elif [[ "$ACTION" == recovery-open ]]; then
             recovery_script='import { createOwnerAuthGate } from "/tmp/app/owner-auth.mjs"; const gate=createOwnerAuthGate({stateDir:"/agent-state/owner-auth",buildId:"root-recovery"}); const state=gate.readState(); const result=await gate.adminBootstrap({ownerFingerprints:state.owners.map((x)=>x.subject_fingerprint),organizationFingerprints:state.organization_fingerprints,mode:"observe"}); console.log(JSON.stringify(result));'
+            recovery_args=(docker exec -e CF_OWNER_AUTH_STATE_DIR=/agent-state/owner-auth capability-fabric-onshape-server node --input-type=module -e "$recovery_script")
+            printf '%q ' "${recovery_args[@]}" > "$RUNNER_TEMP/remote-command"
+          elif [[ "$ACTION" == recovery-close ]]; then
+            recovery_script='import { createOwnerAuthGate } from "/tmp/app/owner-auth.mjs"; const gate=createOwnerAuthGate({stateDir:"/agent-state/owner-auth",buildId:"root-recovery"}); const state=gate.readState(); const result=await gate.adminBootstrap({ownerFingerprints:state.owners.map((x)=>x.subject_fingerprint),organizationFingerprints:state.organization_fingerprints,mode:"enforce"}); console.log(JSON.stringify(result));'
             recovery_args=(docker exec -e CF_OWNER_AUTH_STATE_DIR=/agent-state/owner-auth capability-fabric-onshape-server node --input-type=module -e "$recovery_script")
             printf '%q ' "${recovery_args[@]}" > "$RUNNER_TEMP/remote-command"
           elif [[ "$ACTION" == recovery-claim ]]; then
