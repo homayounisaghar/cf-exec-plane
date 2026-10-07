@@ -43,7 +43,7 @@ jobs:
           action="$(awk -F= '$1=="action"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
           mode="$(awk -F= '$1=="mode"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
           [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 13
-          [[ "$action" =~ ^(bootstrap|disable|status|observed)$ ]] || exit 14
+          [[ "$action" =~ ^(bootstrap|disable|status|observed|recovery-open|recovery-claim)$ ]] || exit 14
           if [[ "$action" == bootstrap ]]; then
             [[ "$mode" =~ ^(observe|enforce)$ ]] || exit 15
             mapfile -t owners < <(awk -F= '$1=="owner"{print $2}' "$request_path" | tr -d '[:space:]')
@@ -51,6 +51,11 @@ jobs:
             for owner in "${owners[@]}"; do [[ "$owner" =~ ^cfsub_[0-9a-f]{64}$ ]] || exit 17; done
             mapfile -t organizations < <(awk -F= '$1=="organization"{print $2}' "$request_path" | tr -d '[:space:]')
             for organization in "${organizations[@]}"; do [[ "$organization" =~ ^cforg_[0-9a-f]{64}$ ]] || exit 18; done
+          fi
+          if [[ "$action" == recovery-claim ]]; then
+            recovery_tool="$(awk -F= '$1=="tool"{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]')"
+            [[ "$recovery_tool" =~ ^[A-Za-z0-9_.-]{1,120}$ ]] || exit 19
+            echo "RECOVERY_TOOL=$recovery_tool" >> "$GITHUB_ENV"
           fi
           echo "REQUEST_PATH=$request_path" >> "$GITHUB_ENV"
           echo "ACTION=$action" >> "$GITHUB_ENV"
@@ -96,6 +101,14 @@ jobs:
           elif [[ "$ACTION" == status ]]; then
             remote_args+=(status)
             printf '%q ' "${remote_args[@]}" > "$RUNNER_TEMP/remote-command"
+          elif [[ "$ACTION" == recovery-open ]]; then
+            recovery_script='import { createOwnerAuthGate } from "/tmp/app/owner-auth.mjs"; const gate=createOwnerAuthGate({stateDir:"/agent-state/owner-auth",buildId:"root-recovery"}); const state=gate.readState(); const result=await gate.adminBootstrap({ownerFingerprints:state.owners.map((x)=>x.subject_fingerprint),organizationFingerprints:state.organization_fingerprints,mode:"observe"}); console.log(JSON.stringify(result));'
+            recovery_args=(docker exec -e CF_OWNER_AUTH_STATE_DIR=/agent-state/owner-auth capability-fabric-onshape-server node --input-type=module -e "$recovery_script")
+            printf '%q ' "${recovery_args[@]}" > "$RUNNER_TEMP/remote-command"
+          elif [[ "$ACTION" == recovery-claim ]]; then
+            claim_script='set -euo pipefail; fp="$(docker logs capability-fabric-onshape-server --since 10m 2>&1 | grep '"'"'"event":"cf_owner_auth_observe"'"'"' | grep '"'"'"tool":"'"$RECOVERY_TOOL"'"'"'"'"' | grep -o '"'"'cfsub_[0-9a-f]\{64\}'"'"' | tail -1)"; [[ "$fp" =~ ^cfsub_[0-9a-f]{64}$ ]] || exit 41; node_script='"'"'import { createOwnerAuthGate } from "/tmp/app/owner-auth.mjs"; const gate=createOwnerAuthGate({stateDir:"/agent-state/owner-auth",buildId:"root-recovery"}); const state=gate.readState(); const fp=process.env.CF_RECOVERY_FP; const owners=[...new Set([...state.owners.map((x)=>x.subject_fingerprint),fp])]; const result=await gate.adminBootstrap({ownerFingerprints:owners,organizationFingerprints:state.organization_fingerprints,mode:"enforce"}); console.log(JSON.stringify({mode:result.mode,owner_count:result.owner_count,organization_pin_count:result.organization_pin_count,recovery_added:true}));'"'"'; docker exec -e CF_OWNER_AUTH_STATE_DIR=/agent-state/owner-auth -e CF_RECOVERY_FP="$fp" capability-fabric-onshape-server node --input-type=module -e "$node_script"'
+            claim_args=(bash -lc "$claim_script")
+            printf '%q ' "${claim_args[@]}" > "$RUNNER_TEMP/remote-command"
           else
             printf '%s\n' 'docker logs capability-fabric-onshape-server --since 15m 2>&1 | grep cf_owner_auth_observe | tail -20' > "$RUNNER_TEMP/remote-command"
           fi
