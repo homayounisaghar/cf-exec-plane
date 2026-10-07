@@ -127,9 +127,9 @@ docker exec -e CF_OWNER_AUTH_STATE_DIR="$state_dir" "$container" node --input-ty
 exit 42
 RECOVERY
             chmod 0700 "$RUNNER_TEMP/recovery-claim.sh"
-            printf 'RECOVERY_TOOL=%q bash -s' "$RECOVERY_TOOL" > "$RUNNER_TEMP/remote-command"
-            printf '\n' >> "$RUNNER_TEMP/remote-command"
-            cat "$RUNNER_TEMP/recovery-claim.sh" >> "$RUNNER_TEMP/remote-command"
+            claim_script="$(cat "$RUNNER_TEMP/recovery-claim.sh")"
+            claim_args=(env "RECOVERY_TOOL=$RECOVERY_TOOL" bash -lc "$claim_script")
+            printf '%q ' "${claim_args[@]}" > "$RUNNER_TEMP/remote-command"
           else
             printf '%s\n' 'docker logs capability-fabric-onshape-server --since 15m 2>&1 | grep cf_owner_auth_observe | tail -20' > "$RUNNER_TEMP/remote-command"
           fi
