@@ -1,0 +1,4 @@
+request_id=pvc-r246-connector-logo1-ci-20261007-001
+candidate_commit=191e699d9121c7006be61b8d965de607286e2777
+expected_sequence=246
+expected_release=onshape-vps-fast-r100-direct-orbit1-paa-storage-r246-connector-logo1
