@@ -1,0 +1,4 @@
+request_id=pvc-r248-whoami-exempt1-ci-20261011-001
+candidate_commit=24a14884174ef1e59ad1fda156f1fe66813fcc15
+expected_sequence=248
+expected_release=onshape-vps-fast-r100-direct-orbit1-paa-storage-r248-whoami-exempt1
