@@ -49,7 +49,7 @@ jobs:
 
           [[ "$request_id" == "$(basename "$request_path" .request)" ]] || exit 13
           [[ "$candidate_commit" =~ ^[0-9a-f]{40}$ ]] || exit 14
-          case "$provider" in bale|whatsapp|alibaba) ;; *) exit 15 ;; esac
+          case "$provider" in bale|whatsapp|alibaba|telegram) ;; *) exit 15 ;; esac
           case "$action" in inspect|cutover|restart-test|login-bridge-start|login-bridge-stop) ;; *) exit 16 ;; esac
           if [[ "$action" == login-bridge-start || "$action" == login-bridge-stop ]]; then
             [[ "$provider" == whatsapp || "$provider" == bale ]] || exit 17
