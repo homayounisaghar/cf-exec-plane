@@ -1,0 +1,4 @@
+request_id=pcg-telegram-systemd-cutover-20261011-001
+candidate_commit=47258fde10d1bf563f074833ed70628e97943964
+provider=telegram
+action=cutover
