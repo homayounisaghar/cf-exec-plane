@@ -174,7 +174,7 @@ export function createOwnerAuthGate({ stateDir, buildId = "unknown" }) {
   function authorizeToolCall(rpc) {
     if (!rpc || rpc.method !== "tools/call") return { allowed: true, mode: null };
     const toolName = typeof rpc?.params?.name === "string" ? rpc.params.name : null;
-    if (toolName === "cf_auth_status") return { allowed: true, mode: "status-exempt" };
+    if (toolName === "cf_auth_status" || toolName === "cf_whoami") return { allowed: true, mode: "status-exempt" };
     let state;
     try {
       state = readState();
@@ -367,6 +367,82 @@ export function createOwnerAuthGate({ stateDir, buildId = "unknown" }) {
   };
 }
 
+
+// Read-only, caller-scoped identity SHAPES only. This tool is intentionally
+// gate-exempt: never echo values from metadata, authInfo, or forwarded headers.
+// For identity onboarding use cf_auth_status for the existing anonymized HMAC.
+export function observedCallerIdentity(_gate, extra) {
+  const isObject = value => value !== null && typeof value === "object" && !Array.isArray(value);
+  const meta = isObject(extra?._meta) ? extra._meta : null;
+  const auth = isObject(extra?.authInfo) ? extra.authInfo : null;
+  const claims = isObject(auth?.extra) ? auth.extra : null;
+  const has = (obj, key) => obj !== null && Object.prototype.hasOwnProperty.call(obj, key);
+  // Header and metadata names reveal provenance; unbounded keys might be values masquerading as keys.
+  const keyName = raw => /^[A-Za-z0-9_.:/-]{1,128}$/.test(raw) ? raw : "[nonstandard-name]";
+  const keys = obj => obj === null ? [] : [...new Set(Object.keys(obj).map(keyName))].sort().slice(0, 128);
+  const shape = value => ({
+    present: true,
+    type: Array.isArray(value) ? "array" : value === null ? "null" : typeof value,
+    length: typeof value === "string" || Array.isArray(value) ? value.length : null,
+    value: "REDACTED",
+  });
+  const absent = () => ({ present: false, type: null, length: null, value: "REDACTED" });
+  const describe = (obj, key) => has(obj, key) ? shape(obj[key]) : absent();
+  const fields = (obj, always = []) => {
+    const names = [...new Set([...always, ...keys(obj)])].sort().slice(0, 128);
+    return Object.fromEntries(names.map(key => [key, describe(obj, key)]));
+  };
+  const claimShape = (obj, always = []) =>
+    Object.fromEntries([...new Set([...always, ...keys(obj)])].sort().slice(0, 128)
+      .map(key => [key, { present: has(obj, key), type: has(obj, key)
+        ? (Array.isArray(obj[key]) ? "array" : obj[key] === null ? "null" : typeof obj[key])
+        : null, value: "REDACTED" }]));
+  const headerNames = value => {
+    if (value === null || value === undefined) return [];
+    if (typeof value.keys === "function") {
+      try { return [...value.keys()].map(String).map(keyName); } catch { return []; }
+    }
+    if (Array.isArray(value)) {
+      return value.map(pair => Array.isArray(pair) ? pair[0] : null)
+        .filter(x => typeof x === "string").map(keyName);
+    }
+    return isObject(value) ? keys(value) : [];
+  };
+  const sources = [
+    ["requestInfo.headers", extra?.requestInfo?.headers],
+    ["headers", extra?.headers],
+    ["request.headers", extra?.request?.headers],
+  ].filter(([_, value]) => value !== null && value !== undefined);
+  const headers = [...new Set(sources.flatMap(([_, value]) => headerNames(value)))].sort().slice(0, 128);
+  return {
+    available: true,
+    schema: "cf_whoami.shape.v1",
+    mcp_metadata: {
+      present: meta !== null,
+      key_names: keys(meta),
+      fields: fields(meta, ["openai/subject", "openai/organization"]),
+    },
+    auth_info: {
+      present: auth !== null,
+      claims: claimShape(auth, ["issuer", "audience", "sub", "clientId", "client_id", "scopes", "token"]),
+      extra: {
+        present: claims !== null,
+        key_names: keys(claims),
+        claims: claimShape(claims, ["iss", "aud", "sub", "client_id", "scope", "scopes"]),
+      },
+    },
+    forwarded_http_headers: {
+      observable: sources.length > 0,
+      sources: sources.map(([source]) => source),
+      names: headers,
+    },
+    handler_context_keys: keys(isObject(extra) ? extra : null),
+    request_info_keys: keys(isObject(extra?.requestInfo) ? extra.requestInfo : null),
+    verified_oauth_auth_info_present: auth !== null,
+    note: "Presence and type only; all observed values are REDACTED. Request-scoped MCP claims are not cryptographically verified by this diagnostic.",
+  };
+}
+
 export function registerOwnerAuthTools(server, z, gate, safeTool) {
   server.registerTool("cf_auth_status", {
     title: "CF-server owner authorization status",
@@ -374,6 +450,18 @@ export function registerOwnerAuthTools(server, z, gate, safeTool) {
     inputSchema: {},
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
   }, async (_args, { _meta }) => safeTool("authorization", async () => gate.status(_meta)));
+
+  server.registerTool("cf_whoami", {
+    title: "CF-server caller identity echo",
+    description: "Read-only gate-exempt caller identity diagnostic. Returns only presence, type, length where safe, and key names for MCP metadata, authInfo claims and observable HTTP headers; all values are REDACTED.",
+    inputSchema: {},
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  }, async (_args, extra) => {
+    let result;
+    try { result = observedCallerIdentity(gate, extra); }
+    catch { result = { available: false, reason: "Request identity could not be read safely" }; }
+    return { structuredContent: result, content: [{ type: "text", text: JSON.stringify(result) }] };
+  });
 
   server.registerTool("cf_auth_owner_add", {
     title: "Add CF-server owner",
