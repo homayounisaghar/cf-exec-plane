@@ -1,0 +1,13 @@
+# WeChat v3 UI research runtime-only, no test files, no send invocation
+# Immutable private research ref: a8c67b2e732b7a58bbec5fc82ff48f337a7fb37d
+# Git blob SHA-1 and exact basename:
+69197fe36b315861912ac0a45ddc99ff926ca345 engine.py
+4487522cb92af06f8f95a24d0dfd32049c18f272 atspi_backend.py
+360f58962ee891d716c1bcca8d183e66947b2c14 ui_primitives.py
+96a80acf33cd0dfb75c3836b3e88f2e3d3d0455e benchmark_gate_f_readsafe.py
+1293084547b29d0f49f113ce3f8172c21cc9eb65 pointer_mapping.py
+cd6d431fe502c8d0d901fc26e0d9e1072012df4c x11_modal_guard.py
+3636f0128f23d8a255ebfdc06b0c374c972dc2a7 popup_closure.py
+fa57bfefbc67153aaad872515638392c9386c861 gate_click_accuracy.py
+fecbd7245cdafd30975d09c986e467566c3ee973 wechat_ui_ladder_v3.py
+ab691397666633b0a17d1158010159d835899768 with_wechat_env.sh
