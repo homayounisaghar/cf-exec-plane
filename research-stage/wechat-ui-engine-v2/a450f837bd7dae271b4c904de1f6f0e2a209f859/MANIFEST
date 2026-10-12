@@ -1,0 +1,16 @@
+# Secret-free research Gate F stage; public artifacts only.
+# Private canonical source: capability-fabric; ref: project/personal-communications-gateway
+# Source snapshot commit: a450f837bd7dae271b4c904de1f6f0e2a209f859
+# Format: git-blob-sha filename. All files are source/test only; no user data.
+69197fe36b315861912ac0a45ddc99ff926ca345 engine.py
+710124f68bf71471a461437bad2f47f7d188e320 atspi_backend.py
+cc93fe6ddf1df2d4b71b4557855a3b51c3fb2bb9 ui_primitives.py
+6749af65b27f04349c1a6937d36cd3c11e3e0632 fakes.py
+946c0a7cbece5fea8b1485ad60be1c187a518ac3 benchmark_gate_f_readsafe.py
+e0a36ac88b1b5659a52fbbefa7b5e8d0d2d38e3e test_engine.py
+3ba674b51586678dcfb7d72b26e7d891e216f1d2 test_ui_primitives.py
+c52d358461362bb629e2c8b0c9d9b923774bb47c test_benchmark_gate_f.py
+2a548955069bc0f01f219611ff16077c3546bd8c test_atspi_text_safety.py
+7475660c4ead845daf862e0f45349eaa340c2d6f test_benchmark_gate_f_readsafe.py
+ab691397666633b0a17d1158010159d835899768 with_wechat_env.sh
+149d7cf9602b753715e0b05c14bef7aa2415a71b run_gate_f_owner.sh
