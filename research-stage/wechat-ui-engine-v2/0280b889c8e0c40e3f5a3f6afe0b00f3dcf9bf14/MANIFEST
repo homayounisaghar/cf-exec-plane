@@ -1,0 +1,21 @@
+# Gate H: EXACTLY one owner-approved UI send, OFFLINE-QUALIFICATION REQUIRED
+# All 15 files secret-free; no recipient, message text, credentials or dumps.
+# Canonical private repository homayounisaghar/capability-fabric
+# FIRST 12 FILES from PASSED unchanged Gate F commit: cb8c30e2ab43ceafe479638338f2456af6bd7066
+# LAST 3 FILES from new Gate H research commit: 0280b889c8e0c40e3f5a3f6afe0b00f3dcf9bf14
+# Format: expected Git blob hash followed by flat filename
+69197fe36b315861912ac0a45ddc99ff926ca345 engine.py
+710124f68bf71471a461437bad2f47f7d188e320 atspi_backend.py
+cc93fe6ddf1df2d4b71b4557855a3b51c3fb2bb9 ui_primitives.py
+6749af65b27f04349c1a6937d36cd3c11e3e0632 fakes.py
+9c0e018d07b9c0647d765e4d8df94267da774c2e benchmark_gate_f_readsafe.py
+e0a36ac88b1b5659a52fbbefa7b5e8d0d2d38e3e test_engine.py
+3ba674b51586678dcfb7d72b26e7d891e216f1d2 test_ui_primitives.py
+c52d358461362bb629e2c8b0c9d9b923774bb47c test_benchmark_gate_f.py
+2a548955069bc0f01f219611ff16077c3546bd8c test_atspi_text_safety.py
+d6526356ea3eecc1eb36019faf8e8d7daa451053 test_benchmark_gate_f_readsafe.py
+ab691397666633b0a17d1158010159d835899768 with_wechat_env.sh
+fb8a59b6f14e31320843345909d5f8a019cb233f run_gate_f_owner.sh
+2ef6435429e64ad769057ab166e929c48e3a2214 gate_h_send_once.py
+7df0dcf64a8885982c5de2df617291156ff71065 test_gate_h_send_once.py
+55a658b2b2688a4ee5ba9d8929c488705dce1af1 run_gate_h_owner.sh
