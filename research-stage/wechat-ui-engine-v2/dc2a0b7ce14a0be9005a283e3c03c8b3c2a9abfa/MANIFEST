@@ -1,0 +1,17 @@
+# Secret-free WeChat Gate F candidate; manifest format: git-blob-sha filename
+# Canonical source: homayounisaghar/capability-fabric
+# Canonical ref: project/personal-communications-gateway
+# Canonical source commit: dc2a0b7ce14a0be9005a283e3c03c8b3c2a9abfa
+# No secrets, private dumps, or real recipient names.
+69197fe36b315861912ac0a45ddc99ff926ca345 engine.py
+710124f68bf71471a461437bad2f47f7d188e320 atspi_backend.py
+cc93fe6ddf1df2d4b71b4557855a3b51c3fb2bb9 ui_primitives.py
+6749af65b27f04349c1a6937d36cd3c11e3e0632 fakes.py
+531bd664d78f5c57d764916e23e882e98b52117f benchmark_gate_f_readsafe.py
+e0a36ac88b1b5659a52fbbefa7b5e8d0d2d38e3e test_engine.py
+3ba674b51586678dcfb7d72b26e7d891e216f1d2 test_ui_primitives.py
+c52d358461362bb629e2c8b0c9d9b923774bb47c test_benchmark_gate_f.py
+2a548955069bc0f01f219611ff16077c3546bd8c test_atspi_text_safety.py
+9734b5fc8bee210bf6a15fff8babbf0921d3df02 test_benchmark_gate_f_readsafe.py
+ab691397666633b0a17d1158010159d835899768 with_wechat_env.sh
+30df6fec50621b7d2ee6a48bacaa763535a6d18b run_gate_f_owner.sh
