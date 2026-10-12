@@ -435,18 +435,6 @@ class PhaseDurations:
         self.current = None
         self.started = None
         self.durations = {}
-        self.snapshots = {}
-
-    def capture_snapshot(self, backend):
-        """Measure EACH full tree walk; index by the active safety phase."""
-        key = self.current or "unattributed"
-        t0 = self.clock()
-        try:
-            return backend.snapshot()
-        finally:
-            duration = max(0.0, (self.clock()-t0)*1000)
-            count, total = self.snapshots.get(key, (0, 0.0))
-            self.snapshots[key] = (count+1, total+duration)
 
     def begin(self, name):
         self.end()
@@ -475,238 +463,17 @@ class PhaseDurations:
         fields.append("cleanup_ms="+str(round(cleanup,1)))
         fields.append("total_ms="+str(round(elapsed,1)))
         fields.append("unattributed_ms="+str(round(max(0.0, elapsed-sum(self.durations.values())),1)))
-        for key in _TIMING_PHASES:
-            count, ms = self.snapshots.get(key, (0,0.0))
-            fields.append("snapshots_"+key+"="+str(count))
-            fields.append("snapshot_"+key+"_ms="+str(round(ms,1)))
-        count = sum(x[0] for x in self.snapshots.values())
-        ms = sum(x[1] for x in self.snapshots.values())
-        fields.append("snapshot_count="+str(count))
-        fields.append("snapshot_ms="+str(round(ms,1)))
         return "BENCH_TIMINGS phase="+phase+" "+" ".join(fields)
 
 
-class CachedComposerGuard:
-    """One coherent binding snapshot; cheap targeted identity/recipient checks.
-
-    Cache is ONLY an optimization. Every control use rechecks same object path,
-    role, name (except volatile Qt editor), rect, visible state and DEFUNCT;
-    selected recipient is rechecked at each checkpoint. On any stale/defunct
-    targeted proof, take ONE new full snapshot, rebind and re-prove uniqueness.
-    No input is replayed on fallback.
-    """
-    def __init__(self, backend, timing):
-        self.backend = backend
-        self.timing = timing
-        self.bind()
-
-    def bind(self):
-        snap = self.timing.capture_snapshot(self.backend)
-        state = _ui_state(snap)
-        required = ("main_frame_unique", "selected_conversation_present",
-                    "selected_expected", "chat_pane_open",
-                    "message_input_visible", "composer_toolbar_visible",
-                    "send_button_visible")
-        if any(state[k] is not True for k in required):
-            raise UIBlocked("FAST_SNAPSHOT_CONTEXT_UNVERIFIED")
-        selected = [n for n in snap.nodes
-                    if n.role.casefold() in ("list item", "list-item")
-                    and "selected" in n.states and n.visible()
-                    and _norm_label(n.name.split("\n", 1)[0]) == _norm_label(TARGET)]
-        editor = [n for n in snap.nodes
-                  if n.role.casefold() == "text" and n.visible()
-                  and "editable" in n.states
-                  and _norm_label(n.name) not in {
-                      _norm_label(x) for x in TARGETS["search_box"].labels}]
-        send = [n for n in snap.nodes
-                if n.role.casefold() in ("button", "push button") and n.visible()
-                and _norm_label(n.name) in {
-                    _norm_label(x) for x in TARGETS["send_button"].labels}]
-        if len(selected)!=1 or len(editor)!=1 or len(send)!=1:
-            raise UIBlocked("FAST_TARGETS_NOT_UNIQUE")
-        self.nodes={"selected":selected[0], "editor":editor[0], "send":send[0]}
-        self.initial_revision=snap.revision
-
-    def _targeted_once(self, which):
-        from atspi_backend import Atspi
-        original=self.nodes[which]
-        acc=self.backend._app
-        try:
-            for index in original.path:
-                acc=acc.get_child_at_index(index)
-                if acc is None:
-                    raise ValueError("node disappeared")
-            state_set=acc.get_state_set()
-            if state_set is None or state_set.contains(Atspi.StateType.DEFUNCT):
-                raise ValueError("defunct")
-            current=self.backend._to_node(acc, original.path, with_actions=False)
-        except Exception:
-            raise UIBlocked("FAST_TARGET_STALE")
-        if current.role!=original.role or current.rect!=original.rect:
-            raise UIBlocked("FAST_TARGET_STALE")
-        if (which!="editor" and current.name!=original.name
-                and not (which=="selected" and
-                         current.name.split("\n",1)[0] == original.name.split("\n",1)[0])):
-            raise UIBlocked("FAST_TARGET_STALE")
-        if not current.visible():
-            raise UIBlocked("FAST_TARGET_STALE")
-        if which=="editor" and "editable" not in current.states:
-            raise UIBlocked("FAST_TARGET_STALE")
-        if which=="selected" and ("selected" not in current.states or
-                _norm_label(current.name.split("\n",1)[0])!=_norm_label(TARGET)):
-            raise UIBlocked("FAST_TARGET_STALE")
-        return current, acc
-
-    def targeted(self, which):
-        try:
-            return self._targeted_once(which)
-        except Exception:
-            self.bind()  # one full revalidation; no action replay
-            try:
-                return self._targeted_once(which)
-            except Exception:
-                raise UIBlocked("FAST_TARGET_UNVERIFIED")
-
-    def recipient(self):
-        self.targeted("selected")
-        return True
-
-    def editor_accessible(self):
-        self.recipient()
-        return self.targeted("editor")[1]
-
-    def focus(self):
-        self.recipient()
-        node,acc=self.targeted("editor")
-        if "focused" not in node.states:
-            try:
-                component=acc.get_component_iface()
-                ok=bool(component and component.grab_focus())
-            except Exception:
-                ok=False
-            if not ok:
-                raise UIBlocked("COMPOSER_FOCUS_FAILED")
-        refreshed,_=self.targeted("editor")
-        if "focused" not in refreshed.states:
-            raise UIBlocked("COMPOSER_FOCUS_UNVERIFIED")
-        self.recipient()
-        return True
-
-    def character_count(self):
-        acc=self.editor_accessible()
-        try:
-            interface=acc.get_text_iface()
-            if interface is None:
-                raise ValueError("no text interface")
-            count=int(interface.get_character_count())
-            if count < 0:
-                raise ValueError("invalid count")
-            return count
-        except Exception:
-            self.bind()
-            acc=self.editor_accessible()
-            try:
-                interface=acc.get_text_iface()
-                count=int(interface.get_character_count()) if interface else -1
-                if count>=0:
-                    return count
-            except Exception:
-                pass
-            raise UIBlocked("COMPOSER_COUNT_UNAVAILABLE")
-
-    def send_enabled(self):
-        self.recipient()
-        node,_=self.targeted("send")
-        return node.enabled()
-
-    def empty(self):
-        return self.character_count()==0 and self.send_enabled() is False
-
-    def cleanup_once(self):
-        try:
-            self.focus()
-            keyboard("ctrl+a")
-            keyboard("BackSpace")
-            return self.empty()
-        except Exception:
-            return False
-
-
-class ComposerTextEvent:
-    """Bounded AT-SPI text/caret event wait; direct Text count is the predicate.
-
-    Subscribe BEFORE Ctrl+V. Events wake an early targeted char-count check,
-    never certify the message body. Missing events are reported as timeouts,
-    and only a positive count + later exact clipboard SHA can qualify entry.
-    """
-    def __init__(self, guard):
-        from atspi_backend import Atspi, GLib
-        self.Atspi,self.GLib=Atspi,GLib
-        if Atspi is None or GLib is None:
-            raise UIBlocked("COMPOSER_EVENT_WATCH_UNAVAILABLE")
-        self.guard=guard
-        self.acc=guard.editor_accessible()
-        self.seen=False
-        self.registered=[]
-        self.listener=Atspi.EventListener.new(self._on_event)
-        for kind in ("object:text-changed", "object:text-caret-moved"):
-            try:
-                self.listener.register(kind)
-                self.registered.append(kind)
-            except Exception:
-                pass
-        if not self.registered:
-            raise UIBlocked("COMPOSER_EVENT_WATCH_UNAVAILABLE")
-
-    def _on_event(self, event):
-        try:
-            if event.source == self.acc:
-                self.seen=True
-        except Exception:
-            pass
-
-    def wait_ready(self, timeout=1.5):
-        start=time.monotonic()
-        if self.guard.character_count()>0:
-            return "count_ready_immediate"
-        ctx=self.GLib.MainContext.default()
-        timed={"value":False}
-        timer=self.GLib.timeout_add(max(1,int(timeout*1000)),
-                                    lambda: timed.__setitem__("value",True) or False)
-        try:
-            while not timed["value"] and time.monotonic()-start<timeout:
-                if self.seen and self.guard.character_count()>0:
-                    return "event_received"
-                ctx.iteration(True)
-                if self.guard.character_count()>0:
-                    return "event_received" if self.seen else "count_ready_after_event"
-            if self.guard.character_count()>0:
-                return "event_timeout_count_ready"
-            raise UIBlocked("PASTE_CHANGE_UNVERIFIED")
-        finally:
-            if not timed["value"]:
-                self.GLib.source_remove(timer)
-
-    def close(self):
-        for kind in self.registered:
-            try:
-                self.listener.deregister(kind)
-            except Exception:
-                try:
-                    self.listener.unregister(kind)
-                except Exception:
-                    pass
-
-
 def _draft_once(backend,session,draft,kind):
-    """One unsent exact draft, cached independent guards; cleanup always."""
+    """Exactly one unsent draft; one two-condition cleanup; clear clipboard."""
+    attempted=False
     verified=False
+    phase="initial_clipboard_clear"
     clean=False
     cleared=False
-    guard=None
-    watch=None
-    phase="initial_clipboard_clear"
-    started=time.perf_counter()
+    start=time.perf_counter()
     timing=PhaseDurations()
     try:
         timing.begin("clear")
@@ -714,31 +481,24 @@ def _draft_once(backend,session,draft,kind):
             raise UIBlocked("CLIPBOARD_NOT_CLEARED")
         phase="focus_composer"
         timing.begin("focus")
-        guard=CachedComposerGuard(backend,timing)
-        guard.focus()
+        editor_focus(backend,session)
         phase="set_draft_clipboard"
         timing.begin("set_clipboard")
         clipboard_set(draft)
         phase="verify_draft_clipboard"
         if not exact_utf8_sha_match(clipboard_get(),draft):
             raise UIBlocked("DRAFT_CLIPBOARD_STAGING_FAILED")
-        phase="prepare_composer_text_event_watch"
+        phase="paste_local_unsent_draft"
         timing.begin("paste_wait")
-        watch=ComposerTextEvent(guard)  # subscribe BEFORE Ctrl+V
-        try:
-            phase="paste_local_unsent_draft"
-            keyboard("ctrl+v")
-            phase="await_cached_editor_event_and_count"
-            event_status=watch.wait_ready(timeout=1.5)
-        finally:
-            watch.close()
-            watch=None
-        print("BENCH_PASTE_EVENT phase="+kind+" status="+event_status+
-              " no_send=True",flush=True)
+        attempted=True
+        keyboard("ctrl+v")
+        phase="await_paste_event"
+        backend.wait_change(1.5)
         phase="recipient_after_paste"
-        guard.recipient()
+        if session.selected_conversation_name()!=TARGET:
+            raise UIBlocked("RECIPIENT_CHANGED_AFTER_PASTE")
         phase="send_enabled_after_paste"
-        if not guard.send_enabled():
+        if not send_enabled(session):
             raise UIBlocked("SEND_BUTTON_NOT_ENABLED")
         timing.begin("poison")
         poison=("wx-cf-poison-"+secrets.token_hex(10)).encode("ascii")
@@ -749,37 +509,35 @@ def _draft_once(backend,session,draft,kind):
             raise UIBlocked("POISON_CLIPBOARD_STAGING_FAILED")
         phase="focus_before_copy"
         timing.begin("select")
-        guard.focus()
+        editor_focus(backend,session)
         phase="select_local_draft"
         keyboard("ctrl+a")
         phase="copy_and_await_owner_change"
         timing.begin("copy_owner_wait")
-        verify_copy_after_owner_event(draft,lambda:keyboard("ctrl+c"))
+        verify_copy_after_owner_event(
+            draft, lambda:keyboard("ctrl+c"))
         phase="verify_send_enabled_after_copy"
         timing.begin("verify")
-        guard.recipient()
-        if not guard.send_enabled():
+        if not send_enabled(session):
             raise UIBlocked("SEND_BUTTON_NOT_ENABLED")
         verified=True
         print("BENCH_READBACK_VERIFIED phase="+kind+
               " length_match=True sha256_match=True owner_changed=True"+
               " utf8_target=True latency_ms="+
-              str(round((time.perf_counter()-started)*1000)),flush=True)
+              str(round((time.perf_counter()-start)*1000)),flush=True)
     except UIBlocked as exc:
         safe_codes={
             "CLIPBOARD_NOT_CLEARED","CLIPBOARD_OWNER_NOT_ACQUIRED",
-            "DRAFT_CLIPBOARD_STAGING_FAILED","POISON_CLIPBOARD_STAGING_FAILED",
-            "X11_CLIPBOARD_OWNER_UNCHANGED","CLIPBOARD_UTF8_TARGET_UNAVAILABLE",
-            "EXACT_CLIPBOARD_READBACK_MISMATCH","SEND_BUTTON_NOT_ENABLED",
-            "RECIPIENT_CHANGED_AFTER_PASTE","COMPOSER_FOCUS_FAILED",
-            "COMPOSER_FOCUS_UNVERIFIED","RECIPIENT_CHANGED","TARGET_NOT_FOUND",
-            "LOCAL_CLIPBOARD_OR_KEY_COMMAND_FAILED","XCLIP_SELECTION_OWNER_MISSING",
-            "X11_DISPLAY_UNAVAILABLE","XFIXES_EXTENSION_UNAVAILABLE",
-            "XFIXES_LIB_UNAVAILABLE","SEND_CONTROL_NOT_UNIQUE_OR_VISIBLE",
-            "FAST_SNAPSHOT_CONTEXT_UNVERIFIED","FAST_TARGETS_NOT_UNIQUE",
-            "FAST_TARGET_UNVERIFIED","FAST_TARGET_STALE",
-            "COMPOSER_COUNT_UNAVAILABLE","COMPOSER_EVENT_WATCH_UNAVAILABLE",
-            "PASTE_CHANGE_UNVERIFIED",
+            "DRAFT_CLIPBOARD_STAGING_FAILED",
+            "POISON_CLIPBOARD_STAGING_FAILED","X11_CLIPBOARD_OWNER_UNCHANGED",
+            "CLIPBOARD_UTF8_TARGET_UNAVAILABLE","EXACT_CLIPBOARD_READBACK_MISMATCH",
+            "SEND_BUTTON_NOT_ENABLED","RECIPIENT_CHANGED_AFTER_PASTE",
+            "COMPOSER_FOCUS_FAILED","COMPOSER_FOCUS_UNVERIFIED",
+            "RECIPIENT_CHANGED","TARGET_NOT_FOUND",
+            "LOCAL_CLIPBOARD_OR_KEY_COMMAND_FAILED",
+            "XCLIP_SELECTION_OWNER_MISSING","X11_DISPLAY_UNAVAILABLE",
+            "XFIXES_EXTENSION_UNAVAILABLE","XFIXES_LIB_UNAVAILABLE",
+            "SEND_CONTROL_NOT_UNIQUE_OR_VISIBLE",
         }
         code=exc.code if exc.code in safe_codes else "OTHER_UI_BLOCKED"
         print("BENCH_DRAFT_UNSUPPORTED phase="+kind+" stage="+phase+
@@ -788,15 +546,10 @@ def _draft_once(backend,session,draft,kind):
         print("BENCH_DRAFT_UNSUPPORTED phase="+kind+" stage="+phase+
               " code=UNEXPECTED_ERROR exact_readback=False",flush=True)
     finally:
-        if watch is not None:
-            try:
-                watch.close()
-            except Exception:
-                pass
-        # EXACTLY one focus-verified Ctrl+A/BackSpace (no typing retry).
+        # No retry. Exactly one focus-verified Ctrl+A+BackSpace.
+        # Even after a failed paste, never assume composer stayed empty.
         timing.begin("cleanup_ui")
-        clean=(guard.cleanup_once() if guard is not None
-               else cleanup_once(backend,session))
+        clean=cleanup_once(backend,session)
         timing.begin("cleanup_clipboard")
         cleared=clipboard_clear()
         timing.end()
