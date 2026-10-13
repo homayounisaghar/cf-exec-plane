@@ -1,0 +1,14 @@
+# Immutable runtime-only WeChat v3 Select File modal guard fix; NO TESTS; NO SEND
+# Private research HEAD be50f8a35d5bce32862fe0e964aed2e9d284334d
+# Git blob hash and exact flat file name
+69197fe36b315861912ac0a45ddc99ff926ca345 engine.py
+4487522cb92af06f8f95a24d0dfd32049c18f272 atspi_backend.py
+360f58962ee891d716c1bcca8d183e66947b2c14 ui_primitives.py
+96a80acf33cd0dfb75c3836b3e88f2e3d3d0455e benchmark_gate_f_readsafe.py
+613aae82d80bd1d399d45c4472f83edf8232483c pointer_mapping.py
+9a2ff530da1cdf649e6e56b7e92ef8092b8d8cee x11_modal_guard.py
+3636f0128f23d8a255ebfdc06b0c374c972dc2a7 popup_closure.py
+fa57bfefbc67153aaad872515638392c9386c861 gate_click_accuracy.py
+bff7bc804187d03baec5529268418420025ecc40 wechat_ui_ladder_v3.py
+ab691397666633b0a17d1158010159d835899768 with_wechat_env.sh
+6e52fb5a5e0768a59730ab7d70babfa25378a7be gate_file_chooser_once.py
