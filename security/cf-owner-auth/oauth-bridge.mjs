@@ -153,8 +153,8 @@ export function createOAuthBridge({stateDir, origin, ownerState}) {
       }
       if(b.grant_type==="refresh_token"){
         const t=typeof b.refresh_token==="string"?b.refresh_token:"",entry=db.refresh[sha(t)];
-        if(!entry||entry.client!==b.client_id||!ownerAllowed(entry.owner)){err(res,"invalid_grant","Invalid refresh token");return;}
-        delete db.refresh[sha(t)];const tokens=issue(db,entry.owner,entry.client);save(db);
+        if(!entry||entry.client!==b.client_id||!ownerAllowed(entry.owner,entry.organization)){err(res,"invalid_grant","Invalid refresh token");return;}
+        delete db.refresh[sha(t)];const tokens=issue(db,entry.owner,entry.organization,entry.client);save(db);
         res.set("Cache-Control","no-store").json(tokens);return;
       }
       err(res,"unsupported_grant_type","Authorization code and refresh only");
