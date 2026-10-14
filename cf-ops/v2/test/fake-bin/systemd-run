@@ -1,0 +1,12 @@
+#!/bin/bash
+# fake systemd-run for tests: supports --scope (exec in place) and service mode (background + pid file)
+scope=0; unit=""; out=""; err=""; wd=""
+while [[ $# -gt 0 ]]; do case "$1" in
+  --scope) scope=1; shift;; --quiet|--collect) shift;; --unit=*) unit="${1#--unit=}"; shift;;
+  --description=*|--service-type=*) shift;;
+  -p) case "$2" in StandardOutput=file:*) out="${2#StandardOutput=file:}";; StandardError=file:*) err="${2#StandardError=file:}";; WorkingDirectory=*) wd="${2#WorkingDirectory=}";; esac; shift 2;;
+  *) break;; esac; done
+echo "$*" >> /tmp/cfit/units/argv.log
+if [[ $scope -eq 1 ]]; then echo $$ > /tmp/cfit/units/$unit.scope.pid; exec "$@"; fi
+( cd "${wd:-/tmp}"; setsid "$@" >"$out" 2>"$err" </dev/null & echo $! > /tmp/cfit/units/$unit.service.pid ) 
+exit 0

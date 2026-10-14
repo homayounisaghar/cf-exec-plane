@@ -1,0 +1,4 @@
+#!/bin/bash
+if [[ "$1" == is-active ]]; then u="${@: -1}"; p=$(cat /tmp/cfit/units/$u.pid 2>/dev/null) || exit 3; kill -0 "$p" 2>/dev/null && exit 0 || exit 3; fi
+if [[ "$1" == kill ]]; then sig="${2#--signal=}"; u="$3"; p=$(cat /tmp/cfit/units/$u.pid 2>/dev/null) || exit 1; kill -s "${sig#SIG}" -- -"$p" 2>/dev/null || kill -s "${sig#SIG}" "$p"; exit 0; fi
+exit 1
