@@ -499,7 +499,7 @@ def admin(a, action):
     # No untrusted command enters the sudo command line; JSON goes through stdin.
     must(action in ("request","approve","list","delivered","cancel"), "INVALID_ADMIN_ACTION")
     payload = {"action":action}
-    for key in ("request_id","code","command","reason"):
+    for key in ("request_id","code","signed_payload","signature"):
         if key in a:
             payload[key] = a[key]
     try:
@@ -555,7 +555,7 @@ def handle(r):
         result = dict(ok=True, result=data)
         code = "OK"
     except Exception as e:
-        code = e.code if isinstance(e, Problem) else "OPERATION_FAILED"
+        code = getattr(e, "code", "OPERATION_FAILED")
         result = dict(ok=False, error=dict(code=code, message=code))
     duration = int((time.monotonic()-start)*1000)
     result["duration_ms"] = duration
