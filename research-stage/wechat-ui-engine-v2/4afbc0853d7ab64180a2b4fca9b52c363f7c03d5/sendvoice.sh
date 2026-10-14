@@ -469,7 +469,16 @@ VSTAT="SKIPPED"
 if [ "$LOGGED" = 1 ] && grep -q '"ready": *true' "$OUT/voice_probe.json" 2>/dev/null; then
   RF=$(realpath "$F"); SHA=$(printf '%s' "$RF" | sha256sum | cut -d' ' -f1)
   rm -f /tmp/wxeng/v10_last.json
-  timeout 600 sh $L --v10 send-voice "$CHAT" "$RF" "$SHA" "$N"; echo "voice_exit=$?"
+  # v11.15 timing fix (mic suspended until press) when voicecal.sh confirmed it
+  ST=$(cat /tmp/wxeng/voice_strategy 2>/dev/null || echo legacy)
+  curl -fsSL "https://raw.githubusercontent.com/homayounisaghar/cf-exec-plane/8398daa744410c0c9dc618c986d8e10482e2a451/research-stage/wechat-ui-engine-v2/4afbc0853d7ab64180a2b4fca9b52c363f7c03d5/wx_voice_fix.py" -o /tmp/wxeng/wx_voice_fix.py
+  if [ "$(git hash-object /tmp/wxeng/wx_voice_fix.py 2>/dev/null)" = "1ccfe3093b9d5d61c3b0b6cc58288948951ee417" ]; then
+    echo "voice strategy=$ST (fix v11.15)"
+    ( cd /tmp/wxeng && timeout 600 bash ./with_wechat_env.sh env WXV_STRATEGY="$ST" PULSE_SERVER="${PULSE_SERVER:-}" python3 ./wx_voice_fix.py send-voice "$CHAT" "$RF" "$SHA" "$N" ); echo "voice_exit=$?"
+  else
+    echo "fix file hash mismatch -> old path"
+    timeout 600 sh $L --v10 send-voice "$CHAT" "$RF" "$SHA" "$N"; echo "voice_exit=$?"
+  fi
   cp /tmp/wxeng/v10_last.json "$OUT/send_voice.json" 2>/dev/null
   cp /tmp/wxeng/voice_toggle_*.png "$OUT/" 2>/dev/null
   VSTAT=$(python3 -c "import json;d=json.load(open('$OUT/send_voice.json'));r=d.get('result') or {};print(r.get('status') or d.get('error') or d.get('status') or 'UNKNOWN')" 2>/dev/null || echo NO_RESULT)
@@ -493,7 +502,8 @@ def load(n):
 sv = load("send_voice.json"); r = sv.get("result") if isinstance(sv.get("result"), dict) else sv
 s = {"run": "sendvoice", "chat": sys.argv[4], "voice_status": VSTAT, "logged_in": LOGGED == "1", "audio": load("audio.json"),
      "duration_s": r.get("duration_s"), "chunks": r.get("chunks"),
-     "results": [{k: x.get(k) for k in ("chunk", "status", "pressed", "routed", "capture_seen", "held_s", "new_row", "direction", "guard")}
+     "strategy": r.get("strategy"), "toggle_to_press_s": r.get("toggle_to_press_s"), "mic_open_before_press_s": r.get("mic_open_before_press_s"),
+     "results": [{k: x.get(k) for k in ("chunk", "status", "pressed", "routed", "capture_seen", "held_s", "audio_s", "bubble_s", "bubble_minus_audio_s", "new_row", "direction", "guard")}
                  for x in (r.get("results") or []) if isinstance(x, dict)],
      "text_mode_restored": r.get("text_mode_restored"), "error": sv.get("error") or sv.get("code"),
      "login_events": (load("login.json").get("events") or [])[-4:]}
