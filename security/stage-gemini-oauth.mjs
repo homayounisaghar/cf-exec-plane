@@ -27,15 +27,25 @@ export function stage({sourceDir,destDir,sequence,releaseId}) {
    [
     'app.use(express.urlencoded({extended:false,limit:"32kb"}));',
     'cfOAuth.install(app);',
-    'app.post("/mcp/oauth",(req,res,next)=>{',
+    'app.use((req,res,next)=>{',
+    ' if(req.method!=="POST"||req.path!=="/mcp/oauth"){next();return;}',
     ' if(!cfOAuth.verifyBearer(req.get("authorization"))){cfOAuth.sendUnauthorized(res);return;}',
-    ' req.cfOAuthAuthorized=true;req.url="/mcp/"+MCP_TOKEN;next();',
+    ' req.cfOAuthAuthorized=true;next();',
     '});'].join("\n")],
   ['  const decision = ownerAuth.authorizeToolCall(req.body);',
-   '  const decision = req.cfOAuthAuthorized ? {allowed:true,mode:"oauth-verified"} : ownerAuth.authorizeToolCall(req.body);']
+   '  const decision = req.cfOAuthAuthorized ? {allowed:true,mode:"oauth-verified"} : ownerAuth.authorizeToolCall(req.body);'],
+  ['app.post(`/mcp/${MCP_TOKEN}`, async (req, res) => {', 'const cfMcpHandle = async (req, res) => {'],
+  ['});\napp.get(`/mcp/${MCP_TOKEN}`, (_req, res) => res.status(405).json({ error: "Use POST" }));',
+   [
+    '};',
+    'app.post(`/mcp/${MCP_TOKEN}`, cfMcpHandle);',
+    'app.post("/mcp/oauth", cfMcpHandle);',
+    'app.get(`/mcp/${MCP_TOKEN}`, (_req, res) => res.status(405).json({ error: "Use POST" }));'
+   ].join("\n")]
  ];
- const patchBlock=middleware.map(([needle,add],i)=>'source=source.replace('+JSON.stringify(needle)+','+
-   (i===4?JSON.stringify(add):JSON.stringify(needle+"\n"+add))+');').join("\n");
+ const patchBlock='const cfCheckedOAuthPatch=(from,to)=>{if(!source.includes(from)||source.indexOf(from)!==source.lastIndexOf(from))throw Error("OAUTH_BASE_MARKER_MISSING");source=source.replace(from,to);};\n'+
+   middleware.map(([needle,add],i)=>'cfCheckedOAuthPatch('+JSON.stringify(needle)+','+
+   (i>=4?JSON.stringify(add):JSON.stringify(needle+"\n"+add))+');').join("\n");
  const targetNeedle='const target = "/tmp/app/server.base.mjs";';
  s=one(s,targetNeedle,patchBlock+"\n"+targetNeedle);
  fs.writeFileSync(sf,s);
@@ -48,7 +58,8 @@ export function stage({sourceDir,destDir,sequence,releaseId}) {
  '    if(req.method!==expected){res.writeHead(405,{"content-type":"application/json"});res.end(JSON.stringify({error:"Method not allowed"}));return;}',
  '  } else if (pathname === mcpPath) {'].join("\n");
  const gatewayEnd='await import("data:text/javascript;base64," + Buffer.from(source).toString("base64"));';
- g=one(g,gatewayEnd,'source=source.replace('+JSON.stringify(mcpNeedle)+','+JSON.stringify(mcpNeedle+'\n'+oauthDefinition)+');\nsource=source.replace('+JSON.stringify('  if (pathname === mcpPath) {')+','+JSON.stringify(gm)+');\n'+gatewayEnd);
+ const gatewayChecked='const cfGatewayOAuthPatch=(from,to)=>{if(!source.includes(from)||source.indexOf(from)!==source.lastIndexOf(from))throw Error("OAUTH_GATEWAY_MARKER_MISSING");source=source.replace(from,to);};\n';
+ g=one(g,gatewayEnd,gatewayChecked+'cfGatewayOAuthPatch('+JSON.stringify(mcpNeedle)+','+JSON.stringify(mcpNeedle+'\n'+oauthDefinition)+');\ncfGatewayOAuthPatch('+JSON.stringify('  if (pathname === mcpPath) {')+','+JSON.stringify(gm)+');\n'+gatewayEnd);
  fs.writeFileSync(gf,g);
  const cf=path.join(destDir,"compose.yaml");let c=fs.readFileSync(cf,"utf8");
  c=one(c,"/release/owner-auth.mjs /release/wechat-ingress.mjs","/release/owner-auth.mjs /release/oauth-bridge.mjs /release/wechat-ingress.mjs");
