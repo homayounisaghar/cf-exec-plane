@@ -52,28 +52,30 @@ export function createOAuthBridge({stateDir, origin, ownerState}) {
       for (const [id,v] of Object.entries(db[name])) if (!Number.isSafeInteger(v.expires) || v.expires<=Date.now()) delete db[name][id];
     }
   }
-  function ownerAllowed(fp) {
+  function ownerAllowed(fp, organization = null) {
     const state = ownerState();
-    return state.mode==="enforce" && state.owners.some(x=>x.subject_fingerprint===fp);
+    return state.mode==="enforce" && state.owners.some(x=>x.subject_fingerprint===fp)
+      && Array.isArray(state.organization_fingerprints)
+      && (!state.organization_fingerprints.length || (typeof organization==="string" && state.organization_fingerprints.includes(organization)));
   }
-  function issue(db, owner, client) {
+  function issue(db, owner, organization, client) {
     const access = hex(32), refresh = hex(32);
-    db.access[sha(access)]={owner,client,expires:Date.now()+ACCESS_MS};
-    db.refresh[sha(refresh)]={owner,client,expires:Date.now()+REFRESH_MS};
+    db.access[sha(access)]={owner,organization,client,expires:Date.now()+ACCESS_MS};
+    db.refresh[sha(refresh)]={owner,organization,client,expires:Date.now()+REFRESH_MS};
     return {access_token:access,refresh_token:refresh,token_type:"Bearer",expires_in:3600,scope:"cf:execute"};
   }
   function verifyBearer(value) {
     if (typeof value!=="string" || !/^Bearer [0-9a-f]{64}$/.test(value)) return null;
     const item=load().access[sha(value.slice(7))];
-    return item && item.expires>Date.now() && ownerAllowed(item.owner) ? {owner:item.owner,client:item.client}:null;
+    return item && item.expires>Date.now() && ownerAllowed(item.owner,item.organization) ? {owner:item.owner,organization:item.organization,client:item.client}:null;
   }
-  function approve(approval, owner) {
-    if (!APPROVAL_RE.test(approval) || !ownerAllowed(owner)) throw Error("CF_OAUTH_OWNER_OR_CODE_INVALID");
+  function approve(approval, owner, organization = null) {
+    if (!APPROVAL_RE.test(approval) || !ownerAllowed(owner,organization)) throw Error("CF_OAUTH_OWNER_OR_CODE_INVALID");
     const db=load(); prune(db);
     const p=Object.values(db.pending).find(x=>x.approval===approval && x.status==="pending");
     if (!p) throw Error("CF_OAUTH_APPROVAL_NOT_PENDING");
     const code=hex(32);
-    db.codes[sha(code)]={owner,client:p.client,redirect:p.redirect,challenge:p.challenge,expires:Date.now()+CODE_MS};
+    db.codes[sha(code)]={owner,organization,client:p.client,redirect:p.redirect,challenge:p.challenge,expires:Date.now()+CODE_MS};
     p.status="approved";p.code=code;
     save(db);
     return {approved:true,mode:"enforce",expires_in_seconds:300};
@@ -141,12 +143,12 @@ export function createOAuthBridge({stateDir, origin, ownerState}) {
       if(b.grant_type==="authorization_code"){
         if(!VERIFIER_RE.test(b.code_verifier||"")){err(res,"invalid_grant","Invalid PKCE verifier");return;}
         const c=typeof b.code==="string"?b.code:"",entry=db.codes[sha(c)];
-        if(!entry||entry.client!==b.client_id||entry.redirect!==b.redirect_uri||challengeFor(b.code_verifier)!==entry.challenge||!ownerAllowed(entry.owner)){
+        if(!entry||entry.client!==b.client_id||entry.redirect!==b.redirect_uri||challengeFor(b.code_verifier)!==entry.challenge||!ownerAllowed(entry.owner,entry.organization)){
           err(res,"invalid_grant","Code invalid, expired, or already used");return;
         }
         delete db.codes[sha(c)];
         for(const [sid,p] of Object.entries(db.pending)) if(p.code===c) delete db.pending[sid];
-        const tokens=issue(db,entry.owner,entry.client);save(db);
+        const tokens=issue(db,entry.owner,entry.organization,entry.client);save(db);
         res.set("Cache-Control","no-store").json(tokens);return;
       }
       if(b.grant_type==="refresh_token"){
