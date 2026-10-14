@@ -109,6 +109,12 @@ jobs:
           node --check "$SNAPSHOT/owner-auth.mjs"
           node security/cf-owner-auth/verify-owner-auth-snapshot.mjs "$SNAPSHOT"
           node --test "$SNAPSHOT/owner-auth.test.mjs"
+          if [[ -f "$SNAPSHOT/oauth-bridge.mjs" ]]; then
+            node --check "$SNAPSHOT/oauth-bridge.mjs"
+            bash -n "$SNAPSHOT/caddy-oauth-route.sh"
+            node --test "$SNAPSHOT/oauth-bridge.test.mjs"
+            node security/cf-owner-auth/verify-effective-oauth.mjs "$SNAPSHOT"
+          fi
           node --test "$SNAPSHOT/onshape-agent.test.mjs"
 
       - name: Reject retired architecture
@@ -218,7 +224,7 @@ jobs:
           ln -s "$release" "$tmp_link"
           mv -Tf "$tmp_link" "$active"
 
-          if docker compose -p "$project" -f "$release/compose.yaml" up -d --remove-orphans --no-build --force-recreate             && timeout 180 env CF_RELEASE_DIR="$release" CF_COMPOSE_PROJECT="$project" bash "$release/health.sh"; then
+          if docker compose -p "$project" -f "$release/compose.yaml" up -d --remove-orphans --no-build --force-recreate             && timeout 180 env CF_RELEASE_DIR="$release" CF_COMPOSE_PROJECT="$project" bash "$release/health.sh" && { [[ ! -f "$release/caddy-oauth-route.sh" ]] || bash "$release/caddy-oauth-route.sh" install /etc/caddy/Caddyfile; }; then
             echo "R12_DEPLOY=success"
             echo "R12_RELEASE=$EXPECTED_RELEASE"
             echo "R12_SEQUENCE=$EXPECTED_SEQUENCE"
