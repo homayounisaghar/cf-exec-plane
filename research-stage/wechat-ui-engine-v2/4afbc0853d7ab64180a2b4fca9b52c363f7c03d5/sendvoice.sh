@@ -48,13 +48,16 @@ CODEC=$(ffprobe -v error -select_streams a:0 -show_entries stream=codec_name -of
 echo "audio size=$SIZE duration=$DUR codec=$CODEC sha256=$(sha256sum "$F" | cut -c1-16)"
 printf '{"size": %s, "duration": "%s", "codec": "%s", "expected_size": "%s"}\n' "$SIZE" "$DUR" "$CODEC" "$EXP" > "$OUT/audio.json"
 if [ -z "$DUR" ]; then echo "STOP AUDIO_UNREADABLE"; echo STOPPED_AUDIO_UNREADABLE > "$OUT/STATUS"; exit 1; fi
-N=$(python3 -c "import math;print(max(1,math.ceil(float('$DUR')/55)))")
-if [ "$N" -gt 6 ]; then echo "STOP TOO_LONG"; echo STOPPED_TOO_LONG > "$OUT/STATUS"; exit 1; fi
+N=$(python3 -c "import math;print(max(1,math.ceil(float('$DUR')/59)))")
+# There is no fixed part-count limit: 20 min needs 21 separate 59s-or-less messages.
+# Leave enough total wall-clock time for audio playback and per-chunk UI verification.
+VOICE_TIMEOUT=$(python3 -c "import math;print(max(600,math.ceil(float('$DUR'))+90*int('$N')+180))")
+echo "voice_chunk_seconds=59 voice_parts=$N voice_timeout=$VOICE_TIMEOUT"
 L=/tmp/wx-v11.sh
 step LOADER
-curl -fsSL "https://raw.githubusercontent.com/homayounisaghar/cf-exec-plane/22b2197dbcd43b5fffd090783860db4137f5d147/research-stage/wechat-ui-engine-v2/4afbc0853d7ab64180a2b4fca9b52c363f7c03d5/stage-and-run.sh" -o $L
+curl -fsSL "https://raw.githubusercontent.com/homayounisaghar/cf-exec-plane/1e3bea929c089a359837fd0dfcba5cc90ccda2b9/research-stage/wechat-ui-engine-v2/4afbc0853d7ab64180a2b4fca9b52c363f7c03d5/stage-and-run.sh" -o $L
 H=$(git hash-object $L); echo "loader_blob=$H"
-if [ "$H" != "ecdb4ec6dda2f4cc1fe7c8b0bf26b38e9251cc3e" ]; then echo "STOP LOADER_HASH_MISMATCH"; echo STOPPED > "$OUT/STATUS"; exit 1; fi
+if [ "$H" != "c7558a010affc1a417a7f318d02919af3f3dc1fd" ]; then echo "STOP LOADER_HASH_MISMATCH"; echo STOPPED > "$OUT/STATUS"; exit 1; fi
 sh $L --stage-only | tee "$OUT/stage.txt"
 if ! grep -q "WX_V11_STAGE_OK files=23 hashes=23" "$OUT/stage.txt"; then echo "STOP STAGE_FAILED"; echo STOPPED > "$OUT/STATUS"; exit 1; fi
 rm -f /tmp/wxeng/v10_search_dump.json /tmp/wxeng/voice_toggle_*.png
@@ -474,10 +477,10 @@ if [ "$LOGGED" = 1 ] && grep -q '"ready": *true' "$OUT/voice_probe.json" 2>/dev/
   curl -fsSL "https://raw.githubusercontent.com/homayounisaghar/cf-exec-plane/70375de0b56531f520882b9668c1264d2db1c439/research-stage/wechat-ui-engine-v2/4afbc0853d7ab64180a2b4fca9b52c363f7c03d5/wx_voice_fix_v1116.py" -o /tmp/wxeng/wx_voice_fix.py
   if [ "$(git hash-object /tmp/wxeng/wx_voice_fix.py 2>/dev/null)" = "b9ba12628b2cf7c36476192f5e36f78fb64a3e0d" ]; then
     echo "voice strategy=$ST (fix v11.16)"
-    ( cd /tmp/wxeng && timeout 600 bash ./with_wechat_env.sh env WXV_STRATEGY="$ST" WXV_TAIL_S="$(cat /tmp/wxeng/voice_tail_s 2>/dev/null || echo 0)" PULSE_SERVER="${PULSE_SERVER:-}" python3 ./wx_voice_fix.py send-voice "$CHAT" "$RF" "$SHA" "$N" ); echo "voice_exit=$?"
+    ( cd /tmp/wxeng && timeout "$VOICE_TIMEOUT" bash ./with_wechat_env.sh env WXV_STRATEGY="$ST" WXV_TAIL_S="$(cat /tmp/wxeng/voice_tail_s 2>/dev/null || echo 0)" PULSE_SERVER="${PULSE_SERVER:-}" python3 ./wx_voice_fix.py send-voice "$CHAT" "$RF" "$SHA" "$N" ); echo "voice_exit=$?"
   else
     echo "fix file hash mismatch -> old path"
-    timeout 600 sh $L --v10 send-voice "$CHAT" "$RF" "$SHA" "$N"; echo "voice_exit=$?"
+    timeout "$VOICE_TIMEOUT" sh $L --v10 send-voice "$CHAT" "$RF" "$SHA" "$N"; echo "voice_exit=$?"
   fi
   cp /tmp/wxeng/v10_last.json "$OUT/send_voice.json" 2>/dev/null
   cp /tmp/wxeng/voice_toggle_*.png "$OUT/" 2>/dev/null
