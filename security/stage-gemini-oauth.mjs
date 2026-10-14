@@ -48,7 +48,8 @@ export function stage({sourceDir,destDir,sequence,releaseId}) {
  '    const expected=["/mcp/oauth","/mcp/oauth/register","/mcp/oauth/token","/mcp/oauth/revoke"].includes(pathname)?"POST":"GET";',
  '    if(req.method!==expected){res.writeHead(405,{"content-type":"application/json"});res.end(JSON.stringify({error:"Method not allowed"}));return;}',
  '  } else if (pathname === mcpPath) {'].join("\n");
- g=one(g,'  if (pathname === mcpPath) {',gm);
+ const gatewayEnd='await import("data:text/javascript;base64," + Buffer.from(source).toString("base64"));';
+ g=one(g,gatewayEnd,'source=source.replace('+JSON.stringify('  if (pathname === mcpPath) {')+','+JSON.stringify(gm)+');\n'+gatewayEnd);
  fs.writeFileSync(gf,g);
  const cf=path.join(destDir,"compose.yaml");let c=fs.readFileSync(cf,"utf8");
  c=one(c,"/release/owner-auth.mjs /release/wechat-ingress.mjs","/release/owner-auth.mjs /release/oauth-bridge.mjs /release/wechat-ingress.mjs");
