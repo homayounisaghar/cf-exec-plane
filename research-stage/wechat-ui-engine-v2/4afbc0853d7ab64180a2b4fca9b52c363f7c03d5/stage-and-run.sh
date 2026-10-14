@@ -12,8 +12,8 @@ case "$mode" in
   *) echo "WX_V11_MODE"; exit 2;;
 esac
 [ -z "${WX_SPEED_SEND_AUTH:-}" ] && [ -z "${WX_SPEED_TEXTS_B64:-}" ] && [ -z "${WX_SPEED_RESUME_UNSENT_FIRST:-}" ] && [ -z "${WX_GATE_H_SEND_ONCE:-}" ] && [ -z "${WX_GATE_H_TEXT:-}" ] || { echo "WX_V11_SEND_ENV_FORBIDDEN"; exit 2; }
-BASE="https://raw.githubusercontent.com/homayounisaghar/cf-exec-plane/591c74530fa8cbbf908babb264190fd4e86f090e/research-stage/wechat-ui-engine-v2/4afbc0853d7ab64180a2b4fca9b52c363f7c03d5"
-MANIFEST_SHA="e740d17b400ec0e1c1c06f821820242bd04be270"
+BASE="https://raw.githubusercontent.com/homayounisaghar/cf-exec-plane/a864476b084b558d2c02caa61ec84f70a685e75a/research-stage/wechat-ui-engine-v2/4afbc0853d7ab64180a2b4fca9b52c363f7c03d5"
+MANIFEST_SHA="4131a92780f8d546a7e3560ca82689f9c2abae62"
 dest=/tmp/wxeng
 work=$(mktemp -d /tmp/wx-v11-stage.XXXXXXXX)
 trap 'rm -rf "$work"' EXIT HUP INT TERM
