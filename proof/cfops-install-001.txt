@@ -1,0 +1,41 @@
+PASS user=cfop_e79aa1fde5 uid=1000
+INFO wechat_pids 2310836 2311186
+PASS py_compile python=Python 3.14.4
+PASS files_installed
+PASS env_keys=XDG_RUNTIME_DIR,
+Created symlink '/etc/systemd/system/multi-user.target.wants/capability-fabric-cf-ops.service' → '/etc/systemd/system/capability-fabric-cf-ops.service'.
+PASS unit_started
+PASS agent_status user=cfop_e79aa1fde5 uid=1000 version=cf-ops-agent/1.0 free_gb=8.1
+PASS agent_exec exit=0 out=cfop_e79aa1fde5 |  | __pycache__ | atspi_backend.py | benchmark_gate_f_readsafe.py | 
+PASS wechat_untouched capability-fabric-pcg-wechat.service pid=2310836
+PASS wechat_untouched capability-fabric-pcg-wechat-semantic.service pid=2311186
+CF_OPS_INSTALL=success
+--- status ---
+active_release=/var/lib/capability-fabric/releases/onshape-vps-fast-r100-direct-orbit1-paa-storage-r249-gemini-oauth1
+served_build=onshape-vps-fast-r100-direct-orbit1-paa-storage-r249-gemini-oauth1
+capability-fabric-onshape-gateway Up 3 hours (healthy)
+capability-fabric-onshape-server Up 3 hours (healthy)
+capability-fabric-pcg-web Up 3 days (healthy)
+capability-fabric-pcg-core Up 7 days (healthy)
+capability-fabric-pcg-telegram Up 7 days (healthy)
+capability-fabric-pcg-audio-transform Up 7 days (healthy)
+capability-fabric-pcg-perplexity-asr Up 7 days (healthy)
+capability-fabric-pcg-asr Up 7 days (healthy)
+capability-fabric-pcg-alibaba-android Up 8 days
+capability-fabric-onshape-phase0-fabric Up 2 weeks (healthy)
+capability-fabric-onshape-phase0-research Up 2 weeks (healthy)
+unit capability-fabric-cf-ops active pid=3158736
+unit capability-fabric-pcg-wechat active pid=2310836
+unit capability-fabric-pcg-wechat-semantic active pid=2311186
+unit capability-fabric-onshape-server active pid=0
+total 0
+srw-rw-rw- 1 cfop_e79aa1fde5 cfop_e79aa1fde5 0 Oct 14 15:06 agent.sock
+ls: cannot access '/run/cf-ops/': No such file or directory
+container_probe_error ENOENT
+container_probe 
+Oct 14 15:06:38 ubuntu-8gb-hel1-1 systemd[1]: Started capability-fabric-cf-ops.service - Capability Fabric owner host-ops agent (cf-ops).
+/dev/sda1        75G   65G  7.6G  90% /
+               total        used        free      shared  buff/cache   available
+Mem:            7746        7223         143         164         852         522
+Swap:           7968        7968           0
+REMOTE_EXIT=0
