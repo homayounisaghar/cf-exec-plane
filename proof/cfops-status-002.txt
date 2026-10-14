@@ -1,0 +1,29 @@
+--- status ---
+active_release=/var/lib/capability-fabric/releases/onshape-vps-fast-r100-direct-orbit1-paa-storage-r250-cfops1
+served_build=onshape-vps-fast-r100-direct-orbit1-paa-storage-r250-cfops1
+capability-fabric-onshape-gateway Up About a minute (healthy)
+capability-fabric-onshape-server Up About a minute (healthy)
+capability-fabric-pcg-web Up 3 days (healthy)
+capability-fabric-pcg-core Up 7 days (healthy)
+capability-fabric-pcg-telegram Up 7 days (healthy)
+capability-fabric-pcg-audio-transform Up 7 days (healthy)
+capability-fabric-pcg-perplexity-asr Up 7 days (healthy)
+capability-fabric-pcg-asr Up 7 days (healthy)
+capability-fabric-pcg-alibaba-android Up 8 days
+capability-fabric-onshape-phase0-fabric Up 2 weeks (healthy)
+capability-fabric-onshape-phase0-research Up 2 weeks (healthy)
+unit capability-fabric-cf-ops active pid=3158736
+unit capability-fabric-pcg-wechat active pid=2310836
+unit capability-fabric-pcg-wechat-semantic active pid=2311186
+unit capability-fabric-onshape-server active pid=0
+total 0
+srw-rw-rw- 1 cfop_e79aa1fde5 cfop_e79aa1fde5 0 Oct 14 15:06 agent.sock
+total 0
+srw-rw-rw- 1 ubuntu ubuntu 0 Oct 14 15:06 agent.sock
+container_probe {"ok":true,"result":{"version":"cf-ops-agent/1.0","user":"cfop_e79aa1fde5","uid":1000,"gid":1000,"host":"ubuntu-8gb-hel1-1","python":"3.14.4","cwd":"/var/lib/ca
+Oct 14 15:06:38 ubuntu-8gb-hel1-1 systemd[1]: Started capability-fabric-cf-ops.service - Capability Fabric owner host-ops agent (cf-ops).
+/dev/sda1        75G   65G  7.6G  90% /
+               total        used        free      shared  buff/cache   available
+Mem:            7746        7594         104         336         691         151
+Swap:           7968        7968           0
+REMOTE_EXIT=0
