@@ -25,7 +25,7 @@ import wx_common as c
 SINK = "wxv11_sink"
 MIC = "wxv11_mic"
 RATE = 48000
-CHUNK_S = 55.0
+CHUNK_S = 59.0
 LEAD_S = 0.35          # silence before audio (WeChat warms up its capture)
 TAIL_S = 0.45          # silence after audio before release
 MIN_S = 1.2            # WeChat refuses very short voice messages
@@ -62,7 +62,7 @@ def _file_digest(path: str) -> str:
 
 
 def plan_chunks(duration: float, chunk_s: float = CHUNK_S) -> list:
-    """[(start, length)] covering duration; a tiny last piece is merged/extended."""
+    """[(start, length)] covering duration in <=59s; rebalance tiny tail."""
     if duration <= 0:
         raise UIBlocked("VOICE_AUDIO_EMPTY")
     out, t = [], 0.0
@@ -71,8 +71,14 @@ def plan_chunks(duration: float, chunk_s: float = CHUNK_S) -> list:
         out.append([t, ln])
         t += ln
     if len(out) > 1 and out[-1][1] < MIN_S:
-        last = out.pop()
-        out[-1][1] += last[1]          # may exceed chunk_s by < MIN_S: still < 60 s
+        # Borrow from the previous chunk instead of merging: a merge can exceed
+        # 59 seconds and break the owner's 1-second WeChat margin.
+        need = MIN_S - out[-1][1]
+        out[-2][1] -= need
+        out[-1][0] -= need
+        out[-1][1] += need
+    if any(ln > chunk_s + 1e-6 or ln < MIN_S - 1e-6 for _, ln in out):
+        raise UIBlocked("VOICE_CHUNK_DURATION_UNSAFE")
     return [(round(a, 3), round(b, 3)) for a, b in out]
 
 
@@ -438,7 +444,7 @@ def send_voice(backend, name: str, path: str, confirm_sha: str, *,
         raise UIBlocked("FILE_INVALID")
     if _sha_str(real) != confirm_sha:
         raise UIBlocked("SEND_CONFIRM_SHA_MISMATCH")
-    if not (1 <= max_chunks <= 12):
+    if not (1 <= max_chunks):
         raise UIBlocked("VOICE_MAX_CHUNKS_RANGE")
     digest = _file_digest(real)
     dur = probe_duration(real)
