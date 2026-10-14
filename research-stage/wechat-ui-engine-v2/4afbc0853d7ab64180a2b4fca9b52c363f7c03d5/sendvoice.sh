@@ -55,9 +55,9 @@ VOICE_TIMEOUT=$(python3 -c "import math;print(max(600,math.ceil(float('$DUR'))+9
 echo "voice_chunk_seconds=59 voice_parts=$N voice_timeout=$VOICE_TIMEOUT"
 L=/tmp/wx-v11.sh
 step LOADER
-curl -fsSL "https://raw.githubusercontent.com/homayounisaghar/cf-exec-plane/1e3bea929c089a359837fd0dfcba5cc90ccda2b9/research-stage/wechat-ui-engine-v2/4afbc0853d7ab64180a2b4fca9b52c363f7c03d5/stage-and-run.sh" -o $L
+curl -fsSL "https://raw.githubusercontent.com/homayounisaghar/cf-exec-plane/f56eb4f94e3b2d1ac2c7ef0795670ae266f52f47/research-stage/wechat-ui-engine-v2/4afbc0853d7ab64180a2b4fca9b52c363f7c03d5/stage-and-run.sh" -o $L
 H=$(git hash-object $L); echo "loader_blob=$H"
-if [ "$H" != "c7558a010affc1a417a7f318d02919af3f3dc1fd" ]; then echo "STOP LOADER_HASH_MISMATCH"; echo STOPPED > "$OUT/STATUS"; exit 1; fi
+if [ "$H" != "ead2c4abff9b469dd429fe63ea32d04b6744ac17" ]; then echo "STOP LOADER_HASH_MISMATCH"; echo STOPPED > "$OUT/STATUS"; exit 1; fi
 sh $L --stage-only | tee "$OUT/stage.txt"
 if ! grep -q "WX_V11_STAGE_OK files=23 hashes=23" "$OUT/stage.txt"; then echo "STOP STAGE_FAILED"; echo STOPPED > "$OUT/STATUS"; exit 1; fi
 rm -f /tmp/wxeng/v10_search_dump.json /tmp/wxeng/voice_toggle_*.png
