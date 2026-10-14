@@ -7,6 +7,7 @@ export function stage({sourceDir,destDir,sequence,releaseId}) {
  if(fs.existsSync(destDir))throw Error("TARGET_EXISTS");
  fs.cpSync(sourceDir,destDir,{recursive:true});
  fs.copyFileSync(new URL("./cf-owner-auth/oauth-bridge.mjs",import.meta.url),path.join(destDir,"oauth-bridge.mjs"));
+ fs.copyFileSync(new URL("./cf-owner-auth/caddy-oauth-route.sh",import.meta.url),path.join(destDir,"caddy-oauth-route.sh"));
  const sf=path.join(destDir,"server.js");let s=fs.readFileSync(sf,"utf8");
  const middleware=[
   ['import { createOwnerAuthGate, registerOwnerAuthTools } from "./owner-auth.mjs";','import { createOAuthBridge } from "./oauth-bridge.mjs";'],
@@ -66,10 +67,10 @@ export function stage({sourceDir,destDir,sequence,releaseId}) {
  fs.writeFileSync(cf,c);
  const cl=path.join(destDir,"release-closure.json"),ml=path.join(destDir,"manifest.json");
  const closure=JSON.parse(fs.readFileSync(cl,"utf8"));closure.build_id=releaseId;
- closure.files=[...new Set([...closure.files,"oauth-bridge.mjs"])].sort();
+ closure.files=[...new Set([...closure.files,"oauth-bridge.mjs","caddy-oauth-route.sh"])].sort();
  fs.writeFileSync(cl,JSON.stringify(closure,null,2)+"\n");
  const manifest=JSON.parse(fs.readFileSync(ml,"utf8"));manifest.sequence=sequence;manifest.release_id=releaseId;
- manifest.files=Object.fromEntries([...new Set([...Object.keys(manifest.files),"oauth-bridge.mjs"])].sort().map(n=>[n,hash(path.join(destDir,n))]));
+ manifest.files=Object.fromEntries([...new Set([...Object.keys(manifest.files),"oauth-bridge.mjs","caddy-oauth-route.sh"])].sort().map(n=>[n,hash(path.join(destDir,n))]));
  fs.writeFileSync(ml,JSON.stringify(manifest,null,2)+"\n");
  return {sequence,releaseId,destDir};
 }
