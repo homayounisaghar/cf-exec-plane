@@ -71,6 +71,7 @@ jobs:
             node --check "$SNAPSHOT/oauth-bridge.mjs"
             bash -n "$SNAPSHOT/caddy-oauth-route.sh"
             node --test "$SNAPSHOT/oauth-bridge.test.mjs"
+            node security/cf-owner-auth/verify-effective-oauth.mjs "$SNAPSHOT"
           fi
 
       - name: Lean direct-agent unit gate
