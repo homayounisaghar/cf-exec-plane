@@ -1,0 +1,104 @@
+name: CF Ops Host Agent
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - server-bootstrap/control/cf-ops-install/*.request
+
+permissions:
+  contents: write
+
+concurrency:
+  group: cf-ops-install
+  cancel-in-progress: false
+
+jobs:
+  run:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Validate request
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "${GITHUB_SHA}^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || exit 10
+          IFS=$'\t' read -r status request_path <<<"${changes[0]}"
+          [[ "$status" == A ]] || exit 11
+          [[ "$request_path" == server-bootstrap/control/cf-ops-install/*.request ]] || exit 12
+          get() { awk -F= -v k="$1" '$1==k{print $2}' "$request_path" | tail -n1 | tr -d '[:space:]'; }
+          request_id="$(get request_id)"; action="$(get action)"; bundle="$(get bundle_dir)"
+          [[ "$request_id" == "$(basename "$request_path" .request)" && "$request_id" =~ ^[A-Za-z0-9_.-]{4,80}$ ]] || exit 13
+          [[ "$action" == install || "$action" == status ]] || exit 14
+          [[ "$bundle" =~ ^cf-ops/v[0-9]+$ && -d "$bundle" ]] || exit 15
+          for f in cf_ops_agent.py github_api.py install.sh status.sh; do
+            want="$(get "sha256_${f//[.]/_}")"
+            have="$(sha256sum "$bundle/$f" | cut -d' ' -f1)"
+            [[ "$want" == "$have" ]] || { echo "hash mismatch $f"; exit 16; }
+          done
+          python3 -m py_compile "$bundle/cf_ops_agent.py" "$bundle/github_api.py"
+          bash -n "$bundle/install.sh"; bash -n "$bundle/status.sh"
+          tar -C "$bundle" -czf "$RUNNER_TEMP/cf-ops.tgz" cf_ops_agent.py github_api.py install.sh status.sh
+          { echo "REQUEST_ID=$request_id"; echo "ACTION=$action"; } >> "$GITHUB_ENV"
+
+      - name: Prepare SSH
+        shell: bash
+        run: |
+          set -euo pipefail
+          port="${VPS_PORT:-22}"
+          tmp="${RUNNER_TEMP}/ssh"; install -d -m 0700 "$tmp"
+          printf '%s\n' "$VPS_SSH_KEY" > "$tmp/key"; chmod 0600 "$tmp/key"
+          read -r hkt hkd extra <<< "${VPS_HOST_KEY//$'\r'/}"
+          [[ "$hkt" == ssh-ed25519 && -n "$hkd" && -z "${extra:-}" ]]
+          printf '%s %s %s\n' "$VPS_HOST" "$hkt" "$hkd" > "$tmp/known_hosts"
+          printf '[%s]:%s %s %s\n' "$VPS_HOST" "$port" "$hkt" "$hkd" >> "$tmp/known_hosts"
+          echo "SSH_DIR=$tmp" >> "$GITHUB_ENV"; echo "SSH_PORT=$port" >> "$GITHUB_ENV"
+
+      - name: Run on server
+        shell: bash
+        run: |
+          set -uo pipefail
+          o=(-i "$SSH_DIR/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$SSH_DIR/known_hosts")
+          scp -q "${o[@]}" -P "$SSH_PORT" "$RUNNER_TEMP/cf-ops.tgz" "${VPS_SSH_USER}@${VPS_HOST}:/tmp/cf-ops-bundle.tgz"
+          ssh "${o[@]}" -p "$SSH_PORT" "${VPS_SSH_USER}@${VPS_HOST}" "ACTION='$ACTION' bash -s" > "$RUNNER_TEMP/out.txt" 2>&1 <<'REMOTE'
+          set -uo pipefail
+          d="$(mktemp -d /tmp/cf-ops-bundle.XXXXXX)"
+          tar -xzf /tmp/cf-ops-bundle.tgz -C "$d"; rm -f /tmp/cf-ops-bundle.tgz
+          if [[ "$ACTION" == install ]]; then bash "$d/install.sh"; rc=$?; else rc=0; fi
+          echo "--- status ---"; bash "$d/status.sh"
+          rm -rf "$d"; exit $rc
+          REMOTE
+          rc=$?
+          echo "REMOTE_EXIT=$rc" >> "$RUNNER_TEMP/out.txt"
+          sed -i -E 's/[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/x.x.x.x/g' "$RUNNER_TEMP/out.txt"
+          cat "$RUNNER_TEMP/out.txt"
+          echo "RC=$rc" >> "$GITHUB_ENV"
+
+      - name: Publish proof
+        if: always()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          [[ -f "$RUNNER_TEMP/out.txt" ]] || echo "no output" > "$RUNNER_TEMP/out.txt"
+          w="$RUNNER_TEMP/proof"; git init -q "$w"; cd "$w"
+          git config user.name cf-ops-bot; git config user.email cf-ops-bot@users.noreply.github.com
+          url="https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          if git fetch -q --depth=1 "$url" cf-ops-proof 2>/dev/null; then git checkout -q -b cf-ops-proof FETCH_HEAD; else git checkout -q --orphan cf-ops-proof; fi
+          mkdir -p proof; cp "$RUNNER_TEMP/out.txt" "proof/${REQUEST_ID}.txt"
+          git add proof; git commit -q -m "cf-ops proof ${REQUEST_ID}"
+          git push -q "$url" HEAD:cf-ops-proof
+          exit "${RC:-0}"
