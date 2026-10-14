@@ -1,4 +1,4 @@
-# WeChat v11.7 = v11.6 + search removed from acceptance, empty-dropdown dismiss; 23 runtime files only; no tests
+# WeChat v11 baseline + owner-approved 59-second voice chunks, no fixed count cap (2026-10-14); 23 runtime files
 # Source private research commit 4afbc0853d7ab64180a2b4fca9b52c363f7c03d5
 69197fe36b315861912ac0a45ddc99ff926ca345 engine.py
 598c1c3dea8d31a0020ceb8239037ccf038d7f80 atspi_backend.py
@@ -22,4 +22,4 @@ c3bad8bea51eb48893a5776797190cb33941ecd9 wechat_live_lock.py
 2d9f7715abfc03433517e19a80b2f228b89fbe06 wx_send.py
 da015ce15cc275823c1d45564a672188f9bc1f2c wx_menu_watch.py
 4d48e4eca5d0c082d57f958752a248ae7d1bcfa5 wx_v10.py
-7ef0c4147c4ec210a39dda4e0fbb9f153d99150f wx_voice.py
+7d06d1f56aee5c7ae2bc755694d0ab70c5e54b53 wx_voice.py
