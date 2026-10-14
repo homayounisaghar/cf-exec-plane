@@ -40,9 +40,8 @@ class AgentTests(unittest.TestCase):
         return r["result"]
 
     def test_owner_gate_and_files(self):
-        bad = agent.handle(dict(caller="cfsub_invalid",op="server_exec",args={"command":"echo no"}))
-        # Invalid owners fail before dispatch, without executing any command.
-        self.assertTrue(False) if bad.get("ok") else None
+        with self.assertRaises(agent.Problem):
+            agent.handle(dict(caller="cfsub_invalid",op="server_exec",args={"command":"echo no"}))
 
         self.call("server_file_write",path=str(self.p),content="cat",mode="create")
         r=self.call("server_file_read",path=str(self.p))
@@ -67,7 +66,7 @@ class AgentTests(unittest.TestCase):
         self.assertFalse(agent.handle(dict(caller=FP,op="server_file_delete",
                          args=dict(path=str(self.p),confirm=False)))["ok"])
         self.call("server_file_delete",path=str(self.p),confirm=True)
-        self.assertIn("sha256:",agent.AUDIT.read_text() if False else "sha256:")  # audit verified separately
+        self.assertTrue(agent.AUDIT.read_text().strip())
 
     def test_upload_link_and_fetch(self):
         self.call("server_file_write",path=str(self.p),content="ready")
@@ -157,7 +156,7 @@ class GithubTests(unittest.TestCase):
             self.gh.file_delete(dict(repo="homayounisaghar/cf-exec-plane",branch="main",
                                      path="a.txt",message="delete",confirm=False))
         with self.assertRaises(github_api.GithubProblem):
-            self.gh.repo_list(dict(repo="someone-else/private"))
+            github_api.repo_ok("someone-else/private")
 
     def test_device_token_not_returned(self):
         self.gh.form=lambda path,payload: {"device_code":"internal-hidden","user_code":"AAAA-BBBB",
