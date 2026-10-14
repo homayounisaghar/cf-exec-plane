@@ -8,37 +8,36 @@ export function stage({sourceDir,destDir,sequence,releaseId}) {
  fs.cpSync(sourceDir,destDir,{recursive:true});
  fs.copyFileSync(new URL("./cf-owner-auth/oauth-bridge.mjs",import.meta.url),path.join(destDir,"oauth-bridge.mjs"));
  const sf=path.join(destDir,"server.js");let s=fs.readFileSync(sf,"utf8");
- const imp='import { createOwnerAuthGate, registerOwnerAuthTools } from "./owner-auth.mjs";';
- s=one(s,imp,imp+'\nimport { createOAuthBridge } from "./oauth-bridge.mjs";');
- const init='const ownerAuth = createOwnerAuthGate({ stateDir: AGENT_STATE_DIR + "/owner-auth", buildId: BUILD_ID });';
- s=one(s,init,init+'\nconst cfOAuth = createOAuthBridge({stateDir:AGENT_STATE_DIR+"/oauth",origin:"https://cf-onshape.duckdns.org",ownerState:ownerAuth.readState});');
- const register='registerOwnerAuthTools(server, z, ownerAuth, safeTool);';
- const tool=[
- '  server.registerTool("cf_oauth_approve",{',
- '    title:"Approve external OAuth client pairing",',
- '    description:"Approve one-time OAuth pairing code displayed on the authorization screen; authorized ChatGPT owner only.",',
- '    inputSchema:{code:z.string().regex(/^CF-[0-9A-F]{12}$/)},',
- '    annotations:{readOnlyHint:false,destructiveHint:false,idempotentHint:true,openWorldHint:false}',
- '  },async ({code},{_meta})=>safeTool("authorization",async()=>{',
- '    const caller=await ownerAuth.status(_meta);',
- '    if(!caller.caller.is_owner||!caller.caller.organization_allowed)throw Object.assign(new Error("Owner required"),{code:"CF_OAUTH_OWNER_REQUIRED"});',
- '    return cfOAuth.approve(code,caller.caller.subject_fingerprint);',
- '  }));'].join("\n");
- s=one(s,register,register+"\n"+tool);
- const middleware='app.use(express.json({ limit: "5mb" }));';
- const addition=[
- 'app.use(express.urlencoded({extended:false,limit:"32kb"}));',
- 'cfOAuth.install(app);',
- 'app.post("/mcp/oauth",(req,res,next)=>{',
- '  if(!cfOAuth.verifyBearer(req.get("authorization"))){cfOAuth.sendUnauthorized(res);return;}',
- '  req.cfOAuthAuthorized=true;',
- '  req.url="/mcp/"+MCP_TOKEN;',
- '  next();',
- '});'
- ].join("\n");
- s=one(s,middleware,middleware+"\n"+addition);
- s=one(s,'  const decision = ownerAuth.authorizeToolCall(req.body);',
- '  const decision = req.cfOAuthAuthorized ? {allowed:true,mode:"oauth-verified"} : ownerAuth.authorizeToolCall(req.body);');
+ const middleware=[
+  ['import { createOwnerAuthGate, registerOwnerAuthTools } from "./owner-auth.mjs";','import { createOAuthBridge } from "./oauth-bridge.mjs";'],
+  ['const ownerAuth = createOwnerAuthGate({ stateDir: AGENT_STATE_DIR + "/owner-auth", buildId: BUILD_ID });',
+   'const cfOAuth = createOAuthBridge({stateDir:AGENT_STATE_DIR+"/oauth",origin:"https://cf-onshape.duckdns.org",ownerState:ownerAuth.readState});'],
+  ['registerOwnerAuthTools(server, z, ownerAuth, safeTool);',
+   [
+    'server.registerTool("cf_oauth_approve",{title:"Approve external OAuth pairing",',
+    'description:"Approve a one-time OAuth pairing code from the authorization screen. Authorized ChatGPT owners only.",',
+    'inputSchema:{code:z.string().regex(/^CF-[0-9A-F]{12}$/)},',
+    'annotations:{readOnlyHint:false,destructiveHint:false,idempotentHint:true,openWorldHint:false}},',
+    'async ({code},{_meta})=>safeTool("authorization",async()=>{',
+    ' const caller=await ownerAuth.status(_meta);',
+    ' if(!caller.caller.is_owner||!caller.caller.organization_allowed)throw new Error("CF_OAUTH_OWNER_REQUIRED");',
+    ' return cfOAuth.approve(code,caller.caller.subject_fingerprint);',
+    '}));'].join("\n")],
+  ['app.use(express.json({ limit: "5mb" }));',
+   [
+    'app.use(express.urlencoded({extended:false,limit:"32kb"}));',
+    'cfOAuth.install(app);',
+    'app.post("/mcp/oauth",(req,res,next)=>{',
+    ' if(!cfOAuth.verifyBearer(req.get("authorization"))){cfOAuth.sendUnauthorized(res);return;}',
+    ' req.cfOAuthAuthorized=true;req.url="/mcp/"+MCP_TOKEN;next();',
+    '});'].join("\n")],
+  ['  const decision = ownerAuth.authorizeToolCall(req.body);',
+   '  const decision = req.cfOAuthAuthorized ? {allowed:true,mode:"oauth-verified"} : ownerAuth.authorizeToolCall(req.body);']
+ ];
+ const patchBlock=middleware.map(([needle,add],i)=>'source=source.replace('+JSON.stringify(needle)+','+
+   (i===4?JSON.stringify(add):JSON.stringify(needle+"\n"+add))+');').join("\n");
+ const targetNeedle='const target = "/tmp/app/server.base.mjs";';
+ s=one(s,targetNeedle,patchBlock+"\n"+targetNeedle);
  fs.writeFileSync(sf,s);
  const gf=path.join(destDir,"gateway.js");let g=fs.readFileSync(gf,"utf8");
  const mcpNeedle='const mcpPath = '+String.fromCharCode(96)+'/mcp/$'+'{token}'+String.fromCharCode(96)+';';
