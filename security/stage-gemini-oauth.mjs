@@ -23,7 +23,7 @@ export function stage({sourceDir,destDir,sequence,releaseId}) {
     'async ({code},{_meta})=>safeTool("authorization",async()=>{',
     ' const caller=await ownerAuth.status(_meta);',
     ' if(!caller.caller.is_owner||!caller.caller.organization_allowed)throw new Error("CF_OAUTH_OWNER_REQUIRED");',
-    ' return cfOAuth.approve(code,caller.caller.subject_fingerprint);',
+    ' return cfOAuth.approve(code,caller.caller.subject_fingerprint,caller.caller.organization_fingerprint);',
     '}));'].join("\n")],
   ['app.use(express.json({ limit: "5mb" }));',
    [
