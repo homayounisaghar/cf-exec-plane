@@ -471,10 +471,10 @@ if [ "$LOGGED" = 1 ] && grep -q '"ready": *true' "$OUT/voice_probe.json" 2>/dev/
   rm -f /tmp/wxeng/v10_last.json
   # v11.15 timing fix (mic suspended until press) when voicecal.sh confirmed it
   ST=$(cat /tmp/wxeng/voice_strategy 2>/dev/null || echo legacy)
-  curl -fsSL "https://raw.githubusercontent.com/homayounisaghar/cf-exec-plane/8398daa744410c0c9dc618c986d8e10482e2a451/research-stage/wechat-ui-engine-v2/4afbc0853d7ab64180a2b4fca9b52c363f7c03d5/wx_voice_fix.py" -o /tmp/wxeng/wx_voice_fix.py
-  if [ "$(git hash-object /tmp/wxeng/wx_voice_fix.py 2>/dev/null)" = "1ccfe3093b9d5d61c3b0b6cc58288948951ee417" ]; then
-    echo "voice strategy=$ST (fix v11.15)"
-    ( cd /tmp/wxeng && timeout 600 bash ./with_wechat_env.sh env WXV_STRATEGY="$ST" PULSE_SERVER="${PULSE_SERVER:-}" python3 ./wx_voice_fix.py send-voice "$CHAT" "$RF" "$SHA" "$N" ); echo "voice_exit=$?"
+  curl -fsSL "https://raw.githubusercontent.com/homayounisaghar/cf-exec-plane/70375de0b56531f520882b9668c1264d2db1c439/research-stage/wechat-ui-engine-v2/4afbc0853d7ab64180a2b4fca9b52c363f7c03d5/wx_voice_fix_v1116.py" -o /tmp/wxeng/wx_voice_fix.py
+  if [ "$(git hash-object /tmp/wxeng/wx_voice_fix.py 2>/dev/null)" = "b9ba12628b2cf7c36476192f5e36f78fb64a3e0d" ]; then
+    echo "voice strategy=$ST (fix v11.16)"
+    ( cd /tmp/wxeng && timeout 600 bash ./with_wechat_env.sh env WXV_STRATEGY="$ST" WXV_TAIL_S="$(cat /tmp/wxeng/voice_tail_s 2>/dev/null || echo 0)" PULSE_SERVER="${PULSE_SERVER:-}" python3 ./wx_voice_fix.py send-voice "$CHAT" "$RF" "$SHA" "$N" ); echo "voice_exit=$?"
   else
     echo "fix file hash mismatch -> old path"
     timeout 600 sh $L --v10 send-voice "$CHAT" "$RF" "$SHA" "$N"; echo "voice_exit=$?"
