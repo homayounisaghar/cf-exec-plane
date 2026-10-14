@@ -1,0 +1,4 @@
+request_id=r250-cfops1
+candidate_commit=12cc1235630af0d3138a6d21fa24b2d61b570a72
+expected_sequence=250
+expected_release=onshape-vps-fast-r100-direct-orbit1-paa-storage-r250-cfops1
