@@ -13,7 +13,7 @@ const verifier="Q".repeat(64);
 const challenge=crypto.createHash("sha256").update(verifier).digest("base64url");
 function fixture() {
   fs.rmSync(scratch,{force:true,recursive:true});
-  const state={mode:"enforce",owners:[{subject_fingerprint:owner}]};
+  const state={mode:"enforce",owners:[{subject_fingerprint:owner}],organization_fingerprints:[]};
   const bridge=createOAuthBridge({stateDir:scratch,origin:"https://cf-onshape.duckdns.org",ownerState:()=>state});
   const routes=[];
   const app={
@@ -105,6 +105,10 @@ test("owner pairing, PKCE, single-use codes, refresh, revoke and owner gate",asy
  assert.ok(bridge.verifyBearer("Bearer "+got.body.access_token));
  state.mode="observe";
  assert.equal(bridge.verifyBearer("Bearer "+got.body.access_token),null);
+ state.mode="enforce";state.owners=[{subject_fingerprint:owner}];
+ state.organization_fingerprints=["cforg_other"];
+ assert.equal(bridge.verifyBearer("Bearer "+got.body.access_token),null);
+ state.organization_fingerprints=[];
  state.mode="enforce";state.owners=[];
  assert.equal(bridge.verifyBearer("Bearer "+got.body.access_token),null);
 });
