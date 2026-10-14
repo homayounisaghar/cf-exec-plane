@@ -434,8 +434,8 @@ def hold_and_play(backend, mic: VirtualMic, hold, raw: str, seconds: float, name
 
 
 def send_voice(backend, name: str, path: str, confirm_sha: str, *,
-               pixels=None, max_chunks: int = 3) -> dict:
-    """Send audio file `path` to chat `name` as 1..max_chunks voice messages."""
+               pixels=None, max_chunks=None) -> dict:
+    """Send audio in <=59s chunks; an explicit max_chunks is an optional owner-requested bound."""
     from x11_modal_guard import assert_no_wechat_modal
     import wx_nav as nav
     import wx_send as ws
@@ -444,12 +444,12 @@ def send_voice(backend, name: str, path: str, confirm_sha: str, *,
         raise UIBlocked("FILE_INVALID")
     if _sha_str(real) != confirm_sha:
         raise UIBlocked("SEND_CONFIRM_SHA_MISMATCH")
-    if not (1 <= max_chunks):
+    if max_chunks is not None and max_chunks < 1:
         raise UIBlocked("VOICE_MAX_CHUNKS_RANGE")
     digest = _file_digest(real)
     dur = probe_duration(real)
     chunks = plan_chunks(dur)
-    if len(chunks) > max_chunks:
+    if max_chunks is not None and len(chunks) > max_chunks:
         raise UIBlocked("VOICE_TOO_LONG_FOR_MAX_CHUNKS")
     rep = {"file": os.path.basename(real), "duration_s": round(dur, 2),
            "chunks": len(chunks), "results": []}

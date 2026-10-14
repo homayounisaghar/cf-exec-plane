@@ -293,7 +293,7 @@ def main(argv=None) -> int:
             elif cmd == "send-voice" and len(args) in (3, 4):
                 import wx_voice as wv
                 out = wv.send_voice(b, args[0], args[1], args[2], pixels=px,
-                                    max_chunks=int(args[3]) if len(args) == 4 else 3)
+                                    max_chunks=int(args[3]) if len(args) == 4 else None)
             elif cmd == "voice-accept" and not args:
                 out = voice_accept(b, px)
             elif cmd == "acceptance":
