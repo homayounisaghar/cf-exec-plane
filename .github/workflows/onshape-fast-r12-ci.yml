@@ -67,6 +67,11 @@ jobs:
           set -euo pipefail
           node security/cf-owner-auth/verify-owner-auth-snapshot.mjs "$SNAPSHOT"
           node --test "$SNAPSHOT/owner-auth.test.mjs"
+          if [[ -f "$SNAPSHOT/oauth-bridge.mjs" ]]; then
+            node --check "$SNAPSHOT/oauth-bridge.mjs"
+            bash -n "$SNAPSHOT/caddy-oauth-route.sh"
+            node --test "$SNAPSHOT/oauth-bridge.test.mjs"
+          fi
 
       - name: Lean direct-agent unit gate
         shell: bash
