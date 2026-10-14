@@ -41,14 +41,14 @@ export function stage({sourceDir,destDir,sequence,releaseId}) {
  fs.writeFileSync(sf,s);
  const gf=path.join(destDir,"gateway.js");let g=fs.readFileSync(gf,"utf8");
  const mcpNeedle='const mcpPath = '+String.fromCharCode(96)+'/mcp/$'+'{token}'+String.fromCharCode(96)+';';
- g=one(g,mcpNeedle,mcpNeedle+'\nconst oauthPaths=new Set(["/mcp/oauth","/mcp/oauth/authorize","/mcp/oauth/register","/mcp/oauth/token","/mcp/oauth/revoke","/.well-known/oauth-protected-resource","/.well-known/oauth-protected-resource/mcp/oauth","/.well-known/oauth-authorization-server"]);');
+ const oauthDefinition='const oauthPaths=new Set(["/mcp/oauth","/mcp/oauth/authorize","/mcp/oauth/register","/mcp/oauth/token","/mcp/oauth/revoke","/.well-known/oauth-protected-resource","/.well-known/oauth-protected-resource/mcp/oauth","/.well-known/oauth-authorization-server"]);';
  const gm=[
  '  if (oauthPaths.has(pathname)||/^\\/mcp\\/oauth\\/poll\\/[0-9a-f]{48}$/.test(pathname)) {',
  '    const expected=["/mcp/oauth","/mcp/oauth/register","/mcp/oauth/token","/mcp/oauth/revoke"].includes(pathname)?"POST":"GET";',
  '    if(req.method!==expected){res.writeHead(405,{"content-type":"application/json"});res.end(JSON.stringify({error:"Method not allowed"}));return;}',
  '  } else if (pathname === mcpPath) {'].join("\n");
  const gatewayEnd='await import("data:text/javascript;base64," + Buffer.from(source).toString("base64"));';
- g=one(g,gatewayEnd,'source=source.replace('+JSON.stringify('  if (pathname === mcpPath) {')+','+JSON.stringify(gm)+');\n'+gatewayEnd);
+ g=one(g,gatewayEnd,'source=source.replace('+JSON.stringify(mcpNeedle)+','+JSON.stringify(mcpNeedle+'\n'+oauthDefinition)+');\nsource=source.replace('+JSON.stringify('  if (pathname === mcpPath) {')+','+JSON.stringify(gm)+');\n'+gatewayEnd);
  fs.writeFileSync(gf,g);
  const cf=path.join(destDir,"compose.yaml");let c=fs.readFileSync(cf,"utf8");
  c=one(c,"/release/owner-auth.mjs /release/wechat-ingress.mjs","/release/owner-auth.mjs /release/oauth-bridge.mjs /release/wechat-ingress.mjs");
