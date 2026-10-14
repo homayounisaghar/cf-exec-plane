@@ -1,7 +1,7 @@
 #!/bin/bash
 # WeChat general tool: send ONE owner-chosen audio file (any Telegram voice/audio, link or path) to
 # a chosen WeChat chat as a NATIVE voice message. Owner requested (2026-10-14).
-# Usage: bash sendvoice.sh <https-link|local-path|NONE> [wechat_chat_name, default "File Transfer"] [expected_size_bytes]
+# Usage: bash sendvoice.sh <https-link|relative-download-path|local-path|NONE> [wechat_chat_name, default "File Transfer"] [expected_size_bytes] [base_url]
 # Writes everything to /tmp/wxeng/sendvoice/ . Sends at most once (one-shot marker).
 set -u
 SRC="${1:-}"; CHAT="${2:-File Transfer}"; EXP="${3:-}"
@@ -13,16 +13,33 @@ step(){ echo; echo "===== $* ($(date +%T))"; }
 shot(){ ( cd /tmp/wxeng && bash ./with_wechat_env.sh sh -c 'ffmpeg -nostdin -v error -y -f x11grab -draw_mouse 0 -i "$DISPLAY" -frames:v 1 "$0"' "$OUT/$1" ) || echo "SHOT_FAILED $1"; }
 step GET_AUDIO
 F=""
+BASE="${4:-}"
+okaudio(){ [ -s "$1" ] && ffprobe -v error -show_entries format=duration -of default=nw=1:nk=1 "$1" 2>/dev/null | grep -q '[0-9]' && { [ -z "$EXP" ] || [ "$(stat -c %s "$1")" = "$EXP" ]; }; }
+TMPD=/tmp/wxeng/in/voice_in.bin
 case "$SRC" in
   http://*|https://*)
-    curl -fsSL --max-time 120 "$SRC" -o /tmp/wxeng/in/voice_in.bin && F=/tmp/wxeng/in/voice_in.bin || echo "DOWNLOAD_FAILED";;
-  "") echo "NO_SOURCE_GIVEN";;
-  *) [ -f "$SRC" ] && F="$SRC" || echo "PATH_NOT_FOUND";;
+    curl -fsSL --max-time 120 "$SRC" -o "$TMPD" && okaudio "$TMPD" && F="$TMPD" || echo "DOWNLOAD_FAILED";;
+  ""|NONE) echo "NO_LINK_GIVEN";;
+  *)
+    if [ -f "$SRC" ] && okaudio "$SRC"; then F="$SRC"
+    else
+      # Relative download path from the CF server: try the given base URL, then
+      # every local web port of this server (the CF server runs here), 127.0.0.1 only.
+      REL="/${SRC#/}"
+      PORTS=$(ss -ltnH 2>/dev/null | awk '{print $4}' | sed -nE 's/^(127\.0\.0\.1|0\.0\.0\.0|\*|\[::\]|\[::1\]):([0-9]+)$/\2/p' | sort -un)
+      for B in $BASE $(for p in $PORTS; do echo "http://127.0.0.1:$p"; done); do
+        rm -f "$TMPD"
+        if curl -fsSL --max-time 60 "${B%/}$REL" -o "$TMPD" 2>/dev/null && okaudio "$TMPD"; then F="$TMPD"; echo "downloaded via ${B%/} (relative path)"; break; fi
+      done
+      [ -z "$F" ] && echo "RELATIVE_PATH_NOT_REACHABLE $REL ports=$(echo $PORTS)"
+    fi;;
 esac
 if [ -z "$F" ] && [ -n "$EXP" ]; then
-  echo "searching the server for a recent file of exactly $EXP bytes"
-  F=$(find /var/lib/capability-fabric /tmp /var/tmp "$HOME" -xdev -type f -not -path '/tmp/wxeng/*' -size "${EXP}c" -mmin -1440 -readable -printf '%T@ %p\n' 2>/dev/null | sort -rn | head -1 | cut -d' ' -f2-)
-  [ -n "$F" ] && echo "found $F"
+  echo "searching the server for a recent audio file of exactly $EXP bytes"
+  for C in $(timeout 90 find /var/lib /srv /opt /home /tmp /var/tmp /run -xdev -type f -not -path '/tmp/wxeng/*' -size "${EXP}c" -mmin -1440 -readable -printf '%T@ %p\n' 2>/dev/null | sort -rn | head -5 | cut -d' ' -f2-); do
+    if okaudio "$C"; then F="$C"; echo "found $C"; break; fi
+  done
+  [ -z "$F" ] && echo "no readable file of that size (it may be stored under another user that this account cannot read)"
 fi
 if [ -z "$F" ] || [ ! -s "$F" ]; then echo "STOP AUDIO_NOT_AVAILABLE"; echo STOPPED_NO_AUDIO > "$OUT/STATUS"; exit 1; fi
 B=/tmp/wxeng/in/voice_$(date +%Y%m%d_%H%M%S); cp -f "$F" "$B" && F="$B"; rm -f /tmp/wxeng/in/voice_in.bin
