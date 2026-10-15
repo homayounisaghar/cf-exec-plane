@@ -1,7 +1,9 @@
 #!/bin/bash
 # cfserver_migrate.sh - rename uid 1000 (cfop_e79aa1fde5) to cfserver and move paa_remote workloads to it.
 # Modes: --dry-run (default, changes nothing) | --apply | --rollback <backup_dir>
-# Options: --paa-remote=start|stop (default start: start paa-remote unit as cfserver after migration)
+# Options: --paa-cron=disable|merge (default disable: paa_remote crontab kept as paa_remote.disabled-by-migration;
+#            merge: append it, names replaced, to the cfserver crontab)
+#          --paa-remote=start|stop (default start: start paa-remote unit as cfserver after migration)
 #          --skip-wait (tests only: no 60 s stability wait)
 # Must run as root, ideally as its own transient unit (server_admin_request background=true),
 # because it stops capability-fabric-cf-ops.
@@ -10,10 +12,11 @@ OLD=cfop_e79aa1fde5; NEW=cfserver; PAA=paa_remote
 R="${CF_MIG_ROOT:-}"                      # test prefix; empty on the real host
 PAA_UID=994; PAA_GID=980; OLD_UID=1000
 if [ -n "$R" ]; then PAA_UID="${CF_MIG_PAA_UID:-994}"; PAA_GID="${CF_MIG_PAA_GID:-980}"; fi
-MODE=dry; PAA_START=start; WAIT=60; RB_DIR=""
+MODE=dry; PAA_START=start; PAA_CRON=disable; WAIT=60; RB_DIR=""
 while [ $# -gt 0 ]; do case "$1" in
   --dry-run) MODE=dry;; --apply) MODE=apply;; --rollback) MODE=rollback; RB_DIR="${2:-}"; shift;;
   --paa-remote=start) PAA_START=start;; --paa-remote=stop) PAA_START=stop;;
+  --paa-cron=disable) PAA_CRON=disable;; --paa-cron=merge) PAA_CRON=merge;;
   --skip-wait) WAIT=1;; *) echo "unknown arg $1"; exit 2;; esac; shift; done
 
 UNITS_1000="capability-fabric-cf-ops capability-fabric-pcg-wechat capability-fabric-pcg-wechat-semantic capability-fabric-pcg-browser@telegram capability-fabric-pcg-browser@whatsapp capability-fabric-pcg-browser@bale capability-fabric-pcg-browser@alibaba"
@@ -56,12 +59,12 @@ preflight(){
   [ -d "$R/home/$OLD" ] && [ ! -L "$R/home/$OLD" ] && log "ok home /home/$OLD" || { log "FAIL /home/$OLD missing or symlink"; ok=0; }
   local free; free=$(df -Pk "$R/" | awk 'NR==2{print $4}'); [ "${free:-0}" -ge 2097152 ] && log "ok disk free ${free}k" || { log "FAIL disk free <2GB"; ok=0; }
   for u in $UNITS_1000; do systemctl cat "$u" >/dev/null 2>&1 && log "ok unit $u" || { log "FAIL unit $u missing"; ok=0; }; done
-  pgrep -x 'apt|apt-get|dpkg|unattended-upgr' >/dev/null 2>&1 && { log "FAIL package manager running"; ok=0; }
-  for c in usermod groupmod userdel groupdel loginctl find sed; do command -v $c >/dev/null || { log "FAIL missing $c"; ok=0; }; done
+  { pgrep -x 'apt|apt-get|dpkg' || pgrep -f '/usr/bin/unattended-upgrade( |$)'; } >/dev/null 2>&1 && { log "FAIL package manager running"; ok=0; }
+  for c in usermod groupmod userdel groupdel loginctl find sed xargs visudo; do command -v $c >/dev/null || { log "FAIL missing $c"; ok=0; }; done
   log "unit files to edit:"; unit_files | sed 's/^/  /'
   log "scripts to edit:"; { [ -f "$ATT" ] && echo "$ATT"; exec_scripts; } | sort -u | sed 's/^/  /'
   log "sudoers files mentioning names:"; sudo_files | sed 's/^/  /'
-  log "crontabs:"; ls "$R/var/spool/cron/crontabs" 2>/dev/null | sed 's/^/  /'
+  log "crontabs (paa_remote crontab action: $PAA_CRON):"; for f in "$R"/var/spool/cron/crontabs/*; do [ -f "$f" ] && log "  $(basename "$f"): $(grep -cvE '^(#|$)' "$f") active lines"; done
   log "at jobs of $OLD/$PAA:"; atq 2>/dev/null | awk -v a=$OLD -v b=$PAA '$NF==a||$NF==b' | sed 's/^/  /'
   log "host processes: uid1000=$(host_pids $OLD_UID | wc -l) uid$PAA_UID=$(host_pids $PAA_UID | wc -l)"
   log "paths owned by $PAA (count): $(paa_manifest | wc -l)"
@@ -94,7 +97,12 @@ rename_user(){
   run ln -s "/home/$NEW" "$R/home/$OLD" || return 1
   [ "$MODE" = dry ] && return 0
   for f in subuid subgid; do [ -f "$R/etc/$f" ] && sed -i -E "s/^$OLD:/$NEW:/" "$R/etc/$f"; done
-  [ -f "$R/var/spool/cron/crontabs/$OLD" ] && mv "$R/var/spool/cron/crontabs/$OLD" "$R/var/spool/cron/crontabs/$NEW"
+  local C="$R/var/spool/cron/crontabs"
+  [ -f "$C/$OLD" ] && mv "$C/$OLD" "$C/$NEW"
+  if [ -f "$C/$PAA" ]; then
+    if [ "$PAA_CRON" = merge ]; then sed -E "s/(^|[^A-Za-z0-9_])$PAA([^A-Za-z0-9_]|$)/\1$NEW\2/g" "$C/$PAA" | grep -vE '^# (DO NOT EDIT|\(.* installed on|\(Cron version)' >> "$C/$NEW"
+      chown "$NEW:crontab" "$C/$NEW" 2>/dev/null; chmod 600 "$C/$NEW"; log "merged $PAA crontab into $NEW"; fi
+    mv "$C/$PAA" "$C/$PAA.disabled-by-migration"; fi
   [ -f "$R/var/lib/AccountsService/users/$OLD" ] && mv "$R/var/lib/AccountsService/users/$OLD" "$R/var/lib/AccountsService/users/$NEW"
   return 0; }
 
@@ -102,15 +110,16 @@ move_paa(){
   getent passwd $PAA >/dev/null || { log "skip: $PAA absent"; return 0; }
   if [ "$MODE" = dry ]; then log "DRY: chown $(wc -l < <(paa_manifest)) paths $PAA_UID/$PAA_GID -> 1000/1000"; return 0; fi
   [ -f "$BK/paa_owner.manifest" ] || return 1
-  while IFS=$'\t' read -r ug p; do local u=${ug%%:*} g=${ug##*:}
-    [ "$u" = "$PAA_UID" ] && chown -h "$OLD_UID" "$p"; [ "$g" = "$PAA_GID" ] && chgrp -h "$OLD_UID" "$p"; done < "$BK/paa_owner.manifest"
+  awk -F'\t' -v u="$PAA_UID" '{split($1,a,":"); if (a[1]==u) print $2}' "$BK/paa_owner.manifest" | xargs -r -d '\n' chown -h "$OLD_UID" || return 1
+  awk -F'\t' -v g="$PAA_GID" '{split($1,a,":"); if (a[2]==g) print $2}' "$BK/paa_owner.manifest" | xargs -r -d '\n' chgrp -h "$OLD_UID" || return 1
+  log "ownership moved for $(wc -l < "$BK/paa_owner.manifest") paths"
   return 0; }
 
 edit_configs(){
   local files; files=$( { unit_files; [ -f "$ATT" ] && echo "$ATT"; exec_scripts; sudo_files; } | sort -u)
   for f in $files; do run replace_names "$f" || return 1; done
   [ "$MODE" = dry ] && return 0
-  if command -v visudo >/dev/null && [ -z "$R" ]; then visudo -c >/dev/null 2>&1 || { log "sudoers check failed"; return 1; }; fi
+  if [ -z "$R" ]; then visudo -c >/dev/null 2>&1 || { log "sudoers check failed"; return 1; }; fi
   return 0; }
 
 start_all(){
@@ -144,7 +153,8 @@ rollback(){ # $1 backup dir
   [ -d "$b/atjobs" ] && rm -rf "$R/var/spool/cron/atjobs" && cp -a "$b/atjobs" "$R/var/spool/cron/atjobs"
   [ -d "$b/accounts" ] && rm -rf "$R/var/lib/AccountsService/users" && cp -a "$b/accounts" "$R/var/lib/AccountsService/users"
   if [ -L "$R/home/$OLD" ] && [ -d "$R/home/$NEW" ]; then rm "$R/home/$OLD" && mv "$R/home/$NEW" "$R/home/$OLD"; fi
-  while IFS=$'\t' read -r ug p; do [ -e "$p" ] || [ -L "$p" ] && chown -h "$ug" "$p"; done < "$b/paa_owner.manifest"
+  cut -f1 "$b/paa_owner.manifest" | sort -u | while read -r ug; do
+    awk -F'\t' -v k="$ug" '$1==k{print $2}' "$b/paa_owner.manifest" | xargs -r -d '\n' chown -h "$ug" 2>/dev/null; done
   systemctl daemon-reload
   systemctl cat $UNIT_PUB >/dev/null 2>&1 && systemctl restart $UNIT_PUB
   for u in $START_ORDER $UNIT_PAA; do systemctl start "$u"; done
