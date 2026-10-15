@@ -21,7 +21,8 @@ defaults:
 jobs:
   build-load:
     if: github.actor == 'homayounisaghar'
-    runs-on: ubuntu-latest
+    # Server is ARM (Hetzner CAX, aarch64) since 2026-10-15: build natively on the free ARM runner.
+    runs-on: ubuntu-24.04-arm
     timeout-minutes: 45
     env:
       VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
@@ -81,7 +82,7 @@ jobs:
         run: |
           set -euo pipefail
           short="${TDLIB_COMMIT:0:12}"
-          image_tag="ghcr.io/homayounisaghar/pcg-tdlib-python:tdlib-${TDLIB_VERSION}-${short}"
+          image_tag="ghcr.io/homayounisaghar/pcg-tdlib-python:tdlib-${TDLIB_VERSION}-${short}-arm64"
           echo "image_tag=$image_tag" >> "$GITHUB_OUTPUT"
 
       - id: build
@@ -91,12 +92,13 @@ jobs:
           context: .
           file: pcg-runtime/Dockerfile.tdlib-python
           push: true
+          platforms: linux/arm64
           tags: ${{ steps.meta.outputs.image_tag }}
           build-args: |
             TDLIB_COMMIT=${{ steps.request.outputs.tdlib_commit }}
             TDLIB_VERSION=${{ steps.request.outputs.tdlib_version }}
-          cache-from: type=gha,scope=pcg-tdlib-${{ steps.request.outputs.tdlib_version }}
-          cache-to: type=gha,mode=max,scope=pcg-tdlib-${{ steps.request.outputs.tdlib_version }}
+          cache-from: type=gha,scope=pcg-tdlib-arm64-${{ steps.request.outputs.tdlib_version }}
+          cache-to: type=gha,mode=max,scope=pcg-tdlib-arm64-${{ steps.request.outputs.tdlib_version }}
 
       - name: Smoke tdjson ABI and exact version from published digest
         env:

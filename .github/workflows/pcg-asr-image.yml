@@ -21,7 +21,8 @@ defaults:
 jobs:
   build-publish:
     if: github.actor == 'homayounisaghar'
-    runs-on: ubuntu-latest
+    # Server is ARM (Hetzner CAX, aarch64) since 2026-10-15: build natively on the free ARM runner.
+    runs-on: ubuntu-24.04-arm
     timeout-minutes: 45
     env:
       VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
@@ -93,7 +94,7 @@ jobs:
         run: |
           set -euo pipefail
           short="${SOURCE_COMMIT:0:12}"
-          tag="ghcr.io/homayounisaghar/pcg-asr-faster-whisper:${MODEL_LABEL}-${short}"
+          tag="ghcr.io/homayounisaghar/pcg-asr-faster-whisper:${MODEL_LABEL}-${short}-arm64"
           echo "image_tag=$tag" >> "$GITHUB_OUTPUT"
 
       - id: build
@@ -103,12 +104,13 @@ jobs:
           context: pcg-runtime/asr
           file: pcg-runtime/asr/Dockerfile
           push: true
+          platforms: linux/arm64
           tags: ${{ steps.meta.outputs.image_tag }}
           build-args: |
             FASTER_WHISPER_VERSION=${{ steps.request.outputs.faster_whisper_version }}
             MODEL_REPO=${{ steps.request.outputs.model_repo }}
-          cache-from: type=gha,scope=pcg-asr-${{ steps.request.outputs.model_label }}
-          cache-to: type=gha,mode=max,scope=pcg-asr-${{ steps.request.outputs.model_label }}
+          cache-from: type=gha,scope=pcg-asr-arm64-${{ steps.request.outputs.model_label }}
+          cache-to: type=gha,mode=max,scope=pcg-asr-arm64-${{ steps.request.outputs.model_label }}
 
       - name: Smoke exact digest offline
         env:
