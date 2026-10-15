@@ -85,6 +85,7 @@ backup(){
   echo "$TS" > "$BK/STAMP"; log "backup in $BK ($(wc -l < "$BK/paa_owner.manifest") paa paths)"; }
 
 stop_all(){
+  paa_cron   # first, so cron cannot start new paa_remote jobs
   for u in $STOP_ORDER; do run systemctl stop "$u"; done
   for j in $(atq 2>/dev/null | awk -v a=$OLD -v b=$PAA '$NF==a||$NF==b{print $1}'); do run atrm "$j"; done
   run loginctl terminate-user "$OLD"; getent passwd $PAA >/dev/null && run loginctl terminate-user "$PAA"
@@ -101,20 +102,34 @@ rename_user(){
   for f in subuid subgid; do [ -f "$R/etc/$f" ] && sed -i -E "s/^$OLD:/$NEW:/" "$R/etc/$f"; done
   local C="$R/var/spool/cron/crontabs"
   [ -f "$C/$OLD" ] && mv "$C/$OLD" "$C/$NEW"
-  if [ -f "$C/$PAA" ]; then
-    if [ "$PAA_CRON" = merge ]; then sed -E "s/(^|[^A-Za-z0-9_])$PAA([^A-Za-z0-9_]|$)/\1$NEW\2/g" "$C/$PAA" | grep -vE '^# (DO NOT EDIT|\(.* installed on|\(Cron version)' >> "$C/$NEW"
-      chown "$NEW:crontab" "$C/$NEW" 2>/dev/null; chmod 600 "$C/$NEW"; log "merged $PAA crontab into $NEW"; fi
-    mv "$C/$PAA" "$C/$PAA.disabled-by-migration"; fi
   [ -f "$R/var/lib/AccountsService/users/$OLD" ] && mv "$R/var/lib/AccountsService/users/$OLD" "$R/var/lib/AccountsService/users/$NEW"
+  return 0; }
+
+paa_cron(){
+  [ "$MODE" = dry ] && { log "DRY: paa_remote crontab -> $PAA_CRON"; return 0; }
+  local C="$R/var/spool/cron/crontabs"
+  if [ -f "$C/$PAA" ]; then
+    if [ "$PAA_CRON" = merge ]; then sed -E "s/(^|[^A-Za-z0-9_])$PAA([^A-Za-z0-9_]|$)/\1$NEW\2/g" "$C/$PAA" | grep -vE '^# (DO NOT EDIT|\(.* installed on|\(Cron version)' >> "$C/$OLD"
+      chown "$OLD_UID:crontab" "$C/$OLD" 2>/dev/null; chmod 600 "$C/$OLD"; log "merged $PAA crontab into uid 1000 crontab"; fi
+    mv "$C/$PAA" "$C/$PAA.disabled-by-migration"; fi
   return 0; }
 
 move_paa(){
   getent passwd $PAA >/dev/null || { log "skip: $PAA absent"; return 0; }
   if [ "$MODE" = dry ]; then log "DRY: chown $(wc -l < <(paa_manifest)) paths $PAA_UID/$PAA_GID -> 1000/1000"; return 0; fi
   [ -f "$BK/paa_owner.manifest" ] || return 1
-  awk -F'\t' -v u="$PAA_UID" '{split($1,a,":"); if (a[1]==u) print $2}' "$BK/paa_owner.manifest" | xargs -r -d '\n' chown -h "$OLD_UID" || return 1
-  awk -F'\t' -v g="$PAA_GID" '{split($1,a,":"); if (a[2]==g) print $2}' "$BK/paa_owner.manifest" | xargs -r -d '\n' chgrp -h "$OLD_UID" || return 1
-  log "ownership moved for $(wc -l < "$BK/paa_owner.manifest") paths"
+  [ -n "$R" ] && [ -n "${CF_MIG_TEST_VANISH:-}" ] && rm -f "$CF_MIG_TEST_VANISH"   # test hook only
+  awk -F'\t' -v u="$PAA_UID" '{split($1,a,":"); if (a[1]==u) print $2}' "$BK/paa_owner.manifest" | xargs -r -d '\n' chown -h "$OLD_UID" 2>&1 | grep -v 'No such file or directory' 
+  awk -F'\t' -v g="$PAA_GID" '{split($1,a,":"); if (a[2]==g) print $2}' "$BK/paa_owner.manifest" | xargs -r -d '\n' chgrp -h "$OLD_UID" 2>&1 | grep -v 'No such file or directory' 
+  log "ownership moved for $(wc -l < "$BK/paa_owner.manifest") paths (vanished paths ignored)"
+  # second pass: anything still (or newly) owned by PAA, e.g. the renamed paa crontab
+  local m2; m2=$(paa_manifest)
+  if [ -n "$m2" ]; then
+    printf '%s\n' "$m2" | awk -F'\t' -v u="$PAA_UID" '{split($1,a,":"); if (a[1]==u) print $2}' | xargs -r -d '\n' chown -h "$OLD_UID" 2>/dev/null
+    printf '%s\n' "$m2" | awk -F'\t' -v g="$PAA_GID" '{split($1,a,":"); if (a[2]==g) print $2}' | xargs -r -d '\n' chgrp -h "$OLD_UID" 2>/dev/null
+    printf '%s\n' "$m2" >> "$BK/paa_owner.manifest"   # so rollback restores these too
+  fi
+  [ -z "$R" ] && log "paths still owned by $PAA after second pass: $(paa_manifest | wc -l)"
   return 0; }
 
 edit_configs(){
