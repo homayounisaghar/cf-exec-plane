@@ -1,0 +1,11 @@
+#!/bin/bash
+. "$(dirname $0)/common.sh"; S="$R/state"; mkdir -p $S
+uf(){ local u=$1; u=${u%.service}; local t=$u; [[ $u == *@* ]] && t="${u%%@*}@"; for d in etc run; do [ -f "$R/$d/systemd/system/$t.service" ] && echo "$R/$d/systemd/system/$t.service" && return; done; return 1; }
+case $1 in
+ cat) uf "$2" >/dev/null;;
+ stop) rm -f "$S/$2";;
+ start|restart) uf "$2" >/dev/null || exit 5; [ "${FAIL_START:-}" = "$2" ] && exit 1; touch "$S/$2";;
+ is-active) [ -f "$S/$2" ] && { echo active; exit 0; } || { echo inactive; exit 3; };;
+ show) f=$(uf "$5") || exit 1; grep -h '^User=' "$f" | tail -1 | cut -d= -f2;;
+ daemon-reload) :;;
+esac

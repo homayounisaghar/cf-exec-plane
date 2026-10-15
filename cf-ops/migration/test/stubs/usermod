@@ -1,0 +1,6 @@
+#!/bin/bash
+. "$(dirname $0)/common.sh"; new=$2; home=$4; old=$6
+grep -q "^$old:" $R/etc/passwd || exit 6
+sed -i -E "s#^$old:([^:]*):([^:]*):([^:]*):([^:]*):[^:]*:#$new:\1:\2:\3:\4:$home:#" $R/etc/passwd
+sed -i "s/^$old:/$new:/" $R/etc/shadow
+mv "$R/home/$old" "$R$home"

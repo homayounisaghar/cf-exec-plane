@@ -1,0 +1,2 @@
+#!/bin/bash
+. "$(dirname $0)/common.sh"; sed -i "/^$1:/d" $R/etc/passwd $R/etc/shadow

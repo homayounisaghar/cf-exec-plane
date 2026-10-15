@@ -1,0 +1,2 @@
+#!/bin/bash
+. "$(dirname $0)/common.sh"; sed -i "s/^$3:/$2:/" $R/etc/group $R/etc/gshadow

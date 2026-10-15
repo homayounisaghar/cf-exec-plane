@@ -1,0 +1,3 @@
+#!/bin/bash
+R="$CF_MIG_ROOT"; [ "$1" = -u ] || exit 1; [ -z "${2:-}" ] && { echo 0; exit; }
+awk -F: -v k="$2" '$1==k{print $3; f=1} END{exit !f}' "$R/etc/passwd"
