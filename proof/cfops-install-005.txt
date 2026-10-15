@@ -1,0 +1,57 @@
+PASS user=cfserver uid=1000
+PASS backup=/var/lib/capability-fabric/cf-ops-backup/20261015T091428Z
+PASS files_installed wrapper+sudoers
+PASS unit_restarted
+PASS agent_status user=cfserver version=cf-ops-agent/2.0 github=True
+PASS admin_wrapper_reachable_via_sudo requests=15
+PASS wechat_untouched capability-fabric-pcg-wechat.service pid=880983
+PASS wechat_untouched capability-fabric-pcg-wechat-semantic.service pid=881890
+CF_OPS_INSTALL=success
+--- status ---
+active_release=/var/lib/capability-fabric/releases/onshape-vps-fast-r100-direct-orbit1-paa-storage-r253-tgpair1
+served_build=onshape-vps-fast-r100-direct-orbit1-paa-storage-r253-tgpair1
+capability-fabric-onshape-gateway Up 4 hours (healthy)
+capability-fabric-onshape-server Up 4 hours (healthy)
+capability-fabric-pcg-web Up 4 days (healthy)
+capability-fabric-pcg-core Up 8 days (healthy)
+capability-fabric-pcg-telegram Up 8 days (healthy)
+capability-fabric-pcg-audio-transform Up 8 days (healthy)
+capability-fabric-pcg-perplexity-asr Up 8 days (healthy)
+capability-fabric-pcg-asr Up 8 days (healthy)
+capability-fabric-pcg-alibaba-android Up 8 days
+capability-fabric-onshape-phase0-fabric Up 2 weeks (healthy)
+capability-fabric-onshape-phase0-research Up 2 weeks (healthy)
+unit capability-fabric-cf-ops active pid=941029
+unit capability-fabric-pcg-wechat active pid=880983
+unit capability-fabric-pcg-wechat-semantic active pid=881890
+unit capability-fabric-onshape-server active pid=0
+total 0
+srw-rw-rw- 1 cfserver cfserver 0 Oct 15 09:14 agent.sock
+cf-ops unit: MemoryMax=2147483648 User=cfserver NoNewPrivileges=no KillMode=process 
+-r--r----- 1 root root   119 Oct 15 09:14 /etc/sudoers.d/cf-admin
+-rwxr-xr-x 1 root root 17470 Oct 15 09:14 /usr/local/sbin/cf-admin-exec
+cf-admin requests=15 audit_lines=35
+cf-ops backups: 20261015T024920Z 20261015T080843Z 20261015T091428Z 
+total 0
+srw-rw-rw- 1 ubuntu ubuntu 0 Oct 15 09:14 agent.sock
+container_probe {"ok":true,"result":{"version":"cf-ops-agent/2.0","user":"cfserver","uid":1000,"gid":1000,"host":"ubuntu-8gb-hel1-1","python":"3.14.4","cwd":"/var/lib/capabilit
+Oct 15 08:43:09 ubuntu-8gb-hel1-1 systemd[1]: Stopping capability-fabric-cf-ops.service - Capability Fabric owner host-ops agent (cf-ops)...
+Oct 15 08:43:09 ubuntu-8gb-hel1-1 systemd[1]: capability-fabric-cf-ops.service: Deactivated successfully.
+Oct 15 08:43:09 ubuntu-8gb-hel1-1 systemd[1]: Stopped capability-fabric-cf-ops.service - Capability Fabric owner host-ops agent (cf-ops).
+Oct 15 08:43:28 ubuntu-8gb-hel1-1 systemd[1]: Started capability-fabric-cf-ops.service - Capability Fabric owner host-ops agent (cf-ops).
+Oct 15 08:47:28 ubuntu-8gb-hel1-1 sudo[889579]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+Oct 15 08:47:28 ubuntu-8gb-hel1-1 sudo[889579]: cfserver :  PWD=/var/lib/capability-fabric/cf-ops ; USER=root ; COMMAND=/usr/local/sbin/cf-admin-exec
+Oct 15 08:47:28 ubuntu-8gb-hel1-1 sudo[889579]: pam_unix(sudo:session): session closed for user root
+Oct 15 09:14:29 ubuntu-8gb-hel1-1 systemd[1]: Stopping capability-fabric-cf-ops.service - Capability Fabric owner host-ops agent (cf-ops)...
+Oct 15 09:14:29 ubuntu-8gb-hel1-1 systemd[1]: capability-fabric-cf-ops.service: Deactivated successfully.
+Oct 15 09:14:29 ubuntu-8gb-hel1-1 systemd[1]: Stopped capability-fabric-cf-ops.service - Capability Fabric owner host-ops agent (cf-ops).
+Oct 15 09:14:29 ubuntu-8gb-hel1-1 systemd[1]: capability-fabric-cf-ops.service: Consumed 4min 6.743s CPU time over 31min 1.093s wall clock time, 1.5G memory peak, 82.2M memory swap peak.
+Oct 15 09:14:29 ubuntu-8gb-hel1-1 systemd[1]: Started capability-fabric-cf-ops.service - Capability Fabric owner host-ops agent (cf-ops).
+Oct 15 09:14:30 ubuntu-8gb-hel1-1 sudo[941078]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+Oct 15 09:14:30 ubuntu-8gb-hel1-1 sudo[941078]: cfserver :  PWD=/var/lib/capability-fabric/cf-ops ; USER=root ; COMMAND=/usr/local/sbin/cf-admin-exec
+Oct 15 09:14:31 ubuntu-8gb-hel1-1 sudo[941078]: pam_unix(sudo:session): session closed for user root
+/dev/sda1        75G   66G  5.9G  92% /
+               total        used        free      shared  buff/cache   available
+Mem:            7746        5205        1178         127        1799        2541
+Swap:           7968        4918        3050
+REMOTE_EXIT=0
