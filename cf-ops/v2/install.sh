@@ -277,18 +277,21 @@ def main():
             save(rid, rec)
         text = ("CF root request " + rid + "\nRequested by: " + caller + "\nReason: " + reason +
                 "\nMode: " + ("background" if background else "foreground") + ", timeout " + str(timeout) + " s" +
-                "\nCommand:\n```\n" + cmd + "\n```\n\nCF root code: " + code +
-                "\nValid 10 minutes, single use. Only give this code if you approve exactly this command.")
+                "\nCommand:\n```\n" + cmd + "\n```\n\nValid 10 minutes, single use. Only give the code if you approve exactly this command."
+                "\nThe code is in the next message (copy that whole message) \U0001F447")
+        code_text = "CF root code: " + code
         try:
             if len(text.encode("utf-16-le")) // 2 > 4096: raise RuntimeError("MESSAGE_TOO_LONG_FOR_TELEGRAM")
-            delivery = telegram_saved_messages(text)
+            d1 = telegram_saved_messages(text)
+            d2 = telegram_saved_messages(code_text)
+            delivery = "confirmed" if d1 == d2 == "confirmed" else "unconfirmed"
         except Exception as e:
             rec["status"] = "delivery_failed"; rec.pop("hash"); save(rid, rec)
             audit("request_delivery_failed", id=rid, caller=caller, command=cmd, error=str(e)[:200])
             fail("TELEGRAM_DELIVERY_FAILED", str(e)[:200])
         audit("request", id=rid, caller=caller, command=cmd, reason=reason, timeout_s=timeout, background=background, delivery=delivery)
         res = {"request_id": rid, "expires_in_s": TTL, "delivered_to": "Telegram Saved Messages", "delivery": delivery,
-               "next": "Ask the owner for the 6-digit code, then call server_admin_approve."}
+               "next": "Ask the owner for the 6-digit code (they may paste the whole code message 'CF root code: NNNNNN'; pass only the 6 digits), then call server_admin_approve."}
         if delivery == "unconfirmed":
             res["note"] = "Telegram accepted the message but did not confirm delivery. If the owner did not get it, cancel this request and retry."
         out({"ok": True, "result": res})
