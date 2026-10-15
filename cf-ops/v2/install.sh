@@ -175,8 +175,15 @@ def telegram_saved_messages(text):
     if len(hs) != 1: raise RuntimeError("SAVED_MESSAGES_NOT_RESOLVED")
     r = pcg({"op": "semantic.invoke", "operation": "communication.message.send", "purpose": "OWNER_REQUEST",
              "args": {"conversation_handle": hs[0], "text": text}}, timeout=60)
-    if r.get("state") != "ACHIEVED" and r.get("state") != "ACKNOWLEDGED_UNVERIFIED" and not r.get("ok"):
-        raise RuntimeError("TELEGRAM_SEND_" + str(r.get("error") or r.get("state")))
+    if r.get("state") == "ACHIEVED" or r.get("state") == "ACKNOWLEDGED_UNVERIFIED" or r.get("ok"):
+        return "confirmed"
+    ob = r.get("observation") or {}
+    # Telegram Web created the message but could not confirm it (seen 2026-10-15 after a browser restart).
+    # The owner typing the code is the delivery proof, so keep the request pending.
+    if (r.get("error") == "MESSAGE_DELIVERY_UNCONFIRMED" and not ob.get("provider_rejected")
+            and str(ob.get("created_message_handle") or "").startswith("tgmsg:")):
+        return "unconfirmed"
+    raise RuntimeError("TELEGRAM_SEND_" + str(r.get("error") or r.get("state")))
 
 
 def read_cut(p):
@@ -274,14 +281,17 @@ def main():
                 "\nValid 10 minutes, single use. Only give this code if you approve exactly this command.")
         try:
             if len(text.encode("utf-16-le")) // 2 > 4096: raise RuntimeError("MESSAGE_TOO_LONG_FOR_TELEGRAM")
-            telegram_saved_messages(text)
+            delivery = telegram_saved_messages(text)
         except Exception as e:
             rec["status"] = "delivery_failed"; rec.pop("hash"); save(rid, rec)
             audit("request_delivery_failed", id=rid, caller=caller, command=cmd, error=str(e)[:200])
             fail("TELEGRAM_DELIVERY_FAILED", str(e)[:200])
-        audit("request", id=rid, caller=caller, command=cmd, reason=reason, timeout_s=timeout, background=background)
-        out({"ok": True, "result": {"request_id": rid, "expires_in_s": TTL, "delivered_to": "Telegram Saved Messages",
-             "next": "Ask the owner for the 6-digit code, then call server_admin_approve."}})
+        audit("request", id=rid, caller=caller, command=cmd, reason=reason, timeout_s=timeout, background=background, delivery=delivery)
+        res = {"request_id": rid, "expires_in_s": TTL, "delivered_to": "Telegram Saved Messages", "delivery": delivery,
+               "next": "Ask the owner for the 6-digit code, then call server_admin_approve."}
+        if delivery == "unconfirmed":
+            res["note"] = "Telegram accepted the message but did not confirm delivery. If the owner did not get it, cancel this request and retry."
+        out({"ok": True, "result": res})
     if act == "approve":
         rid, code = a.get("request_id"), str(a.get("code") or "").strip()
         with locked():
