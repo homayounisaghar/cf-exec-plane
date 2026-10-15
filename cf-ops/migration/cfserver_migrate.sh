@@ -84,17 +84,28 @@ backup(){
   paa_manifest > "$BK/paa_owner.manifest"
   echo "$TS" > "$BK/STAMP"; log "backup in $BK ($(wc -l < "$BK/paa_owner.manifest") paa paths)"; }
 
+kill_users(){ # TERM then KILL host processes of uid 1000 / PAA, up to 5 rounds
+  local i u p n
+  for i in 1 2 3 4 5; do n=0
+    for u in $OLD_UID $PAA_UID; do for p in $(host_pids $u); do n=$((n+1)); kill -TERM "$p" 2>/dev/null; done; done
+    [ "$n" = 0 ] && return 0
+    sleep 3
+    for u in $OLD_UID $PAA_UID; do for p in $(host_pids $u); do kill -KILL "$p" 2>/dev/null; done; done
+    sleep 2; done
+  log "warn host processes still alive: $(for u in $OLD_UID $PAA_UID; do for p in $(host_pids $u); do ps -o pid=,user=,args= -p "$p" | cut -c1-120; done; done | tr '\n' ';')"; return 0; }
+
 stop_all(){
   paa_cron   # first, so cron cannot start new paa_remote jobs
+  # stop cron/atd so no scheduled job can start new user processes during the rename (restarted later)
+  for s in cron atd; do [ "$(systemctl is-active $s 2>/dev/null)" = active ] && { run systemctl stop $s; [ "$MODE" = dry ] || echo $s >> "$BK/stopped_schedulers"; }; done
   for u in $STOP_ORDER; do run systemctl stop "$u"; done
   for j in $(atq 2>/dev/null | awk -v a=$OLD -v b=$PAA '$NF==a||$NF==b{print $1}'); do run atrm "$j"; done
   run loginctl terminate-user "$OLD"; getent passwd $PAA >/dev/null && run loginctl terminate-user "$PAA"
   [ "$MODE" = dry ] && return
-  sleep 3
-  for sig in TERM KILL; do for u in $OLD_UID $PAA_UID; do for p in $(host_pids $u); do kill -$sig "$p" 2>/dev/null; done; done; sleep 5; done
-  local left; left=$(( $(host_pids $OLD_UID | wc -l) + $(host_pids $PAA_UID | wc -l) )); [ "$left" = 0 ] || log "warn $left host processes still alive"; }
+  sleep 3; kill_users; }
 
 rename_user(){
+  [ "$MODE" = dry ] || kill_users
   run usermod -l "$NEW" -d "/home/$NEW" -m "$OLD" || return 1
   run groupmod -n "$NEW" "$OLD" || return 1
   run ln -s "/home/$NEW" "$R/home/$OLD" || return 1
@@ -139,11 +150,13 @@ edit_configs(){
   if [ -z "$R" ]; then visudo -c >/dev/null 2>&1 || { log "sudoers check failed"; return 1; }; fi
   return 0; }
 
+restart_schedulers(){ [ -f "$BK/stopped_schedulers" ] || return 0; for s in $(cat "$BK/stopped_schedulers"); do systemctl start $s 2>/dev/null || log "warn could not start $s"; done; }
 start_all(){
   run systemctl daemon-reload
   systemctl cat $UNIT_PUB >/dev/null 2>&1 && run systemctl restart $UNIT_PUB
   for u in $START_ORDER; do run systemctl start "$u"; done
   [ "$PAA_START" = start ] && systemctl cat $UNIT_PAA >/dev/null 2>&1 && run systemctl start $UNIT_PAA
+  [ "$MODE" = dry ] || restart_schedulers
   return 0; }
 
 verify(){
@@ -177,6 +190,7 @@ rollback(){ # $1 backup dir
   systemctl daemon-reload
   systemctl cat $UNIT_PUB >/dev/null 2>&1 && systemctl restart $UNIT_PUB
   for u in $START_ORDER $UNIT_PAA; do systemctl start "$u"; done
+  BK="$b" restart_schedulers
   [ "$(getent passwd 1000 | cut -d: -f1)" = "$OLD" ] && log "rollback: uid 1000 is $OLD again" || log "rollback: WARNING uid 1000 name check failed"
   for u in $START_ORDER; do log "  $u $(systemctl is-active "$u")"; done; }
 
