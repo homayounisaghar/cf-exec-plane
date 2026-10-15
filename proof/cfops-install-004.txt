@@ -1,0 +1,57 @@
+PASS user=cfop_e79aa1fde5 uid=1000
+PASS backup=/var/lib/capability-fabric/cf-ops-backup/20261015T080843Z
+PASS files_installed wrapper+sudoers
+PASS unit_restarted
+PASS agent_status user=cfop_e79aa1fde5 version=cf-ops-agent/2.0 github=True
+PASS admin_wrapper_reachable_via_sudo requests=13
+PASS wechat_untouched capability-fabric-pcg-wechat.service pid=704498
+PASS wechat_untouched capability-fabric-pcg-wechat-semantic.service pid=705474
+CF_OPS_INSTALL=success
+--- status ---
+active_release=/var/lib/capability-fabric/releases/onshape-vps-fast-r100-direct-orbit1-paa-storage-r253-tgpair1
+served_build=onshape-vps-fast-r100-direct-orbit1-paa-storage-r253-tgpair1
+capability-fabric-onshape-gateway Up 3 hours (healthy)
+capability-fabric-onshape-server Up 3 hours (healthy)
+capability-fabric-pcg-web Up 4 days (healthy)
+capability-fabric-pcg-core Up 8 days (healthy)
+capability-fabric-pcg-telegram Up 8 days (healthy)
+capability-fabric-pcg-audio-transform Up 8 days (healthy)
+capability-fabric-pcg-perplexity-asr Up 8 days (healthy)
+capability-fabric-pcg-asr Up 8 days (healthy)
+capability-fabric-pcg-alibaba-android Up 8 days
+capability-fabric-onshape-phase0-fabric Up 2 weeks (healthy)
+capability-fabric-onshape-phase0-research Up 2 weeks (healthy)
+unit capability-fabric-cf-ops active pid=812991
+unit capability-fabric-pcg-wechat active pid=704498
+unit capability-fabric-pcg-wechat-semantic active pid=705474
+unit capability-fabric-onshape-server active pid=0
+total 0
+srw-rw-rw- 1 cfop_e79aa1fde5 cfop_e79aa1fde5 0 Oct 15 08:08 agent.sock
+cf-ops unit: MemoryMax=2147483648 User=cfop_e79aa1fde5 NoNewPrivileges=no KillMode=process 
+-r--r----- 1 root root   119 Oct 15 08:08 /etc/sudoers.d/cf-admin
+-rwxr-xr-x 1 root root 17168 Oct 15 08:08 /usr/local/sbin/cf-admin-exec
+cf-admin requests=13 audit_lines=27
+cf-ops backups: 20261015T024920Z 20261015T080843Z 
+total 0
+srw-rw-rw- 1 ubuntu ubuntu 0 Oct 15 08:08 agent.sock
+container_probe {"ok":true,"result":{"version":"cf-ops-agent/2.0","user":"cfop_e79aa1fde5","uid":1000,"gid":1000,"host":"ubuntu-8gb-hel1-1","python":"3.14.4","cwd":"/var/lib/ca
+Oct 15 07:43:07 ubuntu-8gb-hel1-1 sudo[764953]: cfop_e79aa1fde5 :  PWD=/var/lib/capability-fabric/cf-ops ; USER=root ; COMMAND=/usr/local/sbin/cf-admin-exec
+Oct 15 07:43:08 ubuntu-8gb-hel1-1 sudo[764953]: pam_unix(sudo:session): session closed for user root
+Oct 15 07:44:43 ubuntu-8gb-hel1-1 sudo[767914]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+Oct 15 07:44:43 ubuntu-8gb-hel1-1 sudo[767914]: cfop_e79aa1fde5 :  PWD=/var/lib/capability-fabric/cf-ops ; USER=root ; COMMAND=/usr/local/sbin/cf-admin-exec
+Oct 15 07:47:09 ubuntu-8gb-hel1-1 sudo[772461]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+Oct 15 07:47:09 ubuntu-8gb-hel1-1 sudo[772461]: cfop_e79aa1fde5 :  PWD=/var/lib/capability-fabric/cf-ops ; USER=root ; COMMAND=/usr/local/sbin/cf-admin-exec
+Oct 15 07:47:19 ubuntu-8gb-hel1-1 sudo[772461]: pam_unix(sudo:session): session closed for user root
+Oct 15 08:08:44 ubuntu-8gb-hel1-1 systemd[1]: Stopping capability-fabric-cf-ops.service - Capability Fabric owner host-ops agent (cf-ops)...
+Oct 15 08:08:44 ubuntu-8gb-hel1-1 systemd[1]: capability-fabric-cf-ops.service: Deactivated successfully.
+Oct 15 08:08:44 ubuntu-8gb-hel1-1 systemd[1]: Stopped capability-fabric-cf-ops.service - Capability Fabric owner host-ops agent (cf-ops).
+Oct 15 08:08:44 ubuntu-8gb-hel1-1 systemd[1]: capability-fabric-cf-ops.service: Consumed 2.389s CPU time over 57min 23.665s wall clock time, 45.1M memory peak, 6.5M memory swap peak.
+Oct 15 08:08:44 ubuntu-8gb-hel1-1 systemd[1]: Started capability-fabric-cf-ops.service - Capability Fabric owner host-ops agent (cf-ops).
+Oct 15 08:08:45 ubuntu-8gb-hel1-1 sudo[813041]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+Oct 15 08:08:45 ubuntu-8gb-hel1-1 sudo[813041]: cfop_e79aa1fde5 :  PWD=/var/lib/capability-fabric/cf-ops ; USER=root ; COMMAND=/usr/local/sbin/cf-admin-exec
+Oct 15 08:08:45 ubuntu-8gb-hel1-1 sudo[813041]: pam_unix(sudo:session): session closed for user root
+/dev/sda1        75G   65G  7.6G  90% /
+               total        used        free      shared  buff/cache   available
+Mem:            7746        5205        1083         111        1882        2540
+Swap:           7968        4000        3968
+REMOTE_EXIT=0
