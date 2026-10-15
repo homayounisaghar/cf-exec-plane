@@ -344,6 +344,7 @@ def main():
                 fail("CODE_INVALID", "attempts left: %d" % max(0, MAX_ATTEMPTS - rec["attempts"]))
             rec["status"] = "approved"; rec.pop("hash"); rec["approved"] = now(); rec["approved_by"] = caller; save(rid, rec)
         audit("approved", id=rid, caller=caller, requested_by=rec.get("caller"), command=rec["command"])
+        rec["tg_cleaned"] = now(); save(rid, rec)
         spawn_tg_cleanup(rid, rec)
         fd = os.open(path(rid, ".sh"), os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o700)
         with os.fdopen(fd, "w", encoding="utf-8") as f: f.write(rec["command"] + "\n")
@@ -384,6 +385,26 @@ def main():
         out({"ok": True, "result": {"requests": [{k: r.get(k) for k in ("id", "status", "reason", "caller", "background", "timeout_s", "created", "exit_code")}
                                                  | {"command": str(r.get("command", ""))[:200]} for r in rows],
                                     "wrong_codes_last_24h": failures()}})
+    if act == "sweep":
+        # Run by root timer cf-admin-sweep.timer: delete the Saved Messages pair of requests that
+        # ended without approval (expired / cancelled / locked) so unused codes do not linger.
+        if a.get("caller") not in (None, "", "unknown", "timer"): fail("SWEEP_TIMER_ONLY")
+        todo = []
+        with locked():
+            for r in requests():
+                rid = r.get("id")
+                if not (isinstance(rid, str) and RID_RE.match(rid)) or r.get("tg_cleaned"): continue
+                if now() - r.get("created", 0) > 2 * 86400: continue
+                st = r.get("status")
+                if st == "pending" and now() > r.get("expires", 0):
+                    st = r["status"] = "expired"; r.pop("hash", None); audit("expired", id=rid)
+                if st not in ("expired", "cancelled", "locked"):
+                    if st == "expired": save(rid, r)
+                    continue
+                if len(todo) >= 10: save(rid, r); continue
+                r["tg_cleaned"] = now(); save(rid, r); todo.append((rid, r))
+        for rid, r in todo: tg_cleanup(rid, r)
+        out({"ok": True, "result": {"cleaned": len(todo)}})
     if act == "cancel":
         rid = a.get("request_id")
         with locked():
