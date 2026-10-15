@@ -36,6 +36,8 @@ unit_files(){ # unit files + drop-ins of capability-fabric units that mention OL
 exec_scripts(){ # scripts named in ExecStart*/ExecStop* of those units that mention the names (only under /usr/local or /var/lib/capability-fabric)
   for f in $(unit_files); do grep -hE '^Exec' "$f" | tr ' =' '\n\n' | grep -E '^/(usr/local|var/lib/capability-fabric)/' ; done | sort -u |
   while read -r s; do [ -f "$R$s" ] && grep -qE "($OLD|$PAA)" "$R$s" && echo "$R$s"; done; }
+extra_files(){ # helper programs/tmpfiles that hardcode the names (e.g. paa-envelope-publisher.py: grp.getgrnam("paa_remote"))
+  grep -rlE "(^|[^A-Za-z0-9_])($OLD|$PAA)([^A-Za-z0-9_]|$)" "$R/usr/local/libexec" "$R/etc/tmpfiles.d" 2>/dev/null; true; }
 sudo_files(){ [ -d "$R/etc/sudoers.d" ] && grep -lE "($OLD|$PAA)" "$R"/etc/sudoers.d/* 2>/dev/null; true; }
 host_pids(){ # host-namespace pids of a uid (never container processes)
   local u=$1 me; me=$(readlink "$R/proc/1/ns/pid" 2>/dev/null)
@@ -62,7 +64,7 @@ preflight(){
   { pgrep -x 'apt|apt-get|dpkg' || pgrep -f '/usr/bin/unattended-upgrade( |$)'; } >/dev/null 2>&1 && { log "FAIL package manager running"; ok=0; }
   for c in usermod groupmod userdel groupdel loginctl find sed xargs visudo; do command -v $c >/dev/null || { log "FAIL missing $c"; ok=0; }; done
   log "unit files to edit:"; unit_files | sed 's/^/  /'
-  log "scripts to edit:"; { [ -f "$ATT" ] && echo "$ATT"; exec_scripts; } | sort -u | sed 's/^/  /'
+  log "scripts to edit:"; { [ -f "$ATT" ] && echo "$ATT"; exec_scripts; extra_files; } | sort -u | sed 's/^/  /'
   log "sudoers files mentioning names:"; sudo_files | sed 's/^/  /'
   log "crontabs (paa_remote crontab action: $PAA_CRON):"; for f in "$R"/var/spool/cron/crontabs/*; do [ -f "$f" ] && log "  $(basename "$f"): $(grep -cvE '^(#|$)' "$f") active lines"; done
   log "at jobs of $OLD/$PAA:"; atq 2>/dev/null | awk -v a=$OLD -v b=$PAA '$NF==a||$NF==b' | sed 's/^/  /'
@@ -74,7 +76,7 @@ backup(){
   umask 077; mkdir -p "$BK/etc" "$BK/units" "$BK/files" || die "backup dir"
   for f in $ETC_FILES; do cp -a "$R/etc/$f" "$BK/etc/$f" 2>/dev/null; done
   for d in etc run; do [ -d "$R/$d/systemd/system" ] && mkdir -p "$BK/units/$d" && cp -a "$R/$d/systemd/system/." "$BK/units/$d/" 2>/dev/null; done
-  { [ -f "$ATT" ] && echo "$ATT"; exec_scripts; sudo_files; } | sort -u > "$BK/files.list"
+  { [ -f "$ATT" ] && echo "$ATT"; exec_scripts; extra_files; sudo_files; } | sort -u > "$BK/files.list"
   while read -r f; do [ -n "$f" ] && mkdir -p "$BK/files$(dirname "${f#$R}")" && cp -a "$f" "$BK/files${f#$R}"; done < "$BK/files.list"
   for s in crontabs; do [ -d "$R/var/spool/cron/$s" ] && cp -a "$R/var/spool/cron/$s" "$BK/$s"; done
   [ -d "$R/var/spool/cron/atjobs" ] && cp -a "$R/var/spool/cron/atjobs" "$BK/atjobs"
@@ -116,7 +118,7 @@ move_paa(){
   return 0; }
 
 edit_configs(){
-  local files; files=$( { unit_files; [ -f "$ATT" ] && echo "$ATT"; exec_scripts; sudo_files; } | sort -u)
+  local files; files=$( { unit_files; [ -f "$ATT" ] && echo "$ATT"; exec_scripts; extra_files; sudo_files; } | sort -u)
   for f in $files; do run replace_names "$f" || return 1; done
   [ "$MODE" = dry ] && return 0
   if [ -z "$R" ]; then visudo -c >/dev/null 2>&1 || { log "sudoers check failed"; return 1; }; fi
@@ -135,6 +137,8 @@ verify(){
   getent passwd $OLD >/dev/null && { log "VFAIL $OLD still in passwd"; ok=0; }
   grep -qE "^$OLD:" "$R/etc/shadow" "$R/etc/group" 2>/dev/null && { log "VFAIL $OLD in shadow/group"; ok=0; }
   [ -n "$(unit_files)" ] && { log "VFAIL units still mention old names: $(unit_files)"; ok=0; }
+  [ -n "$(extra_files)" ] && { log "VFAIL helpers still mention old names: $(extra_files)"; ok=0; }
+  [ -S "$R/run/capability-fabric/paa-publisher.sock" ] && [ "$(stat -c %g "$R/run/capability-fabric/paa-publisher.sock")" != "$PAA_GID" ] || { [ -e "$R/run/capability-fabric/paa-publisher.sock" ] && { log "VFAIL publisher socket still group $PAA_GID"; ok=0; }; }
   [ -d "$R/home/$NEW" ] && [ -L "$R/home/$OLD" ] || { log "VFAIL home/symlink"; ok=0; }
   log "waiting ${WAIT}s for stability"; sleep "$WAIT"
   for u in $units; do [ "$(systemctl is-active "$u" 2>/dev/null)" = active ] || { log "VFAIL $u not active"; ok=0; }
