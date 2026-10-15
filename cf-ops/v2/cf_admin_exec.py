@@ -117,16 +117,99 @@ def pcg(payload, timeout=30):
     return json.loads(buf.split(b"\n", 1)[0])
 
 
+LAST_SEND = {}
+
+
+def find_msg_handle(o):
+    """First tgmsg: handle found under a *message_handle key of a PCG send response."""
+    if isinstance(o, dict):
+        for k, v in o.items():
+            if "message_handle" in str(k) and isinstance(v, str) and v.startswith("tgmsg:"): return v
+        for v in o.values():
+            h = find_msg_handle(v)
+            if h: return h
+    elif isinstance(o, list):
+        for v in o:
+            h = find_msg_handle(v)
+            if h: return h
+    return None
+
+
+def walk_msgs(o, out):
+    if isinstance(o, dict):
+        h = o.get("message_handle") or o.get("handle")
+        if isinstance(h, str) and h.startswith("tgmsg:"): out[h] = o
+        for v in o.values(): walk_msgs(v, out)
+    elif isinstance(o, list):
+        for v in o: walk_msgs(v, out)
+
+
+def tg_cleanup(rid, rec):
+    """After a successful approval, delete this request's two Saved Messages (request + code).
+    Runs in a detached child; failures are only audited and never affect the approved command."""
+    tg = rec.get("tg") or {}
+    chat, msgs = tg.get("chat"), [m for m in (tg.get("msgs") or []) if m]
+    try:
+        if chat and len(msgs) < 2:
+            # Fallback: find the messages by request id / time window.
+            found = {}
+            for q in ("CF root request " + rid, "CF root code"):
+                r = pcg({"op": "semantic.invoke", "operation": "communication.message.search", "purpose": "OWNER_REQUEST",
+                         "args": {"conversation_handle": chat, "query": q, "limit": 20}}, timeout=60)
+                walk_msgs(r, found)
+            t0 = rec.get("created", 0)
+            for h, m in found.items():
+                txt, dt = str(m.get("text") or ""), m.get("date")
+                if ("CF root request " + rid) in txt: msgs.append(h)
+                elif txt.startswith("CF root code") and isinstance(dt, (int, float)) and t0 - 5 <= dt <= t0 + 180: msgs.append(h)
+        done, failed = [], []
+        for h in dict.fromkeys(msgs):
+            d = pcg({"op": "semantic.invoke", "operation": "communication.message.delete", "purpose": "OWNER_REQUEST",
+                     "confirm_irreversible": True,
+                     "args": {"message_handle": h, "for_everyone": False, "confirm_irreversible": True}}, timeout=60)
+            (done if (d.get("ok") or d.get("state") == "ACHIEVED") else failed).append(h)
+        audit("tg_cleanup", id=rid, deleted=len(done), failed=len(failed))
+    except Exception as e:
+        audit("tg_cleanup_error", id=rid, error=str(e)[:200])
+
+
+def spawn_tg_cleanup(rid, rec):
+    try:
+        pid = os.fork()
+    except OSError:
+        return
+    if pid:
+        with contextlib.suppress(ChildProcessError): os.waitpid(pid, 0)
+        return
+    try:
+        if os.fork(): os._exit(0)   # double fork: grandchild is fully detached
+        os.setsid()
+        dn = os.open(os.devnull, os.O_RDWR)
+        for fd in (0, 1, 2): os.dup2(dn, fd)
+        tg_cleanup(rid, rec)
+    finally:
+        os._exit(0)
+
+
 def telegram_saved_messages(text):
     r = pcg({"op": "semantic.invoke", "operation": "communication.conversation.search", "purpose": "PROTECTED_DISPLAY",
              "args": {"query": "Saved Messages", "limit": 20}})
     rows = (r.get("protected_provider_data") or {}).get("conversations") or []
     hs = [x.get("handle") for x in rows if str(x.get("name", "")).strip().lower() == "saved messages" and str(x.get("handle", "")).startswith("tgchat:")]
     if len(hs) != 1: raise RuntimeError("SAVED_MESSAGES_NOT_RESOLVED")
+    LAST_SEND.clear(); LAST_SEND["chat"] = hs[0]
     r = pcg({"op": "semantic.invoke", "operation": "communication.message.send", "purpose": "OWNER_REQUEST",
              "args": {"conversation_handle": hs[0], "text": text}}, timeout=60)
-    if r.get("state") != "ACHIEVED" and r.get("state") != "ACKNOWLEDGED_UNVERIFIED" and not r.get("ok"):
-        raise RuntimeError("TELEGRAM_SEND_" + str(r.get("error") or r.get("state")))
+    LAST_SEND["msg"] = find_msg_handle(r)
+    if r.get("state") == "ACHIEVED" or r.get("state") == "ACKNOWLEDGED_UNVERIFIED" or r.get("ok"):
+        return "confirmed"
+    ob = r.get("observation") or {}
+    # Telegram Web created the message but could not confirm it (seen 2026-10-15 after a browser restart).
+    # The owner typing the code is the delivery proof, so keep the request pending.
+    if (r.get("error") == "MESSAGE_DELIVERY_UNCONFIRMED" and not ob.get("provider_rejected")
+            and str(ob.get("created_message_handle") or "").startswith("tgmsg:")):
+        return "unconfirmed"
+    raise RuntimeError("TELEGRAM_SEND_" + str(r.get("error") or r.get("state")))
 
 
 def read_cut(p):
@@ -220,18 +303,27 @@ def main():
             save(rid, rec)
         text = ("CF root request " + rid + "\nRequested by: " + caller + "\nReason: " + reason +
                 "\nMode: " + ("background" if background else "foreground") + ", timeout " + str(timeout) + " s" +
-                "\nCommand:\n```\n" + cmd + "\n```\n\nCF root code: " + code +
-                "\nValid 10 minutes, single use. Only give this code if you approve exactly this command.")
+                "\nCommand:\n```\n" + cmd + "\n```\n\nValid 10 minutes, single use. Only give the code if you approve exactly this command."
+                "\nThe code is in the next message (copy that whole message) \U0001F447")
+        code_text = "CF root code: " + code
         try:
             if len(text.encode("utf-16-le")) // 2 > 4096: raise RuntimeError("MESSAGE_TOO_LONG_FOR_TELEGRAM")
-            telegram_saved_messages(text)
+            d1 = telegram_saved_messages(text); m1 = LAST_SEND.get("msg"); chat = LAST_SEND.get("chat")
+            d2 = telegram_saved_messages(code_text); m2 = LAST_SEND.get("msg")
+            rec["tg"] = {"chat": chat, "msgs": [m1, m2]}
+            with locked():
+                cur = load(rid); cur["tg"] = rec["tg"]; save(rid, cur)
+            delivery = "confirmed" if d1 == d2 == "confirmed" else "unconfirmed"
         except Exception as e:
             rec["status"] = "delivery_failed"; rec.pop("hash"); save(rid, rec)
             audit("request_delivery_failed", id=rid, caller=caller, command=cmd, error=str(e)[:200])
             fail("TELEGRAM_DELIVERY_FAILED", str(e)[:200])
-        audit("request", id=rid, caller=caller, command=cmd, reason=reason, timeout_s=timeout, background=background)
-        out({"ok": True, "result": {"request_id": rid, "expires_in_s": TTL, "delivered_to": "Telegram Saved Messages",
-             "next": "Ask the owner for the 6-digit code, then call server_admin_approve."}})
+        audit("request", id=rid, caller=caller, command=cmd, reason=reason, timeout_s=timeout, background=background, delivery=delivery)
+        res = {"request_id": rid, "expires_in_s": TTL, "delivered_to": "Telegram Saved Messages", "delivery": delivery,
+               "next": "Ask the owner for the 6-digit code (they may paste the whole code message 'CF root code: NNNNNN'; pass only the 6 digits), then call server_admin_approve."}
+        if delivery == "unconfirmed":
+            res["note"] = "Telegram accepted the message but did not confirm delivery. If the owner did not get it, cancel this request and retry."
+        out({"ok": True, "result": res})
     if act == "approve":
         rid, code = a.get("request_id"), str(a.get("code") or "").strip()
         with locked():
@@ -252,6 +344,7 @@ def main():
                 fail("CODE_INVALID", "attempts left: %d" % max(0, MAX_ATTEMPTS - rec["attempts"]))
             rec["status"] = "approved"; rec.pop("hash"); rec["approved"] = now(); rec["approved_by"] = caller; save(rid, rec)
         audit("approved", id=rid, caller=caller, requested_by=rec.get("caller"), command=rec["command"])
+        spawn_tg_cleanup(rid, rec)
         fd = os.open(path(rid, ".sh"), os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o700)
         with os.fdopen(fd, "w", encoding="utf-8") as f: f.write(rec["command"] + "\n")
         if rec["background"]:
