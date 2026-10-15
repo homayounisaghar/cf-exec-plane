@@ -1,0 +1,48 @@
+--- status ---
+active_release=/var/lib/capability-fabric/releases/onshape-vps-fast-r100-direct-orbit1-paa-storage-r253-tgpair1
+served_build=onshape-vps-fast-r100-direct-orbit1-paa-storage-r253-tgpair1
+capability-fabric-pcg-alibaba-android Up 4 hours
+capability-fabric-pcg-web Up 4 hours (healthy)
+capability-fabric-pcg-core Up 4 hours (healthy)
+capability-fabric-pcg-telegram Up 4 hours (healthy)
+capability-fabric-pcg-audio-transform Up 4 hours (healthy)
+capability-fabric-pcg-perplexity-asr Up 4 hours (healthy)
+capability-fabric-pcg-asr Up 4 hours (healthy)
+capability-fabric-onshape-phase0-fabric Up 4 hours (healthy)
+capability-fabric-onshape-phase0-research Up 4 hours (healthy)
+capability-fabric-onshape-gateway Up 4 hours (healthy)
+capability-fabric-onshape-server Up 4 hours (healthy)
+unit capability-fabric-cf-ops active pid=79432
+unit capability-fabric-pcg-wechat active pid=79484
+unit capability-fabric-pcg-wechat-semantic active pid=80108
+unit capability-fabric-onshape-server active pid=0
+total 0
+srw-rw-rw- 1 cfserver cfserver 0 Oct 15 15:53 agent.sock
+cf-ops unit: MemoryMax=2147483648 User=cfserver NoNewPrivileges=no KillMode=process 
+-r--r----- 1 root root   119 Oct 15 09:14 /etc/sudoers.d/cf-admin
+-rwxr-xr-x 1 root root 22066 Oct 15 18:50 /usr/local/sbin/cf-admin-exec
+cf-admin requests=29 audit_lines=35
+cf-ops backups: 20261015T024920Z 20261015T080843Z 20261015T091428Z 
+total 0
+srw-rw-rw- 1 ubuntu ubuntu 0 Oct 15 15:53 agent.sock
+container_probe {"ok":true,"result":{"version":"cf-ops-agent/2.0","user":"cfserver","uid":1000,"gid":1000,"host":"ubuntu-16gb-hel1-2","python":"3.14.4","cwd":"/var/lib/capabili
+Oct 15 18:53:35 ubuntu-16gb-hel1-2 sudo[418233]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+Oct 15 18:53:35 ubuntu-16gb-hel1-2 sudo[418233]: cfserver :  PWD=/var/lib/capability-fabric/cf-ops ; USER=root ; COMMAND=/usr/local/sbin/cf-admin-exec
+Oct 15 18:53:35 ubuntu-16gb-hel1-2 sudo[418233]: pam_unix(sudo:session): session closed for user root
+Oct 15 18:55:58 ubuntu-16gb-hel1-2 sudo[422599]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+Oct 15 18:55:58 ubuntu-16gb-hel1-2 sudo[422599]: cfserver :  PWD=/var/lib/capability-fabric/cf-ops ; USER=root ; COMMAND=/usr/local/sbin/cf-admin-exec
+Oct 15 18:56:18 ubuntu-16gb-hel1-2 sudo[422599]: pam_unix(sudo:session): session closed for user root
+Oct 15 18:56:58 ubuntu-16gb-hel1-2 sudo[424481]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+Oct 15 18:56:58 ubuntu-16gb-hel1-2 sudo[424481]: cfserver :  PWD=/var/lib/capability-fabric/cf-ops ; USER=root ; COMMAND=/usr/local/sbin/cf-admin-exec --help
+Oct 15 18:56:58 ubuntu-16gb-hel1-2 sudo[424481]: pam_unix(sudo:session): session closed for user root
+Oct 15 19:36:23 ubuntu-16gb-hel1-2 sudo[498250]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+Oct 15 19:36:23 ubuntu-16gb-hel1-2 sudo[498250]: cfserver :  PWD=/var/lib/capability-fabric/cf-ops ; USER=root ; COMMAND=/usr/local/sbin/cf-admin-exec
+Oct 15 19:36:24 ubuntu-16gb-hel1-2 sudo[498250]: pam_unix(sudo:session): session closed for user root
+Oct 15 19:37:33 ubuntu-16gb-hel1-2 sudo[500371]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+Oct 15 19:37:33 ubuntu-16gb-hel1-2 sudo[500371]: cfserver :  PWD=/var/lib/capability-fabric/cf-ops ; USER=root ; COMMAND=/usr/local/sbin/cf-admin-exec
+Oct 15 19:37:33 ubuntu-16gb-hel1-2 sudo[500371]: pam_unix(sudo:session): session closed for user root
+/dev/sda1       150G  119G   26G  83% /
+               total        used        free      shared  buff/cache   available
+Mem:           15568       12573         380         257        3115        2994
+Swap:           4095        3524         571
+REMOTE_EXIT=0
