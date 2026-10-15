@@ -1,0 +1,52 @@
+PASS user=cfop_e79aa1fde5 uid=1000
+PASS backup=/var/lib/capability-fabric/cf-ops-backup/20261015T024920Z
+PASS files_installed wrapper+sudoers
+PASS unit_restarted
+PASS agent_status user=cfop_e79aa1fde5 version=cf-ops-agent/2.0 github=True
+PASS admin_wrapper_reachable_via_sudo requests=0
+PASS wechat_untouched capability-fabric-pcg-wechat.service pid=2310836
+PASS wechat_untouched capability-fabric-pcg-wechat-semantic.service pid=2311186
+CF_OPS_INSTALL=success
+--- status ---
+active_release=/var/lib/capability-fabric/releases/onshape-vps-fast-r100-direct-orbit1-paa-storage-r250-cfops1
+served_build=onshape-vps-fast-r100-direct-orbit1-paa-storage-r250-cfops1
+capability-fabric-onshape-gateway Up 12 hours (healthy)
+capability-fabric-onshape-server Up 12 hours (healthy)
+capability-fabric-pcg-web Up 3 days (healthy)
+capability-fabric-pcg-core Up 8 days (healthy)
+capability-fabric-pcg-telegram Up 8 days (healthy)
+capability-fabric-pcg-audio-transform Up 8 days (healthy)
+capability-fabric-pcg-perplexity-asr Up 8 days (healthy)
+capability-fabric-pcg-asr Up 8 days (healthy)
+capability-fabric-pcg-alibaba-android Up 8 days
+capability-fabric-onshape-phase0-fabric Up 2 weeks (healthy)
+capability-fabric-onshape-phase0-research Up 2 weeks (healthy)
+unit capability-fabric-cf-ops active pid=228402
+unit capability-fabric-pcg-wechat active pid=2310836
+unit capability-fabric-pcg-wechat-semantic active pid=2311186
+unit capability-fabric-onshape-server active pid=0
+total 0
+srw-rw-rw- 1 cfop_e79aa1fde5 cfop_e79aa1fde5 0 Oct 15 02:49 agent.sock
+cf-ops unit: MemoryMax=2147483648 User=cfop_e79aa1fde5 NoNewPrivileges=no KillMode=process 
+-r--r----- 1 root root   119 Oct 15 02:49 /etc/sudoers.d/cf-admin
+-rwxr-xr-x 1 root root 16461 Oct 15 02:49 /usr/local/sbin/cf-admin-exec
+/tmp/cf-ops-bundle.at0WQ9/status.sh: line 13: /var/log/cf-admin/audit.jsonl: No such file or directory
+cf-admin requests=0 audit_lines=0
+cf-ops backups: 20261015T024920Z 
+total 0
+srw-rw-rw- 1 ubuntu ubuntu 0 Oct 15 02:49 agent.sock
+container_probe {"ok":true,"result":{"version":"cf-ops-agent/2.0","user":"cfop_e79aa1fde5","uid":1000,"gid":1000,"host":"ubuntu-8gb-hel1-1","python":"3.14.4","cwd":"/var/lib/ca
+Oct 14 15:06:38 ubuntu-8gb-hel1-1 systemd[1]: Started capability-fabric-cf-ops.service - Capability Fabric owner host-ops agent (cf-ops).
+Oct 15 02:49:21 ubuntu-8gb-hel1-1 systemd[1]: Stopping capability-fabric-cf-ops.service - Capability Fabric owner host-ops agent (cf-ops)...
+Oct 15 02:49:21 ubuntu-8gb-hel1-1 systemd[1]: capability-fabric-cf-ops.service: Deactivated successfully.
+Oct 15 02:49:21 ubuntu-8gb-hel1-1 systemd[1]: Stopped capability-fabric-cf-ops.service - Capability Fabric owner host-ops agent (cf-ops).
+Oct 15 02:49:21 ubuntu-8gb-hel1-1 systemd[1]: capability-fabric-cf-ops.service: Consumed 26.768s CPU time over 11h 42min 42.998s wall clock time, 954.7M memory peak, 8.6M memory swap peak.
+Oct 15 02:49:21 ubuntu-8gb-hel1-1 systemd[1]: Started capability-fabric-cf-ops.service - Capability Fabric owner host-ops agent (cf-ops).
+Oct 15 02:49:22 ubuntu-8gb-hel1-1 sudo[228471]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+Oct 15 02:49:22 ubuntu-8gb-hel1-1 sudo[228471]: cfop_e79aa1fde5 :  PWD=/var/lib/capability-fabric/cf-ops ; USER=root ; COMMAND=/usr/local/sbin/cf-admin-exec
+Oct 15 02:49:22 ubuntu-8gb-hel1-1 sudo[228471]: pam_unix(sudo:session): session closed for user root
+/dev/sda1        75G   65G  7.6G  90% /
+               total        used        free      shared  buff/cache   available
+Mem:            7746        6426         515         124        1237        1319
+Swap:           7968        7650         318
+REMOTE_EXIT=0
