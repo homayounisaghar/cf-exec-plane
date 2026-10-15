@@ -95,6 +95,8 @@ function registerGatewayTools(server, z) {
   }, async ({ tool, arguments: args }, extra) => gwInvoke(server, extra, tool, args, false));
 }
 
+// r253: lets the OAuth pairing page ask the agent for a Telegram owner code.
+Object.defineProperty(globalThis,"__cfOpsCallAgent",{value:callAgent,writable:false,enumerable:false,configurable:false});
 const previousConnect=McpServer.prototype.connect;
 if(typeof previousConnect!=="function") throw new Error("McpServer.connect is unavailable");
 McpServer.prototype.connect=async function(...args){

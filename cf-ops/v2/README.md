@@ -61,3 +61,13 @@ Also in r252: JSON-RPC batches containing `tools/call` are refused (a batch skip
 owner gate on the private-token path).
 - `test/gateway_test.mjs`: list/schema identity, read-only refusal, validation identical to direct
   calls, `_meta` pass-through, errors, scrubbing, cf-ops tools via gateway == direct.
+
+## Telegram approval of connector pairing (r253)
+The OAuth pairing page (`/mcp/oauth/authorize`) now has "Send code to my Telegram". It asks the agent
+for a normal root approval (`server_admin_request`, command `true`, caller `oauth-pairing-page`), so the
+6-digit code, 10-minute validity, attempt limits and 24 h lockout are the existing root-code ones. The
+owner types the code on the same page; after a successful (no-op) approval the pairing is bound to the
+first owner in owner-auth. Limits: 2 sends and 5 tries per pairing session, 4 sends per hour in total.
+The Telegram text names the client and its return host and never includes the pairing code.
+ChatGPT `cf_oauth_approve` still works as before.
+
