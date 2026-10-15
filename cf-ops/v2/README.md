@@ -44,3 +44,20 @@ WeChat units, paa_remote and CF containers are not touched.
   (also for tools registered by later preloads), caller identity.
 - `test/install_sim_*.sh|py`: installer in a fake root: v1->v2 upgrade, re-run, rollback when the
   final check fails, when sudoers validation fails, and when the new agent never starts.
+
+## Tool gateway (r252)
+Clients (Notion, ChatGPT) cache the tool list when they connect, so tools added by a later release
+stay invisible until the connector is reconnected. Three fixed tools close that gap:
+- `cf_tool_list` (read-only): current server tools; compact list, or full input schema for up to 20 names.
+- `cf_tool_read` (read-only): run a tool that is marked read-only, by exact name + arguments.
+- `cf_tool_call`: run any tool by exact name + arguments.
+They call the SDK's own `tools/call` handler with the same caller context (`_meta`, OAuth info),
+so input validation, in-tool owner checks, `confirm=true` fields, caller audit, code scrubbing and the
+Telegram root code all still apply. The HTTP owner gate already runs for the gateway call itself.
+No recursion into gateway tools; names are looked up as own properties only.
+Trade-off: the client's per-tool confirmation shows only "cf_tool_call", so the assistant must ask the
+owner before risky actions itself. Prefer direct tools; the gateway is a bridge until the next reconnect.
+Also in r252: JSON-RPC batches containing `tools/call` are refused (a batch skipped the per-request
+owner gate on the private-token path).
+- `test/gateway_test.mjs`: list/schema identity, read-only refusal, validation identical to direct
+  calls, `_meta` pass-through, errors, scrubbing, cf-ops tools via gateway == direct.
