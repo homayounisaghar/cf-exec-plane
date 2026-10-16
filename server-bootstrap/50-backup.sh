@@ -58,7 +58,8 @@ NoNewPrivileges=yes
 PrivateTmp=yes
 ProtectHome=yes
 ProtectSystem=full
-ReadWritePaths=/var/lib/capability-fabric /var/backups/capability-fabric /var/log/capability-fabric /run/lock
+Environment=RESTIC_CACHE_DIR=/var/cache/capability-fabric-restic
+ReadWritePaths=/var/lib/capability-fabric /var/backups/capability-fabric /var/log/capability-fabric /run/lock /var/cache/capability-fabric-restic
 LockPersonality=yes
 RestrictSUIDSGID=yes
 UNIT
@@ -79,6 +80,7 @@ systemctl daemon-reload
 if [[ "$mode" == prove ]]; then systemctl disable --now capability-fabric-backup.timer >/dev/null 2>&1 || true; fi
 
 install -d -m 0750 -o root -g root /var/backups/capability-fabric /var/log/capability-fabric /var/lib/capability-fabric/state
+install -d -m 0700 -o root -g root /var/cache/capability-fabric-restic
 log=/var/log/capability-fabric/backup-detail.log
 : >> "$log"; chmod 0640 "$log"; chown root:root "$log"
 exec 9>/run/lock/capability-fabric-backup.lock
@@ -155,6 +157,33 @@ for pcg_exclude in "${pcg_backup_excludes[@]}"; do
     [[ "$mode" == prove ]] || { echo "PCG runtime/session exclusion missing outside prove mode: $pcg_exclude" >&2; exit 31; }
     tmp_exclude="$(mktemp /etc/capability-fabric/.backup.exclude.XXXXXX)"
     { cat "$exclude_file"; printf '%s\n' "$pcg_exclude"; } | awk 'NF && !seen[$0]++' > "$tmp_exclude"
+    chown root:root "$tmp_exclude"
+    chmod 0600 "$tmp_exclude"
+    mv -f "$tmp_exclude" "$exclude_file"
+  fi
+done
+
+# Large re-creatable data (emulator/VM images, builds, caches, toolchains) is not backed up (Backblaze free tier).
+size_excludes=(
+  /var/lib/capability-fabric/paa-remote/alibaba-official-emulator-preflight
+  /var/lib/capability-fabric/paa-remote/build
+  /var/lib/capability-fabric/paa-remote/.npm
+  /var/lib/capability-fabric/paa-remote/.android
+  /var/lib/capability-fabric/paa-remote/android-toolchain
+  /var/lib/capability-fabric/paa-remote/cf-whoami-r248
+  /var/lib/capability-fabric/paa-remote/cf-whoami-r248-work
+  /var/lib/capability-fabric/paa-remote/cf-oauth-20261014
+  /var/lib/capability-fabric/paa-remote/wechat-native
+  /var/lib/capability-fabric/paa-remote/snapp-browser
+  /var/lib/capability-fabric/paa-remote/tapsi-browser
+  /var/lib/capability-fabric/pcg/alibaba-arm64-vm
+  /var/lib/capability-fabric/pcg/alibaba-android
+  /var/lib/capability-fabric/.restic-cache
+)
+for size_exclude in "${size_excludes[@]}"; do
+  if ! grep -Fxq "$size_exclude" "$exclude_file"; then
+    tmp_exclude="$(mktemp /etc/capability-fabric/.backup.exclude.XXXXXX)"
+    { cat "$exclude_file"; printf '%s\n' "$size_exclude"; } | awk 'NF && !seen[$0]++' > "$tmp_exclude"
     chown root:root "$tmp_exclude"
     chmod 0600 "$tmp_exclude"
     mv -f "$tmp_exclude" "$exclude_file"
@@ -350,6 +379,6 @@ PY
   printf 'CF_BACKUP_PROOF_BEGIN\nSNAPSHOT_ID=%s\nRESTIC_CHECK=pass\nISOLATED_RESTORE=pass\nRESTORE_TREE_COMPARE=pass\nBROWSER_PROFILE_EXCLUDED=pass\nINTERACTIVE_BROWSER_PROFILE_EXCLUDED=pass\nPCG_WEB_PROFILE_EXCLUDED=pass\nPCG_RUNTIME_SECRET_STATE_EXCLUDED=pass\nBACKUP_EXCLUDE_PERMS=pass\nSQLITE_CONSISTENT_SNAPSHOT=%s\nSQLITE_RESTORE_INTEGRITY=%s\nSQLITE_RECOVERABLE_COUNT=%s\nBACKUP_TIMER_ENABLED=yes\nCF_BACKUP_PROOF_END\n' "$snapshot_id" "$sqlite_snapshot" "$sqlite_restore_integrity" "$sqlite_recoverable_count"
 else
   rm -f "$source_manifest"
-  restic forget --tag capability-fabric-personal-server --keep-last 3 --keep-daily 7 --keep-weekly 4 --keep-monthly 6 --prune >>"$log" 2>&1
+  restic forget --tag capability-fabric-personal-server --keep-last 2 --prune --max-unused unlimited >>"$log" 2>&1
   printf 'CF_BACKUP_RUN=success\nSNAPSHOT_ID=%s\n' "$snapshot_id"
 fi
