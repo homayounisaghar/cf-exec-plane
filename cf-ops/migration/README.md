@@ -1,3 +1,5 @@
+> **DONE / OBSOLETE (2026-10-16):** this one-time migration is finished and the old server is deleted. The old user names below no longer exist anywhere. The only server user is `cfserver` (uid 1000). Do not run this tool.
+
 # cfserver migration (NOT EXECUTED)
 Renames uid 1000 `cfop_e79aa1fde5` to `cfserver` and moves `paa_remote` (994/980) workloads to it. Plan: capability-fabric `docs/cf-self-sufficient-tools/MIGRATION_PLAN_cfserver.md`.
 

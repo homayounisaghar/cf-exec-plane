@@ -85,7 +85,7 @@ jobs:
           state=/var/lib/capability-fabric/pcg/wechat
           debug=/var/lib/capability-fabric/paa-remote/pcg-wechat-read-probe-debug.txt
           : > "$debug"
-          chown paa_remote:paa_remote "$debug"
+          chown cfserver:cfserver "$debug"
           chmod 0600 "$debug"
           echo "stage=start action=$ACTION" >> "$debug"
           echo "bridge=$(systemctl is-active "$bridge" 2>/dev/null || true) final=$(systemctl is-active "$final" 2>/dev/null || true)" >> "$debug"
@@ -95,7 +95,7 @@ jobs:
               snapshot="$state/accessibility-snapshot.json"
               if systemctl is-active --quiet "$final" && curl -fsS --max-time 2 http://127.0.0.1:9336/accessibility >/tmp/pcg-wechat-accessibility.json 2>/dev/null; then
                 python3 -c 'import json; p=json.load(open("/tmp/pcg-wechat-accessibility.json")); assert p.get("ok") is True; assert int(p.get("node_count",0)) > 0'
-                install -o paa_remote -g paa_remote -m 0600 /tmp/pcg-wechat-accessibility.json /var/lib/capability-fabric/paa-remote/pcg-wechat-accessibility.json
+                install -o cfserver -g cfserver -m 0600 /tmp/pcg-wechat-accessibility.json /var/lib/capability-fabric/paa-remote/pcg-wechat-accessibility.json
                 echo "stage=success source=final_status" >> "$debug"
                 exit 0
               fi
@@ -121,7 +121,7 @@ jobs:
               [[ "$probe_rc" -eq 0 || "$probe_rc" -eq 124 ]]
               test -s "$snapshot"
               python3 -c 'import json,sys; p=json.load(open(sys.argv[1])); assert p.get("ok") is True; assert int(p.get("node_count",0)) > 0' "$snapshot"
-              install -o paa_remote -g paa_remote -m 0600 "$snapshot" /var/lib/capability-fabric/paa-remote/pcg-wechat-accessibility.json
+              install -o cfserver -g cfserver -m 0600 "$snapshot" /var/lib/capability-fabric/paa-remote/pcg-wechat-accessibility.json
               echo "stage=success source=bridge_atspi" >> "$debug"
               ;;
             db-schema)
@@ -162,7 +162,7 @@ jobs:
               except Exception as e:
                   print("SQLITE_ERROR", type(e).__name__, str(e))
           PY
-              install -o paa_remote -g paa_remote -m 0600 "$tmp" "$out"
+              install -o cfserver -g cfserver -m 0600 "$tmp" "$out"
               echo "stage=success db_schema=$out" >> "$debug"
               ;;
             key-scan)
@@ -314,7 +314,7 @@ jobs:
           PY
               chown "$owner:$owner" "$state/db-keys.json"
               chmod 0600 "$state/db-keys.json"
-              install -o paa_remote -g paa_remote -m 0600 "$tmp" "$summary"
+              install -o cfserver -g cfserver -m 0600 "$tmp" "$summary"
               python3 -c 'import json,sys; p=json.load(open(sys.argv[1])); assert p.get("validated_count",0) > 0' "$summary"
               echo "stage=success keyscan_summary=$summary" >> "$debug"
               ;;
@@ -382,7 +382,7 @@ jobs:
                       except Exception: pass
           print(json.dumps({"ok":True,"nodes_scanned":seen,"interesting":rows},ensure_ascii=False))
           PY
-              install -o paa_remote -g paa_remote -m 0600 "$tmp" "$out"
+              install -o cfserver -g cfserver -m 0600 "$tmp" "$out"
               echo "stage=success semantic_inspect=$out" >> "$debug"
               ;;
             state-index)
@@ -405,7 +405,7 @@ jobs:
                   find "/proc/$p/fd" -maxdepth 1 -type l -printf '%l\n' 2>/dev/null | grep '^/var/lib/capability-fabric/pcg/wechat/' || true
                 done | sort -u
               } > "$tmp"
-              install -o paa_remote -g paa_remote -m 0600 "$tmp" "$out"
+              install -o cfserver -g cfserver -m 0600 "$tmp" "$out"
               echo "stage=success state_index=$out" >> "$debug"
               ;;
           esac

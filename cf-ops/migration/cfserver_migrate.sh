@@ -1,4 +1,6 @@
 #!/bin/bash
+# OBSOLETE (2026-10-16): migration finished, old users removed. Do not run.
+if [ "${CF_MIGRATE_FORCE_OBSOLETE:-}" != 1 ]; then echo "cfserver_migrate.sh is obsolete (migration done)" >&2; exit 1; fi
 # cfserver_migrate.sh - rename uid 1000 (cfop_e79aa1fde5) to cfserver and move paa_remote workloads to it.
 # Modes: --dry-run (default, changes nothing) | --apply | --rollback <backup_dir>
 # Options: --paa-cron=disable|merge (default disable: paa_remote crontab kept as paa_remote.disabled-by-migration;

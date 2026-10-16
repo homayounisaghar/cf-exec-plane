@@ -134,6 +134,6 @@ jobs:
           out={"ok":True,"candidate_commit":sys.argv[1],"wechat_main_pid":int(sys.argv[2]),"wechat_restarted":False,"semantic_status":"authenticated","written_at":int(time.time())}
           open("/var/lib/capability-fabric/paa-remote/pcg-wechat-semantic-refresh-proof.json","w").write(json.dumps(out,separators=(",",":")))
           PY
-          chown paa_remote:paa_remote /var/lib/capability-fabric/paa-remote/pcg-wechat-semantic-refresh-proof.json
+          chown cfserver:cfserver /var/lib/capability-fabric/paa-remote/pcg-wechat-semantic-refresh-proof.json
           chmod 0600 /var/lib/capability-fabric/paa-remote/pcg-wechat-semantic-refresh-proof.json
           REMOTE

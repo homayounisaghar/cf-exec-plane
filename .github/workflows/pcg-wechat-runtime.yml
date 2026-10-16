@@ -261,7 +261,7 @@ jobs:
                 echo "===JOURNAL==="
                 journalctl -u "$semantic" -n 160 --no-pager 2>&1 || true
               } > /var/lib/capability-fabric/paa-remote/pcg-wechat-semantic-diagnostic.txt
-              chown paa_remote:paa_remote /var/lib/capability-fabric/paa-remote/pcg-wechat-semantic-diagnostic.txt
+              chown cfserver:cfserver /var/lib/capability-fabric/paa-remote/pcg-wechat-semantic-diagnostic.txt
               chmod 0600 /var/lib/capability-fabric/paa-remote/pcg-wechat-semantic-diagnostic.txt
               echo "PCG_WECHAT_SEMANTIC_DIAGNOSE=written"
               ;;
@@ -270,7 +270,7 @@ jobs:
               systemctl is-active --quiet "$semantic" || { echo "WECHAT_FILE_DIALOG_PROBE_REQUIRES_SEMANTIC_ACTIVE" >&2; exit 109; }
               curl -fsS --max-time 12 -H 'content-type: application/json' -d '{}' http://127.0.0.1:9337/file-dialog-probe > /tmp/pcg-wechat-file-dialog-probe.json
               python3 -c 'import json; p=json.load(open("/tmp/pcg-wechat-file-dialog-probe.json")); assert p.get("ok") is True; assert p.get("provider_visible_state_changed") is False'
-              install -o paa_remote -g paa_remote -m 0600 /tmp/pcg-wechat-file-dialog-probe.json /var/lib/capability-fabric/paa-remote/pcg-wechat-file-dialog-probe.json
+              install -o cfserver -g cfserver -m 0600 /tmp/pcg-wechat-file-dialog-probe.json /var/lib/capability-fabric/paa-remote/pcg-wechat-file-dialog-probe.json
               echo "PCG_WECHAT_FILE_DIALOG_PROBE=success"
               ;;
             semantic-cancel-dialog)
@@ -315,18 +315,18 @@ jobs:
               runuser -u "$owner" -- env DISPLAY="$DISPLAY" XAUTHORITY="$XAUTHORITY" xdotool mousemove 430 520 click --repeat 120 --delay 20 4
               sleep 1
               curl -fsS --max-time 5 http://127.0.0.1:9337/conversations > /tmp/pcg-wechat-scroll-top.json
-              install -o paa_remote -g paa_remote -m 0600 /tmp/pcg-wechat-scroll-top.json /var/lib/capability-fabric/paa-remote/pcg-wechat-scroll-top.json
+              install -o cfserver -g cfserver -m 0600 /tmp/pcg-wechat-scroll-top.json /var/lib/capability-fabric/paa-remote/pcg-wechat-scroll-top.json
               echo "PCG_WECHAT_SCROLL_TOP=success"
               ;;
             semantic-material-locate)
               root=/var/lib/capability-fabric/pcg/run/material-files
               out=/var/lib/capability-fabric/paa-remote/pcg-wechat-material-locate.txt
-              [[ -d "$root" ]] || { echo "MATERIAL_ROOT_MISSING" > "$out"; chown paa_remote:paa_remote "$out"; chmod 0600 "$out"; exit 118; }
+              [[ -d "$root" ]] || { echo "MATERIAL_ROOT_MISSING" > "$out"; chown cfserver:cfserver "$out"; chmod 0600 "$out"; exit 118; }
               {
                 echo "===MATCHES==="
                 find "$root" -maxdepth 1 -type f -name '*-wechat-r241-dryrun.bin' -printf '%f %s\n' | sort
               } > "$out"
-              chown paa_remote:paa_remote "$out"
+              chown cfserver:cfserver "$out"
               chmod 0600 "$out"
               echo "PCG_WECHAT_MATERIAL_LOCATE=written"
               ;;
@@ -438,7 +438,7 @@ jobs:
           if not any(n.get("role")=="frame" and n.get("name")=="WeChat" for n in visible):
               raise SystemExit(90)
           PY
-              install -o paa_remote -g paa_remote -m 0600 /tmp/pcg-wechat-self-after.json /var/lib/capability-fabric/paa-remote/pcg-wechat-self-chat-accessibility.json
+              install -o cfserver -g cfserver -m 0600 /tmp/pcg-wechat-self-after.json /var/lib/capability-fabric/paa-remote/pcg-wechat-self-chat-accessibility.json
               echo "PCG_WECHAT_SELF_CHAT_PROBE=success"
               ;;
             read-chat-probe)
@@ -489,7 +489,7 @@ jobs:
           if any(x.startswith("[") and "]" in x for x in lines[1:2]): raise SystemExit(96)
           if "selected" not in states: raise SystemExit(97)
           PY
-              install -o paa_remote -g paa_remote -m 0600 /tmp/pcg-wechat-readchat-after.json /var/lib/capability-fabric/paa-remote/pcg-wechat-read-chat-accessibility.json
+              install -o cfserver -g cfserver -m 0600 /tmp/pcg-wechat-readchat-after.json /var/lib/capability-fabric/paa-remote/pcg-wechat-read-chat-accessibility.json
               echo "PCG_WECHAT_READ_CHAT_PROBE=success"
               ;;
             message-structure-probe)
@@ -548,8 +548,8 @@ jobs:
           if "selected" not in states: raise SystemExit(106)
           PY
               runuser -u "$owner" -- env DISPLAY="$DISPLAY" XAUTHORITY="$XAUTHORITY" ffmpeg -loglevel error -f x11grab -video_size 1440x1000 -i :97 -frames:v 1 -y /tmp/pcg-wechat-message-structure.png
-              install -o paa_remote -g paa_remote -m 0600 "$after" /var/lib/capability-fabric/paa-remote/pcg-wechat-message-structure.json
-              install -o paa_remote -g paa_remote -m 0600 /tmp/pcg-wechat-message-structure.png /var/lib/capability-fabric/paa-remote/pcg-wechat-message-structure.png
+              install -o cfserver -g cfserver -m 0600 "$after" /var/lib/capability-fabric/paa-remote/pcg-wechat-message-structure.json
+              install -o cfserver -g cfserver -m 0600 /tmp/pcg-wechat-message-structure.png /var/lib/capability-fabric/paa-remote/pcg-wechat-message-structure.png
               read -r rx ry rcount < <(python3 - "$after" <<'PY'
           import json,sys
           j=json.load(open(sys.argv[1])); rows=[]
@@ -892,7 +892,7 @@ jobs:
                 echo "===JOURNAL==="
                 journalctl -u "$semantic" -n 160 --no-pager 2>&1 || true
               } > /var/lib/capability-fabric/paa-remote/pcg-wechat-semantic-diagnostic.txt
-              chown paa_remote:paa_remote /var/lib/capability-fabric/paa-remote/pcg-wechat-semantic-diagnostic.txt
+              chown cfserver:cfserver /var/lib/capability-fabric/paa-remote/pcg-wechat-semantic-diagnostic.txt
               chmod 0600 /var/lib/capability-fabric/paa-remote/pcg-wechat-semantic-diagnostic.txt
               echo "PCG_WECHAT_SEMANTIC_DIAGNOSE=written"
               ;;
@@ -901,7 +901,7 @@ jobs:
               systemctl is-active --quiet "$semantic" || { echo "WECHAT_FILE_DIALOG_PROBE_REQUIRES_SEMANTIC_ACTIVE" >&2; exit 109; }
               curl -fsS --max-time 12 -H 'content-type: application/json' -d '{}' http://127.0.0.1:9337/file-dialog-probe > /tmp/pcg-wechat-file-dialog-probe.json
               python3 -c 'import json; p=json.load(open("/tmp/pcg-wechat-file-dialog-probe.json")); assert p.get("ok") is True; assert p.get("provider_visible_state_changed") is False'
-              install -o paa_remote -g paa_remote -m 0600 /tmp/pcg-wechat-file-dialog-probe.json /var/lib/capability-fabric/paa-remote/pcg-wechat-file-dialog-probe.json
+              install -o cfserver -g cfserver -m 0600 /tmp/pcg-wechat-file-dialog-probe.json /var/lib/capability-fabric/paa-remote/pcg-wechat-file-dialog-probe.json
               echo "PCG_WECHAT_FILE_DIALOG_PROBE=success"
               ;;
             semantic-cancel-dialog)
@@ -946,18 +946,18 @@ jobs:
               runuser -u "$owner" -- env DISPLAY="$DISPLAY" XAUTHORITY="$XAUTHORITY" xdotool mousemove 430 520 click --repeat 120 --delay 20 4
               sleep 1
               curl -fsS --max-time 5 http://127.0.0.1:9337/conversations > /tmp/pcg-wechat-scroll-top.json
-              install -o paa_remote -g paa_remote -m 0600 /tmp/pcg-wechat-scroll-top.json /var/lib/capability-fabric/paa-remote/pcg-wechat-scroll-top.json
+              install -o cfserver -g cfserver -m 0600 /tmp/pcg-wechat-scroll-top.json /var/lib/capability-fabric/paa-remote/pcg-wechat-scroll-top.json
               echo "PCG_WECHAT_SCROLL_TOP=success"
               ;;
             semantic-material-locate)
               root=/var/lib/capability-fabric/pcg/run/material-files
               out=/var/lib/capability-fabric/paa-remote/pcg-wechat-material-locate.txt
-              [[ -d "$root" ]] || { echo "MATERIAL_ROOT_MISSING" > "$out"; chown paa_remote:paa_remote "$out"; chmod 0600 "$out"; exit 118; }
+              [[ -d "$root" ]] || { echo "MATERIAL_ROOT_MISSING" > "$out"; chown cfserver:cfserver "$out"; chmod 0600 "$out"; exit 118; }
               {
                 echo "===MATCHES==="
                 find "$root" -maxdepth 1 -type f -name '*-wechat-r241-dryrun.bin' -printf '%f %s\n' | sort
               } > "$out"
-              chown paa_remote:paa_remote "$out"
+              chown cfserver:cfserver "$out"
               chmod 0600 "$out"
               echo "PCG_WECHAT_MATERIAL_LOCATE=written"
               ;;
@@ -1069,7 +1069,7 @@ jobs:
           if not any(n.get("role")=="frame" and n.get("name")=="WeChat" for n in visible):
               raise SystemExit(90)
           PY
-              install -o paa_remote -g paa_remote -m 0600 /tmp/pcg-wechat-self-after.json /var/lib/capability-fabric/paa-remote/pcg-wechat-self-chat-accessibility.json
+              install -o cfserver -g cfserver -m 0600 /tmp/pcg-wechat-self-after.json /var/lib/capability-fabric/paa-remote/pcg-wechat-self-chat-accessibility.json
               echo "PCG_WECHAT_SELF_CHAT_PROBE=success"
               ;;
             read-chat-probe)
@@ -1120,7 +1120,7 @@ jobs:
           if any(x.startswith("[") and "]" in x for x in lines[1:2]): raise SystemExit(96)
           if "selected" not in states: raise SystemExit(97)
           PY
-              install -o paa_remote -g paa_remote -m 0600 /tmp/pcg-wechat-readchat-after.json /var/lib/capability-fabric/paa-remote/pcg-wechat-read-chat-accessibility.json
+              install -o cfserver -g cfserver -m 0600 /tmp/pcg-wechat-readchat-after.json /var/lib/capability-fabric/paa-remote/pcg-wechat-read-chat-accessibility.json
               echo "PCG_WECHAT_READ_CHAT_PROBE=success"
               ;;
             message-structure-probe)
@@ -1179,8 +1179,8 @@ jobs:
           if "selected" not in states: raise SystemExit(106)
           PY
               runuser -u "$owner" -- env DISPLAY="$DISPLAY" XAUTHORITY="$XAUTHORITY" ffmpeg -loglevel error -f x11grab -video_size 1440x1000 -i :97 -frames:v 1 -y /tmp/pcg-wechat-message-structure.png
-              install -o paa_remote -g paa_remote -m 0600 "$after" /var/lib/capability-fabric/paa-remote/pcg-wechat-message-structure.json
-              install -o paa_remote -g paa_remote -m 0600 /tmp/pcg-wechat-message-structure.png /var/lib/capability-fabric/paa-remote/pcg-wechat-message-structure.png
+              install -o cfserver -g cfserver -m 0600 "$after" /var/lib/capability-fabric/paa-remote/pcg-wechat-message-structure.json
+              install -o cfserver -g cfserver -m 0600 /tmp/pcg-wechat-message-structure.png /var/lib/capability-fabric/paa-remote/pcg-wechat-message-structure.png
               read -r rx ry rcount < <(python3 - "$after" <<'PY'
           import json,sys
           j=json.load(open(sys.argv[1])); rows=[]

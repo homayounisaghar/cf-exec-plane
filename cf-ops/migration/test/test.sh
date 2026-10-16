@@ -1,4 +1,5 @@
 #!/bin/bash
+export CF_MIGRATE_FORCE_OBSOLETE=1
 cd /data/mig; export PATH=/data/mig/stubs:$PATH CF_MIG_PAA_UID=1000 CF_MIG_PAA_GID=1000
 snap(){ (cd $1 && find . -path ./var/backups -prune -o -path ./state -prune -o -name stub.log -prune -o -print | sort | while read f; do if [ -L "$f" ]; then echo "$f -> $(readlink $f)"; elif [ -f "$f" ]; then echo "$f $(md5sum < $f)"; else echo "$f/"; fi; done); }
 pass=0; fail=0; chk(){ if eval "$2"; then echo "PASS $1"; pass=$((pass+1)); else echo "FAIL $1"; fail=$((fail+1)); fi; }

@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
+# NOTE (2026-10-16): historical script. Service user is now cfserver (uid 1000); the old user no longer exists.
 set -euo pipefail
 umask 077
 
 [[ "$(id -u)" -eq 0 ]] || exit 10
 publisher=/usr/local/libexec/paa-envelope-publisher.py
-remote_user=paa_remote
+remote_user=cfserver
 producer_key=/etc/capability-fabric/secrets/android-agent/producer-p256-v1.pem
 binding=/etc/capability-fabric/secrets/android-agent/device-binding-alpha10-line3.json
 

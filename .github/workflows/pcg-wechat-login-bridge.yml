@@ -120,7 +120,7 @@ jobs:
             probe-atspi)
               debug=/tmp/pcg-wechat-probe-debug.txt
               : > "$debug"
-              chown paa_remote:paa_remote "$debug"
+              chown cfserver:cfserver "$debug"
               chmod 0600 "$debug"
               echo "stage=start" >> "$debug"
               echo "bridge=$(systemctl is-active "$unit" 2>/dev/null || true)" >> "$debug"
@@ -149,7 +149,7 @@ jobs:
               [[ "$probe_rc" -eq 0 || "$probe_rc" -eq 124 ]]
               test -s "$snapshot"
               python3 -c 'import json,sys; p=json.load(open(sys.argv[1])); print("ok=%s node_count=%s error=%s" % (p.get("ok"),p.get("node_count"),p.get("error"))); assert p.get("ok") is True; assert int(p.get("node_count",0)) > 0' "$snapshot" >> "$debug" 2>&1
-              install -o paa_remote -g paa_remote -m 0600 "$snapshot" /tmp/pcg-wechat-bridge-accessibility.json
+              install -o cfserver -g cfserver -m 0600 "$snapshot" /tmp/pcg-wechat-bridge-accessibility.json
               echo "stage=success" >> "$debug"
               echo "PCG_WECHAT_ATSPI_PROBE=success"
               ;;

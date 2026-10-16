@@ -129,6 +129,6 @@ jobs:
           }
           open("/var/lib/capability-fabric/paa-remote/pcg-wechat-r241-postdeploy-proof.json","w").write(json.dumps(out,separators=(",",":")))
           PY
-          chown paa_remote:paa_remote /var/lib/capability-fabric/paa-remote/pcg-wechat-r241-postdeploy-proof.json
+          chown cfserver:cfserver /var/lib/capability-fabric/paa-remote/pcg-wechat-r241-postdeploy-proof.json
           chmod 0600 /var/lib/capability-fabric/paa-remote/pcg-wechat-r241-postdeploy-proof.json
           REMOTE

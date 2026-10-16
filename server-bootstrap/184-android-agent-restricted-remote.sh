@@ -1,11 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 umask 077
+# OBSOLETE (2026-10-16): historical one-shot installer from the old server.
+# The old service user was removed; the service now runs as cfserver (uid 1000).
+# Running this would lock the cfserver password and change groups. Do NOT run.
+echo "184 is obsolete; do not run (see AGENTS.md 'SERVER USERS')" >&2; exit 1
 
 [[ "$(id -u)" -eq 0 ]] || { echo "must run as root" >&2; exit 1; }
 
-remote_user=paa_remote
-remote_group=paa_remote
+remote_user=cfserver
+remote_group=cfserver
 remote_home=/var/lib/capability-fabric/paa-remote
 publisher_state=/var/lib/capability-fabric/android-agent-publisher
 pairing_file=/var/lib/capability-fabric/state/paa-remote-pairing.txt
@@ -260,7 +264,7 @@ def serve():
     s.bind(SOCKET_PATH)
     os.chmod(SOCKET_PATH,0o660)
     import grp
-    os.chown(SOCKET_PATH,0,grp.getgrnam("paa_remote").gr_gid)
+    os.chown(SOCKET_PATH,0,grp.getgrnam("cfserver").gr_gid)
     s.listen(8)
     while True:
         conn,_=s.accept()

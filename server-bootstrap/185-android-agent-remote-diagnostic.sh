@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
+# NOTE (2026-10-16): historical script. Service user is now cfserver (uid 1000); the old user no longer exists.
 set -euo pipefail
 umask 077
 [[ "$(id -u)" -eq 0 ]] || exit 1
 
-remote_user=paa_remote
+remote_user=cfserver
 home=/var/lib/capability-fabric/paa-remote
 config="$home/.desktop-commander-device/device.json"
 service=capability-fabric-paa-remote.service

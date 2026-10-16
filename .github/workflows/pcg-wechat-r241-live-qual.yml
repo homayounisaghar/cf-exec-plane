@@ -119,6 +119,6 @@ jobs:
           PY
           after_pid="$(systemctl show "$final" -p MainPID --value)"
           [[ "$before_pid" == "$after_pid" ]]
-          chown paa_remote:paa_remote /var/lib/capability-fabric/paa-remote/pcg-wechat-r241-live-qual-proof.json
+          chown cfserver:cfserver /var/lib/capability-fabric/paa-remote/pcg-wechat-r241-live-qual-proof.json
           chmod 0600 /var/lib/capability-fabric/paa-remote/pcg-wechat-r241-live-qual-proof.json
           REMOTE

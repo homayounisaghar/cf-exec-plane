@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # CF-ops host agent installer. Run as root from the bundle directory.
-# Never touches WeChat services, paa_remote, or the CF containers.
+# Never touches WeChat services, the paa-remote service, or the CF containers.
 set -euo pipefail
 [[ "$(id -u)" -eq 0 ]] || { echo "FAIL root_required"; exit 30; }
 here="$(cd "$(dirname "$0")" && pwd)"
-user=cfop_e79aa1fde5
+user=cfserver
 lib=/usr/local/lib/capability-fabric/cf-ops
 state=/var/lib/capability-fabric/cf-ops
 run=/var/lib/capability-fabric/cf-ops-run

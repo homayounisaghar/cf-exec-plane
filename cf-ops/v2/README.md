@@ -27,7 +27,7 @@ Any failure after the backup -> automatic rollback (restore previous files + res
 or remove if there was none). sudoers: `#1000 ALL=(root) NOPASSWD: /usr/local/sbin/cf-admin-exec`
 (uid based, survives the user rename; validated with sudo-rs `visudo -c`). Unit drops
 NoNewPrivileges (needed for sudo), keeps KillMode=process, MemoryMax=2G, TasksMax=512.
-WeChat units, paa_remote and CF containers are not touched.
+WeChat units, the paa-remote service and CF containers are not touched.
 
 ## Known limits (be honest)
 - The code is a consent step, not a sandbox: the Telegram Web browser runs as uid 1000 with a

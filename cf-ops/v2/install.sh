@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # CF-ops host agent installer v2. Run as root from the bundle directory.
 # Installs: cf-ops agent 2.0, root approval wrapper (Telegram code), one sudoers rule.
-# Full backup + automatic rollback. Never touches WeChat services, paa_remote, or CF containers.
+# Full backup + automatic rollback. Never touches WeChat services, the paa-remote service, or CF containers.
 set -euo pipefail
 [[ "$(id -u)" -eq 0 ]] || { echo "FAIL root_required"; exit 30; }
 here="$(cd "$(dirname "$0")" && pwd)"

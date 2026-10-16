@@ -122,6 +122,6 @@ jobs:
           p={"ok":True,"candidate_commit":sys.argv[1],"source_ci":"pass","written_at":int(time.time())}
           open("/var/lib/capability-fabric/paa-remote/pcg-wechat-r241-ci-proof.json","w").write(json.dumps(p,separators=(",",":")))
           PY
-          chown paa_remote:paa_remote /var/lib/capability-fabric/paa-remote/pcg-wechat-r241-ci-proof.json
+          chown cfserver:cfserver /var/lib/capability-fabric/paa-remote/pcg-wechat-r241-ci-proof.json
           chmod 0600 /var/lib/capability-fabric/paa-remote/pcg-wechat-r241-ci-proof.json
           REMOTE

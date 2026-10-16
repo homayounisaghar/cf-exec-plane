@@ -116,6 +116,6 @@ jobs:
           p.update({"cf_gateway_ok":True,"cf_server_ok":True,"bale_ready":True,"whatsapp_ready":True,"alibaba_ready":True,"wechat_authenticated":True})
           open("/var/lib/capability-fabric/paa-remote/pcg-wechat-r243-postdeploy-proof.json","w").write(json.dumps(p,separators=(",",":")))
           PY
-          chown paa_remote:paa_remote /var/lib/capability-fabric/paa-remote/pcg-wechat-r243-postdeploy-proof.json
+          chown cfserver:cfserver /var/lib/capability-fabric/paa-remote/pcg-wechat-r243-postdeploy-proof.json
           chmod 0600 /var/lib/capability-fabric/paa-remote/pcg-wechat-r243-postdeploy-proof.json
           REMOTE
