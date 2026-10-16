@@ -20,7 +20,7 @@ defaults:
 jobs:
   pcg-core-tests:
     if: github.actor == 'homayounisaghar'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
@@ -126,7 +126,7 @@ jobs:
           printf '%s\n' 'T0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJK' > "$work/provision/token"
           chmod 0640 "$work/provision/token"
           sudo chown 65534:65534 "$work/provision/token"
-          image='ghcr.io/homayounisaghar/pcg-tdlib-python@sha256:eccb8b5e73ac504aafd8a8b316e2fda951bd7cb23280cccf99c5e6206c4826e4'
+          image='ghcr.io/homayounisaghar/pcg-tdlib-python@sha256:0ce46bd6a7625671fca6a9f8d3ea8e0aaf0b953b10d844295647d30867dcaa4b'
           docker pull "$image" >/dev/null
           cid="$(docker run -d --rm --network none \
             --user 65534:65534 \
