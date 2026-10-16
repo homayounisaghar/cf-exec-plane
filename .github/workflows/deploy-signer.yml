@@ -2,8 +2,6 @@ name: Capability Fabric Deployment Signer
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '*/10 * * * *'
   push:
     branches: [main]
     paths:
@@ -22,7 +20,7 @@ defaults:
 
 jobs:
   sign:
-    if: github.event_name == 'schedule' || github.actor == 'homayounisaghar'
+    if: github.actor == 'homayounisaghar'
     runs-on: ubuntu-latest
     env:
       VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
