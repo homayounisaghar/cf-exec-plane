@@ -195,7 +195,7 @@ for service in capability-fabric-pull.service capability-fabric-pcg-pull.service
   if systemctl is-active --quiet "$service"; then echo "$service did not quiesce for backup" >&2; exit 31; fi
 done
 
-roots=(/etc/capability-fabric /var/lib/capability-fabric /opt/capability-fabric /usr/local/libexec/capability-fabric-pull-agent /etc/systemd/system/capability-fabric-pull.service /etc/systemd/system/capability-fabric-pull.timer)
+roots=(/etc/capability-fabric /var/lib/capability-fabric /opt/capability-fabric)
 for p in "${roots[@]}"; do [[ -e "$p" || -L "$p" ]] || { echo "required backup root missing: $p" >&2; exit 31; }; done
 
 sqlite_snapshot=not-present
