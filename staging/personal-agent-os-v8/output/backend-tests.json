@@ -3,5 +3,5 @@
   "result": "PASS",
   "schema": "agentos-v8-qualification.v1",
   "source": "staging/personal-agent-os-v8/backend",
-  "test_count": 49
+  "test_count": 50
 }
