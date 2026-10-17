@@ -131,7 +131,7 @@ async function openOnDesktop(name, url, x11) {
   try { const j = await getJSON(url + 'info'); if (j.region) src = [j.region.w, j.region.h]; } catch {}
   // leave a margin on every side so the window is easy to move/resize; scale up small apps
   const M = 40, maxW = desk[0] - 2 * M, maxH = Math.min(desk[1] - 2 * M - 80, Math.round(desk[0] * 1.2));
-  const k = Math.min(maxW / src[0], maxH / src[1], 2);
+  const k = Math.min(maxW / src[0], maxH / src[1], 1); // 1:1 = sharpest (no upscaling)
   const w = Math.round(src[0] * k), h = Math.round(src[1] * k);
   const px = Math.round((desk[0] - w) / 2), py = M + 40;
   const bin = fs.existsSync('/usr/bin/chromium-browser') ? '/usr/bin/chromium-browser' : null;

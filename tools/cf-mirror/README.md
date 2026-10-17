@@ -7,7 +7,7 @@ Shows a hidden browser (Chrome DevTools/CDP port: Telegram, WhatsApp, Bale, Snap
 - Live stream (MJPEG). Default `--interval auto`: 0.05 s (20 fps); when whole-server CPU >= 75 % it slows to 0.1 s, then 0.2 s; back to faster after ~15 s below 50 %. Fixed: `--interval 0.1`. Image quality follows the same levels (high at 0.05 s, medium at 0.1 s, low at 0.2 s). Viewer shows rate, quality and CPU.
 - `--open` opens the mirror in the owner's remote desktop (xrdp, DISPLAY :10).
 - X11: Crops to app windows (WeChat + its popups), no black screen border; `--full` shows the whole screen.
-- `--open`: app window (no tabs/address bar), scaled up to fit the desktop with a 40 px margin on every side.
+- `--open`: app window (no tabs/address bar), shown 1:1 (sharp, never upscaled), with a 40 px margin on every side.
 - Local only (binds 127.0.0.1), runs as `cfserver`, Node ≥ 22 stdlib only.
 
 ```
