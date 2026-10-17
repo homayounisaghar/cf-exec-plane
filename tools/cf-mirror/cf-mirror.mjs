@@ -174,7 +174,7 @@ function P(u,b){return fetch(u,{method:'POST',headers:{'content-type':'applicati
 function xy(e){const r=I.getBoundingClientRect(),nw=I.naturalWidth||r.width,nh=I.naturalHeight||r.height,s=Math.min(r.width/nw,r.height/nh);return{x:Math.round((e.clientX-r.left)/s),y:Math.round((e.clientY-r.top)/s)}}
 let fr=0;function live(){I.src='/stream.mjpg?'+Date.now()}
 I.onerror=()=>{S.textContent='reconnecting';setTimeout(live,1000)};I.onload=()=>{fr++};
-function info(){fetch('/info').then(r=>r.json()).then(j=>{S.textContent='live '+j.interval_s+'s · '+j.quality+(j.auto?' · auto':'')+' · cpu '+j.cpu_pct+'%'}).catch(()=>{})}
+function info(){fetch('/info').then(r=>r.json()).then(j=>{S.textContent='live '+j.interval_s+'s · '+j.quality+' resolution'+(j.auto?' · auto':'')+' · cpu '+j.cpu_pct+'%'}).catch(()=>{})}
 setInterval(info,3000);info();live();
 function soon(){}
 function fit(){P('/fit',{w:Math.round(innerWidth),h:Math.round(innerHeight)}).then(soon)}
