@@ -23,7 +23,7 @@ function usage(code = 0) {
   cf-mirror status                       running mirrors + URLs
   cf-mirror stop NAME|all
 
-  --interval  seconds between refreshes (default 1)
+  --interval  seconds between frames, or auto (default): 0.05 s, slows to 0.1/0.2 s when server CPU is busy
   --open      also open the mirror in the owner's remote desktop (${XRDP_DISPLAY})
   --no-fit    do not resize the browser viewport to the viewer window (CDP only)
   URL is http://127.0.0.1:PORT/ (local only).`);
@@ -105,14 +105,14 @@ async function start(o) {
   if (!o.cdp && !o.x11) usage(2);
   const old = running().find(j => j.name === name); if (old) { console.log(JSON.stringify({ ok: true, already_running: true, ...old })); return; }
   const port = o.port ? +o.port : await freePort();
-  const a = [process.argv[1], 'serve', name, '--port', String(port), '--interval', String(o.interval || 1)];
+  const a = [process.argv[1], 'serve', name, '--port', String(port), '--interval', String(o.interval || 'auto')];
   if (o.cdp) a.push('--cdp', o.cdp); if (o.x11) a.push('--x11', o.x11); if (o.match) a.push('--match', o.match); if (o['no-fit']) a.push('--no-fit');
   const log = fs.openSync(path.join(STATE, `${name}.log`), 'a', 0o600);
   const ch = spawn(process.execPath, a, { detached: true, stdio: ['ignore', log, log] }); ch.unref();
   const url = `http://127.0.0.1:${port}/`;
   for (let i = 0; i < 40; i++) { await new Promise(r => setTimeout(r, 250)); try { const r = await fetch(url + 'health'); if (r.ok) break; } catch {} }
   let ok = false; try { ok = (await fetch(url + 'health')).ok; } catch {}
-  const info = { name, pid: ch.pid, port, url, source: o.cdp ? `cdp:${o.cdp}` : `x11:${o.x11}`, interval_s: +(o.interval || 1), started: new Date().toISOString() };
+  const info = { name, pid: ch.pid, port, url, source: o.cdp ? `cdp:${o.cdp}` : `x11:${o.x11}`, interval_s: o.interval ? +o.interval : 'auto (0.05-0.2)', started: new Date().toISOString() };
   if (!ok) { console.log(JSON.stringify({ ok: false, error: 'mirror did not start', log: path.join(STATE, `${name}.log`) })); process.exit(1); }
   fs.writeFileSync(pidFile(name), JSON.stringify(info), { mode: 0o600 });
   let opened = false;
@@ -138,9 +138,11 @@ const PAGE = (title, interval) => `<!doctype html><html><head><meta charset=utf-
 const I=document.getElementById('i'),T=document.getElementById('t'),S=document.getElementById('s');let iv=${interval}*1000,busy=0,last=0,mv=0;
 function P(u,b){return fetch(u,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(b||{})}).then(r=>r.json()).catch(()=>({}))}
 function xy(e){const r=I.getBoundingClientRect(),nw=I.naturalWidth||r.width,nh=I.naturalHeight||r.height,s=Math.min(r.width/nw,r.height/nh);return{x:Math.round((e.clientX-r.left)/s),y:Math.round((e.clientY-r.top)/s)}}
-function shot(){if(busy)return;busy=1;const n=new Image();n.onload=()=>{I.src=n.src;busy=0;S.textContent=new Date().toLocaleTimeString()};n.onerror=()=>{busy=0;S.textContent='offline'};n.src='/shot.jpg?'+Date.now()}
-function soon(){setTimeout(shot,150);setTimeout(shot,600)}
-setInterval(shot,iv);shot();
+let fr=0;function live(){I.src='/stream.mjpg?'+Date.now()}
+I.onerror=()=>{S.textContent='reconnecting';setTimeout(live,1000)};I.onload=()=>{fr++};
+function info(){fetch('/info').then(r=>r.json()).then(j=>{S.textContent='live '+j.interval_s+'s'+(j.auto?' auto':'')+' · cpu '+j.cpu_pct+'%'}).catch(()=>{})}
+setInterval(info,3000);info();live();
+function soon(){}
 function fit(){P('/fit',{w:Math.round(innerWidth),h:Math.round(innerHeight)}).then(soon)}
 addEventListener('resize',()=>{clearTimeout(window._f);window._f=setTimeout(fit,400)});fit();
 const mods=e=>({alt:e.altKey,ctrl:e.ctrlKey,meta:e.metaKey,shift:e.shiftKey});
@@ -173,8 +175,8 @@ class CDP {
       const ws = new WebSocket(t.webSocketDebuggerUrl);
       ws.onopen = () => { this.ws = ws; res(); };
       ws.onerror = e => rej(new Error('ws error'));
-      ws.onclose = () => { if (this.ws === ws) this.ws = null; for (const [, c] of this.cb) c.rej(new Error('closed')); this.cb.clear(); };
-      ws.onmessage = m => { const j = JSON.parse(m.data); const c = this.cb.get(j.id); if (c) { this.cb.delete(j.id); j.error ? c.rej(new Error(j.error.message)) : c.res(j.result); } };
+      ws.onclose = () => { if (this.ws === ws) { this.ws = null; if (this.restream) setTimeout(() => this.restream?.(), 1000); } for (const [, c] of this.cb) c.rej(new Error('closed')); this.cb.clear(); };
+      ws.onmessage = m => { const j = JSON.parse(m.data); if (j.method === 'Page.screencastFrame') { this.lastFrameAt = Date.now(); this.onFrame?.(j.params); return; } const c = this.cb.get(j.id); if (c) { this.cb.delete(j.id); j.error ? c.rej(new Error(j.error.message)) : c.res(j.result); } };
     });
   }
   async send(method, params = {}) {
@@ -183,6 +185,15 @@ class CDP {
     return new Promise((res, rej) => { this.cb.set(id, { res, rej }); this.ws.send(JSON.stringify({ id, method, params })); setTimeout(() => { if (this.cb.delete(id)) rej(new Error('timeout ' + method)); }, 8000); });
   }
   async shot() { const r = await this.send('Page.captureScreenshot', { format: 'jpeg', quality: 70 }); return Buffer.from(r.data, 'base64'); }
+  startStream(cb) {
+    let on = true; this.onFrame = m => { if (!on) return; cb(Buffer.from(m.data, 'base64')); const ack = () => this.ws?.send(JSON.stringify({ id: ++this.id, method: 'Page.screencastFrameAck', params: { sessionId: m.sessionId } })); setTimeout(ack, Math.max(0, (this.ackDelay || 50) - 20)); };
+    const go = async () => { try { await this.send('Page.startScreencast', { format: 'jpeg', quality: 65 }); cb(await this.shot()); } catch { if (on) setTimeout(go, 1000); } };
+    this.restream = go; go();
+    // keep a frame flowing even if the page is static (screencast only sends on change)
+    const t = setInterval(async () => { if (on && this.idle()) try { cb(await this.shot()); } catch {} }, 3000);
+    return () => { on = false; clearInterval(t); this.restream = null; this.send('Page.stopScreencast').catch(() => {}); };
+  }
+  idle() { return Date.now() - (this.lastFrameAt || 0) > 2500; }
   async fit(w, h) {
     if (!this.fitOn || !(w > 200 && h > 200)) return;
     this.fitted = true;
@@ -214,7 +225,7 @@ class CDP {
 
 // --- X11 backend ---
 class X11 {
-  constructor(d) { this.d = d; this.env = xenv(d); }
+  constructor(d) { this.d = d; this.env = xenv(d); this.restartOnRate = true; }
   xdo(...a) { return new Promise(r => { const p = spawn('xdotool', a, { env: this.env, stdio: 'ignore' }); p.on('close', r); p.on('error', r); }); }
   shot() {
     return new Promise((res, rej) => {
@@ -224,6 +235,17 @@ class X11 {
   }
   async fit() {}
   async unfit() {}
+  startStream(cb, fps) {
+    const p = spawn('ffmpeg', ['-loglevel', 'error', '-f', 'x11grab', '-draw_mouse', '1', '-framerate', String(fps), '-i', this.d, '-q:v', '6', '-f', 'image2pipe', '-vcodec', 'mjpeg', '-'], { env: this.env, stdio: ['ignore', 'pipe', 'ignore'] });
+    let buf = Buffer.alloc(0);
+    p.stdout.on('data', c => {
+      buf = Buffer.concat([buf, c]);
+      for (;;) { const s = buf.indexOf(Buffer.from([0xff, 0xd8])); if (s < 0) { buf = Buffer.alloc(0); break; }
+        const e = buf.indexOf(Buffer.from([0xff, 0xd9]), s + 2); if (e < 0) { if (s) buf = buf.subarray(s); break; }
+        cb(Buffer.from(buf.subarray(s, e + 2))); buf = buf.subarray(e + 2); }
+    });
+    return () => p.kill('SIGTERM');
+  }
   btn(b) { return String({ 0: 1, 1: 2, 2: 3 }[b] || 1); }
   mods(o) { return [o.ctrl && 'ctrl', o.alt && 'alt', o.shift && 'shift', o.meta && 'super'].filter(Boolean); }
   async move(p) { await this.xdo('mousemove', String(p.x), String(p.y)); return { cursor: 'none' }; } // real cursor is drawn in the image
@@ -240,17 +262,64 @@ class X11 {
   }
 }
 
+// one shared live stream (multipart MJPEG), source runs only while a viewer is connected
+class Stream {
+  constructor(be, interval) { this.be = be; this.ms = interval * 1000; this.clients = new Set(); this.last = 0; this.pending = null; this.timer = null; }
+  add(res) {
+    res.writeHead(200, { 'content-type': 'multipart/x-mixed-replace; boundary=cfmframe', 'cache-control': 'no-store', connection: 'close' });
+    this.clients.add(res);
+    res.on('close', () => { this.clients.delete(res); if (!this.clients.size) this.stopSrc(); });
+    if (this.lastFrame) this.write(res, this.lastFrame);
+    if (!this.src) this.src = this.be.startStream(f => this.frame(f), Math.max(1, Math.round(1000 / this.ms)));
+  }
+  write(res, f) { res.write(`--cfmframe\r\nContent-Type: image/jpeg\r\nContent-Length: ${f.length}\r\n\r\n`); res.write(f); res.write('\r\n'); }
+  frame(f) { // throttle to interval
+    this.pending = f; const now = Date.now(), wait = this.last + this.ms - now;
+    if (wait <= 0) this.flush(); else if (!this.timer) this.timer = setTimeout(() => { this.timer = null; this.flush(); }, wait);
+  }
+  flush() { const f = this.pending; if (!f) return; this.pending = null; this.last = Date.now(); this.lastFrame = f; for (const r of this.clients) this.write(r, f); }
+  stopSrc() { if (this.src) { try { this.src(); } catch {} this.src = null; } }
+  setRate(sec) { if (Math.abs(sec * 1000 - this.ms) < 1) return; this.ms = sec * 1000; console.log(new Date().toISOString(), 'rate', sec, 'cpu', CPU.pct);
+    if (this.src && this.be.restartOnRate) { this.stopSrc(); this.src = this.be.startStream(f => this.frame(f), Math.round(1000 / this.ms)); }
+    this.be.ackDelay = this.ms; }
+}
+
+// whole-server CPU use (all programs, not only mirrors), sampled every 3 s
+const CPU = { pct: 0, prev: null };
+function cpuSample() {
+  const a = fs.readFileSync('/proc/stat', 'utf8').split('\n')[0].trim().split(/\s+/).slice(1).map(Number);
+  const idle = a[3] + (a[4] || 0), tot = a.reduce((x, y) => x + y, 0);
+  if (CPU.prev) { const dt = tot - CPU.prev.tot, di = idle - CPU.prev.idle; if (dt > 0) CPU.pct = Math.round(100 * (1 - di / dt)); }
+  CPU.prev = { tot, idle };
+}
+// auto mode: 0.05 s normally; busy server -> 0.1 s -> 0.2 s; back up only after ~15 s calm
+function autoRate(stream) {
+  const L = [0.05, 0.1, 0.2]; let i = 0, calm = 0;
+  cpuSample();
+  setInterval(() => {
+    cpuSample();
+    if (CPU.pct >= 75 && i < L.length - 1) { i++; calm = 0; stream.setRate(L[i]); }
+    else if (CPU.pct < 50 && i > 0) { if (++calm >= 5) { i--; calm = 0; stream.setRate(L[i]); } }
+    else calm = 0;
+  }, 3000);
+}
+
 async function serve(o) {
-  const name = o._[1], interval = Math.max(0.2, +(o.interval || 1));
+  const name = o._[1], auto = !o.interval || o.interval === 'auto';
+  const interval = auto ? 0.05 : Math.max(0.05, +o.interval);
   const be = o.cdp ? new CDP(+o.cdp, o.match, !o['no-fit']) : new X11(o.x11);
-  const quit = async () => { await be.unfit(); process.exit(0); };
+  const stream = new Stream(be, interval);
+  if (auto) autoRate(stream);
+  const quit = async () => { stream.stopSrc(); await be.unfit(); process.exit(0); };
   process.on('SIGTERM', quit); process.on('SIGINT', quit);
   http.createServer(async (req, res) => {
     const out = (code, body, ct = 'application/json') => { res.writeHead(code, { 'content-type': ct, 'cache-control': 'no-store' }); res.end(body); };
     try {
       const u = req.url.split('?')[0];
       if (req.method === 'GET' && u === '/health') return out(200, '{"ok":true}');
+      if (req.method === 'GET' && u === '/info') return out(200, JSON.stringify({ interval_s: stream.ms / 1000, auto, cpu_pct: CPU.pct }));
       if (req.method === 'GET' && u === '/shot.jpg') return out(200, await be.shot(), 'image/jpeg');
+      if (req.method === 'GET' && u === '/stream.mjpg') return stream.add(res);
       if (req.method === 'GET' && u === '/') return out(200, PAGE(name.replace(/[<>&"]/g, ''), interval), 'text/html; charset=utf-8');
       if (req.method !== 'POST') return out(404, '{}');
       let b = ''; for await (const c of req) b += c; const p = b ? JSON.parse(b) : {};
