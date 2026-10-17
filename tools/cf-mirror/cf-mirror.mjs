@@ -116,8 +116,31 @@ async function start(o) {
   if (!ok) { console.log(JSON.stringify({ ok: false, error: 'mirror did not start', log: path.join(STATE, `${name}.log`) })); process.exit(1); }
   fs.writeFileSync(pidFile(name), JSON.stringify(info), { mode: 0o600 });
   let opened = false;
-  if (o.open) { try { const b = spawn(fs.existsSync('/usr/bin/chromium-browser') ? '/usr/bin/chromium-browser' : 'xdg-open', fs.existsSync('/usr/bin/chromium-browser') ? ['--new-window', url] : [url], { detached: true, stdio: 'ignore', env: xenv(XRDP_DISPLAY) }); b.unref(); opened = true; } catch {} }
-  console.log(JSON.stringify({ ok: true, ...info, opened_on_desktop: opened ? XRDP_DISPLAY : false }));
+  if (o.open) opened = await openOnDesktop(name, url, o.x11);
+  console.log(JSON.stringify({ ok: true, ...info, opened_on_desktop: opened || false }));
+}
+
+// open the mirror as an app window (no tabs/address bar) on the owner's desktop,
+// sized to the source's real pixel size (1:1, sharpest), capped to the desktop size
+async function openOnDesktop(name, url, x11) {
+  const env = xenv(XRDP_DISPLAY);
+  const dim = d => { try { const m = execFileSync('xdpyinfo', ['-display', d], { encoding: 'utf8', env: xenv(d), stdio: ['ignore', 'pipe', 'ignore'] }).match(/dimensions:\s+(\d+)x(\d+)/); return m ? [+m[1], +m[2]] : null; } catch { return null; } };
+  const desk = dim(XRDP_DISPLAY) || [1440, 1000];
+  const src = x11 ? (dim(x11) || [1440, 1000]) : [desk[0], Math.min(desk[1], Math.round(desk[0] * 0.75))];
+  const w = Math.min(src[0], desk[0]), h = Math.min(src[1], desk[1] - 60);
+  const bin = fs.existsSync('/usr/bin/chromium-browser') ? '/usr/bin/chromium-browser' : null;
+  try {
+    const b = bin ? spawn(bin, [`--app=${url}`, `--window-size=${w},${h}`, '--window-position=0,0'], { detached: true, stdio: 'ignore', env })
+                  : spawn('xdg-open', [url], { detached: true, stdio: 'ignore', env });
+    b.unref();
+  } catch { return false; }
+  // the browser may already be running and ignore size flags: fix size/position directly
+  for (let i = 0; i < 40; i++) {
+    await new Promise(r => setTimeout(r, 250));
+    let ids = ''; try { ids = execFileSync('xdotool', ['search', '--name', `${name} mirror`], { encoding: 'utf8', env }).trim(); } catch {}
+    if (ids) { for (const id of ids.split('\n')) { try { execFileSync('xdotool', ['windowsize', id, String(w), String(h)], { env }); execFileSync('xdotool', ['windowmove', id, '0', '0'], { env }); execFileSync('xdotool', ['windowactivate', id], { env }); } catch {} } return XRDP_DISPLAY; }
+  }
+  return XRDP_DISPLAY;
 }
 
 function stop(o) {
