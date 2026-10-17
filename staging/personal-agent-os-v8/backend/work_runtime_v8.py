@@ -28,18 +28,18 @@ class WorkRuntimeV8:
                 last_update_ms INTEGER NOT NULL,
                 FOREIGN KEY(command_id) REFERENCES commands(command_id))""")
             db.execute("CREATE INDEX IF NOT EXISTS work_v8_by_work ON work_v8(work_id,last_update_ms)")
-            first=db.execute("SELECT value FROM work_v8_meta WHERE name='cutover'").fetchone()
+            first=db.execute("SELECT value FROM work_v8_meta WHERE name='cutover_rowid'").fetchone()
             if first is None:
-                db.execute("INSERT INTO work_v8_meta(name,value) VALUES('cutover',?)",
-                           (str(int(time.time()*1000)),))
+                db.execute("INSERT INTO work_v8_meta(name,value) VALUES('cutover_rowid',?)",
+                           (str(db.execute("SELECT COALESCE(MAX(rowid),0) FROM commands").fetchone()[0]),))
         self._stop=threading.Event()
         self._thread=None
 
     def _cutover(self,db):
-        return int(db.execute("SELECT value FROM work_v8_meta WHERE name='cutover'").fetchone()[0])
+        return int(db.execute("SELECT value FROM work_v8_meta WHERE name='cutover_rowid'").fetchone()[0])
 
     def ingest(self):
-        """Only new post-deployment commands get v8 state; old receipts untouched."""
+        """Only commands inserted after v8 cutover ROWID get new work state."""
         with self.store.connect() as db:
             db.execute("BEGIN IMMEDIATE")
             try:
@@ -48,7 +48,7 @@ class WorkRuntimeV8:
                    command_id,work_id,state,last_update_ms)
                    SELECT command_id,work_id,
                    CASE WHEN work_id IS NULL THEN 'NEEDS_CLARIFICATION' ELSE 'QUEUED' END,
-                   received_at_ms FROM commands WHERE received_at_ms >= ?""",(cutover,))
+                   received_at_ms FROM commands WHERE rowid > ?""",(cutover,))
                 db.execute("COMMIT")
             except BaseException:
                 if db.in_transaction:db.execute("ROLLBACK")
