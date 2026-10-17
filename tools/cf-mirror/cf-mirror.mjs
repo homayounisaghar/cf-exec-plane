@@ -184,10 +184,10 @@ class CDP {
     const id = ++this.id;
     return new Promise((res, rej) => { this.cb.set(id, { res, rej }); this.ws.send(JSON.stringify({ id, method, params })); setTimeout(() => { if (this.cb.delete(id)) rej(new Error('timeout ' + method)); }, 8000); });
   }
-  async shot() { const r = await this.send('Page.captureScreenshot', { format: 'jpeg', quality: [85, 70, 55][this.level ?? 1] }); return Buffer.from(r.data, 'base64'); }
+  async shot() { const r = await this.send('Page.captureScreenshot', { format: 'jpeg', quality: [92, 85, 70][this.level ?? 1] }); return Buffer.from(r.data, 'base64'); }
   startStream(cb) {
     let on = true; this.onFrame = m => { if (!on) return; cb(Buffer.from(m.data, 'base64')); const ack = () => this.ws?.send(JSON.stringify({ id: ++this.id, method: 'Page.screencastFrameAck', params: { sessionId: m.sessionId } })); setTimeout(ack, Math.max(0, (this.ackDelay || 50) - 20)); };
-    const go = async () => { try { await this.send('Page.startScreencast', { format: 'jpeg', quality: [85, 70, 55][this.level ?? 1] }); cb(await this.shot()); } catch { if (on) setTimeout(go, 1000); } };
+    const go = async () => { try { await this.send('Page.startScreencast', { format: 'jpeg', quality: [92, 85, 70][this.level ?? 1] }); cb(await this.shot()); } catch { if (on) setTimeout(go, 1000); } };
     this.restream = go; go();
     // keep a frame flowing even if the page is static (screencast only sends on change)
     const t = setInterval(async () => { if (on && this.idle()) try { cb(await this.shot()); } catch {} }, 3000);
@@ -236,7 +236,7 @@ class X11 {
   async fit() {}
   async unfit() {}
   startStream(cb, fps) {
-    const p = spawn('ffmpeg', ['-loglevel', 'error', '-f', 'x11grab', '-draw_mouse', '1', '-framerate', String(fps), '-i', this.d, '-q:v', String([3, 5, 8][this.level ?? 1]), '-f', 'image2pipe', '-vcodec', 'mjpeg', '-'], { env: this.env, stdio: ['ignore', 'pipe', 'ignore'] });
+    const p = spawn('ffmpeg', ['-loglevel', 'error', '-f', 'x11grab', '-draw_mouse', '1', '-framerate', String(fps), '-i', this.d, '-q:v', String([2, 3, 5][this.level ?? 1]), '-f', 'image2pipe', '-vcodec', 'mjpeg', '-'], { env: this.env, stdio: ['ignore', 'pipe', 'ignore'] });
     let buf = Buffer.alloc(0);
     p.stdout.on('data', c => {
       buf = Buffer.concat([buf, c]);
