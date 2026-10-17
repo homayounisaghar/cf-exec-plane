@@ -1,0 +1,56 @@
+name: Personal Agent OS v8 secret-free Stage A
+on:
+  push:
+    paths:
+      - "staging/personal-agent-os-v8/src/**"
+      - ".github/workflows/personal-agent-os-v8-stage-a.yml"
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.10.2"
+      - name: Android SDK, exact v8 source and unsigned release
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -d "${ANDROID_HOME}/cmdline-tools/latest"
+          if ! test -d "${ANDROID_HOME}/platforms/android-35"; then
+            "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" --install "platforms;android-35" "build-tools;35.0.0"
+          fi
+          cd staging/personal-agent-os-v8/src
+          gradle --no-daemon --console=plain :app:assembleRelease
+          FILE="app/build/outputs/apk/release/app-release-unsigned.apk"
+          test -s "$FILE"
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, json
+          f=Path("app/build/outputs/apk/release/app-release-unsigned.apk")
+          b=f.read_bytes()
+          m={"schema":"agentos-v8-unsigned-release.v1","applicationId":"dev.capabilityfabric.personalagent","versionCode":8,"versionName":"0.7.0-alpha7","sha256":hashlib.sha256(b).hexdigest(),"size_bytes":len(b)}
+          dst=Path("../output")
+          dst.mkdir(parents=True,exist_ok=True)
+          (dst/"v8-unsigned.apk").write_bytes(b)
+          (dst/"manifest.json").write_text(json.dumps(m,sort_keys=True,indent=2)+"\n",encoding="utf-8")
+          print(json.dumps(m))
+          PY
+      - name: Publish secret-free unsigned kit
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f staging/personal-agent-os-v8/output/v8-unsigned.apk staging/personal-agent-os-v8/output/manifest.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "build: Personal Agent OS v8 unsigned kit [skip ci]"
+          git push origin "HEAD:main"
