@@ -1,0 +1,8 @@
+{
+  "applicationId": "dev.capabilityfabric.personalagent",
+  "schema": "agentos-v8-unsigned-release.v1",
+  "sha256": "7bef16264c634b63f1b0d80191c0cce68ccb1c8ea18a74e8fba9a70f2d7c1fbd",
+  "size_bytes": 1076145,
+  "versionCode": 8,
+  "versionName": "0.7.0-alpha7"
+}
