@@ -25,6 +25,7 @@ function usage(code = 0) {
 
   --interval  seconds between frames, or auto (default): 0.05 s, slows to 0.1/0.2 s when server CPU is busy
   --open      also open the mirror in the owner's remote desktop (${XRDP_DISPLAY})
+  --full      X11: show the whole screen instead of only the app windows
   --no-fit    do not resize the browser viewport to the viewer window (CDP only)
   URL is http://127.0.0.1:PORT/ (local only).`);
   process.exit(code);
@@ -35,7 +36,7 @@ function args(a) {
   for (let i = 0; i < a.length; i++) {
     if (a[i].startsWith('--')) {
       const k = a[i].slice(2);
-      if (['open', 'no-fit', 'serve'].includes(k)) o[k] = true; else o[k] = a[++i];
+      if (['open', 'no-fit', 'serve', 'full'].includes(k)) o[k] = true; else o[k] = a[++i];
     } else o._.push(a[i]);
   }
   return o;
@@ -106,7 +107,7 @@ async function start(o) {
   const old = running().find(j => j.name === name); if (old) { console.log(JSON.stringify({ ok: true, already_running: true, ...old })); return; }
   const port = o.port ? +o.port : await freePort();
   const a = [process.argv[1], 'serve', name, '--port', String(port), '--interval', String(o.interval || 'auto')];
-  if (o.cdp) a.push('--cdp', o.cdp); if (o.x11) a.push('--x11', o.x11); if (o.match) a.push('--match', o.match); if (o['no-fit']) a.push('--no-fit');
+  if (o.cdp) a.push('--cdp', o.cdp); if (o.x11) a.push('--x11', o.x11); if (o.match) a.push('--match', o.match); if (o['no-fit']) a.push('--no-fit'); if (o.full) a.push('--full');
   const log = fs.openSync(path.join(STATE, `${name}.log`), 'a', 0o600);
   const ch = spawn(process.execPath, a, { detached: true, stdio: ['ignore', log, log] }); ch.unref();
   const url = `http://127.0.0.1:${port}/`;
@@ -126,11 +127,16 @@ async function openOnDesktop(name, url, x11) {
   const env = xenv(XRDP_DISPLAY);
   const dim = d => { try { const m = execFileSync('xdpyinfo', ['-display', d], { encoding: 'utf8', env: xenv(d), stdio: ['ignore', 'pipe', 'ignore'] }).match(/dimensions:\s+(\d+)x(\d+)/); return m ? [+m[1], +m[2]] : null; } catch { return null; } };
   const desk = dim(XRDP_DISPLAY) || [1440, 1000];
-  const src = x11 ? (dim(x11) || [1440, 1000]) : [desk[0], Math.min(desk[1], Math.round(desk[0] * 0.75))];
-  const w = Math.min(src[0], desk[0]), h = Math.min(src[1], desk[1] - 60);
+  let src = [desk[0], Math.round(desk[0] * 0.7)];
+  try { const j = await getJSON(url + 'info'); if (j.region) src = [j.region.w, j.region.h]; } catch {}
+  // leave a margin on every side so the window is easy to move/resize; scale up small apps
+  const M = 40, maxW = desk[0] - 2 * M, maxH = Math.min(desk[1] - 2 * M - 80, Math.round(desk[0] * 1.2));
+  const k = Math.min(maxW / src[0], maxH / src[1], 2);
+  const w = Math.round(src[0] * k), h = Math.round(src[1] * k);
+  const px = Math.round((desk[0] - w) / 2), py = M + 40;
   const bin = fs.existsSync('/usr/bin/chromium-browser') ? '/usr/bin/chromium-browser' : null;
   try {
-    const b = bin ? spawn(bin, [`--app=${url}`, `--window-size=${w},${h}`, '--window-position=0,0'], { detached: true, stdio: 'ignore', env })
+    const b = bin ? spawn(bin, [`--app=${url}`, `--window-size=${w},${h}`, `--window-position=${px},${py}`], { detached: true, stdio: 'ignore', env })
                   : spawn('xdg-open', [url], { detached: true, stdio: 'ignore', env });
     b.unref();
   } catch { return false; }
@@ -138,7 +144,7 @@ async function openOnDesktop(name, url, x11) {
   for (let i = 0; i < 40; i++) {
     await new Promise(r => setTimeout(r, 250));
     let ids = ''; try { ids = execFileSync('xdotool', ['search', '--name', `${name} mirror`], { encoding: 'utf8', env }).trim(); } catch {}
-    if (ids) { for (const id of ids.split('\n')) { try { execFileSync('xdotool', ['windowsize', id, String(w), String(h)], { env }); execFileSync('xdotool', ['windowmove', id, '0', '0'], { env }); execFileSync('xdotool', ['windowactivate', id], { env }); } catch {} } return XRDP_DISPLAY; }
+    if (ids) { for (const id of ids.split('\n')) { try { execFileSync('xdotool', ['windowsize', id, String(w), String(h)], { env }); execFileSync('xdotool', ['windowmove', id, String(px), String(py)], { env }); execFileSync('xdotool', ['windowactivate', id], { env }); } catch {} } return XRDP_DISPLAY; }
   }
   return XRDP_DISPLAY;
 }
@@ -151,8 +157,8 @@ function stop(o) {
 
 // ---------------- server ----------------
 const PAGE = (title, interval) => `<!doctype html><html><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1">
-<title>${title} mirror</title><style>html,body{margin:0;height:100%;background:#1e1e1e;overflow:hidden}
-#i{display:block;width:100%;height:100%;object-fit:contain;object-position:left top;outline:none;user-select:none;-webkit-user-drag:none}
+<title>${title} mirror</title><style>html,body{margin:0;height:100%;background:#2b2b2b;overflow:hidden}
+#i{display:block;width:100%;height:100%;object-fit:contain;object-position:center;outline:none;user-select:none;-webkit-user-drag:none}
 #b{position:fixed;right:6px;bottom:6px;font:12px sans-serif;color:#aaa;background:#0008;padding:2px 6px;border-radius:4px}
 #t{position:fixed;left:-1000px;top:0;opacity:0}</style></head><body>
 <img id=i tabindex=0 alt="">
@@ -248,18 +254,43 @@ class CDP {
 
 // --- X11 backend ---
 class X11 {
-  constructor(d) { this.d = d; this.env = xenv(d); this.restartOnRate = true; }
+  constructor(d, full) { this.d = d; this.env = xenv(d); this.restartOnRate = true; this.full = full; this.off = [0, 0]; this.region = this.findRegion(); }
+  // area that contains all visible app windows (WeChat + its popups); whole screen if none / --full
+  findRegion() {
+    let sw = 1440, sh = 1000;
+    try { const m = execFileSync('xdpyinfo', ['-display', this.d], { encoding: 'utf8', env: this.env, stdio: ['ignore', 'pipe', 'ignore'] }).match(/dimensions:\s+(\d+)x(\d+)/); if (m) { sw = +m[1]; sh = +m[2]; } } catch {}
+    const fullR = { x: 0, y: 0, w: sw - (sw % 2), h: sh - (sh % 2) };
+    if (this.full) return fullR;
+    let x1 = 1e9, y1 = 1e9, x2 = -1, y2 = -1;
+    try {
+      const ids = execFileSync('xdotool', ['search', '--onlyvisible', '--name', '.'], { encoding: 'utf8', env: this.env, stdio: ['ignore', 'pipe', 'ignore'] }).trim().split('\n').filter(Boolean);
+      for (const id of ids) {
+        const g = execFileSync('xdotool', ['getwindowgeometry', '--shell', id], { encoding: 'utf8', env: this.env, stdio: ['ignore', 'pipe', 'ignore'] });
+        const v = k => +(g.match(new RegExp(k + '=(-?\\d+)')) || [0, 0])[1];
+        const x = v('X'), y = v('Y'), w = v('WIDTH'), h = v('HEIGHT');
+        if (w < 40 || h < 40 || (w >= sw && h >= sh)) continue;
+        x1 = Math.min(x1, x); y1 = Math.min(y1, y); x2 = Math.max(x2, x + w); y2 = Math.max(y2, y + h);
+      }
+    } catch {}
+    if (x2 < 0) return fullR;
+    x1 = Math.max(0, x1); y1 = Math.max(0, y1); x2 = Math.min(sw, x2); y2 = Math.min(sh, y2);
+    let w = x2 - x1, h = y2 - y1; w -= w % 2; h -= h % 2;
+    return { x: x1, y: y1, w, h };
+  }
+  P(p) { return [String(Math.round(p.x + this.region.x)), String(Math.round(p.y + this.region.y))]; }
   xdo(...a) { return new Promise(r => { const p = spawn('xdotool', a, { env: this.env, stdio: 'ignore' }); p.on('close', r); p.on('error', r); }); }
   shot() {
     return new Promise((res, rej) => {
-      const p = spawn('ffmpeg', ['-loglevel', 'error', '-f', 'x11grab', '-draw_mouse', '1', '-i', this.d, '-frames:v', '1', '-q:v', '5', '-f', 'image2', '-vcodec', 'mjpeg', '-'], { env: this.env });
+      const r = this.region;
+      const p = spawn('ffmpeg', ['-loglevel', 'error', '-f', 'x11grab', '-draw_mouse', '1', '-video_size', `${r.w}x${r.h}`, '-i', `${this.d}+${r.x},${r.y}`, '-frames:v', '1', '-q:v', '5', '-f', 'image2', '-vcodec', 'mjpeg', '-'], { env: this.env });
       const ch = []; p.stdout.on('data', c => ch.push(c)); p.on('close', c => c === 0 ? res(Buffer.concat(ch)) : rej(new Error('ffmpeg ' + c))); p.on('error', rej);
     });
   }
   async fit() {}
   async unfit() {}
   startStream(cb, fps) {
-    const p = spawn('ffmpeg', ['-loglevel', 'error', '-f', 'x11grab', '-draw_mouse', '1', '-framerate', String(fps), '-i', this.d, '-q:v', String([2, 3, 5][this.level ?? 1]), '-f', 'image2pipe', '-vcodec', 'mjpeg', '-'], { env: this.env, stdio: ['ignore', 'pipe', 'ignore'] });
+    const r = this.region;
+    const p = spawn('ffmpeg', ['-loglevel', 'error', '-f', 'x11grab', '-draw_mouse', '1', '-framerate', String(fps), '-video_size', `${r.w}x${r.h}`, '-i', `${this.d}+${r.x},${r.y}`, '-q:v', String([2, 3, 5][this.level ?? 1]), '-f', 'image2pipe', '-vcodec', 'mjpeg', '-'], { env: this.env, stdio: ['ignore', 'pipe', 'ignore'] });
     let buf = Buffer.alloc(0);
     p.stdout.on('data', c => {
       buf = Buffer.concat([buf, c]);
@@ -271,11 +302,11 @@ class X11 {
   }
   btn(b) { return String({ 0: 1, 1: 2, 2: 3 }[b] || 1); }
   mods(o) { return [o.ctrl && 'ctrl', o.alt && 'alt', o.shift && 'shift', o.meta && 'super'].filter(Boolean); }
-  async move(p) { await this.xdo('mousemove', String(p.x), String(p.y)); return { cursor: 'none' }; } // real cursor is drawn in the image
-  async down(p) { const m = this.mods(p); for (const k of m) await this.xdo('keydown', k); await this.xdo('mousemove', String(p.x), String(p.y), 'mousedown', this.btn(p.button)); this._m = m; }
-  async up(p) { await this.xdo('mousemove', String(p.x), String(p.y), 'mouseup', this.btn(p.button)); for (const k of this._m || []) await this.xdo('keyup', k); this._m = []; }
-  async dbl(p) { await this.xdo('mousemove', String(p.x), String(p.y), 'click', '--repeat', '2', '1'); }
-  async wheel(p) { const n = Math.min(10, Math.max(1, Math.round(Math.abs(p.dy || p.dx) / 60))); await this.xdo('mousemove', String(p.x), String(p.y), 'click', '--repeat', String(n), p.dy ? (p.dy > 0 ? '5' : '4') : (p.dx > 0 ? '7' : '6')); }
+  async move(p) { await this.xdo('mousemove', ...this.P(p)); return { cursor: 'none' }; } // real cursor is drawn in the image
+  async down(p) { const m = this.mods(p); for (const k of m) await this.xdo('keydown', k); await this.xdo('mousemove', ...this.P(p), 'mousedown', this.btn(p.button)); this._m = m; }
+  async up(p) { await this.xdo('mousemove', ...this.P(p), 'mouseup', this.btn(p.button)); for (const k of this._m || []) await this.xdo('keyup', k); this._m = []; }
+  async dbl(p) { await this.xdo('mousemove', ...this.P(p), 'click', '--repeat', '2', '1'); }
+  async wheel(p) { const n = Math.min(10, Math.max(1, Math.round(Math.abs(p.dy || p.dx) / 60))); await this.xdo('mousemove', ...this.P(p), 'click', '--repeat', String(n), p.dy ? (p.dy > 0 ? '5' : '4') : (p.dx > 0 ? '7' : '6')); }
   async type(s) { await this.xdo('type', '--delay', '20', '--', s); }
   async key(k) {
     const M = { Enter: 'Return', Backspace: 'BackSpace', Escape: 'Escape', ArrowLeft: 'Left', ArrowRight: 'Right', ArrowUp: 'Up', ArrowDown: 'Down', PageUp: 'Prior', PageDown: 'Next' };
@@ -331,9 +362,10 @@ function autoRate(stream) {
 async function serve(o) {
   const name = o._[1], auto = !o.interval || o.interval === 'auto';
   const interval = auto ? 0.05 : Math.max(0.05, +o.interval);
-  const be = o.cdp ? new CDP(+o.cdp, o.match, !o['no-fit']) : new X11(o.x11);
+  const be = o.cdp ? new CDP(+o.cdp, o.match, !o['no-fit']) : new X11(o.x11, !!o.full);
   const stream = new Stream(be, interval);
   if (auto) autoRate(stream);
+  if (be.findRegion) setInterval(() => { const r = be.findRegion(), c = be.region; if (r.x !== c.x || r.y !== c.y || r.w !== c.w || r.h !== c.h) { be.region = r; if (stream.src) { stream.stopSrc(); stream.src = be.startStream(f => stream.frame(f), Math.round(1000 / stream.ms)); } } }, 2000);
   const quit = async () => { stream.stopSrc(); await be.unfit(); process.exit(0); };
   process.on('SIGTERM', quit); process.on('SIGINT', quit);
   http.createServer(async (req, res) => {
@@ -341,7 +373,7 @@ async function serve(o) {
     try {
       const u = req.url.split('?')[0];
       if (req.method === 'GET' && u === '/health') return out(200, '{"ok":true}');
-      if (req.method === 'GET' && u === '/info') return out(200, JSON.stringify({ interval_s: stream.ms / 1000, auto, cpu_pct: CPU.pct, quality: ['high', 'medium', 'low'][be.level ?? 1] }));
+      if (req.method === 'GET' && u === '/info') return out(200, JSON.stringify({ region: be.region || null, interval_s: stream.ms / 1000, auto, cpu_pct: CPU.pct, quality: ['high', 'medium', 'low'][be.level ?? 1] }));
       if (req.method === 'GET' && u === '/shot.jpg') return out(200, await be.shot(), 'image/jpeg');
       if (req.method === 'GET' && u === '/stream.mjpg') return stream.add(res);
       if (req.method === 'GET' && u === '/') return out(200, PAGE(name.replace(/[<>&"]/g, ''), interval), 'text/html; charset=utf-8');
