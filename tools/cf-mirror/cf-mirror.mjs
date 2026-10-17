@@ -143,7 +143,7 @@ async function openOnDesktop(name, url, x11) {
   // the browser may already be running and ignore size flags: fix size/position directly
   for (let i = 0; i < 40; i++) {
     await new Promise(r => setTimeout(r, 250));
-    let ids = ''; try { ids = execFileSync('xdotool', ['search', '--name', `${name} mirror`], { encoding: 'utf8', env }).trim(); } catch {}
+    let ids = ''; try { ids = execFileSync('xdotool', ['search', '--name', `^${name} · `], { encoding: 'utf8', env }).trim(); } catch {}
     if (ids) { for (const id of ids.split('\n')) { try { execFileSync('xdotool', ['windowsize', id, String(w), String(h)], { env }); execFileSync('xdotool', ['windowmove', id, String(px), String(py)], { env }); execFileSync('xdotool', ['windowactivate', id], { env }); } catch {} } return XRDP_DISPLAY; }
   }
   return XRDP_DISPLAY;
@@ -157,14 +157,13 @@ function stop(o) {
 
 // ---------------- server ----------------
 const PAGE = (title, interval) => `<!doctype html><html><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1">
-<title>${title} mirror</title><style>html,body{margin:0;height:100%;background:#2b2b2b;overflow:hidden}
+<title>${title} · …</title><style>html,body{margin:0;height:100%;background:#2b2b2b;overflow:hidden}
 #i{display:block;width:100%;height:100%;object-fit:contain;object-position:center;outline:none;user-select:none;-webkit-user-drag:none}
-#b{position:fixed;right:6px;bottom:6px;font:12px sans-serif;color:#aaa;background:#0008;padding:2px 6px;border-radius:4px}
 #t{position:fixed;left:-1000px;top:0;opacity:0}</style></head><body>
 <img id=i tabindex=0 alt="">
-<textarea id=t autocomplete=off></textarea><div id=b>${title} · <span id=s>…</span></div>
+<textarea id=t autocomplete=off></textarea>
 <script>
-const I=document.getElementById('i'),T=document.getElementById('t'),S=document.getElementById('s');let iv=${interval}*1000,busy=0,last=0,mv=0;
+const I=document.getElementById('i'),T=document.getElementById('t'),NAME=${JSON.stringify(title)},S={set textContent(v){document.title=NAME+' · '+v}};let iv=${interval}*1000,busy=0,last=0,mv=0;
 function P(u,b){return fetch(u,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(b||{})}).then(r=>r.json()).catch(()=>({}))}
 function xy(e){const r=I.getBoundingClientRect(),nw=I.naturalWidth||r.width,nh=I.naturalHeight||r.height,s=Math.min(r.width/nw,r.height/nh);return{x:Math.round((e.clientX-r.left)/s),y:Math.round((e.clientY-r.top)/s)}}
 let fr=0;function live(){I.src='/stream.mjpg?'+Date.now()}
