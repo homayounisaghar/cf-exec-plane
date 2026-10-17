@@ -1,0 +1,42 @@
+name: Personal Agent OS v8 backend isolated test
+on:
+  push:
+    paths:
+      - "staging/personal-agent-os-v8/backend/**"
+      - ".github/workflows/personal-agent-os-v8-backend-qualify.yml"
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  qualify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Isolated existing + v8 regression
+        shell: bash
+        run: |
+          set -u
+          cd staging/personal-agent-os-v8/backend
+          python3 -m unittest -q test_service test_telemetry test_work_runtime_v8 > "${RUNNER_TEMP}/agentos-test.log" 2>&1
+          RC=$?
+          tail -n 15 "${RUNNER_TEMP}/agentos-test.log"
+          python3 - "$RC" "${RUNNER_TEMP}/agentos-test.log" <<'PY'
+          import json, pathlib, re, sys
+          rc=int(sys.argv[1]); content=pathlib.Path(sys.argv[2]).read_text()
+          m=re.search(r'Ran (\d+) tests?',content)
+          obj={"schema":"agentos-v8-qualification.v1",
+            "result":"PASS" if rc==0 and "OK" in content else "FAIL",
+            "test_count":int(m.group(1)) if m else 0,
+            "source":"staging/personal-agent-os-v8/backend",
+            "error_summary":content[-1000:] if rc else ""}
+          p=pathlib.Path("../output/backend-tests.json")
+          p.parent.mkdir(parents=True,exist_ok=True)
+          p.write_text(json.dumps(obj,sort_keys=True,indent=2)+"\n")
+          print("REPORTED",obj["result"],obj["test_count"])
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f ../output/backend-tests.json
+          git diff --cached --quiet || (git commit -m "test: agentos v8 backend qualification [skip ci]" && git push origin HEAD:main)
+          exit "$RC"
