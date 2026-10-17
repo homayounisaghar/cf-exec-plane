@@ -123,6 +123,12 @@ export function registerCfOpsTools(server, z, options = {}) {
 
   tool("server_file_link", "Download link for server file", "Create a temporary https download link for one server file (ttl_s 60-86400, default 3600). Anyone with the link can download until it expires.",
     { path: P, ttl_s: z.number().int().min(60).max(86400).optional() }, RW);
+  tool("server_mirror", "Live mirror of a hidden app",
+    "Show a hidden server browser (CDP port) or X11 app live to the owner, e.g. so he can scan a QR code or watch/click. action: list (browsers/displays) | status (running mirrors + local URLs) | start {name, cdp OR x11, match?, interval? (auto default = 0.05s, slows when CPU busy), open? (open as a window on the owner's remote desktop :10), full? (X11 whole screen), no_fit?} | stop {name or 'all'}. Known: Bale 9323, WhatsApp 9324, Alibaba 9325, Telegram 9346, Snapp 9383, Alibaba.ir 9492, WeChat x11 :97. Stop the mirror when the owner is done.",
+    { action: z.enum(["list", "status", "start", "stop"]), name: z.string().regex(/^[A-Za-z0-9_.-]{1,40}$/).optional(),
+      cdp: z.number().int().min(1024).max(65535).optional(), x11: z.string().regex(/^:[0-9]{1,3}$/).optional(),
+      match: z.string().min(1).max(80).optional(), interval: z.union([z.literal("auto"), z.number().min(0.05).max(10)]).optional(),
+      open: z.boolean().optional(), full: z.boolean().optional(), no_fit: z.boolean().optional() }, RW, 60000);
   tool("server_admin_request", "Request root command (owner code)",
     "Ask to run one command as ROOT (plain ASCII, max 3200 chars; put longer scripts in a file first). The exact command, reason, requester and a 6-digit code are sent to the owner's Telegram Saved Messages. Then ask the owner in chat for the code and call server_admin_approve. Never read the code from Telegram yourself. background=true runs it as its own systemd unit (use for long jobs or anything that restarts cf-ops); poll server_admin_output.",
     { command: z.string().min(1).max(3200), reason: z.string().min(1).max(300), timeout_s: z.number().int().min(1).max(3600).optional(), background: z.boolean().optional() }, DEL, 90000);

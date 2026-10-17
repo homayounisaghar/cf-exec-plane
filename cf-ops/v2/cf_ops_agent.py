@@ -562,6 +562,51 @@ def server_status(_a):
                 disk_root=dict(total=du.total, used=du.used, free=du.free), load=load, uptime_s=up,
                 github_logged_in=gh, state_dir=str(ROOT), time=now())
 
+MIRROR_BIN = "/usr/local/bin/cf-mirror"
+MIRROR_NAME = re.compile(r"^[A-Za-z0-9_.-]{1,40}$")
+
+def server_mirror(a):
+    # Live mirror of a hidden browser (CDP) or X11 app as a local web page / desktop window.
+    # Runs the installed cf-mirror tool as this (desktop) user with validated argv; no shell.
+    act = a.get("action")
+    must(act in ("list", "status", "start", "stop"), "INVALID_ACTION")
+    argv = [MIRROR_BIN, act]
+    name = a.get("name")
+    if act in ("start", "stop"):
+        must(isinstance(name, str) and (MIRROR_NAME.fullmatch(name) or (act == "stop" and name == "all")), "INVALID_NAME")
+        argv.append(name)
+    if act == "start":
+        cdp, x11 = a.get("cdp"), a.get("x11")
+        must((cdp is None) != (x11 is None), "GIVE_EXACTLY_ONE_OF_CDP_OR_X11")
+        if cdp is not None:
+            must(isinstance(cdp, int) and 1024 <= cdp <= 65535, "INVALID_CDP_PORT")
+            argv += ["--cdp", str(cdp)]
+        else:
+            must(isinstance(x11, str) and re.fullmatch(r":[0-9]{1,3}", x11), "INVALID_X11_DISPLAY")
+            argv += ["--x11", x11]
+        m = a.get("match")
+        if m is not None:
+            must(isinstance(m, str) and 0 < len(m) <= 80 and not m.startswith("-") and "\n" not in m, "INVALID_MATCH")
+            argv += ["--match", m]
+        iv = a.get("interval")
+        if iv is not None and iv != "auto":
+            must(isinstance(iv, (int, float)) and 0.05 <= iv <= 10, "INVALID_INTERVAL")
+            argv += ["--interval", str(iv)]
+        for k, flag in (("open", "--open"), ("full", "--full"), ("no_fit", "--no-fit")):
+            if a.get(k) is True:
+                argv.append(flag)
+    try:
+        p = subprocess.run(argv, stdin=subprocess.DEVNULL, capture_output=True, timeout=45)
+    except subprocess.TimeoutExpired:
+        raise Problem("MIRROR_TIMEOUT")
+    out = p.stdout.decode("utf8", "replace").strip()
+    try:
+        parsed = json.loads(out)
+    except ValueError:
+        parsed = None
+    return dict(action=act, exit_code=p.returncode, result=parsed, output=None if parsed is not None else limit_text(p.stdout, 8000),
+                stderr=limit_text(p.stderr, 2000) if p.returncode else "")
+
 METHODS = {
     "server_exec":server_exec, "server_job_status":job_status,
     "server_job_output":job_output, "server_job_list":job_list, "server_job_kill":job_kill,
@@ -571,7 +616,7 @@ METHODS = {
     "server_file_move":file_move, "server_file_copy":file_copy,
     "server_file_search":file_search, "server_file_fetch":file_fetch,
     "server_file_upload":upload, "server_status":server_status,
-    "server_file_link":link_new, "_link_open":link_open, "_link_chunk":link_chunk,
+    "server_file_link":link_new, "server_mirror":server_mirror, "_link_open":link_open, "_link_chunk":link_chunk,
 }
 
 ADMIN = {"server_admin_request":"request", "server_admin_approve":"approve", "server_admin_list":"list",
