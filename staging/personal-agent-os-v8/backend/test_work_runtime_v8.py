@@ -56,6 +56,48 @@ class WorkV8Test(unittest.TestCase):
         self.assertEqual(old["state"],"QUEUED")
         self.assertFalse(old["executed"])
 
+    def test_authentic_http_board_and_old_receipt_unchanged(self):
+        import json, threading, time
+        from urllib import request, error
+        from service import create_server, PREFIX
+        httpd=create_server(self.store,port=0)
+        worker=threading.Thread(target=httpd.serve_forever,daemon=True)
+        worker.start()
+        base="http://127.0.0.1:%d%s"%(httpd.server_port,PREFIX)
+        def call(route,method="GET",obj=None,bearer=None):
+            data=None if obj is None else json.dumps(obj).encode()
+            req=request.Request(base+route,method=method,data=data)
+            if data is not None:req.add_header("Content-Type","application/json")
+            if bearer:req.add_header("Authorization","Bearer "+bearer)
+            try:
+                with request.urlopen(req,timeout=4) as ans:
+                    return ans.status,json.loads(ans.read())
+            except error.HTTPError as e:
+                return e.code,json.loads(e.read())
+        try:
+            status,_=call("/v4/board")
+            self.assertEqual(status,401)
+            key=self.store.create_pair()
+            status,paired=call("/v2/pair","POST",{"pairing_code":key})
+            self.assertEqual(status,201)
+            bearer=paired["device_token"]
+            status,accepted=call("/v2/commands","POST",
+              message("command-http-v8-111","agentos"),bearer)
+            self.assertEqual(status,201)
+            self.assertFalse(accepted["executed"])
+            status,board=call("/v4/board",bearer=bearer)
+            self.assertEqual(status,200)
+            self.assertEqual(board["schema"],"cf.agentos.work-board.v8")
+            self.assertEqual(len(board["works"]),1)
+            self.assertFalse(board["external_provider_dispatch"])
+            status,legacy=call("/v2/commands/command-http-v8-111",bearer=bearer)
+            self.assertEqual(status,200)
+            self.assertFalse(legacy["executed"])
+            self.assertEqual(legacy["state"],"QUEUED")
+        finally:
+            httpd.shutdown()
+            httpd.server_close()
+
     def test_cutover_does_not_reprocess_history(self):
         with tempfile.TemporaryDirectory() as other:
             s=Store(os.path.join(other,"old.sqlite"))
