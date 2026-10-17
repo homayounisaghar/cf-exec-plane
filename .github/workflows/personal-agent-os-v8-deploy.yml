@@ -119,8 +119,15 @@ jobs:
           swapped=1
           ownercopy "$STAGE/backend/service.py" "$TARGET/service.py"
           svc restart "$UNIT"
-          [[ "$(svc is-active "$UNIT")" == active ]]
-          curl -fsS --max-time 5 "http://127.0.0.1:18765/agentos-alpha4/health" | grep -q '"status":"READY"'
+          healthy=0
+          for attempt in 1 2 3 4 5 6 7 8 9 10; do
+            if [[ "$(svc is-active "$UNIT")" == active ]] && curl -fsS --max-time 3 "http://127.0.0.1:18765/agentos-alpha4/health" 2>/dev/null | grep -q '"status":"READY"'; then
+              healthy=1
+              break
+            fi
+            sleep 0.5
+          done
+          [[ "$healthy" == 1 ]] || { echo "SERVICE_HEALTH_TIMEOUT"; false; }
           [[ "$(curl --max-time 5 -s -o /dev/null -w '%{http_code}' http://127.0.0.1:18765/agentos-alpha4/v4/board)" == 401 ]]
           echo "AGENTOS_V8_INGRESS_ACTIVE_SERVICE_ONLY"
           REMOTE
