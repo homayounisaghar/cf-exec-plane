@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+ <uses-permission android:name="android.permission.INTERNET"/>
+ <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+ <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+ <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+ <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
+ <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+ <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE"/>
+ <uses-permission android:name="android.permission.WAKE_LOCK"/>
+ <uses-feature android:name="android.hardware.microphone" android:required="false"/>
+ <application android:label="Personal Agent OS Alpha" android:theme="@android:style/Theme.Material.Light.NoActionBar" android:usesCleartextTraffic="false" android:allowBackup="false">
+  <service android:name=".AgentSyncJobService" android:exported="true"
+      android:permission="android.permission.BIND_JOB_SERVICE"/>
+  <service android:name=".LockedListeningService" android:exported="false" android:foregroundServiceType="microphone" android:stopWithTask="false"/>
+  <activity android:name=".WorkBoardActivity" android:exported="false"/>\n  <activity android:name=".WakeSetupActivity" android:exported="false"/>
+  <activity android:name=".WakeActivity" android:exported="false"/>
+  <activity android:name=".MainActivity" android:exported="true" android:windowSoftInputMode="adjustResize">
+   <intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter>
+  </activity>
+ </application>
+</manifest>

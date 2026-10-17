@@ -1,0 +1,15 @@
+{
+  "schema": "capability-fabric.android-standard-app-contract.v1",
+  "application": {
+    "packageId": "dev.capabilityfabric.personalagent",
+    "versionName": "0.7.0-alpha7",
+    "versionCode": 8
+  },
+  "pipeline": {
+    "buildStageRequiresSigningSecrets": false,
+    "signingSeparatedFromBuild": true
+  },
+  "expectedSigner": {
+    "certificateSha256": "3c8561b6a30c5f2db9bd9246bdfc0b4e4827a485c83f340ffe1c8d90a75f60bd"
+  }
+}
