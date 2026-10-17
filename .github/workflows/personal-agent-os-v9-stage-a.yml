@@ -1,0 +1,70 @@
+name: Personal Agent OS v9 secret-free Stage A
+on:
+  push:
+    paths:
+      - "staging/personal-agent-os-v9/src/**"
+      - ".github/workflows/personal-agent-os-v9-stage-a.yml"
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.10.2"
+      - name: Source policy and independent UI boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd staging/personal-agent-os-v9/src
+          grep -q 'versionCode = 9;' app/build.gradle.kts
+          grep -q 'setImageResource(android.R.drawable.ic_menu_preferences)' app/src/main/java/dev/capabilityfabric/personalagent/MainActivity.java
+          grep -q 'settingsPane.setVisibility(settingsShown?View.VISIBLE:View.GONE)' app/src/main/java/dev/capabilityfabric/personalagent/MainActivity.java
+          grep -q 'NEEDS_CLARIFICATION' app/src/main/java/dev/capabilityfabric/personalagent/WorkBoardActivity.java
+      - name: Android SDK and unsigned versionCode9 release
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -d "${ANDROID_HOME}/cmdline-tools/latest"
+          if ! test -d "${ANDROID_HOME}/platforms/android-35"; then
+            "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" --install "platforms;android-35" "build-tools;35.0.0"
+          fi
+          cd staging/personal-agent-os-v9/src
+          gradle --no-daemon --console=plain :app:assembleRelease
+          FILE=app/build/outputs/apk/release/app-release-unsigned.apk
+          test -s "$FILE"
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib,json
+          p=Path("app/build/outputs/apk/release/app-release-unsigned.apk")
+          b=p.read_bytes()
+          m={"schema":"agentos-v9-unsigned-release.v1","applicationId":"dev.capabilityfabric.personalagent","versionCode":9,"versionName":"0.8.0-alpha8","sha256":hashlib.sha256(b).hexdigest(),"size_bytes":len(b)}
+          target=Path("../output")
+          target.mkdir(parents=True,exist_ok=True)
+          (target/"v9-unsigned.apk").write_bytes(b)
+          (target/"manifest.json").write_text(json.dumps(m,sort_keys=True,indent=2)+"\n",encoding="utf-8")
+          print(json.dumps(m))
+          PY
+      - name: Publish secret-free Stage A binary
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f staging/personal-agent-os-v9/output/v9-unsigned.apk staging/personal-agent-os-v9/output/manifest.json
+          git diff --cached --quiet && exit 0
+          git commit -m "build: Personal Agent OS v9 unsigned kit [skip ci]"
+          for attempt in 1 2 3; do
+            git pull --rebase origin main
+            if git push origin HEAD:main; then exit 0; fi
+            sleep 2
+          done
+          exit 19
