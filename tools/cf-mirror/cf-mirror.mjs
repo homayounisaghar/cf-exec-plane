@@ -140,7 +140,7 @@ function P(u,b){return fetch(u,{method:'POST',headers:{'content-type':'applicati
 function xy(e){const r=I.getBoundingClientRect(),nw=I.naturalWidth||r.width,nh=I.naturalHeight||r.height,s=Math.min(r.width/nw,r.height/nh);return{x:Math.round((e.clientX-r.left)/s),y:Math.round((e.clientY-r.top)/s)}}
 let fr=0;function live(){I.src='/stream.mjpg?'+Date.now()}
 I.onerror=()=>{S.textContent='reconnecting';setTimeout(live,1000)};I.onload=()=>{fr++};
-function info(){fetch('/info').then(r=>r.json()).then(j=>{S.textContent='live '+j.interval_s+'s'+(j.auto?' auto':'')+' · cpu '+j.cpu_pct+'%'}).catch(()=>{})}
+function info(){fetch('/info').then(r=>r.json()).then(j=>{S.textContent='live '+j.interval_s+'s · '+j.quality+(j.auto?' · auto':'')+' · cpu '+j.cpu_pct+'%'}).catch(()=>{})}
 setInterval(info,3000);info();live();
 function soon(){}
 function fit(){P('/fit',{w:Math.round(innerWidth),h:Math.round(innerHeight)}).then(soon)}
@@ -184,10 +184,10 @@ class CDP {
     const id = ++this.id;
     return new Promise((res, rej) => { this.cb.set(id, { res, rej }); this.ws.send(JSON.stringify({ id, method, params })); setTimeout(() => { if (this.cb.delete(id)) rej(new Error('timeout ' + method)); }, 8000); });
   }
-  async shot() { const r = await this.send('Page.captureScreenshot', { format: 'jpeg', quality: 70 }); return Buffer.from(r.data, 'base64'); }
+  async shot() { const r = await this.send('Page.captureScreenshot', { format: 'jpeg', quality: [85, 70, 55][this.level ?? 1] }); return Buffer.from(r.data, 'base64'); }
   startStream(cb) {
     let on = true; this.onFrame = m => { if (!on) return; cb(Buffer.from(m.data, 'base64')); const ack = () => this.ws?.send(JSON.stringify({ id: ++this.id, method: 'Page.screencastFrameAck', params: { sessionId: m.sessionId } })); setTimeout(ack, Math.max(0, (this.ackDelay || 50) - 20)); };
-    const go = async () => { try { await this.send('Page.startScreencast', { format: 'jpeg', quality: 65 }); cb(await this.shot()); } catch { if (on) setTimeout(go, 1000); } };
+    const go = async () => { try { await this.send('Page.startScreencast', { format: 'jpeg', quality: [85, 70, 55][this.level ?? 1] }); cb(await this.shot()); } catch { if (on) setTimeout(go, 1000); } };
     this.restream = go; go();
     // keep a frame flowing even if the page is static (screencast only sends on change)
     const t = setInterval(async () => { if (on && this.idle()) try { cb(await this.shot()); } catch {} }, 3000);
@@ -236,7 +236,7 @@ class X11 {
   async fit() {}
   async unfit() {}
   startStream(cb, fps) {
-    const p = spawn('ffmpeg', ['-loglevel', 'error', '-f', 'x11grab', '-draw_mouse', '1', '-framerate', String(fps), '-i', this.d, '-q:v', '6', '-f', 'image2pipe', '-vcodec', 'mjpeg', '-'], { env: this.env, stdio: ['ignore', 'pipe', 'ignore'] });
+    const p = spawn('ffmpeg', ['-loglevel', 'error', '-f', 'x11grab', '-draw_mouse', '1', '-framerate', String(fps), '-i', this.d, '-q:v', String([3, 5, 8][this.level ?? 1]), '-f', 'image2pipe', '-vcodec', 'mjpeg', '-'], { env: this.env, stdio: ['ignore', 'pipe', 'ignore'] });
     let buf = Buffer.alloc(0);
     p.stdout.on('data', c => {
       buf = Buffer.concat([buf, c]);
@@ -280,7 +280,7 @@ class Stream {
   flush() { const f = this.pending; if (!f) return; this.pending = null; this.last = Date.now(); this.lastFrame = f; for (const r of this.clients) this.write(r, f); }
   stopSrc() { if (this.src) { try { this.src(); } catch {} this.src = null; } }
   setRate(sec) { if (Math.abs(sec * 1000 - this.ms) < 1) return; this.ms = sec * 1000; console.log(new Date().toISOString(), 'rate', sec, 'cpu', CPU.pct);
-    if (this.src && this.be.restartOnRate) { this.stopSrc(); this.src = this.be.startStream(f => this.frame(f), Math.round(1000 / this.ms)); }
+    if (this.src) { this.stopSrc(); this.src = this.be.startStream(f => this.frame(f), Math.round(1000 / this.ms)); }
     this.be.ackDelay = this.ms; }
 }
 
@@ -295,11 +295,12 @@ function cpuSample() {
 // auto mode: 0.05 s normally; busy server -> 0.1 s -> 0.2 s; back up only after ~15 s calm
 function autoRate(stream) {
   const L = [0.05, 0.1, 0.2]; let i = 0, calm = 0;
+  stream.be.level = 0;
   cpuSample();
   setInterval(() => {
     cpuSample();
-    if (CPU.pct >= 75 && i < L.length - 1) { i++; calm = 0; stream.setRate(L[i]); }
-    else if (CPU.pct < 50 && i > 0) { if (++calm >= 5) { i--; calm = 0; stream.setRate(L[i]); } }
+    if (CPU.pct >= 75 && i < L.length - 1) { i++; calm = 0; stream.be.level = i; stream.setRate(L[i]); }
+    else if (CPU.pct < 50 && i > 0) { if (++calm >= 5) { i--; calm = 0; stream.be.level = i; stream.setRate(L[i]); } }
     else calm = 0;
   }, 3000);
 }
@@ -317,7 +318,7 @@ async function serve(o) {
     try {
       const u = req.url.split('?')[0];
       if (req.method === 'GET' && u === '/health') return out(200, '{"ok":true}');
-      if (req.method === 'GET' && u === '/info') return out(200, JSON.stringify({ interval_s: stream.ms / 1000, auto, cpu_pct: CPU.pct }));
+      if (req.method === 'GET' && u === '/info') return out(200, JSON.stringify({ interval_s: stream.ms / 1000, auto, cpu_pct: CPU.pct, quality: ['high', 'medium', 'low'][be.level ?? 1] }));
       if (req.method === 'GET' && u === '/shot.jpg') return out(200, await be.shot(), 'image/jpeg');
       if (req.method === 'GET' && u === '/stream.mjpg') return stream.add(res);
       if (req.method === 'GET' && u === '/') return out(200, PAGE(name.replace(/[<>&"]/g, ''), interval), 'text/html; charset=utf-8');
