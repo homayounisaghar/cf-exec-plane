@@ -143,7 +143,7 @@ async function openOnDesktop(name, url, x11) {
   // the browser may already be running and ignore size flags: fix size/position directly
   for (let i = 0; i < 40; i++) {
     await new Promise(r => setTimeout(r, 250));
-    let ids = ''; try { ids = execFileSync('xdotool', ['search', '--name', `^${name} · `], { encoding: 'utf8', env }).trim(); } catch {}
+    let ids = ''; try { ids = execFileSync('xdotool', ['search', '--name', `^${pretty(name)} mirror`], { encoding: 'utf8', env }).trim(); } catch {}
     if (ids) { for (const id of ids.split('\n')) { try { execFileSync('xdotool', ['windowsize', id, String(w), String(h)], { env }); execFileSync('xdotool', ['windowmove', id, String(px), String(py)], { env }); execFileSync('xdotool', ['windowactivate', id], { env }); } catch {} } return XRDP_DISPLAY; }
   }
   return XRDP_DISPLAY;
@@ -155,15 +155,21 @@ function stop(o) {
   console.log(JSON.stringify({ ok: true, stopped: c }));
 }
 
+// display name for titles: wechat -> WeChat, tg -> Telegram, ...
+function pretty(n) {
+  const M = { wechat: 'WeChat', wc: 'WeChat', tg: 'Telegram', telegram: 'Telegram', whatsapp: 'WhatsApp', wa: 'WhatsApp', bale: 'Bale', snapp: 'Snapp', alibaba: 'Alibaba', 'alibaba-ir': 'Alibaba.ir', alibabair: 'Alibaba.ir', backblaze: 'Backblaze' };
+  return M[n.toLowerCase()] || n.charAt(0).toUpperCase() + n.slice(1);
+}
+
 // ---------------- server ----------------
 const PAGE = (title, interval) => `<!doctype html><html><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1">
-<title>${title} · …</title><style>html,body{margin:0;height:100%;background:#2b2b2b;overflow:hidden}
+<title>${title} mirror</title><style>html,body{margin:0;height:100%;background:#2b2b2b;overflow:hidden}
 #i{display:block;width:100%;height:100%;object-fit:contain;object-position:center;outline:none;user-select:none;-webkit-user-drag:none}
 #t{position:fixed;left:-1000px;top:0;opacity:0}</style></head><body>
 <img id=i tabindex=0 alt="">
 <textarea id=t autocomplete=off></textarea>
 <script>
-const I=document.getElementById('i'),T=document.getElementById('t'),NAME=${JSON.stringify(title)},S={set textContent(v){document.title=NAME+' · '+v}};let iv=${interval}*1000,busy=0,last=0,mv=0;
+const I=document.getElementById('i'),T=document.getElementById('t'),NAME=${JSON.stringify(title)},S={set textContent(v){document.title=NAME+' mirror ('+v+')'}};let iv=${interval}*1000,busy=0,last=0,mv=0;
 function P(u,b){return fetch(u,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(b||{})}).then(r=>r.json()).catch(()=>({}))}
 function xy(e){const r=I.getBoundingClientRect(),nw=I.naturalWidth||r.width,nh=I.naturalHeight||r.height,s=Math.min(r.width/nw,r.height/nh);return{x:Math.round((e.clientX-r.left)/s),y:Math.round((e.clientY-r.top)/s)}}
 let fr=0;function live(){I.src='/stream.mjpg?'+Date.now()}
@@ -375,7 +381,7 @@ async function serve(o) {
       if (req.method === 'GET' && u === '/info') return out(200, JSON.stringify({ region: be.region || null, interval_s: stream.ms / 1000, auto, cpu_pct: CPU.pct, quality: ['high', 'medium', 'low'][be.level ?? 1] }));
       if (req.method === 'GET' && u === '/shot.jpg') return out(200, await be.shot(), 'image/jpeg');
       if (req.method === 'GET' && u === '/stream.mjpg') return stream.add(res);
-      if (req.method === 'GET' && u === '/') return out(200, PAGE(name.replace(/[<>&"]/g, ''), interval), 'text/html; charset=utf-8');
+      if (req.method === 'GET' && u === '/') return out(200, PAGE(pretty(name).replace(/[<>&"]/g, ''), interval), 'text/html; charset=utf-8');
       if (req.method !== 'POST') return out(404, '{}');
       let b = ''; for await (const c of req) b += c; const p = b ? JSON.parse(b) : {};
       const f = { '/move': () => be.move(p), '/down': () => be.down(p), '/up': () => be.up(p), '/dbl': () => be.dbl(p), '/wheel': () => be.wheel(p), '/type': () => be.type(String(p.s || '')), '/key': () => be.key(p), '/fit': () => be.fit(p.w, p.h) }[u];
