@@ -1,0 +1,4 @@
+request_id=r255-viewer-ui-recovery-ci-20261019
+candidate_commit=cb70edd95cb8e379c3ee23da25124e65f2ec25fb
+expected_sequence=255
+expected_release=onshape-vps-fast-r100-direct-orbit1-paa-storage-r255-viewer-ui-recovery1
