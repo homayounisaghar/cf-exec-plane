@@ -1,0 +1,4 @@
+request_id=r257-camera-follow-deploy-20261019
+candidate_commit=77bc3c00ed50241398f33f92a59c86538f993737
+expected_sequence=257
+expected_release=onshape-vps-fast-r100-direct-orbit1-paa-storage-r257-camera-follow-qual1
