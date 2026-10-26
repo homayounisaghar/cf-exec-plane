@@ -1,0 +1,85 @@
+--- a/pcg_web_semantic_ops.mjs
++++ b/pcg_web_semantic_ops.mjs
+@@ -2290,6 +2290,68 @@
+    * references. Follow up with {batch_id} to receive 20 independent results.
+    * Never send source audio to Telegram or conflate identical file content.
+    */
++  // Fast small-audio path: reuse the verified Telegram attachment download
++  // implementation, which performs restriction and read-state reconciliation.
++  // Avoid the 30s WebK large-download session for small voice notes. Large
++  // audio keeps the existing chunked source reader without changing Soniox.
++  async function acquireTelegramAudioForBatch(messageRef){
++    const MAX_DIRECT_BYTES=8*1024*1024;
++    let download=null;
++    try{
++      download=await webKDownloadAttachment(
++        pageNow(),messageRef.providerRef,messageRef.mid,"document",MAX_DIRECT_BYTES);
++    }catch(err){
++      if(err?.code!=="WEBK_DOWNLOAD_SIZE_OUT_OF_BOUNDS")throw err;
++    }
++    if(download){
++      if(download.outcome!=="ACHIEVED"||download.provider_state_unchanged!==true){
++        const err=new Error("ASR_TELEGRAM_SOURCE_STATE_IN_DOUBT");
++        err.code="ASR_TELEGRAM_SOURCE_STATE_IN_DOUBT";
++        throw err;
++      }
++      if(typeof download.media_type!=="string"||!download.media_type.startsWith("audio/")){
++        const err=new Error("ASR_BATCH_TELEGRAM_AUDIO_NOT_FOUND");
++        err.code="ASR_BATCH_TELEGRAM_AUDIO_NOT_FOUND";
++        throw err;
++      }
++      const size=download.size_bytes;
++      if(!Number.isSafeInteger(size)||size<1||size>MAX_DIRECT_BYTES){
++        const err=new Error("ASR_BATCH_SOURCE_SIZE_INVALID");
++        err.code="ASR_BATCH_SOURCE_SIZE_INVALID";
++        throw err;
++      }
++      const bytes=Buffer.from(download.data_base64||"","base64");
++      if(bytes.length!==size){
++        const err=new Error("ASR_BATCH_SOURCE_BYTES_INVALID");
++        err.code="ASR_BATCH_SOURCE_BYTES_INVALID";
++        throw err;
++      }
++      const writer=materialSendNow().createMaterialFileWriter({
++        filename:download.filename||("voice-"+messageRef.mid+".ogg"),
++        mimeType:download.media_type,
++        sizeBytes:size,
++      });
++      try{
++        writer.append(bytes,0);
++        return writer.finalize();
++      }catch(err){
++        try{writer.abort()}catch{}
++        throw err;
++      }
++    }
++    // Streaming fallback for documents exceeding the direct-download limit.
++    const message=await webKFetchMessage(pageNow(),messageRef.providerRef,messageRef.mid);
++    const attachment=(Array.isArray(message?.attachments)?message.attachments:[])
++      .find(a=>(a?.media_kind==="voice"||a?.media_kind==="audio")
++        &&typeof a.media_type==="string"&&a.media_type.startsWith("audio/"));
++    if(!attachment){
++      const err=new Error("ASR_BATCH_TELEGRAM_AUDIO_NOT_FOUND");
++      err.code="ASR_BATCH_TELEGRAM_AUDIO_NOT_FOUND";
++      throw err;
++    }
++    return acquireAudioMaterialForAsr(messageRef,attachment);
++  }
++
+   async function audioTranscribeBatch(req){
+     const operation="communication.audio.transcribe.batch";
+     if(!semanticPurposeAllowed(req.purpose))
+@@ -2327,12 +2389,7 @@
+           // registry, never interpreted as a path or an arbitrary URL.
+           if(f?.material_file_handle)throw Error("ASR_BATCH_SOURCE_AMBIGUOUS");
+           const messageRef=identity.providerMessageRefForHandle(f.telegram_message_handle);
+-          const message=await webKFetchMessage(pageNow(),messageRef.providerRef,messageRef.mid);
+-          const attachment=(Array.isArray(message?.attachments)?message.attachments:[])
+-            .find(a=>(a?.media_kind==="voice"||a?.media_kind==="audio")
+-              &&typeof a.media_type==="string"&&a.media_type.startsWith("audio/"));
+-          if(!attachment)throw Error("ASR_BATCH_TELEGRAM_AUDIO_NOT_FOUND");
+-          const material=await acquireAudioMaterialForAsr(messageRef,attachment);
++          const material=await acquireTelegramAudioForBatch(messageRef);
+           if(!Number.isSafeInteger(material.size_bytes)||material.size_bytes<1||material.size_bytes>64*1024*1024)
+             throw Error("PERPLEXITY_ASR_SOURCE_SIZE_INVALID");
+           return {
