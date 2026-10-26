@@ -27,12 +27,12 @@ jobs:
 
         change="$(git diff --name-status HEAD^ HEAD)"
 
-        [[ "$change" == $''A\tserver-bootstrap/control/cf-asr-unified/cf-single-asr-r263-20261026-retry2.request'' ]] || exit
+        [[ "$change" == $''A\tserver-bootstrap/control/cf-asr-unified/cf-single-asr-r263-20261026-retry3.request'' ]] || exit
         10
 
-        file=server-bootstrap/control/cf-asr-unified/cf-single-asr-r263-20261026-retry2.request
+        file=server-bootstrap/control/cf-asr-unified/cf-single-asr-r263-20261026-retry3.request
 
-        grep -Fxq "request_id=cf-single-asr-r263-20261026-retry2" "$file"
+        grep -Fxq "request_id=cf-single-asr-r263-20261026-retry3" "$file"
 
         grep -Fxq "candidate_commit=e9779d35e1f34211817acd3d3441f44f5b9c80bf" "$file"
 
@@ -56,8 +56,8 @@ jobs:
         printf ''%s  %s\n'' 3cd29b27e18a04e49aeae6f837ba1b7872409cee7bf6254d68ae91a69984e019 "$SNAP/cf-r263-unified.patch"
         | sha256sum -c -
 
-        printf ''%s  %s\n'' c1c10a8d3b3083c53b3b1c31f10423662e5b1676afa2800ff65d0fb597701e9a "$SNAP/activate-cf-r263.sh" |
-        sha256sum -c -
+        printf ''%s  %s\n'' f24c3d0f8dbe9b71876d22e03ad7c7c9ceeb6b806c16b2fbc376da266bfa5781 "$SNAP/activate-cf-r263-verified.sh"
+        | sha256sum -c -
 
         cp -a "$BASE" "$RUNNER_TEMP/r263"
 
@@ -130,7 +130,7 @@ jobs:
 
         node --test "$RUNNER_TEMP/r263/owner-auth.test.mjs"
 
-        bash -n "$SNAP/activate-cf-r263.sh"
+        bash -n "$SNAP/activate-cf-r263-verified.sh"
 
         tar -czf "$RUNNER_TEMP/cf-r263-release.tgz" -C "$RUNNER_TEMP/r263" .'
     - name: Publish only CF backend with rollback and gateway preservation
@@ -163,7 +163,7 @@ jobs:
 
         scp "${transport[@]}" -P "$port" "$RUNNER_TEMP/cf-r263-release.tgz" "$VPS_SSH_USER@$VPS_HOST:/tmp/cf-r263-release.tgz"
 
-        scp "${transport[@]}" -P "$port" "$SNAP/activate-cf-r263.sh" "$VPS_SSH_USER@$VPS_HOST:/tmp/activate-cf-r263.sh"
+        scp "${transport[@]}" -P "$port" "$SNAP/activate-cf-r263-verified.sh" "$VPS_SSH_USER@$VPS_HOST:/tmp/activate-cf-r263.sh"
 
         ssh "${transport[@]}" -p "$port" "$VPS_SSH_USER@$VPS_HOST" ''set -e; test "$(id -u)" = 0; set +e; bash /tmp/activate-cf-r263.sh
         > /tmp/cf-r263-deploy-diagnostic.log 2>&1; rc=$?; set -e; chgrp 1000 /tmp/cf-r263-deploy-diagnostic.log; chmod 0640
