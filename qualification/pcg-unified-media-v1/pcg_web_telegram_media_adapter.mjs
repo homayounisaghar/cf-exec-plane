@@ -11,7 +11,7 @@ export function createTelegramMediaAdapter({
 } = {}) {
   if (!identity?.providerMessageRefForHandle || typeof getPage !== "function" || !webk)
     throw new MediaAcquisitionError("MEDIA_TELEGRAM_ADAPTER_INVALID");
-  const required = ["download", "fetchMessage", "prepareLarge", "readLarge", "finishLarge", "abortLarge"];
+  const required = ["download", "prepareLarge", "readLarge", "finishLarge", "abortLarge"];
   if (required.some(k => typeof webk[k] !== "function"))
     throw new MediaAcquisitionError("MEDIA_TELEGRAM_WEBK_INCOMPLETE");
 
@@ -65,11 +65,6 @@ export function createTelegramMediaAdapter({
     // Provider SDK supports ranged reads only for Telegram documents.
     if (slot !== "document")
       throw new MediaAcquisitionError("MEDIA_PROVIDER_RANGE_UNAVAILABLE");
-    const providerMessage = await webk.fetchMessage(page, message.providerRef, message.mid);
-    const attachment = (Array.isArray(providerMessage?.attachments) ? providerMessage.attachments : [])
-      .find(a => a?.slot === "document");
-    if (!attachment)
-      throw new MediaAcquisitionError("MEDIA_TELEGRAM_DOCUMENT_NOT_FOUND");
     const prepared = await webk.prepareLarge(
       page, message.providerRef, message.mid, "document", maxBytes);
     if (!prepared || !Number.isSafeInteger(prepared.size_bytes) ||
@@ -77,8 +72,8 @@ export function createTelegramMediaAdapter({
       throw new MediaAcquisitionError("MEDIA_TELEGRAM_LARGE_SOURCE_INVALID");
     let closed = false;
     return {
-      filename: prepared.filename || attachment.filename || "attachment.bin",
-      media_type: prepared.media_type || attachment.media_type || "application/octet-stream",
+      filename: prepared.filename || "attachment.bin",
+      media_type: prepared.media_type || "application/octet-stream",
       size_bytes: prepared.size_bytes,
       source_provenance: {ref_kind: "telegram_message"},
       async read(offset, length) {
