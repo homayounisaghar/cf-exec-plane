@@ -15,3 +15,15 @@ else:
             print('PCG_DIAG_JOB_META '+json.dumps(out,ensure_ascii=True))
         except Exception as e:
             print('PCG_DIAG_FILE_ERROR '+type(e).__name__)
+
+# Confirm whether the active Playwright container has a native audio decoder.
+import subprocess
+for args in [
+ ['docker','exec','capability-fabric-pcg-perplexity-asr','sh','-lc','if command -v ffmpeg >/dev/null; then command -v ffmpeg; ffmpeg -version | head -n 1; else echo FFMPEG_NOT_INSTALLED; fi; if command -v ffprobe >/dev/null; then command -v ffprobe; else echo FFPROBE_NOT_INSTALLED; fi'],
+ ['docker','inspect','--format','MEMORY_LIMIT={{.HostConfig.Memory}} OOM_KILLED={{.State.OOMKilled}}','capability-fabric-pcg-perplexity-asr']
+]:
+ try:
+  r=subprocess.run(args,check=False,stdout=subprocess.PIPE,stderr=subprocess.DEVNULL,text=True,timeout=15)
+  print('PCG_DIAG_CONTAINER '+r.stdout.strip()[:700]+' STATUS='+str(r.returncode))
+ except Exception as e:
+  print('PCG_DIAG_CONTAINER_ERROR '+type(e).__name__)
