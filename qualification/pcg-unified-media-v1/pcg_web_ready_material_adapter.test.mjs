@@ -30,5 +30,5 @@ test("source-bound owner admission is mandatory",async()=>{
  await assert.rejects(a.acquire({source_ref,owner_context:{},authorization_context:{}}),
   {code:"MEDIA_AUTH_CONTEXT_REQUIRED"});
  await assert.rejects(a.acquire({source_ref:{...source_ref,handle:"file:/tmp/secret"},owner_context:1,authorization_context:{verified_upload:true}}),
-  {code:"MEDIA_MATERIAL_HANDLE_INVALID"});
+  {code:"MEDIA_SOURCE_HANDLE_UNSAFE"});
 });
