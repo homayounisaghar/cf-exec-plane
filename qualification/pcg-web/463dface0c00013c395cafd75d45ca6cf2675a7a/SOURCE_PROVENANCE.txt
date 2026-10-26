@@ -1,0 +1,11 @@
+r132 immutable public execution snapshot
+private_repository=homayounisaghar/capability-fabric
+candidate_commit=463dface0c00013c395cafd75d45ca6cf2675a7a
+private_delta=server-deploy/channels/pcg/r132-scoped/
+base_public_snapshot=qualification/pcg-web/6a8638aaf437a4fccd429e5b8f652533ccf89753/
+base_release=pcg-web-stage6-soniox-16x-r131
+release_id=pcg-web-stage6-soniox-parallel-514-r132
+sequence=132
+scope=pcg_perplexity_asr,pcg_web only; managed relay preserved; fail rollback to r131
+manifest_sha256=9934752060c356207abf36334805e6cb7726103aa838a288bebd2c73162c8f85
+activate_script_sha256=08a48ccc6faa7c2a6328d695a979be53077aa4cd647cfd13062a30e846eb3963
