@@ -1,0 +1,107 @@
+name: Dexa Owner Catalog Snapshot Fix
+permissions:
+  contents: read
+concurrency:
+  group: dexa-owner-snapshot-fix
+  cancel-in-progress: false
+jobs:
+  deploy:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+      SNAP: qualification/dexa-owner-snapshot/80889b67fb0809fc1c854c79e649ae8787fa62bb
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 2
+        persist-credentials: false
+    - name: Verify immutable snapshot fix request and exact source integrity
+      shell: bash
+      run: "set -euo pipefail\nchanged=\"$(git diff --name-status \"$GITHUB_SHA^\" \"$GITHUB_SHA\")\"\n[[ \"$changed\" ==\
+        \ $'A\\tserver-bootstrap/control/dexa-owner-snapshot/dexa-kata-owner-snapshot-20261026-v1.request' ]] || exit 11\n\
+        req=server-bootstrap/control/dexa-owner-snapshot/dexa-kata-owner-snapshot-20261026-v1.request\ngrep -Fxq 'request_id=dexa-kata-owner-snapshot-20261026-v1'\
+        \ \"$req\"\ngrep -Fxq 'candidate_commit=80889b67fb0809fc1c854c79e649ae8787fa62bb' \"$req\"\ngrep -Fxq 'expected_release=dexa-kata-owner-snapshot-20261026-v1'\
+        \ \"$req\"\ngrep -Fxq 'manifest_sha256=9f76e7f09817cd90a7d331265c3aaf9ea9afc457b8e48abf71c711393d067cb4' \"$req\"\n\
+        [[ \"$(wc -l < \"$req\")\" == 4 ]] || exit 12\nprintf '%s  %s\\n' 9f76e7f09817cd90a7d331265c3aaf9ea9afc457b8e48abf71c711393d067cb4\
+        \ \"$SNAP/manifest.json\" | sha256sum -c -\npython3 - <<'PY'\nfrom pathlib import Path\nimport json,hashlib,os\nroot=Path(os.environ[\"\
+        SNAP\"])\nm=json.loads((root/\"manifest.json\").read_text())\nassert m[\"schema\"]==\"dexa.owner-snapshot-fix.secret-free.v1\"\
+        \nassert m[\"release_id\"]==\"dexa-kata-owner-snapshot-20261026-v1\"\nassert m[\"source_repo\"]==\"homayounisaghar/capability-fabric\"\
+        \nassert m[\"source_ref\"]==\"work/dexa-autonomous-loop-20261020\"\nassert m[\"source_commit\"]==\"80889b67fb0809fc1c854c79e649ae8787fa62bb\"\
+        \nassert (m[\"expected_kata\"],m[\"expected_cf\"])==(291,187)\nassert set(m[\"payload_sha\"])=={\"snapshot.patch\"\
+        ,\"deploy-snapshot.sh\",\"activate-snapshot.sh\",\n \"test_dexa_catalog_snapshot_refresh_20261026.mjs\"}\nfor n,h\
+        \ in m[\"payload_sha\"].items():\n p=root/n\n assert p.is_file() and not p.is_symlink()\n assert hashlib.sha256(p.read_bytes()).hexdigest()==h,n\n\
+        assert len(m[\"old_sha\"])==3 and len(m[\"new_sha\"])==4\nprint(\"SNAPSHOT_REPAIR_IMMUTABLE_RELEASE_VERIFIED\")\n\
+        PY\nbash -n \"$SNAP/deploy-snapshot.sh\"\nsh -n \"$SNAP/activate-snapshot.sh\"\ntar -czf \"$RUNNER_TEMP/dexa-kata-owner-snapshot-20261026-v1.tgz\"\
+        \ -C \"$SNAP\" ."
+    - name: Prepare strict pinned owner SSH
+      shell: bash
+      run: 'set -euo pipefail
+
+        [[ -n "$VPS_SSH_KEY" && -n "$VPS_HOST" && -n "$VPS_SSH_USER" && -n "$VPS_HOST_KEY" ]] || exit 20
+
+        [[ "$VPS_SSH_USER" == cfserver || "$VPS_SSH_USER" == root ]] || exit 21
+
+        port="$VPS_PORT";test -n "$port" || port=22
+
+        case "$port" in *[!0-9]*) exit 22 ;; esac
+
+        dir="$RUNNER_TEMP/ssh"
+
+        install -d -m 0700 "$dir"
+
+        printf ''%s\n'' "$VPS_SSH_KEY" > "$dir/key"
+
+        chmod 0600 "$dir/key"
+
+        read -r key_type key_data extra < <(printf ''%s\n'' "$VPS_HOST_KEY" | tr -d ''\r'')
+
+        [[ "$key_type" == ssh-ed25519 && -n "$key_data" && -z "$extra" ]] || exit 23
+
+        printf ''%s %s %s\n'' "$VPS_HOST" "$key_type" "$key_data" > "$dir/known_hosts"
+
+        printf ''[%s]:%s %s %s\n'' "$VPS_HOST" "$port" "$key_type" "$key_data" >> "$dir/known_hosts"
+
+        echo "SSH_DIR=$dir" >> "$GITHUB_ENV"
+
+        echo "SSH_PORT=$port" >> "$GITHUB_ENV"
+
+        '
+    - name: Deliver scoped planner-guard fix with mission drain and rollback
+      shell: bash
+      run: 'set -euo pipefail
+
+        transport=(-i "$SSH_DIR/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$SSH_DIR/known_hosts")
+
+        scp "${transport[@]}" -P "$SSH_PORT" "$RUNNER_TEMP/dexa-kata-owner-snapshot-20261026-v1.tgz" "$VPS_SSH_USER@$VPS_HOST:/tmp/dexa-kata-owner-snapshot-20261026-v1.tgz"
+
+        scp "${transport[@]}" -P "$SSH_PORT" "$SNAP/activate-snapshot.sh" "$VPS_SSH_USER@$VPS_HOST:/tmp/dexa-kata-owner-snapshot-20261026-v1-activate.sh"
+
+        ssh "${transport[@]}" -p "$SSH_PORT" "$VPS_SSH_USER@$VPS_HOST" ''sh /tmp/dexa-kata-owner-snapshot-20261026-v1-activate.sh
+        dexa-kata-owner-snapshot-20261026-v1'' </dev/null
+
+        echo DEXA_KATA_SCOPED_DEPLOY_COMPLETED
+
+        '
+    - name: Confirm Dexa survives with original missions and live planning
+      shell: bash
+      run: 'set -euo pipefail
+
+        transport=(-i "$SSH_DIR/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$SSH_DIR/known_hosts")
+
+        ssh "${transport[@]}" -p "$SSH_PORT" "$VPS_SSH_USER@$VPS_HOST" ''curl -fsS --max-time 6 http://127.0.0.1:9471/healthz
+        | node -e ''"''"''let s="";process.stdin.on("data",x=>s+=x).on("end",()=>{const d=JSON.parse(s);if(!d.ok||d.activeMissions!==0||d.deploymentDrain?.active||d.storedMissions<309)process.exit(4);console.log("DEXA_KATA_LIVE_HEALTH_OK
+        missions="+d.storedMissions)})''"''"'''' </dev/null
+
+        '
+'on':
+  push:
+    branches:
+    - main
+    paths:
+    - server-bootstrap/control/dexa-owner-snapshot/*.request

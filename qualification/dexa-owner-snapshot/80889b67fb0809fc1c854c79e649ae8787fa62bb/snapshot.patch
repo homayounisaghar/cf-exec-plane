@@ -1,0 +1,67 @@
+--- a/dexa_general_catalog_planner_v1.mjs
++++ b/dexa_general_catalog_planner_v1.mjs
+@@ -4,7 +4,7 @@
+ // hardcoded; source-specific schemas stay in the capability registry.
+ // Discovery is MODEL-ONLY and never executes a provider call.
+ import {createHash} from 'node:crypto';
+-import {catalogList,catalogRoute,inputSchemaFor} from './dexa_catalog_registry.mjs';
++import {catalogCounts,catalogList,catalogRoute,inputSchemaFor} from './dexa_catalog_registry.mjs';
+ import {catalogKnownOutputShape} from './dexa_catalog_output_adapters_v1.mjs';
+ import {buildTypedPlannerPrompt} from './dexa_typed_planner_prompt_v3.mjs';
+ 
+@@ -27,7 +27,12 @@
+ export function safeCatalogSnapshot(){return snapshot()}
+ export function ownerCatalogSnapshot(){
+  const all=catalogList({oauthConnected:false});
+- if(all.length!==293||new Set(all.map(x=>x.id)).size!==all.length)
++ const counts=catalogCounts();
++ // Derive the expected size from the SAME live catalog registry. A newly
++ // retired or added tool must not break every owner mission during planning.
++ const expected=counts.catalog+counts.internalCapabilities;
++ if(all.length!==expected||new Set(all.map(x=>x.id)).size!==expected||
++    all.filter(x=>x.physicalRoute?.startsWith('CF.')).length!==counts.cfMapped)
+   throw error('CATALOG_OWNER_SNAPSHOT_INVALID');
+  return all;
+ }
+@@ -48,7 +53,7 @@
+   'No source has a special route. Infer the intended provider only from the actual',
+   'owner goal and trusted conversation context. If several providers are equally',
+   'plausible, ask for clarification rather than guessing.',
+-  'The inventory contains all 292 external capability cards plus DX001.',
++  'The inventory contains '+String(catalogCounts().catalog)+' external capability cards plus DX001.',
+   'All physically bound CF tools, including read/write/sensitive, are',
+   'available under the single owner existing authenticated session.',
+   'GH/RD cards without a bound runtime executor are only DISCOVERABLE;',
+--- a/test_dexa_stage2_owner_effects_v1.mjs
++++ b/test_dexa_stage2_owner_effects_v1.mjs
+@@ -38,10 +38,10 @@
+   return await testFn({open,dir,missionId});
+  }finally{fs.rmSync(dir,{recursive:true,force:true})}
+ }
+-test('Full catalog: 188 externally bound tools including 88 writes, 104 truthful unbound, one writer',()=>{
++test('Full catalog: 187 externally bound tools including 88 writes, 104 truthful unbound, one writer',()=>{
+  const rows=catalogList({oauthConnected:true});
+- assert.equal(rows.length,293);
+- assert.equal(rows.filter(x=>x.provider!=='dexa'&&x.executableNow).length,188);
++ assert.equal(rows.length,292);
++ assert.equal(rows.filter(x=>x.provider!=='dexa'&&x.executableNow).length,187);
+  assert.equal(rows.filter(x=>!x.executableNow).length,104);
+  assert.equal(rows.filter(x=>x.effectClass==='WRITE'||x.effectClass==='DESTRUCTIVE'||x.effectClass==='IRREVERSIBLE').length,88);
+  assert.ok(rows.filter(x=>x.executableNow&&x.effectClass==='SENSITIVE_READ').length>=10);
+--- a/test_dexa_tool_plan_v3_systemic.mjs
++++ b/test_dexa_tool_plan_v3_systemic.mjs
+@@ -95,11 +95,11 @@
+  assert.throws(()=>parseTypedPlan(JSON.stringify(p),[ro]),e=>
+   e.code==="TOOL_PLAN_FINAL_OUTPUT_CHECK_REQUIRED");
+ });
+-test("292 native tools and the DX-001 writer each have accountable admission",()=>{
++test("291 native tools and the DX-001 writer each have accountable admission",()=>{
+  const rows=catalogList({oauthConnected:true});
+- assert.equal(rows.filter(x=>x.stage!=="LOCAL_INTERNAL_READY").length,292);
++ assert.equal(rows.filter(x=>x.stage!=="LOCAL_INTERNAL_READY").length,291);
+  assert.equal(rows.filter(x=>x.stage==="LOCAL_INTERNAL_READY").length,1);
+- assert.equal(rows.filter(x=>x.stage==="CF_OWNER_AUTHENTICATED_READY").length,188);
++ assert.equal(rows.filter(x=>x.stage==="CF_OWNER_AUTHENTICATED_READY").length,187);
+  assert.equal(rows.filter(x=>x.stage==="OTHER_CONNECTOR_NOT_BOUND").length,104);
+ });
+ test("Blank or falsified output must never be declared successful",async()=>{

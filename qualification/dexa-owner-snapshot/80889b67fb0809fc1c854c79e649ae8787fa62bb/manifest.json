@@ -1,0 +1,26 @@
+{
+  "schema": "dexa.owner-snapshot-fix.secret-free.v1",
+  "release_id": "dexa-kata-owner-snapshot-20261026-v1",
+  "source_repo": "homayounisaghar/capability-fabric",
+  "source_ref": "work/dexa-autonomous-loop-20261020",
+  "source_commit": "80889b67fb0809fc1c854c79e649ae8787fa62bb",
+  "expected_kata": 291,
+  "expected_cf": 187,
+  "old_sha": {
+    "dexa_general_catalog_planner_v1.mjs": "e90a5398f8378c307c5f2febf66af63cb7d59aeed8d440b74d9964a5b2580f56",
+    "test_dexa_stage2_owner_effects_v1.mjs": "ce648e1ff1d900e6674608528b775b048d6743945d400655e2a122f0a1c3cc6c",
+    "test_dexa_tool_plan_v3_systemic.mjs": "202bd40e3d3ad6493d6529f98fe9354c4ef0efbdc2dba3b995edeb9ae7931e25"
+  },
+  "new_sha": {
+    "dexa_general_catalog_planner_v1.mjs": "5c0c54e45c0c0c6eb262c6af0ba8c70ddfaf70dd387eabd7ff6633c5afdce102",
+    "test_dexa_stage2_owner_effects_v1.mjs": "e7641038e5214e3a600bd757ed02579c94ad1743f71e32f02de77cc4d74b1de1",
+    "test_dexa_tool_plan_v3_systemic.mjs": "d3a9f8ea22a273f10a6f40c8b1f100626a6d628cab248f1e2d17e4c72390d0e8",
+    "test_dexa_catalog_snapshot_refresh_20261026.mjs": "47f4a32454f9bee10d26b9ee70f87596481facf7b45f02efdf10803d68b8fa23"
+  },
+  "payload_sha": {
+    "snapshot.patch": "275369b6349a4f9ffe830bf93cc313dff66b00f766b537a9bc68489283970135",
+    "test_dexa_catalog_snapshot_refresh_20261026.mjs": "47f4a32454f9bee10d26b9ee70f87596481facf7b45f02efdf10803d68b8fa23",
+    "deploy-snapshot.sh": "ace4a799286b2c86442bfc7828b96808130ffd2f33e2badc1e7c8998b3fcb4c5",
+    "activate-snapshot.sh": "90521df06b76b570081172dc5ff6ee019aef43504de968bfdc1d9d239e986ced"
+  }
+}
