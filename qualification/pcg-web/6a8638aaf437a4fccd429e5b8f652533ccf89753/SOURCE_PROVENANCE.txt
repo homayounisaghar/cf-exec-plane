@@ -1,0 +1,4 @@
+Secret-free derivative of public PCG r130 snapshot c33b62b2a2fa7f89a05e9a8f5f10709a65d7b695
+16x source edits from capability-fabric project/personal-communications-gateway commit 6a8638aaf437a4fccd429e5b8f652533ccf89753
+Changed runtime: pcg_perplexity_asr.mjs, pcg_web_perplexity_asr_client.mjs, pcg_web_semantic_ops.mjs
+Default pacing 4x remains unchanged; 16x is opt-in only.
