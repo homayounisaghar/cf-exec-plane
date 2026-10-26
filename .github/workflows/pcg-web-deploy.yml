@@ -151,6 +151,17 @@ jobs:
               -o UserKnownHostsFile="$SSH_DIR/known_hosts" \
               "${VPS_SSH_USER}@${VPS_HOST}" \
               "set -e; test \"\$(id -u)\" = 0; mv /tmp/pcg-release.tgz /tmp/pcg-r132-release.tgz; install -m 0700 -o root -g root /tmp/pcg-r132-managed-activate.sh /run/pcg-r132-managed-activate.sh; rm -f /tmp/pcg-r132-managed-activate.sh; printf '%s  %s\\n' '08a48ccc6faa7c2a6328d695a979be53077aa4cd647cfd13062a30e846eb3963' /run/pcg-r132-managed-activate.sh | sha256sum -c -; bash /run/pcg-r132-managed-activate.sh" </dev/null
+            # Owner-approved, metadata-only diagnosis of transcription jobs; no audio, text or secrets.
+            scp -q -i "$SSH_DIR/key" -P "$SSH_PORT" \
+              -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+              -o UserKnownHostsFile="$SSH_DIR/known_hosts" \
+              "server-bootstrap/diagnostics/pcg-r132-job-errors.py" \
+              "${VPS_SSH_USER}@${VPS_HOST}:/tmp/pcg-r132-job-errors.py"
+            ssh -i "$SSH_DIR/key" -p "$SSH_PORT" \
+              -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+              -o UserKnownHostsFile="$SSH_DIR/known_hosts" \
+              "${VPS_SSH_USER}@${VPS_HOST}" \
+              "python3 /tmp/pcg-r132-job-errors.py; rm -f /tmp/pcg-r132-job-errors.py" </dev/null
             echo "PCG_SCOPED_R132_DEPLOY=success"
             exit 0
           fi
