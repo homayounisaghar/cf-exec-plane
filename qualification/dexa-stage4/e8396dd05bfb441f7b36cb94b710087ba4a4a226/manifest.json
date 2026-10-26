@@ -1,0 +1,21 @@
+{
+  "files": {
+    "activate-stage4.sh": "53dfb1d82d1df6ea15b0783ce61529bbd3c65bf52f1ffe9acd5745b9fb3e04d4",
+    "baseline.sha256": "51c9faba9f948050d5303e4d42b7eb7d138c5c995fb983f17ffa783b8d96ef0d",
+    "deploy-stage4.sh": "68afb6832cc74284219afaa1c201517457823492297ae31621aaf0d083a5c1df",
+    "files/dexa_mission_control_contract_v1.mjs": "866fd26a76f1caaa6a8fd228167655197b1365f3f083649fd789180d876c61bf",
+    "files/dexa_mission_control_future_v1.mjs": "82f48eca8fe25c2729829420fc2abe2ee9b5c5d310c7b6ab432d8bd8c3849853",
+    "files/dexa_provider_cancel_v1.mjs": "d76f3935d69085f6d60a09768e6fffee856316cf7d7c661477d76d5b5c1f2022",
+    "files/dexa_tool_plan_executor_v3.mjs": "1cd41ed70fac27312c2c1b4aa9d2affadb15aa43153addffc51f77dcc3b35fb8",
+    "files/dexa_workflow_kernel.mjs": "9042faf41cb1540ce2472487a7568904c6a556389918c81f9b5da7b39e0091e6",
+    "files/index.html": "a46cfa1d5af0be462273a893195f00009cb5e79152dd7b64cb67325e4cd43ef2",
+    "files/rana.mjs": "7d98fcc67ab594f23420ee3f0835e8c3c8ad552e842623f8a2778ec5136452e7",
+    "files/server.mjs": "1f431b5c7c4ac1db1dcf3b3fafa5527ea0de749cc02cc0c9765437bd1aca4a4f",
+    "proposed.sha256": "6dee8a5d99a46dd8452b9c94249e3d4e4a28724a7dfd51cdbe1f5acd91782adc"
+  },
+  "release_id": "dexa-stage4-20261026-v1",
+  "schema": "dexa.stage4.secret-free-release.v1",
+  "source_commit": "e8396dd05bfb441f7b36cb94b710087ba4a4a226",
+  "source_ref": "work/dexa-autonomous-loop-20261020",
+  "source_repo": "homayounisaghar/capability-fabric"
+}

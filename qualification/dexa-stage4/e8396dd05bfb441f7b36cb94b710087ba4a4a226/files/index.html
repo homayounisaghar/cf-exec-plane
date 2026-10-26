@@ -1,0 +1,1265 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>دکسا | اجرای مأموریت</title>
+<style>
+:root{font-family:Tahoma,Arial,sans-serif;color:#172033;background:#f5f6f8}
+*{box-sizing:border-box}
+body{margin:0}
+main{max-width:960px;margin:0 auto;padding:22px 14px 48px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+h1{font-size:1.35rem;margin:0 0 4px}
+.subtitle{color:#657087;font-size:.9rem}
+.panel{background:#fff;border:1px solid #dfe3ea;border-radius:14px;padding:16px;margin:12px 0}
+label{display:block;font-weight:700;margin-bottom:8px}
+textarea,input{width:100%;border:1px solid #cbd2df;border-radius:10px;padding:11px;font:inherit;background:#fff}
+textarea{min-height:116px;resize:vertical;line-height:1.8}
+button{border:0;border-radius:9px;padding:10px 14px;font:inherit;cursor:pointer;background:#172033;color:#fff}
+button:disabled{opacity:.45;cursor:not-allowed}
+/* Submission depends on a nonempty owner draft, never on a late planner
+   status refresh. Disabled is genuinely gray, enabled is genuinely black. */
+#submitButton{background:#000;color:#fff;opacity:1}
+#submitButton:disabled{background:#cbd2df;color:#536176;opacity:1;cursor:not-allowed}
+button.secondary{background:#e8ebf1;color:#172033}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.muted{color:#6a7486;font-size:.86rem}
+.status{display:inline-block;border-radius:7px;background:#eef0f4;padding:5px 9px;font-size:.86rem}
+.status.success{background:#e4f5e9;color:#1a6533}
+.status.waiting{background:#fff1d5;color:#7b4b00}
+.status.failure{background:#fbe7e7;color:#8c2020}
+.status.partial{background:#e7f1fb;color:#234f83}
+.result{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.9;margin-top:10px}
+.events{list-style:none;padding:0;margin:0}
+.events li{border-right:2px solid #d9deea;padding:3px 12px 13px;margin-right:5px}
+.events time{display:block;color:#778195;font-size:.76rem;margin-bottom:4px;direction:ltr;text-align:right}
+.events p{margin:0;line-height:1.7}
+details{margin-top:10px}
+summary{cursor:pointer;color:#3f4c63;font-weight:700;padding:7px 0}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;direction:ltr;text-align:left;background:#f7f8fa;border-radius:8px;padding:10px;font-size:.78rem;max-height:420px;overflow:auto}
+.mission-list{display:flex;flex-direction:column;gap:10px}
+.mission-card{border:1px solid #dfe3ea;border-radius:12px;overflow:hidden;background:#fff;min-width:0}
+.mission-card .mission-toggle{width:100%;background:transparent;color:inherit;text-align:right;display:flex;gap:12px;align-items:center;justify-content:space-between;border:0;border-radius:0;padding:10px 15px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.mission-card .mission-toggle:focus-visible{outline:none}
+.mission-card .mission-toggle:focus-visible .mission-chevron{outline:1px dotted #64748b;outline-offset:2px;border-radius:2px}
+.mission-card .mission-card-heading{min-width:0;flex:1}
+.mission-card .mission-card-title{font-weight:700;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mission-card .mission-card-subtitle{display:block;min-width:0;font-size:.85rem;color:#5d6678;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mission-card .mission-card-indicator{display:flex;align-items:center;gap:9px;flex:none}
+.mission-card .mission-chevron{font-size:1.56rem;display:inline-block;line-height:1}
+.mission-card .mission-expanded{padding:0 15px 15px;border-top:1px solid rgba(0,0,0,.1);background:rgba(255,255,255,.62)}
+.mission-card .mission-version{padding:12px 0 0;font-size:.79rem}
+.mission-card .mission-full-task{margin:8px 0}
+.mission-card .mission-intervention{margin-top:12px}
+.mission-card .mission-intervention label{margin-bottom:8px}
+.mission-control{margin-top:12px;border-top:1px solid #cbd5e1;padding-top:10px}
+.mission-control .row{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+.mission-control button{font-size:.83rem;padding:8px 10px}
+.mission-control input{width:100%;max-width:100%;font-size:.9rem}
+.mission-control .control-summary{font-size:.83rem;line-height:1.7;white-space:pre-wrap}
+.mission-control .control-error{color:#a52222;font-size:.8rem}
+.tone-success{border-color:#9ecfac;background:#f0faf3}
+.tone-failure{border-color:#e8a6a6;background:#fff1f1}
+.tone-partial{border-color:#e3c074;background:#fffae9}
+.tone-waiting{border-color:#e3c074;background:#fffae9}
+/* The temporary EXECUTING/PLANNING/REPLANNING base is neutral GRAY.
+   Never use outcome blue before waiting for an actual owner reply. */
+.tone-running{border-color:#d1d5db;background:#f1f3f5}
+.tone-owner-wait{border-color:#80a6e8;background:#eaf2ff}
+.tone-neutral{border-color:#dfe3ea;background:#f7f8fa}
+/* Opening, hovering and tapping never change a card's original status color. */
+.mission-card .mission-toggle:is(:hover,:active){background:transparent}
+.status.partial{background:#fff0bf;color:#78500b}
+.status.waiting{background:#fff0bf;color:#78500b}
+.status.owner-wait{background:#dbeafe;color:#194c91}
+@media(max-width:600px){.mission-card .mission-toggle{align-items:flex-start;gap:7px}.mission-card .mission-card-indicator{max-width:45%}}
+.hidden{display:none!important}
+#keyboardPanel{margin-top:10px;padding:12px;border:1px solid #cbd2df;border-radius:10px;background:#f8faff}
+#keyboardKeys{display:flex;flex-wrap:wrap;gap:5px;direction:ltr;margin-top:8px}
+#keyboardKeys button{padding:8px;min-width:35px;min-height:38px;background:#edf1f7;color:#152035;border:1px solid #c9d1df}
+#keyboardKeys button.wide{min-width:92px}
+#keyboardKeys button:active{background:#b9d6fa}
+/* Measured mission timeline, derived from persisted runtime timestamps. */
+.tracking-toolbar{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0}
+.tracking-picker{display:contents}
+.tracking-picker label{margin:0;white-space:nowrap}
+.tracking-picker select{width:82px;min-width:82px;padding:7px 5px;font:inherit}
+@media(max-width:440px){.tracking-picker select{width:78px;min-width:78px;padding:6px 3px}.tracking-toolbar{gap:6px}}
+.dexa-status-header{width:100%;min-width:0;gap:8px;flex-wrap:nowrap;overflow-x:auto;white-space:nowrap}
+.dexa-status-header h1{flex:none;margin:0 4px 0 0}
+.dexa-status-header .status{flex:none;font-size:.78rem;padding:4px 7px}
+.timing-track{display:flex;direction:ltr;width:100%;height:15px;overflow:hidden;border-radius:9px;background:#e7ebf2;margin:8px 0 12px}
+.timing-track>span{height:100%;display:block}
+.timing-table{width:100%;border-collapse:collapse;font-size:.87rem}
+.timing-table th,.timing-table td{text-align:right;padding:6px;border-bottom:1px solid #e8ebf1}
+.timing-table td:nth-child(n+2),.timing-table th:nth-child(n+2){direction:ltr;text-align:left;font-variant-numeric:tabular-nums}
+.timing-table tr:last-child td{border-bottom:0}
+.timing-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-left:7px}
+.timing-note{margin:10px 0 0;color:#647089;font-size:.78rem;line-height:1.7}
+#error{color:#a11;margin-top:8px}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <div class="row dexa-status-header">
+    <h1>دکسا</h1>
+    <span class="status" id="serviceStatus">در حال اتصال…</span>
+    <span class="status waiting" id="instantReadyFlag" title="آمادگی مرورگر اختصاصی برنامه‌ریز">برنامه‌ریز در حال بررسی…</span>
+  </div>
+</header>
+<section class="panel">
+  <form id="taskForm" autocomplete="off">
+    <label for="taskText">چه کاری انجام شود؟</label>
+    <textarea id="taskText" maxlength="5000" required autocomplete="off" placeholder="مثلاً: چت‌های آخرمو بده؛ یا آخرین پیام علی در تلگرام چی بوده؟"></textarea>
+    <label style="display:flex;align-items:center;gap:9px;margin-top:8px">
+      <input id="telegramMvpMode" type="checkbox" checked style="width:auto;flex:none" />
+      <span>تلگرام (فقط‌خواندنی)</span>
+    </label>
+    <div class="row" style="margin-top:8px">
+      <button id="keyboardToggle" type="button" class="secondary" aria-expanded="true" aria-controls="keyboardPanel">صفحه‌کلید روی صفحه (فارسی / English)</button>
+    </div>
+    <div id="keyboardPanel">
+      <div class="row">
+        <button id="keyboardLanguage" type="button" class="secondary">English</button>
+        <button id="keyboardPaste" type="button" class="secondary">جایگذاری از کلیپ‌بورد</button>
+        <button id="keyboardClear" type="button" class="secondary">پاک‌کردن فیلد</button>
+      </div>
+      <div id="keyboardKeys" role="group" aria-label="صفحه‌کلید روی صفحه"></div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <button id="submitButton" type="submit" disabled>ثبت مأموریت</button>
+    </div>
+    <div id="error" role="alert"></div>
+  </form>
+</section>
+<section class="panel" id="historyPanel">
+  <div class="tracking-toolbar">
+    <div class="tracking-picker">
+      <label for="trackingWindowSelect">مأموریت‌های قبلی</label>
+      <select id="trackingWindowSelect" aria-label="مأموریت‌های قبلی">
+        <option value="5">۵ عدد</option>
+        <option value="15" selected>۱۵ عدد</option>
+        <option value="50">۵۰ عدد</option>
+      </select>
+    </div>
+  </div>
+  <div id="missionList" class="mission-list" style="margin-top:12px"></div>
+</section>
+<template id="missionCardTemplate">
+  <article class="mission-card tone-running">
+    <button class="mission-toggle" type="button" aria-expanded="false">
+      <span class="mission-card-heading">
+        <strong class="mission-card-title" data-role="title"></strong>
+        <small class="mission-card-subtitle" data-role="subtitle"></small>
+      </span>
+      <span class="mission-card-indicator">
+        <span class="status" data-role="badge"></span>
+        <span class="mission-chevron" data-role="chevron">▾</span>
+      </span>
+    </button>
+    <div class="mission-expanded hidden" data-role="content">
+      <div class="muted mission-version" data-role="version"></div>
+      <p class="muted mission-full-task" data-role="task"></p>
+      <div class="result mission-result" data-role="result" aria-live="polite"></div>
+      <div class="mission-intervention hidden" data-role="intervention">
+        <label data-role="question">برای ادامه به اطلاعات شما نیاز است.</label>
+        <input maxlength="1200" autocomplete="off" data-role="followupInput" placeholder="پاسخ کوتاه برای ادامهٔ این مأموریت…">
+        <div class="row" style="margin-top:8px">
+          <button type="button" data-role="followupButton">ارسال پاسخ به دکسا</button>
+          <button type="button" class="secondary hidden" data-role="authButton">وارد شدم؛ ادامه بده</button>
+          <button type="button" class="secondary hidden" data-role="retryButton">تلاش دوباره</button>
+        </div>
+      </div>
+      <div class="mission-control" data-role="controlPanel">
+        <div class="muted control-summary" data-role="controlSummary" aria-live="polite"></div>
+        <div class="row">
+          <button type="button" class="secondary" data-role="statusButton">وضعیت</button>
+          <button type="button" class="secondary hidden" data-role="pauseButton">توقف امن</button>
+          <button type="button" class="secondary hidden" data-role="resumeButton">ادامه</button>
+          <button type="button" class="secondary hidden" data-role="stopButton">توقف مراحل آینده</button>
+          <button type="button" class="secondary hidden" data-role="cancelButton">لغو واقعی نزد ارائه‌دهنده</button>
+        </div>
+        <div data-role="futureArea" class="hidden">
+          <label>تغییر فقط مراحل انجام‌نشده</label>
+          <input type="text" maxlength="1200" data-role="futureInstruction"
+           placeholder="مثلاً: مقصد ارسال را به ... تغییر بده">
+          <button type="button" class="secondary" data-role="modifyButton">ثبت تغییر آینده</button>
+        </div>
+        <div class="control-error" data-role="controlError" role="alert"></div>
+      </div>
+      <details data-role="timingBox">
+        <summary>زمان‌بندی مراحل مأموریت</summary>
+        <div class="timing-body">
+          <div class="muted" data-role="timingTotal"></div>
+        <div class="timing-track" data-role="timingTrack" role="img" aria-label="سهم زمانی مراحل مأموریت"></div>
+        <table class="timing-table">
+          <thead><tr><th>مرحله</th><th>مدت</th><th>سهم از کل</th></tr></thead>
+          <tbody data-role="timingRows"></tbody>
+        </table>
+        <p class="timing-note" data-role="timingNote"></p>
+        <details class="hidden" data-role="instantTransportDetails">
+          <summary>ریززمان ارسال، انتظار پاسخ و آماده‌سازی برنامه‌ریز</summary>
+          <div class="muted" data-role="instantTransportSummary"></div>
+          <table class="timing-table">
+            <thead><tr><th>بخش ارتباط با مدل</th><th>مدت</th></tr></thead>
+            <tbody data-role="instantTransportRows"></tbody>
+          </table>
+        </details>
+        </div>
+      </details>
+      <details data-role="eventsDetails">
+        <summary>رویدادهای اجرا</summary>
+        <ol class="events" data-role="eventList"></ol>
+      </details>
+    </div>
+  </article>
+</template>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const stateLabels = {
+  ACCEPTED:"ثبت شد", PLANNING:"برنامه‌ریزی", EXECUTING:"در حال اجرا",
+  VERIFYING:"در حال تأیید", REPLANNING:"بازبرنامه‌ریزی",
+  WAITING_USER_AUTH:"نیاز به ورود", WAITING_USER_DECISION:"منتظر پاسخ تکمیلی تو",
+  WAITING_EXTERNAL:"انتظار برای سرویس", SUCCEEDED_VERIFIED:"موفقیت تأییدشده",
+  BLOCKED:"مانع بیرونی", FAILED:"مأموریت ناموفق", OUTCOME_UNKNOWN:"وضعیت نامعلوم"
+};
+let latestMission=null;
+let latestCard=null;
+const historyCards=new Map();
+let expandedCardId=null;
+let listLoadSequence=0;
+let missionJournal=null;
+let missionJournalWindowN=null;
+let listReconcilePromise=null;
+// SSE is primary. A bounded active-only catch-up prevents one missing SSE
+// notice from leaving the newest mission stuck in PLANNING until reload.
+let activeMissionCatchup=null;
+const ACTIVE_MISSION_STATES=new Set(["ACCEPTED","PLANNING","VERIFYING","EXECUTING","REPLANNING"]);
+const DEXA_TRACKING_WINDOW_KEY="dexa.tracking-window.v1";
+const TRACKING_OPTIONS=[5,15,50];
+function getTrackingWindowN(){
+  const n=Number($("trackingWindowSelect").value);
+  return TRACKING_OPTIONS.includes(n)?n:15;
+}
+function restoreTrackingWindow(){
+  try{
+    const stored=Number(localStorage.getItem(DEXA_TRACKING_WINDOW_KEY));
+    if(TRACKING_OPTIONS.includes(stored))$("trackingWindowSelect").value=String(stored);
+  }catch{/* Browser storage may be disabled; fall back to the safe default 15. */}
+}
+restoreTrackingWindow();
+$("trackingWindowSelect").addEventListener("change",()=>{
+  const n=getTrackingWindowN();
+  try{localStorage.setItem(DEXA_TRACKING_WINDOW_KEY,String(n))}catch{}
+  stopMissionJournal();
+  // The selector affects the visible window and NEXT mission's model memory.
+  // Stream sync then catches any changes occurring during this one GET.
+  void reconcileMissionList().catch(()=>{}).finally(startMissionJournal);
+});
+const finalStates = new Set(["SUCCEEDED_VERIFIED","FAILED","BLOCKED","OUTCOME_UNKNOWN"]);
+let keyboardTarget = $("taskText");
+let keyboardLanguage = "fa";
+const keyboardLayouts = {
+  fa:["ض","ص","ث","ق","ف","غ","ع","ه","خ","ح","ج","چ","ش","س","ی","ب","ل","ا","ت","ن","م","ک","گ","ظ","ط","ز","ر","ذ","د","پ","و", "ژ","ئ","ء","آ","أ","إ","‌","۰","۱","۲","۳","۴","۵","۶","۷","۸","۹","،","؟","."],
+  en:[..."qwertyuiopasdfghjklzxcvbnm0123456789",...":;'()!?-_/=@#$%+[]{}\\<>",",","."]
+};
+function insertKeyboardText(value) {
+  const el = keyboardTarget && !keyboardTarget.disabled ? keyboardTarget : $("taskText");
+  if(el===$("taskText")&&(missionSubmissionPending||el.disabled))return;
+  const from = el.selectionStart ?? el.value.length;
+  const to = el.selectionEnd ?? from;
+  if(value==="BACKSPACE") {
+    el.setRangeText("",from===to ? Math.max(0,from-1):from,to,"end");
+  } else {
+    const remain=Number(el.maxLength)>0 ? el.maxLength-el.value.length+(to-from) : value.length;
+    if(remain<=0)return;
+    el.setRangeText(value.slice(0,remain),from,to,"end");
+  }
+  el.dispatchEvent(new Event("input",{bubbles:true}));
+  el.focus({preventScroll:true});
+}
+function renderKeyboard() {
+  $("keyboardLanguage").textContent=keyboardLanguage==="fa"?"English":"فارسی";
+  const keys=$("keyboardKeys");
+  keys.replaceChildren();
+  for(const key of [...keyboardLayouts[keyboardLanguage],"SPACE","BACKSPACE","NEWLINE"]) {
+    const button=document.createElement("button");
+    button.type="button";
+    button.textContent=key==="SPACE"?"فاصله":key==="BACKSPACE"?"⌫":key==="NEWLINE"?"↵":key;
+    if(["SPACE","BACKSPACE","NEWLINE"].includes(key))button.className="wide";
+    button.addEventListener("mousedown",event=>event.preventDefault());
+    button.addEventListener("click",()=>insertKeyboardText(key==="SPACE"?" ":key==="NEWLINE"?"\n":key));
+    keys.appendChild(button);
+  }
+}
+$("taskText").addEventListener("focus",event=>{keyboardTarget=event.target;});
+document.addEventListener("focusin",event=>{
+  if(event.target?.matches?.('[data-role="followupInput"]'))keyboardTarget=event.target;
+});
+$("keyboardToggle").addEventListener("click",()=>{
+  const opened=$("keyboardPanel").classList.toggle("hidden")===false;
+  $("keyboardToggle").setAttribute("aria-expanded",String(opened));
+  if(opened)renderKeyboard();
+});
+$("keyboardLanguage").addEventListener("click",()=>{
+  keyboardLanguage=keyboardLanguage==="fa"?"en":"fa";
+  renderKeyboard();
+});
+$("keyboardClear").addEventListener("click",()=>{
+  const el=keyboardTarget||$("taskText");
+  if(el===$("taskText")&&(missionSubmissionPending||el.disabled))return;
+  el.value="";el.dispatchEvent(new Event("input",{bubbles:true}));
+  el.focus({preventScroll:true});
+});
+$("keyboardPaste").addEventListener("click",async()=>{
+  try {
+    const value=await navigator.clipboard.readText();
+    if(value)insertKeyboardText(value);
+  } catch {
+    setText($("error"),"خواندن کلیپ‌بورد در این نشست مجاز نیست؛ از صفحه‌کلید روی صفحه استفاده کن.");
+  }
+});
+renderKeyboard(); // Keyboard is available immediately when the remote desktop drops typed characters.
+function setText(node, value) {
+  const next=value==null?"":String(value);
+  if(node.textContent!==next)node.textContent=next;
+}
+function isPartialMission(m){
+  if(!m||m.state!=="FAILED")return false;
+  const reason=m.reason||m.outcome?.reason;
+  const info=m.g2a||m.outcome?.proof?.g2a;
+  return reason==="G2A_PARTIAL_OPERATIONS"&&info?.partial===true&&
+    Number(info.completed)>0;
+}
+// Unread counts belong to chats; the current read-only message feed has no
+// per-message unread proof. An honest candidate is YELLOW, never green.
+function isUnverifiedUnreadCandidate(m){
+ if(m?.profile!=="telegram_readonly_mvp"||typeof m.text!=="string")return false;
+ const q=m.text.normalize("NFKC").replace(/\u200c/gu," ");
+ return /(?:پیام|message)/iu.test(q)&&
+  /(?:خوانده\s*نشده|خونده\s*نشده|unread)/iu.test(q)&&
+  /(?:چیه|چی\s*(?:بوده|هست|گفته|نوشته)|متن|محتوا|بخون|بخوان|what|content|text)/iu.test(q);
+}
+function isVerifiedComplete(m){
+ if(!m||typeof m!=="object"||m.state!=="SUCCEEDED_VERIFIED")return false;
+ return m.answerDeliveryVerified===true||m.outcome?.proof?.answerDelivery?.verified===true||
+   m.verification?.userTaskVerified===true||m.outcome?.verification?.userTaskVerified===true||
+   m.verification?.syntheticGoalVerified===true||m.outcome?.verification?.syntheticGoalVerified===true;
+}
+function stateClass(m) {
+  const state=typeof m==="object"&&m?m.state:m;
+  if(isPartialMission(m))return "status partial";
+  if (state === "SUCCEEDED_VERIFIED") return isUnverifiedUnreadCandidate(m)?
+    "status waiting":isVerifiedComplete(m)?"status success":"status failure";
+  if(state==="WAITING_USER_DECISION")return "status owner-wait";
+  if (String(state || "").startsWith("WAITING_"))
+    return "status waiting";
+  if(state==="REPLANNING")return "status";
+  if(state==="PAUSED"||state==="STOPPED_FUTURE")return "status waiting";
+  if (["FAILED","BLOCKED","OUTCOME_UNKNOWN"].includes(state)) return "status failure";
+  return "status";
+}
+function missionTone(m){
+  if(isPartialMission(m))return "tone-partial";
+  if(m?.state==="SUCCEEDED_VERIFIED")return isUnverifiedUnreadCandidate(m)?
+    "tone-waiting":isVerifiedComplete(m)?"tone-success":"tone-failure";
+  if(["FAILED","BLOCKED","OUTCOME_UNKNOWN"].includes(m?.state))return "tone-failure";
+  if(m?.state==="WAITING_USER_DECISION")return "tone-owner-wait";
+  if(["PAUSED","STOPPED_FUTURE"].includes(m?.state))return "tone-waiting";
+  if(String(m?.state||"").startsWith("WAITING_"))return "tone-waiting";
+  if(["ACCEPTED","PLANNING","EXECUTING","VERIFYING","REPLANNING"].includes(m?.state))
+    return "tone-running";
+  return "tone-running";
+}
+function applyMissionTone(node,m){
+  const tone=missionTone(m);
+  for(const kind of ["success","failure","partial","waiting","running","owner-wait","neutral"])
+    node.classList.toggle("tone-"+kind,"tone-"+kind===tone);
+}
+function formatTime(value) {
+  if (!value) return "";
+  try { return new Date(value).toLocaleString("fa-IR"); } catch { return value; }
+}
+function timingBreakdown(m) {
+  const events = Array.isArray(m.events) ? m.events : [];
+  const timestamp = value => {
+    const time = Date.parse(value || "");
+    return Number.isFinite(time) ? time : null;
+  };
+  const begin = timestamp(m.createdAt) ?? timestamp(events[0]?.at);
+  const end = timestamp(events[events.length-1]?.at) ?? timestamp(m.updatedAt);
+  if (begin === null || end === null || end < begin) return null;
+  const elapsedMs = Math.max(0,end-begin);
+  const kataStart = events.find(e => e.kind === "STATE_TRANSITION" && e.source === "kata");
+  const kataEnd = events.find(e => e.kind === "KATA_INITIAL_COMPLETED");
+  const kataMs = kataStart && kataEnd ?
+    Math.max(0,(timestamp(kataEnd.at)??0)-(timestamp(kataStart.at)??0)) : 0;
+  const plannerCalls = Array.isArray(m.plannerCalls) ? m.plannerCalls : [];
+  const plannerInitialMs = plannerCalls.filter(x=>!/format_repair/i.test(x.purpose||""))
+    .reduce((acc,x)=>acc+Math.max(0,Number(x.elapsedMs)||0),0);
+  const plannerRepairMs = plannerCalls.filter(x=>/format_repair/i.test(x.purpose||""))
+    .reduce((acc,x)=>acc+Math.max(0,Number(x.elapsedMs)||0),0);
+  const ranaMs = (Array.isArray(m.stepReceipts)?m.stepReceipts:[])
+    .reduce((acc,x)=>acc+Math.max(0,Number(x.elapsedMs)||0),0);
+  const measured = kataMs+plannerInitialMs+plannerRepairMs+ranaMs;
+  const otherMs = Math.max(0,elapsedMs-measured);
+  return {
+    elapsedMs,measured,
+    stages:[
+      {name:"کاتا (انتخاب قابلیت)",ms:kataMs,color:"#7396c8"},
+      {name:"برنامه‌ریز (رسپی و تولید پاسخ)",ms:plannerInitialMs,color:"#6158ba"},
+      {name:"برنامه‌ریز (اصلاح قالب)",ms:plannerRepairMs,color:"#b29ae2"},
+      {name:"رانا (اجرای ابزار)",ms:ranaMs,color:"#2b9c78"},
+      {name:"سایر (گردش‌کار و اعتبارسنجی)",ms:otherMs,color:"#c8a674"}
+    ].filter(x=>x.ms>0)
+  };
+}
+function displayDuration(ms) {
+  return (Math.max(0,ms)/1000).toLocaleString("fa-IR",{minimumFractionDigits:3,maximumFractionDigits:3})+" ثانیه";
+}
+function renderInstantTransport(m,q){
+  const calls=Array.isArray(m.plannerCalls)?m.plannerCalls:[];
+  const first=calls.find(x=>x.purpose==="INITIAL_RECIPE"&&x.transportTimings);
+  const detail=q("instantTransportDetails"), rows=q("instantTransportRows");
+  rows.replaceChildren();
+  if(!first){detail.classList.add("hidden");return;}
+  detail.classList.remove("hidden");
+  const t=first.transportTimings||{};
+  q("instantTransportSummary").textContent=
+    "استفاده از چت ازپیش‌آماده: "+(t.reusedPreparedSlot?"بله":"خیر")+
+    " · ریززمان‌ها برای فراخوانی اولیهٔ برنامه‌ریز هستند.";
+  const prep=Number(t.preparationMs)||0;
+  const insert=Number(t.insertionMs)||0;
+  const wait=Number(t.responseWaitMs)||0;
+  const rest=Math.max(0,(Number(first.elapsedMs)||0)-prep-insert-wait);
+  for(const [label,ms] of [
+    ["آماده‌سازی یا تأیید چت",prep],
+    ["درج متن درخواست",insert],
+    ["انتظار دریافت پاسخ کامل",wait],
+    ["سایر انتقال و ثبت شواهد",rest]
+  ]){
+    const tr=document.createElement("tr");
+    const a=document.createElement("td"),b=document.createElement("td");
+    a.textContent=label;b.textContent=displayDuration(ms);
+    tr.append(a,b);rows.appendChild(tr);
+  }
+}
+function renderTiming(m,q) {
+  const timing=timingBreakdown(m);
+  const box=q("timingBox"), total=q("timingTotal"), track=q("timingTrack"), rows=q("timingRows");
+  track.replaceChildren();rows.replaceChildren();
+  if(!timing){box.classList.add("hidden");return;}
+  box.classList.remove("hidden");
+  renderInstantTransport(m,q);
+  total.textContent="کل زمان ثبت‌شده: "+displayDuration(timing.elapsedMs);
+  for(const stage of timing.stages){
+    const share=timing.elapsedMs>0 ? 100*stage.ms/timing.elapsedMs : 0;
+    const segment=document.createElement("span");
+    segment.style.width=share+"%";
+    segment.style.background=stage.color;
+    segment.title=stage.name+": "+displayDuration(stage.ms);
+    track.appendChild(segment);
+    const tr=document.createElement("tr");
+    const title=document.createElement("td"), duration=document.createElement("td"), pct=document.createElement("td");
+    const dot=document.createElement("span");dot.className="timing-dot";dot.style.background=stage.color;
+    title.append(dot,document.createTextNode(stage.name));
+    duration.textContent=displayDuration(stage.ms);
+    pct.textContent=share.toLocaleString("fa-IR",{maximumFractionDigits:1})+"٪";
+    tr.append(title,duration,pct);rows.appendChild(tr);
+  }
+  const ongoing=!["SUCCEEDED_VERIFIED","FAILED","BLOCKED","OUTCOME_UNKNOWN"].includes(m.state);
+  q("timingNote").textContent=(ongoing?"مأموریت هنوز نهایی نشده است؛ فقط بازه‌های ثبت‌شده محاسبه شده‌اند. ":"")+
+    "اعداد از مدت فراخوانی‌های برنامه‌ریز، رسیدهای اجرای رانا و رویدادهای کاتا محاسبه شده‌اند. "+
+    "«سایر» شامل زمان انتقال بین مراحل و اعتبارسنجی است؛ مراحل هنوز باز ممکن است در آن منعکس شوند.";
+}
+function renderEvents(events,q) {
+  const list = q("eventList");
+  list.replaceChildren();
+  const history = (events || []).slice(-45).reverse();
+  history.forEach((event,i) => {
+    const li = document.createElement("li");
+    const time = document.createElement("time");
+    const previous = history[i+1];
+    const gap = previous ? Date.parse(event.at)-Date.parse(previous.at) : null;
+    time.textContent = formatTime(event.at)+
+      (Number.isFinite(gap) && gap>=0 ? " · فاصله تا رویداد قبل: "+displayDuration(gap) : "");
+    const p = document.createElement("p");
+    p.textContent = (event.source ? "[" + event.source + "] " : "") + (event.summary || event.kind || "");
+    li.append(time,p);
+    list.append(li);
+  });
+}
+function safeSuccessLabel(m) {
+  if(isPartialMission(m))return "نتیجهٔ جزئی؛ بخشی از کار انجام شد";
+  if(m.state==="PAUSED"||m.control?.logicalState==="PAUSED")
+    return "در مرز امن متوقف شده";
+  if(m.state==="STOPPED_FUTURE")return "مراحل آینده متوقف شد؛ آثار قبلی لغو نشد";
+  if(m.control?.logicalState==="PAUSE_REQUESTED")return "درخواست توقف امن ثبت شد";
+  if(m.control?.logicalState==="STOP_REQUESTED")return "درخواست توقف مراحل آینده ثبت شد";
+  if(m.state==="EXECUTING"&&typeof m.lastStatusSummary==="string"){
+    if(m.lastStatusSummary.startsWith("مکث موقت برای سهمیهٔ سرویس تلگرام"))
+      return "انتظار موقت برای سهمیهٔ تلگرام";
+    if(m.lastStatusSummary.startsWith("سرویس تلگرام مشغول است"))
+      return "انتظار موقت برای سرویس تلگرام";
+  }
+  if(m.state!=="SUCCEEDED_VERIFIED")return stateLabels[m.state]||m.state;
+  if(isUnverifiedUnreadCandidate(m))return "پیام احتمالی؛ خوانده‌نشده‌بودن تأیید نشده";
+  if(m.verification?.syntheticGoalVerified||m.outcome?.verification?.syntheticGoalVerified)
+    return "نتیجهٔ آزمون ساختگی تأییدشده";
+  if(m.verification?.userTaskVerified||m.outcome?.verification?.userTaskVerified)
+    return "هدف واقعی مالک تأییدشده";
+  if(m.answerDeliveryVerified===true||m.outcome?.proof?.answerDelivery?.verified===true)
+    return "پاسخ مستند تحویل شد";
+  return "عملیات انجام شد؛ درستی پاسخ به درخواست تأیید نشده";
+}
+function makeMissionCard(id,isLatest=false){
+  const template=$("missionCardTemplate");
+  const root=template.content.firstElementChild.cloneNode(true);
+  root.classList.toggle("is-latest",isLatest);
+  const card={id,latest:isLatest,root,summary:null,full:null,opened:false,
+    renderedFullVersion:null,loading:false,wasWaiting:false,
+    controlSending:false,pendingControl:null,cancelCandidateStepIds:[]};
+  card.q=name=>root.querySelector('[data-role="'+name+'"]');
+  const toggle=card.q("title").closest(".mission-toggle");
+  const input=card.q("followupInput");
+  const label=card.q("question");
+  input.id="dexa-reply-"+id;
+  label.htmlFor=input.id;
+  toggle.addEventListener("click",()=>void toggleMissionCard(card));
+  input.addEventListener("keydown",event=>{
+    if(event.key==="Enter"&&!event.isComposing){
+      event.preventDefault();card.q("followupButton").click();
+    }
+  });
+  card.q("followupButton").addEventListener("click",()=>{
+    const value=input.value.trim();
+    if(value)void sendFollowup(value,card);
+  });
+  card.q("authButton").addEventListener("click",()=>
+    void sendFollowup("وارد شدم، ادامه بده",card));
+  card.q("retryButton").addEventListener("click",()=>
+    void sendFollowup("سرویس آماده است، ادامه بده",card));
+  card.q("statusButton").addEventListener("click",()=>void readMissionStatus(card));
+  for(const [role,action] of [
+   ["pauseButton","PAUSE_FUTURE"],["resumeButton","RESUME"],
+   ["stopButton","STOP_FUTURE"],["modifyButton","MODIFY_FUTURE"],
+   ["cancelButton","PROVIDER_CANCEL"]]){
+    card.q(role).addEventListener("click",()=>void sendMissionControl(card,action));
+  }
+  setCardOpen(card,false);
+  return card;
+}
+function setCardOpen(card,open){
+  card.opened=Boolean(open);
+  card.root.classList.toggle("is-open",card.opened);
+  card.q("content").classList.toggle("hidden",!card.opened);
+  card.root.querySelector(".mission-toggle").setAttribute("aria-expanded",String(card.opened));
+  card.q("chevron").textContent=card.opened?"▴":"▾";
+}
+function shouldSkipVersion(card,m){
+  const prior=card.summary||card.full;
+  return prior?.id===m.id&&Number(m.version||0)<Number(prior.version||0);
+}
+function updateCard(card,m){
+  if(!card||card.id!==m.id||shouldSkipVersion(card,m))return;
+  const previous=card.summary;
+  if(m.outcome)card.full=m;
+  card.summary=m;
+  applyMissionTone(card.root,m);
+  // All cards, including the newest, use the original displayed update time
+  // as their bold heading. The task itself is a single compact subtitle line.
+  setText(card.q("title"),formatTime(m.updatedAt||m.createdAt));
+  setText(card.q("subtitle"),m.text||"");
+  setText(card.q("badge"),safeSuccessLabel(m));
+  card.q("badge").className=stateClass(m);
+  if(card.opened){
+    const display=card.full&&Number(card.full.version||0)===Number(m.version||0)?
+      card.full:m;
+    renderCardBody(card,display);
+  }
+  if(card.opened&&!card.eventLoading&&
+     (!card.full||Number(card.full.version||0)<Number(m.version||0)))
+    void refreshFullCard(card);
+}
+function renderCardBody(card,m){
+  if(!card?.opened)return;
+  const q=card.q;
+  const outcome=m.outcome||{};
+  const question=m.waitingQuestion||outcome.userQuestion||"";
+  const result=typeof m.result==="string"?m.result:
+    typeof outcome.result==="string"?outcome.result:
+    m.lastStatusSummary||"";
+  const waiting=["WAITING_USER_DECISION","WAITING_USER_AUTH","WAITING_EXTERNAL"].includes(m.state);
+  const ctl=m.control||{};
+  const logical=ctl.logicalState||ctl.state||m.state;
+  const canAct=["ACCEPTED","PLANNING","EXECUTING","VERIFYING","REPLANNING",
+   "WAITING_USER_AUTH","WAITING_USER_DECISION","WAITING_EXTERNAL"].includes(m.state);
+  const isPaused=logical==="PAUSED"||m.state==="PAUSED";
+  q("pauseButton").classList.toggle("hidden",!canAct);
+  q("resumeButton").classList.toggle("hidden",!isPaused);
+  q("stopButton").classList.toggle("hidden",!canAct&&!isPaused);
+  const canModify=(canAct||isPaused)&&Number(m.planVersion)>0;
+  q("futureArea").classList.toggle("hidden",!canModify);
+  q("cancelButton").classList.toggle("hidden",!card.cancelCandidateStepIds?.length);
+  const completed=Number(ctl.completedSteps||0),total=Number(ctl.totalSteps||0);
+  const message="وضعیت: "+(logical||m.state)+
+   " · نسخه: "+(ctl.missionVersion??m.version)+
+   " · گام تأییدشده: "+completed+"/"+total+
+   " · اثر تأییدشده: "+(ctl.verifiedEffectCount||0)+
+   (ctl.awaitingProvider?" · انتظار پاسخ ارائه‌دهنده":"")+
+   (ctl.uncertain?" · نتیجه نامعلوم":"")+
+   " · توقف دکسا، لغو عملیات نزد ارائه‌دهنده نیست.";
+  setText(q("controlSummary"),message);
+  const autoExternal=m.state==="WAITING_EXTERNAL"&&
+    (m.waitingExternalKernel===true||outcome.proof?.component==="workflow_kernel");
+  const fallback=["ACCEPTED","PLANNING","EXECUTING","VERIFYING","REPLANNING"].includes(m.state)?
+    "دکسا در حال انجام این مأموریت است.":waiting?
+    "دکسا برای ادامهٔ مأموریت منتظر اقدام یا اطلاعات لازم است.":
+    "مأموریت پایان یافته؛ جزئیات آن در تاریخچه محفوظ است.";
+  setText(q("result"),waiting&&result===question?
+    "برای ادامهٔ این مأموریت به پاسخ یا اقدام شما نیاز است.":result||fallback);
+  setText(q("task"),m.text||"");
+  setText(q("version"),"نسخهٔ "+(m.version||0)+" · طرح "+(m.planVersion||0)+
+    " · بازبرنامه‌ریزی "+(m.replanCount||0)+" · "+formatTime(m.updatedAt));
+  q("intervention").classList.toggle("hidden",!waiting);
+  q("followupInput").classList.toggle("hidden",!waiting||m.state==="WAITING_USER_AUTH"||autoExternal);
+  q("followupButton").classList.toggle("hidden",!waiting||m.state==="WAITING_USER_AUTH"||autoExternal);
+  q("authButton").classList.toggle("hidden",m.state!=="WAITING_USER_AUTH");
+  q("retryButton").classList.toggle("hidden",m.state!=="WAITING_EXTERNAL"||autoExternal);
+  if(waiting){
+    setText(q("question"),question||(autoExternal?
+      "دکسا در انتظار رسید سرویس است؛ تکرار اثر قبلی مجاز نیست.":m.state==="WAITING_USER_AUTH"?
+      "پس از ورود مجاز به سرویس، ادامه را تأیید کن.":
+      "برای ادامهٔ این مأموریت اطلاعات لازم را وارد کن."));
+  }
+  if(card.wasWaiting&&!waiting)q("followupInput").value="";
+  card.wasWaiting=waiting;
+  if(Array.isArray(m.events)&&Array.isArray(m.stepReceipts)){
+    q("eventsDetails").classList.remove("hidden");
+    if(card.renderedFullVersion!==m.version||card.renderedFullUpdatedAt!==m.updatedAt){
+      renderTiming(m,q);
+      renderEvents(m.events,q);
+      card.renderedFullVersion=m.version;
+      card.renderedFullUpdatedAt=m.updatedAt;
+    }
+  }else{
+    q("timingBox").classList.add("hidden");
+    q("eventsDetails").classList.add("hidden");
+  }
+}
+async function refreshFullCard(card){
+  if(!card?.opened||card.loading)return;
+  const id=card.id;
+  card.loading=true;
+  try{
+    const r=await fetch("/api/missions/"+encodeURIComponent(id),{cache:"no-store"});
+    if(!r.ok)throw Error("بارگذاری مأموریت ناموفق بود.");
+    const data=await r.json(),m=data.mission;
+    if(!m||m.id!==id||card.id!==id||shouldSkipVersion(card,m))return;
+    card.full=m;
+    if(card.latest)renderLatestMission(m);
+    else updateCard(card,m);
+  }catch(error){
+    if(card.opened)setText($("error"),error.message||"خطای بارگذاری جزئیات");
+  }finally{card.loading=false;}
+}
+async function toggleMissionCard(card){
+  if(card.opened){
+    setCardOpen(card,false);
+    if(expandedCardId===card.id)expandedCardId=null;
+    return;
+  }
+  const other=expandedCardId===latestCard?.id?
+    latestCard:historyCards.get(expandedCardId);
+  if(other&&other!==card)setCardOpen(other,false);
+  expandedCardId=card.id;
+  setCardOpen(card,true);
+  renderCardBody(card,card.full||card.summary);
+  if(!card.full||card.full.version<card.summary?.version)
+    await refreshFullCard(card);
+  void readMissionStatus(card);
+}
+function stopActiveMissionCatchup(){
+  if(activeMissionCatchup?.timer!=null)clearTimeout(activeMissionCatchup.timer);
+  activeMissionCatchup=null;
+}
+function pauseActiveMissionCatchup(){
+  if(activeMissionCatchup?.timer!=null){
+    clearTimeout(activeMissionCatchup.timer);
+    activeMissionCatchup.timer=null;
+  }
+}
+function armActiveMissionCatchup(m){
+  if(!m?.id||!ACTIVE_MISSION_STATES.has(m.state)){
+    if(activeMissionCatchup?.id===m?.id)stopActiveMissionCatchup();
+    return;
+  }
+  if(activeMissionCatchup?.id!==m.id){
+    stopActiveMissionCatchup();
+    activeMissionCatchup={id:m.id,startedAt:Date.now(),timer:null,checking:false};
+  }
+  const watch=activeMissionCatchup;
+  if(document.hidden||watch.timer!==null||watch.checking)return;
+  const elapsed=Date.now()-watch.startedAt;
+  // One targeted GET every ~1.2s during short runs; slow down on long
+  // executions and STOP entirely at terminal state or when tab is hidden.
+  const delay=elapsed<10000?1200:elapsed<60000?3000:10000;
+  watch.timer=setTimeout(()=>void catchUpActiveMission(watch),delay);
+}
+async function catchUpActiveMission(watch){
+  watch.timer=null;
+  if(activeMissionCatchup!==watch||document.hidden||
+     latestCard?.id!==watch.id||!latestCard.root.isConnected||
+     !ACTIVE_MISSION_STATES.has(latestCard.summary?.state))return;
+  watch.checking=true;
+  try{
+    // No full-list reload, no speculative model/provider call, and no
+    // status regression: renderLatestMission enforces monotonic versions.
+    const response=await fetch("/api/missions/"+encodeURIComponent(watch.id),
+      {cache:"no-store"});
+    if(response.ok){
+      const data=await response.json(),m=data.mission;
+      if(activeMissionCatchup===watch&&m?.id===watch.id&&
+         latestCard?.id===watch.id)renderLatestMission(m);
+    }
+  }catch{/* transient network failure: next active-only read can recover */}
+  finally{
+    watch.checking=false;
+    if(activeMissionCatchup===watch&&latestCard?.id===watch.id&&
+       ACTIVE_MISSION_STATES.has(latestCard.summary?.state))
+      armActiveMissionCatchup(latestCard.summary);
+  }
+}
+function renderLatestMission(m){
+  if(!m?.id)return;
+  if(latestMission?.id!==m.id&&latestMission&&
+    String(m.createdAt||"")<String(latestMission.createdAt||""))return;
+  if(latestMission?.id===m.id&&Number(m.version||0)<Number(latestMission.version||0))return;
+  const list=$("missionList");
+  if(!latestCard||latestCard.id!==m.id){
+    if(latestCard){
+      if(expandedCardId===latestCard.id)expandedCardId=null;
+      latestCard.root.remove();
+    }
+    const priorHistory=historyCards.get(m.id);
+    if(priorHistory){priorHistory.root.remove();historyCards.delete(m.id);}
+    latestCard=makeMissionCard(m.id,true);
+  }
+  if(list.firstElementChild!==latestCard.root)
+    list.insertBefore(latestCard.root,list.firstElementChild);
+  latestMission=m;
+  updateCard(latestCard,m);
+  armActiveMissionCatchup(m);
+}
+async function loadList(){
+  const seq=++listLoadSequence;
+  const requestedWindowN=getTrackingWindowN();
+  const response=await fetch("/api/missions?limit="+requestedWindowN,{cache:"no-store"});
+  if(!response.ok)return;
+  const data=await response.json();
+  if(seq!==listLoadSequence||requestedWindowN!==getTrackingWindowN())return;
+  const summaries=Array.isArray(data.missions)?data.missions:[];
+  if(!summaries.length){
+    stopActiveMissionCatchup();
+    latestMission=null;latestCard=null;
+    $("missionList").replaceChildren();
+    historyCards.clear();expandedCardId=null;
+    return;
+  }
+  // Every card starts collapsed, including the newest one; selecting N
+  // still shows N total entries. Only one card is expanded at a time.
+  const sorted=summaries.slice().sort((a,b)=>
+    String(b.createdAt||"").localeCompare(String(a.createdAt||"")));
+  renderLatestMission(sorted[0]);
+  const entries=sorted.slice(1),wanted=new Set(entries.map(m=>m.id));
+  const list=$("missionList");
+  for(const [id,card] of historyCards){
+    if(!wanted.has(id)){card.root.remove();historyCards.delete(id);
+      if(expandedCardId===id)expandedCardId=null;}
+  }
+  for(let i=0;i<entries.length;i++){
+    const m=entries[i];
+    let card=historyCards.get(m.id);
+    if(!card){card=makeMissionCard(m.id,false);historyCards.set(m.id,card);}
+    updateCard(card,m);
+    if(list.children[i+1]!==card.root)list.insertBefore(card.root,list.children[i+1]||null);
+  }
+}
+// Single event-driven journal stream for ALL tracked missions: no intervals,
+// no per-card sockets, and no list rebuild for a changed existing mission.
+function stopMissionJournal(){
+  if(missionJournal)missionJournal.close();
+  missionJournal=null;
+  missionJournalWindowN=null;
+}
+function reconcileMissionList(){
+  if(!listReconcilePromise){
+    listReconcilePromise=loadList().finally(()=>{listReconcilePromise=null;});
+  }
+  return listReconcilePromise;
+}
+function cardForMission(id){
+  return latestCard?.id===id?latestCard:historyCards.get(id)||null;
+}
+async function refreshChangedCard(card,minimumVersion){
+  if(!card||!card.root.isConnected||!Number.isSafeInteger(minimumVersion)||
+     minimumVersion<1)return;
+  const summaryVersion=Number(card.summary?.version||0);
+  const fullVersion=Number(card.full?.version||0);
+  if(minimumVersion<=summaryVersion&&(!card.opened||fullVersion>=minimumVersion))
+    return;
+  card.eventTargetVersion=Math.max(card.eventTargetVersion||0,minimumVersion);
+  if(card.eventLoading){
+    // A later event must survive a failed/stale in-flight GET. Re-run only
+    // once when that read settles; no timers and no unbounded retry loop.
+    card.eventRetryNeeded=true;
+    return;
+  }
+  card.eventLoading=true;
+  try{
+    for(let attempt=0;attempt<4;attempt++){
+      if(!card.root.isConnected)break;
+      // A single failed/stale JSON read must not strand a card after the
+      // ONLY terminal SSE event. Retry once immediately, never spin/poll.
+      let response,data;
+      try{
+        response=await fetch("/api/missions/"+encodeURIComponent(card.id),
+          {cache:"no-store"});
+        if(response.ok)data=await response.json();
+      }catch{/* transient response failure: only one bounded retry */}
+      if(!response?.ok||!data){if(attempt===0)continue;break;}
+      const m=data.mission;
+      if(!m||m.id!==card.id||!card.root.isConnected)break;
+      if(!shouldSkipVersion(card,m)){
+        card.full=m;
+        if(card.latest)renderLatestMission(m);
+        else updateCard(card,m);
+      }
+      if(card.eventTargetVersion<=Number(card.summary?.version||0)){
+        card.eventTargetVersion=0;
+        break;
+      }
+      // A change signal is emitted only after the journal was committed.
+      // A repeated stale snapshot is an exceptional provider/proxy error;
+      // fail closed and resume on a later event/reconnect, never spin.
+      if(Number(m.version||0)<minimumVersion)break;
+    }
+  }catch{
+    // EventSource reconnects automatically; its sync handshake replays
+    // version metadata without overwriting any typed owner followup.
+  }finally{
+    card.eventLoading=false;
+    const retry=card.eventRetryNeeded===true&&card.root.isConnected&&
+      Number(card.eventTargetVersion||0)>Number(card.summary?.version||0);
+    card.eventRetryNeeded=false;
+    if(retry)void refreshChangedCard(card,card.eventTargetVersion);
+  }
+}
+// A committed, owner-authenticated journal event can update the terminal
+// status immediately. Do NOT wait on a second GET just to turn the card
+// green: that extra fetch can fail or be delayed by mobile reverse proxies.
+// Keep the old full record until an exact newer mission GET verifies details.
+function paintVerifiedJournalCard(card,notice){
+  if(!card?.root?.isConnected||!notice||card.id!==notice.missionId||
+     !Number.isSafeInteger(notice.version)||notice.version<1)return;
+  const prior=card.summary||card.full;
+  if(!prior||notice.version<=Number(prior.version||0)||
+     !["SUCCEEDED_VERIFIED","FAILED","BLOCKED","OUTCOME_UNKNOWN"].includes(notice.state))return;
+  if(notice.state==="SUCCEEDED_VERIFIED"&&notice.verified!==true)return;
+  const next={
+    id:prior.id,text:prior.text,createdAt:prior.createdAt,
+    updatedAt:typeof notice.updatedAt==="string"?notice.updatedAt:prior.updatedAt,
+    version:notice.version,state:notice.state,
+    answerDeliveryVerified:notice.verified===true,
+    lastStatusSummary:"وضعیت نهایی ثبت شد؛ جزئیات در حال همگام‌سازی است."
+  };
+  if(card.latest)renderLatestMission(next);
+  else updateCard(card,next);
+}
+function reconcileJournalVersions(records){
+  if(!Array.isArray(records))return;
+  const visibleIds=new Set([
+    ...(latestCard?[latestCard.id]:[]),...historyCards.keys()
+  ]);
+  if(records.length!==visibleIds.size||
+     (records[0]?.missionId||null)!==(latestCard?.id||null)||
+     records.some(r=>!visibleIds.has(r.missionId))){
+    void reconcileMissionList().catch(()=>{});
+    return;
+  }
+  for(const r of records){
+    const card=cardForMission(r.missionId);
+    if(card&&Number.isSafeInteger(r.version)){
+      // Start the full GET BEFORE painting the notice, so a missing GET
+      // cannot stop the immediately visible verified terminal status.
+      void refreshChangedCard(card,r.version);
+      paintVerifiedJournalCard(card,r);
+    }
+  }
+}
+function startMissionJournal(){
+  if(typeof EventSource!=="function")return;
+  const n=getTrackingWindowN();
+  if(missionJournal&&missionJournalWindowN===n)return;
+  stopMissionJournal();
+  const stream=new EventSource("/api/missions/live?limit="+n);
+  missionJournal=stream;
+  missionJournalWindowN=n;
+  stream.addEventListener("sync",event=>{
+    if(missionJournal!==stream)return;
+    try{reconcileJournalVersions(JSON.parse(event.data).missions)}catch{}
+  });
+  stream.addEventListener("mission",event=>{
+    if(missionJournal!==stream)return;
+    let change;
+    try{change=JSON.parse(event.data)}catch{return}
+    if(typeof change.missionId!=="string"||
+       !Number.isSafeInteger(change.version)||change.version<1)return;
+    const card=cardForMission(change.missionId);
+    if(card){
+      void refreshChangedCard(card,change.version);
+      paintVerifiedJournalCard(card,change);
+    }else if(!latestMission||String(change.createdAt||"")>=
+      String(latestMission.createdAt||""))
+      void reconcileMissionList().catch(()=>{});
+    // Planner readiness follows genuine submission/finish transitions,
+    // not a time-based status poll.
+    if(["MISSION_ACCEPTED","MISSION_FINISHED","MISSION_PAUSED"].includes(change.kind))
+      void pollInstantReadyFlag();
+  });
+  // A broken SSE channel must not silently leave an in-progress mission
+  // showing PLANNING. Read only that active mission once on stream error.
+  // Reconnection then recovers any missed event through a durable sync.
+  stream.addEventListener("error",()=>{
+    if(missionJournal!==stream||document.hidden)return;
+    const watch=activeMissionCatchup;
+    if(watch&&!watch.checking){
+      pauseActiveMissionCatchup();
+      void catchUpActiveMission(watch);
+    }
+  });
+  // Native EventSource reconnects automatically. The server also resends
+  // versioned sync for short active/recent missions on the same connection.
+}
+window.addEventListener("pagehide",stopMissionJournal);
+window.addEventListener("pagehide",pauseActiveMissionCatchup);
+window.addEventListener("pageshow",event=>{
+  if(event.persisted){
+    void reconcileMissionList().catch(()=>{}).finally(startMissionJournal);
+    void pollInstantReadyFlag();
+  }
+});
+document.addEventListener("visibilitychange",()=>{
+  if(document.hidden)pauseActiveMissionCatchup();
+  if(!document.hidden){
+    if(latestMission)armActiveMissionCatchup(latestMission);
+    void pollInstantReadyFlag();
+    // An asleep phone tab may have lost SSE even when EventSource did not
+    // yet emit an error; this one-time focus reconcile is NOT timed polling.
+    void reconcileMissionList().catch(()=>{});
+  }
+});
+window.addEventListener("focus",()=>{
+  if(!document.hidden){
+    if(latestMission)armActiveMissionCatchup(latestMission);
+    void pollInstantReadyFlag();
+    void reconcileMissionList().catch(()=>{});
+  }
+});
+async function refreshFormChallenge(){
+  const meta=document.querySelector('meta[name="dexa-form-challenge"]');
+  if(!meta)return;
+  const controller=new AbortController();
+  const deadline=setTimeout(()=>controller.abort(),12000);
+  let data;
+  try{
+    const response=await fetch("/api/form/challenge",{
+      cache:"no-store",signal:controller.signal});
+    if(!response.ok)throw Error("WEB_FORM_CHALLENGE_REFRESH_FAILED");
+    data=await response.json();
+  }finally{clearTimeout(deadline)}
+  if(typeof data.token!=="string"||!/^[A-Za-z0-9_-]{43}$/.test(data.token))
+    throw Error("WEB_FORM_CHALLENGE_INVALID");
+  meta.content=data.token;
+}
+// Session-scoped conversation identifier: NOT an owner auth token.
+ // sessionStorage survives reload in this tab but not ordinary new tabs.
+const DEXA_CONTEXT_SESSION_STORAGE_KEY="dexa.context-session.v1";
+let dexaContextSessionId=null;
+function contextSessionIdForThisTab(){
+  if(dexaContextSessionId)return dexaContextSessionId;
+  const re=/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i;
+  try{
+    const stored=sessionStorage.getItem(DEXA_CONTEXT_SESSION_STORAGE_KEY);
+    if(stored&&re.test(stored)){dexaContextSessionId=stored;return stored;}
+  }catch{/* Session storage can be unavailable in hardened browsers. */}
+  const fresh=crypto.randomUUID();
+  dexaContextSessionId=fresh;
+  try{sessionStorage.setItem(DEXA_CONTEXT_SESSION_STORAGE_KEY,fresh)}catch{}
+  return fresh;
+}
+let pendingMissionSubmission=null;
+let cerebrasReadyForSubmit=null; // updated ONLY from server in-memory flag
+let missionSubmissionPending=false;
+// The text field is the ONLY input governing the enabled/black submit button.
+// Planner readiness is a separate service signal, checked at admission time;
+// it must never re-enable an EMPTY draft or strand a filled draft disabled.
+// All changes, including on-screen keyboard and programmatic clears, flow here.
+function syncMissionSubmitButton(){
+  const canSubmit=!missionSubmissionPending&&$("taskText").value.trim().length>0;
+  $("submitButton").disabled=!canSubmit;
+}
+$("taskText").addEventListener("input",()=>{
+  if(!missionSubmissionPending)setText($("error"),"");
+  syncMissionSubmitButton();
+});
+$("taskText").addEventListener("change",syncMissionSubmitButton);
+window.addEventListener("pageshow",syncMissionSubmitButton);
+syncMissionSubmitButton();
+$("taskForm").addEventListener("submit", async event => {
+  event.preventDefault();
+  if(missionSubmissionPending)return;
+  const text=$("taskText").value.trim();
+  if(!text){syncMissionSubmitButton();return;}
+  if(text.length<3){
+    setText($("error"),"متن مأموریت باید دست‌کم ۳ نویسه داشته باشد.");
+    syncMissionSubmitButton();return;
+  }
+  if(cerebrasReadyForSubmit===false){
+    setText($("error"),"گفت‌وگوی جدید Cerebras هنوز در حالت آماده‌باش نیست. منتظر نشانگر «Cerebras آماده» بمان.");
+    return;
+  }
+  missionSubmissionPending=true;
+  $("taskText").disabled=true;
+  syncMissionSubmitButton();
+  setText($("error"),"");
+  // One request ID survives network ambiguity; the server returns the same
+  // mission instead of performing a second provider/model send.
+  const profile=$("telegramMvpMode").checked?"telegram_readonly_mvp":null;
+  const trackingWindowN=getTrackingWindowN();
+  if(!pendingMissionSubmission||pendingMissionSubmission.text!==text||
+     pendingMissionSubmission.profile!==profile||
+     pendingMissionSubmission.trackingWindowN!==trackingWindowN)
+    pendingMissionSubmission={text,profile,trackingWindowN,id:crypto.randomUUID()};
+  const meta=document.querySelector('meta[name="dexa-form-challenge"]');
+  const reusable=meta?.dataset.reusable==="true";
+  const postMission=async()=>{
+    // POST may be accepted even if the proxy loses its response. A bounded
+    // client wait recovers the form without re-sending automatically. On
+    // manual retry we reuse exactly the same idempotency key.
+    const controller=new AbortController();
+    const deadline=setTimeout(()=>controller.abort(),30000);
+    try{
+      const response=await fetch("/api/missions",{
+        method:"POST",signal:controller.signal,headers:{
+          "Content-Type":"application/json",
+          "X-Dexa-Submission-Id":pendingMissionSubmission.id,
+          ...(meta?{"X-Dexa-Web-Form":meta.content}:{})
+        },body:JSON.stringify({text,source:"dexa_web_app",profile,
+          trackingWindowN:pendingMissionSubmission.trackingWindowN,
+          contextSessionId:contextSessionIdForThisTab()})
+      });
+      return {response,data:await response.json()};
+    }finally{clearTimeout(deadline)}
+  };
+  try {
+    let result=await postMission();
+    // Exceptional migration/revocation recovery only. No token refresh
+    // on the successful hot path, before or after a mission.
+    if(result.response.status===403&&[
+      "WEB_FORM_SESSION_MISMATCH","WEB_FORM_COOKIE_MISSING",
+      "WEB_FORM_TOKEN_INVALID","WEB_FORM_NONCE_EXPIRED",
+      "WEB_FORM_NONCE_NOT_REGISTERED_OR_REUSED"
+    ].includes(result.data.error)){
+      await refreshFormChallenge();
+      result=await postMission();
+    }
+    if(result.response.status===409&&result.data.error==="CEREBRAS_PREPARED_SLOT_NOT_READY"){
+      cerebrasReadyForSubmit=false;
+      throw new Error("Cerebras در حال آماده‌سازی چت جدید است؛ منتظر READY بمان و دوباره ثبت کن.");
+    }
+    if(result.response.status===409&&result.data.error==="CEREBRAS_PLANNER_BUSY")
+      throw new Error("یک مأموریت هنوز در حال اجراست. بعد از آماده‌شدن Cerebras دوباره ثبت کن.");
+    if(!result.response.ok)throw new Error(result.data.error||"ثبت مأموریت ناموفق بود.");
+    // The acknowledgment is authoritative even if SSE/list refresh fails.
+    // Reject malformed acknowledgments without discarding a retriable draft.
+    if(typeof result.data?.mission?.id!=="string"||
+       !/^[0-9a-f-]{36}$/i.test(result.data.mission.id))
+      throw new Error("تأیید ثبت مأموریت از سرور ناقص بود؛ متن برای تلاش مجدد حفظ شد.");
+    if(cerebrasReadyForSubmit!==null)cerebrasReadyForSubmit=false;
+    pendingMissionSubmission=null;
+    // Clear IMMEDIATELY at the successful POST receipt, before any later
+    // asynchronous list refresh or planner status update.
+    $("taskText").value="";
+    $("taskText").dispatchEvent(new Event("input",{bubbles:true}));
+    syncMissionSubmitButton();
+    try{renderLatestMission(result.data.mission)}
+    catch{/* Accepted mission remains persisted; SSE/list will reconcile. */}
+    // A failed list GET is not a failed mission submission.
+    void loadList().catch(()=>{});
+  } catch(error) {
+    const timedOut=error?.name==="AbortError"||error?.name==="TimeoutError";
+    setText($("error"),timedOut?
+      "پاسخ ثبت مأموریت در زمان مناسب نرسید؛ متن حفظ شد. می‌توانی بدون رفرش دوباره تلاش کنی.":
+      error?.message||"خطا");
+  } finally {
+    if(!reusable){
+      try{await refreshFormChallenge()}
+      catch{setText($("error"),"نوسازی مجوز فرم انجام نشد؛ صفحه را تازه‌سازی کن.")}
+    }
+    missionSubmissionPending=false;
+    $("taskText").disabled=false;
+    syncMissionSubmitButton();
+  }
+});
+async function sendFollowup(message,card=latestCard){
+  if(!card?.summary?.id||!Number.isInteger(card.summary.version))return;
+  const id=card.id,version=card.summary.version;
+  const q=card.q;
+  const controls=["followupButton","authButton","retryButton"].map(q);
+  controls.forEach(node=>node.disabled=true);
+  try{
+    const response=await fetch("/api/missions/"+encodeURIComponent(id)+"/followup",{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({message,expectedVersion:version})
+    });
+    const data=await response.json();
+    if(!response.ok)throw Error(data.error||"ثبت پاسخ ناموفق بود.");
+    if(card.id===id&&data.mission?.id===id){
+      card.full=data.mission;
+      if(card.latest)renderLatestMission(data.mission);
+      else updateCard(card,data.mission);
+      q("followupInput").value="";
+    }
+    await loadList();
+  }catch(error){setText($("error"),error.message||"خطای ثبت پاسخ");}
+  finally{controls.forEach(node=>node.disabled=false);}
+}
+async function readMissionStatus(card){
+ if(!card?.id)return;
+ try{
+  const r=await fetch("/api/missions/"+encodeURIComponent(card.id)+"/status",
+    {cache:"no-store"});
+  const data=await r.json();
+  if(!r.ok)throw Error(data.error||"خواندن وضعیت ناموفق بود.");
+  const st=data.status;
+  card.cancelCandidateStepIds=Array.isArray(data.cancelCandidateStepIds)?
+   data.cancelCandidateStepIds:[];
+  card.q("cancelButton").classList.toggle("hidden",!card.cancelCandidateStepIds.length);
+  setText(card.q("controlSummary"),
+   "وضعیت واقعی: "+st.logicalState+" · نسخه: "+st.missionVersion+
+   " · گام‌های کامل: "+st.completedSteps+"/"+st.totalSteps+
+   " · مرحله در جریان: "+(st.currentStepId??"ندارد")+
+   " · آثار تأییدشده: "+st.verifiedEffectCount+
+   (st.awaitingProvider?" · منتظر ارائه‌دهنده":"")+
+   (st.uncertain?" · نتیجه نامعلوم":"")+
+   " · توقف، لغو نزد ارائه‌دهنده نیست.");
+ }catch(error){setText(card.q("controlError"),error.message||"خطای وضعیت");}
+}
+async function sendMissionControl(card,action){
+ if(!card?.summary?.id||!Number.isSafeInteger(card.summary.version)||
+    card.controlSending)return;
+ const instruction=action==="MODIFY_FUTURE"?
+  card.q("futureInstruction").value.trim():null;
+ if(action==="MODIFY_FUTURE"&&instruction.length<3){
+  setText(card.q("controlError"),"متن تغییر آینده را دقیق وارد کن.");
+  return;
+ }
+ const expectedVersion=card.summary.version;
+ const cancelFromStepId=action==="PROVIDER_CANCEL"?
+  card.cancelCandidateStepIds?.[0]:null;
+ if(action==="PROVIDER_CANCEL"&&!Number.isSafeInteger(cancelFromStepId))return;
+ const fingerprint=action+":"+expectedVersion+":"+(instruction||"")+":"+(cancelFromStepId||"");
+ const previous=card.pendingControl;
+ const controlId=previous?.fingerprint===fingerprint?
+  previous.id:crypto.randomUUID();
+ card.pendingControl={fingerprint,id:controlId};
+ const payload={schema:"dexa.mission-control.v1",
+  missionId:card.id,controlId,expectedVersion,action,
+  ...(instruction?{futureInstruction:instruction}:{}),
+  ...(cancelFromStepId?{cancelFromStepId}:{})};
+ const meta=document.querySelector('meta[name="dexa-form-challenge"]');
+ card.controlSending=true;
+ setText(card.q("controlError"),"");
+ const buttons=["statusButton","pauseButton","resumeButton","stopButton",
+   "modifyButton","cancelButton"].map(x=>card.q(x));
+ buttons.forEach(x=>x.disabled=true);
+ try{
+  const r=await fetch("/api/missions/"+encodeURIComponent(card.id)+"/control",{
+   method:"POST",headers:{"Content-Type":"application/json",
+    "X-Dexa-Submission-Id":controlId,
+    ...(meta?{"X-Dexa-Web-Form":meta.content}:{})},
+   body:JSON.stringify(payload)});
+  const data=await r.json();
+  if(!r.ok){
+   if(r.status===409&&data.currentVersion!==undefined)
+    void refreshFullCard(card);
+   throw Error(data.error||"ثبت فرمان کنترل پذیرفته نشد.");
+  }
+  card.pendingControl=null;
+  if(data.mission?.id===card.id){
+   card.full=data.mission;
+   if(card.latest)renderLatestMission(data.mission);
+   else updateCard(card,data.mission);
+  }
+  if(action==="MODIFY_FUTURE")card.q("futureInstruction").value="";
+  await readMissionStatus(card);
+ }catch(error){
+  setText(card.q("controlError"),error.message||"وضعیت درخواست کنترل نامعلوم است؛ شناسهٔ همان درخواست برای تلاش بعدی حفظ شد.");
+ }finally{card.controlSending=false;buttons.forEach(x=>x.disabled=false);}
+}
+async function refreshServiceStatus(){
+  try{
+    const response=await fetch("/healthz",{cache:"no-store"});
+    if(!response.ok)throw Error("DEXA_HEALTH_HTTP_ERROR");
+    const health=await response.json();
+    setText($("serviceStatus"),health.ok?"سرویس آماده":"سرویس در دسترس نیست");
+    $("serviceStatus").className=health.ok?"status success":"status failure";
+  }catch{
+    setText($("serviceStatus"),"سرویس در دسترس نیست");
+    $("serviceStatus").className="status failure";
+  }
+}
+void refreshServiceStatus();
+async function pollInstantReadyFlag(){
+  const flag=$("instantReadyFlag");
+  try{
+    const response=await fetch("/api/planner/ready",{cache:"no-store"});
+    if(!response.ok)throw Error("PLANNER_STATUS_HTTP_ERROR");
+    const status=await response.json();
+    const phase=String(status.phase||"UNKNOWN");
+    if(status.provider==="Cerebras"){
+      cerebrasReadyForSubmit=status.ready===true;
+      syncMissionSubmitButton();
+    }else{cerebrasReadyForSubmit=null;}
+    const plannerName=status.provider==="Cerebras"?"Cerebras":"Instant";
+    const label=status.ready?plannerName+" آماده":
+      phase==="PREPARING"?plannerName+": آماده‌سازی چت جدید…":
+      phase==="BUSY"?plannerName+" مشغول":
+      phase==="DISABLED"?plannerName+" غیرفعال":
+      plannerName+" آماده نیست";
+    setText(flag,label+(status.browser==="Firefox"?" — Firefox":""));
+    flag.className="status "+(status.ready?"success":
+      phase==="NOT_READY"?"failure":"waiting");
+    flag.title="وضعیت: "+phase+
+      " · آخرین بررسی: "+(status.checkedAt?formatTime(status.checkedAt):"هنوز بررسی نشده")+
+      (status.lastErrorCode?" · "+status.lastErrorCode:"")+
+      (status.setupMs!=null?" · بررسی/آماده‌سازی: "+status.setupMs+" ms":"");
+  }catch{
+    if(cerebrasReadyForSubmit!==null){
+      cerebrasReadyForSubmit=false;
+      syncMissionSubmitButton();
+    }
+    setText(flag,"برنامه‌ریز: وضعیت نامعلوم");
+    flag.className="status failure";
+    flag.title="اتصال وضعیت برنامه‌ریز برقرار نیست";
+  }
+}
+void pollInstantReadyFlag();
+void reconcileMissionList().catch(()=>{}).finally(startMissionJournal);
+</script>
+</body>
+</html>
