@@ -99,6 +99,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # Only the two audio-facing PCG containers need the r131 hotfix.
+          # Do not ship the full channel bundle or touch the managed Telegram browser.
+          if [[ "$EXPECTED_RELEASE" == "pcg-web-stage6-soniox-16x-r131" ]]; then
+            [[ "$EXPECTED_SEQUENCE" == "131" && "$CANDIDATE_COMMIT" == "6a8638aaf437a4fccd429e5b8f652533ccf89753" ]]
+            exit 0
+          fi
           tar -C "$SNAPSHOT" -czf "$RUNNER_TEMP/pcg-release.tgz" .
           scp -q -i "$SSH_DIR/key" -P "$SSH_PORT" \
             -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
@@ -110,6 +116,22 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          if [[ "$EXPECTED_RELEASE" == "pcg-web-stage6-soniox-16x-r131" ]]; then
+            [[ "$EXPECTED_SEQUENCE" == "131" && "$CANDIDATE_COMMIT" == "6a8638aaf437a4fccd429e5b8f652533ccf89753" ]]
+            script="$SNAPSHOT/activate-r131-managed-relay.sh"
+            printf '%s  %s\n' 'a351b9ba979af16ea712a148083550628ef768c1e569a891c66f17fdb99f4bc1' "$script" | sha256sum -c -
+            scp -q -i "$SSH_DIR/key" -P "$SSH_PORT" \
+              -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+              -o UserKnownHostsFile="$SSH_DIR/known_hosts" \
+              "$script" "${VPS_SSH_USER}@${VPS_HOST}:/tmp/pcg-r131-managed-activate.sh"
+            ssh -i "$SSH_DIR/key" -p "$SSH_PORT" \
+              -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+              -o UserKnownHostsFile="$SSH_DIR/known_hosts" \
+              "${VPS_SSH_USER}@${VPS_HOST}" \
+              "set -e; test \"\$(id -u)\" = 0; install -m 0700 -o root -g root /tmp/pcg-r131-managed-activate.sh /run/pcg-r131-managed-activate.sh; rm -f /tmp/pcg-r131-managed-activate.sh; printf '%s  %s\\n' 'a351b9ba979af16ea712a148083550628ef768c1e569a891c66f17fdb99f4bc1' /run/pcg-r131-managed-activate.sh | sha256sum -c -; bash /run/pcg-r131-managed-activate.sh" </dev/null
+            echo "PCG_SCOPED_R131_DEPLOY=success"
+            exit 0
+          fi
           cat > "$RUNNER_TEMP/pcg-remote.sh" <<'REMOTE'
           set -euo pipefail
           [[ "$(id -u)" -eq 0 ]] || { echo "PCG_DEPLOY_REQUIRES_ROOT" >&2; exit 30; }
