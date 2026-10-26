@@ -86,6 +86,12 @@ jobs:
             done
             node --test "$SNAPSHOT/pcg_soniox_7sec.test.mjs"
           fi
+          if [[ "$EXPECTED_RELEASE" == "pcg-web-stage6-soniox-parallel-514-ffmpeg-r134" ]]; then
+            for file in pcg_perplexity_asr.mjs pcg_soniox_fixed_overlap.mjs pcg_soniox_word_align_dp.mjs pcg_ffmpeg_decode.mjs pcg_r134_smoke_check.mjs; do
+              node --check "$SNAPSHOT/$file"
+            done
+            node --test "$SNAPSHOT/pcg_soniox_7sec.test.mjs"
+          fi
 
       - name: Prepare SSH
         shell: bash
@@ -185,6 +191,22 @@ jobs:
               "${VPS_SSH_USER}@${VPS_HOST}" \
               "set -e; test \"\$(id -u)\" = 0; mv /tmp/pcg-release.tgz /tmp/pcg-r133-release.tgz; install -m 0700 -o root -g root /tmp/pcg-r133-managed-activate.sh /run/pcg-r133-managed-activate.sh; rm -f /tmp/pcg-r133-managed-activate.sh; printf '%s  %s\\n' '6c5d802d1e961ffe5489971c316fdd20feafc287229811e77323d85d6b2a772d' /run/pcg-r133-managed-activate.sh | sha256sum -c -; bash /run/pcg-r133-managed-activate.sh" </dev/null
             echo "PCG_SCOPED_R133_DEPLOY=success"
+            exit 0
+          fi
+          if [[ "$EXPECTED_RELEASE" == "pcg-web-stage6-soniox-parallel-514-ffmpeg-r134" ]]; then
+            [[ "$EXPECTED_SEQUENCE" == "134" && "$CANDIDATE_COMMIT" == "408b4bf431a1403a76cc758b3d5b7c6a8cc23c9f" ]]
+            script="$SNAPSHOT/activate-r134-managed-relay.sh"
+            printf '%s  %s\n' '346f870a05dcf939810332ac6772b5986e0ab0af674f9c014205ac79fc8fc636' "$script" | sha256sum -c -
+            scp -q -i "$SSH_DIR/key" -P "$SSH_PORT" \
+              -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+              -o UserKnownHostsFile="$SSH_DIR/known_hosts" \
+              "$script" "${VPS_SSH_USER}@${VPS_HOST}:/tmp/pcg-r134-managed-activate.sh"
+            ssh -i "$SSH_DIR/key" -p "$SSH_PORT" \
+              -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+              -o UserKnownHostsFile="$SSH_DIR/known_hosts" \
+              "${VPS_SSH_USER}@${VPS_HOST}" \
+              "set -e; test \"\$(id -u)\" = 0; mv /tmp/pcg-release.tgz /tmp/pcg-r134-release.tgz; install -m 0700 -o root -g root /tmp/pcg-r134-managed-activate.sh /run/pcg-r134-managed-activate.sh; rm -f /tmp/pcg-r134-managed-activate.sh; printf '%s  %s\\n' '346f870a05dcf939810332ac6772b5986e0ab0af674f9c014205ac79fc8fc636' /run/pcg-r134-managed-activate.sh | sha256sum -c -; bash /run/pcg-r134-managed-activate.sh" </dev/null
+            echo "PCG_SCOPED_R134_DEPLOY=success"
             exit 0
           fi
           cat > "$RUNNER_TEMP/pcg-remote.sh" <<'REMOTE'

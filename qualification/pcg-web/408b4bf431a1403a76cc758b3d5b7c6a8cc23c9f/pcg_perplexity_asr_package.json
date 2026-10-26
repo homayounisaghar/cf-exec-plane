@@ -1,0 +1,14 @@
+{
+  "name": "cf-pcg-soniox-asr",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "playwright": "1.62.1",
+    "ws": "8.18.3",
+    "@ffmpeg-installer/linux-arm64": "4.1.4"
+  }
+}

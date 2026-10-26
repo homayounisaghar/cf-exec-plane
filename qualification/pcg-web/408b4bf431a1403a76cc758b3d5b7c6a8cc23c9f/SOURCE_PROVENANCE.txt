@@ -1,0 +1,12 @@
+r134 immutable public execution snapshot
+private_repository=homayounisaghar/capability-fabric
+candidate_commit=408b4bf431a1403a76cc758b3d5b7c6a8cc23c9f
+private_delta=server-deploy/channels/pcg/r134-scoped/
+base_public_snapshot=qualification/pcg-web/8b696b90906afcfe1a34afa001a1801f479137d9/
+base_release=pcg-web-stage6-soniox-16x-r131
+release_id=pcg-web-stage6-soniox-parallel-514-ffmpeg-r134
+sequence=134
+scope=pcg_perplexity_asr,pcg_web only; managed relay preserved; failure rollback to r131
+manifest_sha256=293520bc6b0e841005eab101f99b63a8596adefd2a5dff494b37d5a742e104ea
+activate_script_sha256=346f870a05dcf939810332ac6772b5986e0ab0af674f9c014205ac79fc8fc636
+e2e_smoke_source=private owner 89s voice file; never stored in GitHub
