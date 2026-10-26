@@ -1,0 +1,108 @@
+name: PCG r139 Telegram ASR Acquisition Repair
+permissions:
+  contents: read
+concurrency:
+  group: pcg-telegram-asr-r139
+  cancel-in-progress: false
+jobs:
+  deploy:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+      SNAP: qualification/pcg-telegram-asr-r139/cf9984d0f32f4060fdd60de53e4ede3f8e060c7f
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 2
+        persist-credentials: false
+    - name: Authorize one immutable owner request
+      shell: bash
+      run: 'set -euo pipefail
+
+        change="$(git diff --name-status HEAD^ HEAD)"
+
+        [[ "$change" == $''A\tserver-bootstrap/control/pcg-telegram-asr-r139/pcg-telegram-asr-r139-20261026.request'' ]] || exit 11
+
+        req=server-bootstrap/control/pcg-telegram-asr-r139/pcg-telegram-asr-r139-20261026.request
+
+        grep -Fxq ''request_id=pcg-telegram-asr-r139-20261026'' "$req"
+
+        grep -Fxq ''candidate_commit=cf9984d0f32f4060fdd60de53e4ede3f8e060c7f'' "$req"
+
+        grep -Fxq ''expected_sequence=138'' "$req"
+
+        grep -Fxq ''manifest_sha256=ab3f4ad57ad66547af8458d846d25c840dda69fd53df177d313f85f0c1e1c9fc'' "$req"
+
+        [[ "$(wc -l < "$req")" == 4 ]] || exit 12'
+    - name: Rebuild and test only the PCG web r139 release
+      shell: bash
+      run: "set -euo pipefail\nPRIOR=qualification/pcg-telegram-bridge/629875b4b6f1a5f7bdc17011d02834d13dfb8d51/pcg-r137.patch\nBASE=qualification/pcg-web/4d12bcea796fe5c0a7c4e1b64d1e8f2e74d6b571\n\
+        printf '%s  %s\\n' 427b16010399546df3fa7cf8b927412dd325cd1eb9b0a69417fcd30ec735bfd2 \"$PRIOR\" | sha256sum -c -\nprintf '%s\
+        \  %s\\n' 94c1b8a182faa871b894121b7e0f5787aa5f0a6076e68f49a9810283cd51c710 \"$SNAP/pcg-r139-telegram-asr.patch\" | sha256sum\
+        \ -c -\nprintf '%s  %s\\n' 7059ac8d0729d91e009c8be35f10fb951726da2232785c9af3c5c50769d2879b \"$SNAP/pcg_web_telegram_asr_material.mjs\"\
+        \ | sha256sum -c -\nprintf '%s  %s\\n' d8edfb6a6dd975a7e5646229354fa65976f3a037b26f35d6fd888b792b2a667b \"$SNAP/pcg_telegram_asr_material.test.mjs\"\
+        \ | sha256sum -c -\nprintf '%s  %s\\n' bcd4686901227ec8c83c0ba80f9a2e5d5775d09c04a56d56ab842e805c8a3c08 \"$SNAP/activate-r139-web-only.sh\"\
+        \ | sha256sum -c -\nprintf '%s  %s\\n' ab3f4ad57ad66547af8458d846d25c840dda69fd53df177d313f85f0c1e1c9fc \"$SNAP/manifest.json\"\
+        \ | sha256sum -c -\ncp -a \"$BASE\" \"$RUNNER_TEMP/r139\"\npatch --batch --fuzz=0 -p1 -d \"$RUNNER_TEMP/r139\" < \"$PRIOR\"\n\
+        printf '%s  %s\\n' fdd542629f3411ad1f68721f89f06ca4754cbf2908d809c239d1fed2712b320e \"$RUNNER_TEMP/r139/pcg_web_semantic_ops.mjs\"\
+        \ | sha256sum -c -\npatch --batch --fuzz=0 -p1 -d \"$RUNNER_TEMP/r139\" < \"$SNAP/pcg-r139-telegram-asr.patch\"\ncp \"$SNAP/pcg_web_telegram_asr_material.mjs\"\
+        \ \"$SNAP/pcg_telegram_asr_material.test.mjs\" \"$SNAP/activate-r139-web-only.sh\" \"$SNAP/manifest.json\" \"$RUNNER_TEMP/r139/\"\
+        \nprintf '%s  %s\\n' 9245aa1a0608157c18897d0577ed35ada6972816a4ea446c2b10100fffa010a1 \"$RUNNER_TEMP/r139/pcg_web_semantic_ops.mjs\"\
+        \ | sha256sum -c -\npython3 - <<'PY'\nimport os,json,hashlib,pathlib,re\np=pathlib.Path(os.environ[\"RUNNER_TEMP\"])/\"r139\"\
+        \nm=json.loads((p/\"manifest.json\").read_text())\nassert m[\"schema\"]==\"capability-fabric.deploy.v1\"\nassert m[\"sequence\"\
+        ]==139 and m[\"release_id\"]==\"pcg-web-stage6-soniox-telegram-download-r139\"\nfor f,h in m[\"files\"].items():\n    assert\
+        \ hashlib.sha256((p/f).read_bytes()).hexdigest()==h,f\ns=(p/\"pcg_web_semantic_ops.mjs\").read_text()\nassert \"acquireTelegramAudioMaterialDirect\"\
+        \ in s\nassert \"webKPrepareLargeAttachmentDownload\" in s\nassert \"length:Math.min(2,files.length)\" in s\nassert 'cp /release/pcg_web_*.mjs\
+        \ /tmp/pcg-web-app/' in (p/\"compose.yaml\").read_text()\nfor module in re.findall(r'from\\s+\"(\\./[^\"]+)\"',s):\n    assert\
+        \ module.startswith(\"./pcg_web_\"),(\"WEB_CONTAINER_IMPORT_OUTSIDE_GLOB\",module)\n    assert (p/module[2:]).is_file(),(\"\
+        WEB_CONTAINER_IMPORT_MISSING\",module)\nprint(\"PCG_R139_INTEGRITY_AND_SOURCE_PASS\")\nPY\nnode --check \"$RUNNER_TEMP/r139/pcg_web_semantic_ops.mjs\"\
+        \nnode --check \"$RUNNER_TEMP/r139/pcg_web_telegram_asr_material.mjs\"\nnode --test \"$RUNNER_TEMP/r139/pcg_telegram_asr_material.test.mjs\"\
+        \ \"$RUNNER_TEMP/r139/pcg_soniox_7sec.test.mjs\"\nbash -n \"$SNAP/activate-r139-web-only.sh\"\ntar -czf \"$RUNNER_TEMP/pcg-r139-release.tgz\"\
+        \ -C \"$RUNNER_TEMP/r139\" ."
+    - name: Publish PCG web only; preserve Soniox/Telegram/CF container identities
+      shell: bash
+      run: 'set -euo pipefail
+
+        [[ -n "$VPS_SSH_KEY" && -n "$VPS_HOST" && -n "$VPS_SSH_USER" && -n "$VPS_HOST_KEY" ]] || exit 20
+
+        port="$VPS_PORT";test -n "$port" || port=22
+
+        case "$port" in *[!0-9]*) exit 21 ;; esac
+
+        dir="$RUNNER_TEMP/ssh"
+
+        install -d -m 0700 "$dir"
+
+        printf ''%s\n'' "$VPS_SSH_KEY" > "$dir/key"
+
+        chmod 0600 "$dir/key"
+
+        read -r key_type key_data extra < <(printf ''%s\n'' "$VPS_HOST_KEY" | tr -d ''\r'')
+
+        [[ "$key_type" == ssh-ed25519 && -n "$key_data" && -z "$extra" ]] || exit 22
+
+        printf ''%s %s %s\n'' "$VPS_HOST" "$key_type" "$key_data" > "$dir/known_hosts"
+
+        printf ''[%s]:%s %s %s\n'' "$VPS_HOST" "$port" "$key_type" "$key_data" >> "$dir/known_hosts"
+
+        transport=(-i "$dir/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$dir/known_hosts")
+
+        scp "${transport[@]}" -P "$port" "$RUNNER_TEMP/pcg-r139-release.tgz" "$VPS_SSH_USER@$VPS_HOST:/tmp/pcg-r139-release.tgz"
+
+        scp "${transport[@]}" -P "$port" "$SNAP/activate-r139-web-only.sh" "$VPS_SSH_USER@$VPS_HOST:/tmp/pcg-r139-activate.sh"
+
+        ssh "${transport[@]}" -p "$port" "$VPS_SSH_USER@$VPS_HOST" ''set -e; test "$(id -u)" = 0; bash /tmp/pcg-r139-activate.sh'' </dev/null
+
+        echo "PCG_R139_WEB_ONLY_DEPLOY_COMPLETED"'
+'on':
+  push:
+    branches:
+    - main
+    paths:
+    - server-bootstrap/control/pcg-telegram-asr-r139/*.request

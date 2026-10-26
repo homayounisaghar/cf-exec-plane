@@ -1,0 +1,57 @@
+--- a/pcg_web_semantic_ops.mjs
++++ b/pcg_web_semantic_ops.mjs
+@@ -6,6 +6,7 @@
+ import { convertMaterialAudioToOggOpus } from "./pcg_web_audio_transform_client.mjs";
+ import { getLocalAsrJob, startLocalAsrJob } from "./pcg_web_asr_client.mjs";
+ import { getPerplexityAsrJob, startPerplexityAsrJob, startPerplexityAsrBatch, getPerplexityAsrBatch } from "./pcg_web_perplexity_asr_client.mjs";
++import { acquireTelegramAudioMaterialDirect } from "./pcg_web_telegram_asr_material.mjs";
+ import {
+   locateVisibleConversationRowByHandle,
+   protectedConversationTitle,
+@@ -1738,6 +1739,19 @@
+ 
+   async function acquireAudioMaterialForAsr(messageRef, attachment) {
+     const page = pageNow();
++    // The generic Telegram attachment download is already a proven,
++    // provider-state-reconciled source for ordinary voice notes. Reuse it for
++    // private ASR material acquisition. Keep the old streamed path only for
++    // audio above the direct-download byte bound.
++    try {
++      return await acquireTelegramAudioMaterialDirect({
++        page, messageRef, attachment,
++        downloadAttachment: webKDownloadAttachment,
++        materialPlane: materialSendNow(),
++      });
++    } catch (error) {
++      if (error?.code !== "WEBK_DOWNLOAD_SIZE_OUT_OF_BOUNDS") throw error;
++    }
+     const prepared = await webKPrepareLargeAttachmentDownload(
+       page,
+       messageRef.providerRef,
+@@ -2312,7 +2326,7 @@
+           if(await detectPhase()!=="READY")
+             return teachingEnvelope(operation,"SESSION_NOT_READY","Telegram source session not ready.");
+         }
+-        const admitted=await Promise.all(files.map(async(f,i)=>{
++        const admitOne=async(f,i)=>{
+           const clientId=f?.client_id??("file-"+(i+1));
+           const speedFactor=f?.speed_factor??4;
+           const parallelism=f?.parallelism??514;
+@@ -2340,6 +2354,17 @@
+             filename:material.filename,sizeBytes:material.size_bytes,
+             sha256Hex:material.sha256_hex,speedFactor,parallelism,
+           };
++        };
++        // Bound material downloads on the same Telegram WebK page to avoid
++        // browser/provider request contention; Soniox file jobs are still
++        // started together in the ONE downstream batch operation.
++        const admitted=new Array(files.length);
++        let nextFileIndex=0;
++        await Promise.all(Array.from({length:Math.min(2,files.length)},async()=>{
++          while(nextFileIndex<files.length){
++            const index=nextFileIndex++;
++            admitted[index]=await admitOne(files[index],index);
++          }
+         }));
+         result=await startPerplexityAsrBatch({files:admitted});
+       }
