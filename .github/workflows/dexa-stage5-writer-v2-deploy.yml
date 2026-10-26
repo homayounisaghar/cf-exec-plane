@@ -1,0 +1,110 @@
+name: Dexa Stage5 Source Insufficiency V2
+on:
+  push:
+    branches: [main]
+    paths:
+      - server-bootstrap/control/dexa-stage5-writer-v2/*.request
+permissions:
+  contents: read
+concurrency:
+  group: dexa-stage5-writer-v2-controlled-release
+  cancel-in-progress: false
+jobs:
+  deploy:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Verify exactly one immutable request and pinned secret-free source
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "$GITHUB_SHA^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || { echo SINGLE_REQUEST_COMMIT_REQUIRED >&2; exit 20; }
+          IFS=$'\t' read -r status req <<< "${changes[0]}"
+          [[ "$status" == A && "$req" == server-bootstrap/control/dexa-stage5-writer-v2/*.request ]] || exit 21
+          request_id="$(basename "$req" .request)"
+          id="$(awk -F= '$1=="request_id"{print $2}' "$req" | tr -d '[:space:]')"
+          commit="$(awk -F= '$1=="candidate_commit"{print $2}' "$req" | tr -d '[:space:]')"
+          old="$(awk -F= '$1=="expected_old_server_sha256"{print $2}' "$req" | tr -d '[:space:]')"
+          release="$(awk -F= '$1=="expected_release"{print $2}' "$req" | tr -d '[:space:]')"
+          manifest_hash="$(awk -F= '$1=="manifest_sha256"{print $2}' "$req" | tr -d '[:space:]')"
+          [[ "$id" == "$request_id" && "$id" =~ ^dexa-stage5-writer-20261027-[a-z0-9-]+$ ]] || exit 22
+          [[ "$commit" =~ ^[0-9a-f]{40}$ && "$old" =~ ^[0-9a-f]{64}$ && "$manifest_hash" =~ ^[0-9a-f]{64}$ ]] || exit 23
+          [[ "$release" == dexa-stage5-writer-20261027-v2 ]] || exit 24
+          snap="qualification/dexa-stage5-writer-v2/$commit"
+          [[ -d "$snap" ]] || exit 25
+          printf '%s  %s\n' "$manifest_hash" "$snap/manifest.json" | sha256sum -c -
+          export SNAP="$snap" COMMIT="$commit" OLD="$old" RELEASE="$release"
+          python3 - <<'PY'
+          import hashlib,json,os
+          from pathlib import Path
+          root=Path(os.environ["SNAP"])
+          m=json.loads((root/"manifest.json").read_text())
+          assert m["schema"]=="dexa.stage5.writer-insufficient.secret-free-release.v2"
+          assert m["source_repo"]=="homayounisaghar/capability-fabric"
+          assert m["source_ref"]=="work/dexa-autonomous-loop-20261020"
+          assert m["source_commit"]==os.environ["COMMIT"]
+          assert m["release_id"]==os.environ["RELEASE"]
+          names={"files/dexa_text_writer_v1.mjs"}
+          names.update(["baseline.sha256","proposed.sha256",
+            "deploy-stage5-writer-v2.sh","activate-stage5-writer-v2.sh","qualification.json"])
+          assert set(m["files"])==names, "SNAPSHOT_CONTENT_ALLOWLIST_MISMATCH"
+          for f,h in m["files"].items():
+            p=root/f
+            assert p.is_file() and not p.is_symlink(),f
+            assert hashlib.sha256(p.read_bytes()).hexdigest()==h,f
+          assert os.environ["OLD"] in (root/"baseline.sha256").read_text()
+          PY
+          (cd "$snap/files" && sha256sum -c ../proposed.sha256)
+          for f in "$snap/files/"*.mjs; do node --check "$f"; done
+          sh -n "$snap/deploy-stage5-writer-v2.sh" "$snap/activate-stage5-writer-v2.sh"
+          {
+            echo "REQUEST_ID=$id"
+            echo "SNAPSHOT=$snap"
+          } >> "$GITHUB_ENV"
+      - name: Prepare pinned SSH, upload only the verified release
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -n "$VPS_HOST" && -n "$VPS_SSH_USER" && -n "$VPS_SSH_KEY" && -n "$VPS_HOST_KEY" ]] || exit 30
+          [[ "$VPS_SSH_USER" == cfserver || "$VPS_SSH_USER" == root ]] || exit 31
+          port="${VPS_PORT:-22}"
+          [[ "$port" =~ ^[0-9]+$ ]] || exit 32
+          dir="$RUNNER_TEMP/dexa-stage5-writer-v2-ssh"
+          install -d -m 0700 "$dir"
+          printf '%s\n' "$VPS_SSH_KEY" > "$dir/key"
+          chmod 0600 "$dir/key"
+          read -r algorithm material extra <<< "${VPS_HOST_KEY//$'\r'/}"
+          [[ "$algorithm" == ssh-ed25519 && -n "$material" && -z "${extra:-}" ]] || exit 33
+          printf '%s %s %s\n' "$VPS_HOST" "$algorithm" "$material" > "$dir/known_hosts"
+          printf '[%s]:%s %s %s\n' "$VPS_HOST" "$port" "$algorithm" "$material" >> "$dir/known_hosts"
+          chmod 0600 "$dir/known_hosts"
+          echo "SSH_DIR=$dir" >> "$GITHUB_ENV"
+          echo "SSH_PORT=$port" >> "$GITHUB_ENV"
+      - name: Trigger guarded service restart with saved rollback
+        shell: bash
+        run: |
+          set -euo pipefail
+          tar -C "$SNAPSHOT" -czf "$RUNNER_TEMP/$REQUEST_ID.tgz" .
+          sshopts=(-i "$SSH_DIR/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$SSH_DIR/known_hosts")
+          scp "${sshopts[@]}" -P "$SSH_PORT" "$RUNNER_TEMP/$REQUEST_ID.tgz" "${VPS_SSH_USER}@${VPS_HOST}:/tmp/$REQUEST_ID.tgz"
+          scp "${sshopts[@]}" -P "$SSH_PORT" "$SNAPSHOT/activate-stage5-writer-v2.sh" "${VPS_SSH_USER}@${VPS_HOST}:/tmp/$REQUEST_ID-activate.sh"
+          ssh "${sshopts[@]}" -p "$SSH_PORT" "${VPS_SSH_USER}@${VPS_HOST}" "sh /tmp/$REQUEST_ID-activate.sh $REQUEST_ID" </dev/null
+      - name: Verify live service, not workflow metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          sshopts=(-i "$SSH_DIR/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$SSH_DIR/known_hosts")
+          ssh "${sshopts[@]}" -p "$SSH_PORT" "${VPS_SSH_USER}@${VPS_HOST}" \
+            "curl -fsS --max-time 6 http://127.0.0.1:9471/healthz | node -e 'let s=\"\";process.stdin.on(\"data\",x=>s+=x).on(\"end\",()=>{const d=JSON.parse(s);if(d.ok!==true||d.missionControl?.schema!==\"dexa.mission-control.v1\"||d.deploymentDrain?.active===true||!Number.isSafeInteger(d.storedMissions)||d.activeMissions!==0)process.exit(4);console.log(\"DEXA_STAGE5_WRITER_V2_LIVE_VERIFIED missions=\"+d.storedMissions)})'" </dev/null

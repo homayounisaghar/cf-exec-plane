@@ -1,0 +1,20 @@
+{
+  "owner_acceptance": "PENDING",
+  "prior_release": "dexa-stage5-20261027-v1",
+  "real_selected_qwen_no_url_current_weather": {
+    "invented_current_number": false,
+    "no_external_writes": true,
+    "reason": "DX001_WRITER_INSUFFICIENT",
+    "state": "OUTCOME_UNKNOWN",
+    "web_search_read_verified": true,
+    "writer_receipt_verified": true
+  },
+  "regression": {
+    "failed": 0,
+    "passed": 367,
+    "skipped": 1,
+    "total": 368
+  },
+  "restart_scope": "dexa-main.service",
+  "schema": "dexa.stage5.writer-insufficient-qualification.v2"
+}

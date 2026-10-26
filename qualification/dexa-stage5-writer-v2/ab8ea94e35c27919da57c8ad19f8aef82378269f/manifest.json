@@ -1,0 +1,15 @@
+{
+  "files": {
+    "activate-stage5-writer-v2.sh": "d200facdb548973c416370cb9f613c7e801b234135e59ff47419cc03fe678012",
+    "baseline.sha256": "639b961d4fe6bd49049916a446301b6bc4f30a15fe2043b54a3fd476658078fd",
+    "deploy-stage5-writer-v2.sh": "286c7c464e9f19a3af23c7433538e5945b2f71bcbcb6ea576ff304192a67ddbd",
+    "files/dexa_text_writer_v1.mjs": "dadf3136c9d4deeb2c3854c9b7504c73d5ffb2fbf685603d050043e27e4f7805",
+    "proposed.sha256": "63d3e68e4bb2c38527b8f3478efaf198e12702ce20cc67ce95d721f714b96d1b",
+    "qualification.json": "fb7c1dae774e327092dc79558254c9933bae944ef7e2c25715c07cb19e23b1cc"
+  },
+  "release_id": "dexa-stage5-writer-20261027-v2",
+  "schema": "dexa.stage5.writer-insufficient.secret-free-release.v2",
+  "source_commit": "ab8ea94e35c27919da57c8ad19f8aef82378269f",
+  "source_ref": "work/dexa-autonomous-loop-20261020",
+  "source_repo": "homayounisaghar/capability-fabric"
+}
