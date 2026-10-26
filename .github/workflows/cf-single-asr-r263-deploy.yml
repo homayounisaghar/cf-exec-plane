@@ -27,11 +27,12 @@ jobs:
 
         change="$(git diff --name-status HEAD^ HEAD)"
 
-        [[ "$change" == $''A\tserver-bootstrap/control/cf-asr-unified/cf-single-asr-r263-20261026-retry1.request'' ]] || exit 10
+        [[ "$change" == $''A\tserver-bootstrap/control/cf-asr-unified/cf-single-asr-r263-20261026-retry2.request'' ]] || exit
+        10
 
-        file=server-bootstrap/control/cf-asr-unified/cf-single-asr-r263-20261026-retry1.request
+        file=server-bootstrap/control/cf-asr-unified/cf-single-asr-r263-20261026-retry2.request
 
-        grep -Fxq "request_id=cf-single-asr-r263-20261026-retry1" "$file"
+        grep -Fxq "request_id=cf-single-asr-r263-20261026-retry2" "$file"
 
         grep -Fxq "candidate_commit=e9779d35e1f34211817acd3d3441f44f5b9c80bf" "$file"
 
@@ -164,8 +165,9 @@ jobs:
 
         scp "${transport[@]}" -P "$port" "$SNAP/activate-cf-r263.sh" "$VPS_SSH_USER@$VPS_HOST:/tmp/activate-cf-r263.sh"
 
-        ssh "${transport[@]}" -p "$port" "$VPS_SSH_USER@$VPS_HOST" ''set -e; test "$(id -u)" = 0; bash /tmp/activate-cf-r263.sh''
-        </dev/null
+        ssh "${transport[@]}" -p "$port" "$VPS_SSH_USER@$VPS_HOST" ''set -e; test "$(id -u)" = 0; set +e; bash /tmp/activate-cf-r263.sh
+        > /tmp/cf-r263-deploy-diagnostic.log 2>&1; rc=$?; set -e; chgrp 1000 /tmp/cf-r263-deploy-diagnostic.log; chmod 0640
+        /tmp/cf-r263-deploy-diagnostic.log; exit "$rc"'' </dev/null
 
         echo "CF_R263_SCOPED_DEPLOY_COMPLETED"'
 'on':
