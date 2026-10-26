@@ -1,0 +1,5 @@
+request_id=dexa-stage4-20261026-v1
+candidate_commit=e8396dd05bfb441f7b36cb94b710087ba4a4a226
+expected_old_server_sha256=e73fc648c8fa08f379e131a5e70157473eeb75f7f5775e1483d949bcef0e02c3
+expected_release=dexa-stage4-20261026-v1
+manifest_sha256=0adbc2bd0e7b7ab1e7ee07ed9524b66b8c9f21d71c16ef41d33f9d461ec748c6
