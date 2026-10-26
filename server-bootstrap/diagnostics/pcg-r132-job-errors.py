@@ -27,3 +27,12 @@ for args in [
   print('PCG_DIAG_CONTAINER '+r.stdout.strip()[:700]+' STATUS='+str(r.returncode))
  except Exception as e:
   print('PCG_DIAG_CONTAINER_ERROR '+type(e).__name__)
+
+for args in [
+ ['docker','exec','capability-fabric-pcg-perplexity-asr','sh','-lc','printf "PLAYWRIGHT_FFMPEG="; find /ms-playwright -maxdepth 3 -type f -iname "*ffmpeg*" 2>/dev/null | head -n 4; printf "CGROUP_MEMORY_EVENTS="; cat /sys/fs/cgroup/memory.events 2>/dev/null | tr "\\n" " "; echo'],
+]:
+ try:
+  p=subprocess.run(args,check=False,stdout=subprocess.PIPE,stderr=subprocess.DEVNULL,text=True,timeout=12)
+  print('PCG_DIAG_DECODER '+p.stdout.strip()[:1000]+' STATUS='+str(p.returncode))
+ except Exception as e:
+  print('PCG_DIAG_DECODER_ERROR '+type(e).__name__)
