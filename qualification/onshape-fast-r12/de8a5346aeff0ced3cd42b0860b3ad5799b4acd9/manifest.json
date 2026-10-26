@@ -28,7 +28,7 @@
     "paa-bale-preload.mjs": "b34889a00ca610b57534a0c89df87ae91080e3992ba77f8fdfa5fb8c4a2101c7",
     "paa-search-preload.mjs": "36142a044029a51b18a03608f881b29ce213c4952341ad04c66bc047287198b0",
     "package.json": "72b568b2db1bd490f9cc0ce8788ff739dea81a59bb0a1aa28c379e8632e1a1cb",
-    "release-closure.json": "65eb3d9e4611443f3f30f16546c81de091a37ac62fe0c59e2d085add0e620891",
+    "release-closure.json": "3132575d5f7749b3c5eebb99d968cb6bed6887bcd41c214c8938dee074494203",
     "server.js": "4db4142ce31d0af224c0d426780f1b9f99ea17b16ff5592d0ae2faabe6e5c80f",
     "telegram-ingress.mjs": "d952dd67099ada04a1a0a33d9b44e8c94d3636333ebac29a093346427e97c840",
     "wechat-ingress.mjs": "bf2c4e8d579b6885e26cf332a9745ccf7fc3a0c9eae19bd755746d37d9bdb5e3",
