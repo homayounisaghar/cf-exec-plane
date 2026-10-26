@@ -1,0 +1,176 @@
+name: CF Single Speech-to-Text Tool r263
+permissions:
+  contents: read
+concurrency:
+  group: cf-single-asr-r263
+  cancel-in-progress: false
+jobs:
+  deploy:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+      SNAP: qualification/cf-asr-unified/e9779d35e1f34211817acd3d3441f44f5b9c80bf
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 2
+        persist-credentials: false
+    - name: Validate single immutable CF r263 deploy request
+      shell: bash
+      run: 'set -euo pipefail
+
+        change="$(git diff --name-status HEAD^ HEAD)"
+
+        [[ "$change" == $''A\tserver-bootstrap/control/cf-asr-unified/cf-single-asr-r263-20261026.request'' ]] || exit 10
+
+        file=server-bootstrap/control/cf-asr-unified/cf-single-asr-r263-20261026.request
+
+        grep -Fxq "request_id=cf-single-asr-r263-20261026" "$file"
+
+        grep -Fxq "candidate_commit=e9779d35e1f34211817acd3d3441f44f5b9c80bf" "$file"
+
+        grep -Fxq "expected_sequence=263" "$file"
+
+        grep -Fxq "expected_release=onshape-vps-fast-r100-direct-orbit1-paa-storage-r263-single-asr-tool" "$file"
+
+        [[ "$(wc -l < "$file")" == 4 ]] || exit 11
+
+        '
+    - name: Reconstruct qualified r263 from pinned public source
+      shell: bash
+      run: 'set -euo pipefail
+
+        BASE=qualification/onshape-fast-r12/a9f36e69dfb380fbde796a8d9a2eab831152403e
+
+        BRIDGE=qualification/pcg-telegram-bridge/629875b4b6f1a5f7bdc17011d02834d13dfb8d51/cf-r262.patch
+
+        printf ''%s  %s\n'' 63512175947dfbcf51e7ecc00986d3dada797026f6749d751239e82c8a6c8c83 "$BRIDGE" | sha256sum -c -
+
+        printf ''%s  %s\n'' 3cd29b27e18a04e49aeae6f837ba1b7872409cee7bf6254d68ae91a69984e019 "$SNAP/cf-r263-unified.patch"
+        | sha256sum -c -
+
+        printf ''%s  %s\n'' c1c10a8d3b3083c53b3b1c31f10423662e5b1676afa2800ff65d0fb597701e9a "$SNAP/activate-cf-r263.sh" |
+        sha256sum -c -
+
+        cp -a "$BASE" "$RUNNER_TEMP/r263"
+
+        patch --batch --fuzz=0 -p1 -d "$RUNNER_TEMP/r263" < "$BRIDGE"
+
+        printf ''%s  %s\n'' 4fc289ee9b19d45fdd269dec42f019c39fe84eeac869951be838282366ed7aa9 "$RUNNER_TEMP/r263/telegram-ingress.mjs"
+        | sha256sum -c -
+
+        patch --batch --fuzz=0 -p1 -d "$RUNNER_TEMP/r263" < "$SNAP/cf-r263-unified.patch"
+
+        printf ''%s  %s\n'' f218536dbedd2163cdb54c8a0523ccd16d87a7dbbf42060dad46bc52ffed7134 "$RUNNER_TEMP/r263/telegram-ingress.mjs"
+        | sha256sum -c -
+
+        python3 - <<''PY''
+
+        import json,hashlib,os,pathlib
+
+        p=pathlib.Path(os.environ["RUNNER_TEMP"])/"r263"
+
+        m=json.loads((p/"manifest.json").read_text())
+
+        assert m["sequence"]==261
+
+        m["sequence"]=263
+
+        m["release_id"]="onshape-vps-fast-r100-direct-orbit1-paa-storage-r263-single-asr-tool"
+
+        m["files"]["telegram-ingress.mjs"]=hashlib.sha256((p/"telegram-ingress.mjs").read_bytes()).hexdigest()
+
+        f=p/"release-closure.json"
+
+        c=json.loads(f.read_text());c["build_id"]=m["release_id"]
+
+        f.write_text(json.dumps(c,indent=2)+"\n")
+
+        m["files"]["release-closure.json"]=hashlib.sha256(f.read_bytes()).hexdigest()
+
+        (p/"manifest.json").write_text(json.dumps(m,indent=2)+"\n")
+
+        assert set(m["files"])==set(c["files"])
+
+        for k,h in m["files"].items():assert hashlib.sha256((p/k).read_bytes()).hexdigest()==h,k
+
+        s=(p/"telegram-ingress.mjs").read_text()
+
+        assert s.count(''server.registerTool("audio_transcribe", {'')==1
+
+        assert ''server.registerTool("audio_transcribe_batch", {'' not in s
+
+        assert ''server.registerTool("telegram_transcribe", {'' not in s
+
+        tool=s[s.index(''server.registerTool("audio_transcribe", {''):s.index(''server.registerTool("telegram_screenshot",
+        {'')]
+
+        assert ''.min(1).max(20)'' in tool and ''telegram_message_handle'' in tool
+
+        assert ''speed_factor'' not in tool and ''parallelism_per_file'' not in tool
+
+        a=s.index(''server.registerTool("telegram_reaction_get", {'')
+
+        reaction=s[a:s.index(''}, async (input) => {'',a)]
+
+        assert ''speed_factor'' not in reaction
+
+        print("CF_R263_ONE_ASR_TOOL_CONTRACT_PASS")
+
+        PY
+
+        node --check "$RUNNER_TEMP/r263/telegram-ingress.mjs"
+
+        node --test "$RUNNER_TEMP/r263/owner-auth.test.mjs"
+
+        bash -n "$SNAP/activate-cf-r263.sh"
+
+        tar -czf "$RUNNER_TEMP/cf-r263-release.tgz" -C "$RUNNER_TEMP/r263" .'
+    - name: Publish only CF backend with rollback and gateway preservation
+      shell: bash
+      run: 'set -euo pipefail
+
+        [[ -n "$VPS_SSH_KEY" && -n "$VPS_HOST" && -n "$VPS_SSH_USER" && -n "$VPS_HOST_KEY" ]] || exit 20
+
+        port="$VPS_PORT";test -n "$port" || port=22
+
+        case "$port" in *[!0-9]*) exit 21 ;; esac
+
+        dir="$RUNNER_TEMP/ssh"
+
+        install -d -m 0700 "$dir"
+
+        printf ''%s\n'' "$VPS_SSH_KEY" > "$dir/key"
+
+        chmod 0600 "$dir/key"
+
+        read -r key_type key_data extra < <(printf ''%s\n'' "$VPS_HOST_KEY" | tr -d ''\r'')
+
+        [[ "$key_type" == ssh-ed25519 && -n "$key_data" && -z "$extra" ]] || exit 22
+
+        printf ''%s %s %s\n'' "$VPS_HOST" "$key_type" "$key_data" > "$dir/known_hosts"
+
+        printf ''[%s]:%s %s %s\n'' "$VPS_HOST" "$port" "$key_type" "$key_data" >> "$dir/known_hosts"
+
+        transport=(-i "$dir/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$dir/known_hosts")
+
+        scp "${transport[@]}" -P "$port" "$RUNNER_TEMP/cf-r263-release.tgz" "$VPS_SSH_USER@$VPS_HOST:/tmp/cf-r263-release.tgz"
+
+        scp "${transport[@]}" -P "$port" "$SNAP/activate-cf-r263.sh" "$VPS_SSH_USER@$VPS_HOST:/tmp/activate-cf-r263.sh"
+
+        ssh "${transport[@]}" -p "$port" "$VPS_SSH_USER@$VPS_HOST" ''set -e; test "$(id -u)" = 0; bash /tmp/activate-cf-r263.sh''
+        </dev/null
+
+        echo "CF_R263_SCOPED_DEPLOY_COMPLETED"'
+'on':
+  push:
+    branches:
+    - main
+    paths:
+    - server-bootstrap/control/cf-asr-unified/*.request

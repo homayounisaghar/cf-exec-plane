@@ -1,0 +1,255 @@
+--- a/telegram-ingress.mjs
++++ b/telegram-ingress.mjs
+@@ -1448,30 +1448,6 @@
+     };
+   }
+ 
+-  async function transcribeMaterialUpload(args = {}) {
+-    const upload = requireMaterialUpload();
+-    const ready = await upload.ready(args.upload_id);
+-    if (!Number.isSafeInteger(ready.size_bytes) || ready.size_bytes < 1 || ready.size_bytes > 64 * 1024 * 1024) {
+-      throw codedError("PERPLEXITY_ASR_SOURCE_SIZE_INVALID", "Uploaded audio for transcription must be at most 64 MiB.");
+-    }
+-    const speedFactor = args.speed_factor ?? 4;
+-    if (![1, 2, 4, 8, 16].includes(speedFactor)) {
+-      throw codedError("PERPLEXITY_ASR_SPEED_FACTOR_UNSUPPORTED", "speed_factor must be one of 1, 2, 4, 8, or 16.");
+-    }
+-    return await invokeTelegramSemanticOperation({
+-      operation: "communication.audio.transcribe",
+-      args: {
+-        material_file_handle: ready.material_file_handle,
+-        filename: ready.filename,
+-        media_type: ready.media_type,
+-        size_bytes: ready.size_bytes,
+-        sha256_hex: ready.sha256_hex,
+-        language: "fa",
+-        speed_factor: speedFactor,
+-      },
+-    }, { socketPath, timeoutMs: 90_000 });
+-  }
+-
+   async function stageChatUploadedFile(file, {
+     maxBytes = 64 * 1024 * 1024,
+     timeoutMs = 60_000,
+@@ -1843,7 +1819,6 @@
+       message_handle: z.string().max(80).optional(),
+       conversation: z.string().max(256).optional(),
+       latest_message: z.boolean().optional(),
+-      speed_factor: z.union([z.literal(1), z.literal(2), z.literal(4), z.literal(8), z.literal(16)]).optional(),
+     },
+     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
+   }, async (input) => {
+@@ -2228,50 +2203,6 @@
+     }
+   });
+ 
+-  server.registerTool("telegram_transcribe", {
+-    title: "Transcribe Telegram voice or audio",
+-    description: "Immediate read-only hot path for converting an exact Telegram voice note, audio message, or round video to text. The default path uses the live high-accuracy anonymous Perplexity/Soniox whole-message transcription route with 4x stream pacing. If the user explicitly requests 1x, 2x, 4x, 8x, or 16x, pass that value as speed_factor; otherwise omit it and use 4x. Prefer a known tgmsg: message_handle. Use telegram_attachment_get separately only when the user also wants the playable/downloadable media file.",
+-    inputSchema: {
+-      message_handle: z.string().max(80).optional(),
+-      conversation: z.string().max(256).optional(),
+-      latest_message: z.boolean().optional(),
+-      speed_factor: z.union([z.literal(1), z.literal(2), z.literal(4), z.literal(8), z.literal(16)]).optional(),
+-    },
+-    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
+-  }, async (input) => {
+-    try {
+-      const message_handle = await resolveTelegramMessageRef(input, { socketPath });
+-      const result = await invokeTelegramSemanticOperation({
+-        operation: "communication.message.transcribe",
+-        args: { message_handle, mode: "perplexity", language: "fa", speed_factor: input.speed_factor ?? 4 },
+-      }, { socketPath });
+-      const protectedData = result?.protected_provider_data || {};
+-      const payload = {
+-        state: result?.state || "FAILED",
+-        message_handle,
+-        media_kind: result?.observation?.media_kind ?? null,
+-        transcription_mode: result?.observation?.transcription_mode ?? null,
+-        transcription_pending: result?.observation?.transcription_pending === true,
+-        transcript_available: result?.observation?.transcript_available === true,
+-        transcript: typeof protectedData.transcript === "string" ? protectedData.transcript : "",
+-        asr_engine: result?.observation?.asr_engine ?? protectedData?.asr_engine ?? null,
+-        asr_model: result?.observation?.asr_model ?? protectedData?.asr_model ?? null,
+-        whole_message: result?.observation?.whole_message === true || protectedData?.whole_message === true,
+-        stream_speed_factor: Number.isInteger(result?.observation?.stream_speed_factor)
+-          ? result.observation.stream_speed_factor
+-          : (Number.isInteger(protectedData?.stream_speed_factor) ? protectedData.stream_speed_factor : (input.speed_factor ?? 4)),
+-        asr_cache_hit: result?.observation?.asr_cache_hit === true,
+-        asr_inference_ms: Number.isFinite(result?.observation?.asr_inference_ms) ? result.observation.asr_inference_ms : null,
+-        elapsed_ms: Number.isFinite(result?.observation?.elapsed_ms) ? result.observation.elapsed_ms : null,
+-        error: result?.error || null,
+-      };
+-      return { structuredContent: payload, content: [{ type: "text", text: JSON.stringify(payload, null, 1) }], isError: result?.state === "FAILED" || Boolean(result?.error) };
+-    } catch (error) {
+-      return telegramDirectToolFailure(error);
+-    }
+-  });
+-
+-
+   server.registerTool("voice_convert", {
+     title: "Convert voice to the owner's trained voice",
+     description: "Self-hosted voice-to-voice conversion through the fixed owner RVC model on the personal VPS. action=status checks the pinned host worker without audio. action=convert accepts one ChatGPT audio attachment and returns converted audio. This is not text-to-speech. Inference concurrency is fixed at one.",
+@@ -2354,7 +2285,7 @@
+ 
+   server.registerTool("audio_upload", {
+     title: "Stage audio for transcription",
+-    description: "Reliable private staging path for owner-supplied audio when the ChatGPT native file handoff is unavailable. This never sends the file to Telegram. Use create, then one or more append calls with exact offsets, then pass the completed upload_id to audio_transcribe. Use status to resume safely and delete to clean up.",
++    description: "Reliable private staging path for owner-supplied audio when the ChatGPT native file handoff is unavailable. This never sends the file to Telegram. Use create, append with exact offsets and pass the completed upload_id inside the files array of audio_transcribe. Use status to resume or delete to clean up.",
+     inputSchema: {
+       action: z.enum(["create", "append", "status", "delete"]),
+       upload_id: z.string().regex(/^[0-9a-f]{64}$/).optional(),
+@@ -2392,92 +2323,14 @@
+     }
+   });
+ 
+-  server.registerTool("audio_transcribe", {
+-    title: "Transcribe uploaded audio",
+-    description: "Transcribe owner-supplied audio through the same anonymous Perplexity/Soniox whole-message engine as telegram_transcribe, without sending the file to Telegram. Preferred path: pass the ChatGPT attachment in file; the connector accepts the host-supplied native file reference in either string or object form. Durable fallback: stage bytes privately with audio_upload and pass the completed upload_id here. Default stream pacing is 4x; only pass 1x, 2x, 4x, 8x, or 16x when the user explicitly asks for that speed.",
+-    inputSchema: {
+-      file: z.union([
+-        z.string().min(1),
+-        z.object({
+-          download_url: z.string().optional(),
+-          file_id: z.string().optional(),
+-          mime_type: z.string().optional(),
+-          file_name: z.string().optional(),
+-          url: z.string().optional(),
+-        }).passthrough(),
+-      ]).optional(),
+-      upload_id: z.string().regex(/^[0-9a-f]{64}$/).optional(),
+-      speed_factor: z.union([z.literal(1), z.literal(2), z.literal(4), z.literal(8), z.literal(16)]).optional(),
+-    },
+-    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
+-    _meta: { "openai/fileParams": ["file"] },
+-  }, async (input) => {
+-    let transientUploadId = null;
+-    try {
+-      if (input.file && input.upload_id) {
+-        throw codedError("AUDIO_TRANSCRIBE_SOURCE_AMBIGUOUS", "Pass either file or upload_id, not both.");
+-      }
+-      let uploadId = input.upload_id || null;
+-      let chatFileId = null;
+-      if (input.file) {
+-        const staged = await stageChatUploadedFile(input.file);
+-        transientUploadId = staged.upload_id;
+-        uploadId = staged.upload_id;
+-        chatFileId = staged.file_id;
+-      }
+-      if (!uploadId) {
+-        throw codedError("AUDIO_TRANSCRIBE_SOURCE_REQUIRED", "Pass one ChatGPT file or one completed upload_id.");
+-      }
+-
+-      const result = await transcribeMaterialUpload({ upload_id: uploadId, speed_factor: input.speed_factor });
+-      const protectedData = result?.protected_provider_data || {};
+-      const payload = {
+-        state: result?.state || "FAILED",
+-        upload_id: uploadId,
+-        chat_file_id: chatFileId,
+-        transcription_mode: result?.observation?.transcription_mode ?? null,
+-        transcription_pending: result?.observation?.transcription_pending === true,
+-        transcript_available: result?.observation?.transcript_available === true,
+-        transcript: typeof protectedData.transcript === "string" ? protectedData.transcript : "",
+-        source_filename: result?.observation?.source_filename ?? null,
+-        source_media_type: result?.observation?.source_media_type ?? null,
+-        source_size_bytes: Number.isSafeInteger(result?.observation?.source_size_bytes) ? result.observation.source_size_bytes : null,
+-        source_sha256: result?.observation?.source_sha256 ?? protectedData?.source_sha256 ?? null,
+-        asr_engine: result?.observation?.asr_engine ?? protectedData?.asr_engine ?? null,
+-        asr_model: result?.observation?.asr_model ?? protectedData?.asr_model ?? null,
+-        whole_message: result?.observation?.whole_message === true || protectedData?.whole_message === true,
+-        stream_speed_factor: Number.isInteger(result?.observation?.stream_speed_factor)
+-          ? result.observation.stream_speed_factor
+-          : (Number.isInteger(protectedData?.stream_speed_factor) ? protectedData.stream_speed_factor : (input.speed_factor ?? 4)),
+-        asr_cache_hit: result?.observation?.asr_cache_hit === true,
+-        asr_inference_ms: Number.isFinite(result?.observation?.asr_inference_ms) ? result.observation.asr_inference_ms : null,
+-        elapsed_ms: Number.isFinite(result?.observation?.elapsed_ms) ? result.observation.elapsed_ms : null,
+-        error: result?.error || null,
+-      };
+-      if (transientUploadId && payload.transcription_pending !== true) {
+-        try { await deleteMaterialUpload({ upload_id: transientUploadId }); } catch {}
+-      }
+-      return {
+-        structuredContent: payload,
+-        content: [{ type: "text", text: JSON.stringify(payload, null, 1) }],
+-        isError: result?.state === "FAILED" || Boolean(result?.error),
+-      };
+-    } catch (error) {
+-      if (transientUploadId) {
+-        try { await deleteMaterialUpload({ upload_id: transientUploadId }); } catch {}
+-      }
+-      return telegramDirectToolFailure(error);
+-    }
+-  });
+-
+   // Provider-neutral multi-file transcription. One tool invocation starts
+   // 1..20 independent jobs. Identical bytes never collapse file identities.
+-  server.registerTool("audio_transcribe_batch", {
+-    title: "Transcribe up to 20 independent audio files",
+-    description: "Start 1-20 independent owner-audio transcription jobs at once. Pass files with unique client_file_id and either native ChatGPT file or an already staged upload_id. Use batch_id to inspect progress and retrieve each completed transcript. Shared Soniox engine; no Telegram forwarding.",
++  server.registerTool("audio_transcribe", {
++    title: "Transcribe 1-20 audio files",
++    description: "The single speech-to-text tool for 1-20 independently identified audio files in one concurrent request. Each files item accepts one native ChatGPT file, a completed upload_id, or an exact Telegram telegram_message_handle. client_file_id is optional and auto-generated when omitted. Submit batch_id to retrieve individual transcripts and progress. Default resource limits are managed by the shared Soniox engine; no speed setting.",
+     inputSchema: {
+       files: z.array(z.object({
+-        client_file_id: z.string().regex(/^[A-Za-z0-9_.-]{1,80}$/),
++        client_file_id: z.string().regex(/^[A-Za-z0-9_.-]{1,80}$/).optional(),
+         file: z.union([z.string().min(1),z.object({
+           download_url:z.string().optional(),
+           file_id:z.string().optional(),
+@@ -2489,8 +2342,6 @@
+         telegram_message_handle:z.string().regex(/^tgmsg:[0-9a-f-]{36}$/).optional(),
+       })).min(1).max(20).optional(),
+       batch_id:z.string().regex(/^[a-f0-9]{64}$/).optional(),
+-      parallelism_per_file:z.number().int().min(1).max(514).optional(),
+-      speed_factor:z.union([z.literal(1),z.literal(2),z.literal(4),z.literal(8),z.literal(16)]).optional(),
+     },
+     annotations: {readOnlyHint:true,destructiveHint:false,idempotentHint:false,openWorldHint:true},
+     _meta: {"openai/fileParams":["files"]},
+@@ -2505,9 +2356,10 @@
+         if(!Array.isArray(input.files)||input.files.length<1||input.files.length>20)
+           throw codedError("AUDIO_BATCH_FILE_COUNT_INVALID");
+         const seen=new Set();
+-        for(const file of input.files){
+-          if(seen.has(file.client_file_id))throw codedError("AUDIO_BATCH_DUPLICATE_ID");
+-          seen.add(file.client_file_id);
++        for(const [index,file] of input.files.entries()){
++          const clientId=file.client_file_id??("file-"+String(index+1).padStart(2,"0"));
++          if(seen.has(clientId))throw codedError("AUDIO_BATCH_DUPLICATE_ID");
++          seen.add(clientId);
+           const sourceCount=Number(Boolean(file.file))+Number(Boolean(file.upload_id))
+             +Number(Boolean(file.telegram_message_handle));
+           if(sourceCount!==1)
+@@ -2515,13 +2367,12 @@
+         }
+         // Acquire all inputs before starting any processing. Cleanup after
+         // acceptance is deferred because the jobs read staged material.
+-        for(const item of input.files){
++        for(const [index,item] of input.files.entries()){
++          const clientId=item.client_file_id??("file-"+String(index+1).padStart(2,"0"));
+           if(item.telegram_message_handle){
+             ready.push({
+-              client_id:item.client_file_id,
++              client_id:clientId,
+               telegram_message_handle:item.telegram_message_handle,
+-              speed_factor:input.speed_factor??4,
+-              parallelism:input.parallelism_per_file??514,
+             });
+             continue;
+           }
+@@ -2535,15 +2386,12 @@
+           if(!Number.isSafeInteger(upload.size_bytes)||upload.size_bytes<1||upload.size_bytes>64*1024*1024)
+             throw codedError("PERPLEXITY_ASR_SOURCE_SIZE_INVALID");
+           ready.push({
+-            client_id:item.client_file_id,
++            client_id:clientId,
+             material_file_handle:upload.material_file_handle,
+             filename:upload.filename,
+             media_type:upload.media_type,
+             size_bytes:upload.size_bytes,
+             sha256_hex:upload.sha256_hex,
+-            language:"fa",
+-            speed_factor:input.speed_factor??4,
+-            parallelism:input.parallelism_per_file??514,
+           });
+         }
+       }
