@@ -76,9 +76,32 @@ export function createUnifiedMediaAcquirer({
     validateRef(source_ref);
     if (!owner_context || !authorization_context) fail("MEDIA_AUTH_CONTEXT_REQUIRED");
     const adapter = adapters[source_ref.provider];
-    if (!adapter || typeof adapter.resolve !== "function") fail("MEDIA_PROVIDER_NOT_ADMITTED");
+    if (!adapter || (typeof adapter.resolve !== "function" && typeof adapter.adopt !== "function"))
+      fail("MEDIA_PROVIDER_NOT_ADMITTED");
     const maxAllowed = transfer_limits.max_bytes == null ? cfg.maxBytes : transfer_limits.max_bytes;
     assertNumber(maxAllowed, 1, cfg.maxBytes, "MEDIA_SIZE_LIMIT_INVALID");
+    // Already-verified owner uploads enter through the SAME private material
+    // plane. Reuse the immutable bytes; do not make a wasteful second copy.
+    // The real consumer revalidates digest/size before reading them.
+    if (typeof adapter.adopt === "function") {
+      const ready = await adapter.adopt({source_ref, owner_context, authorization_context});
+      if (!ready || !/^pcgfile:[0-9a-f]{64}$/.test(ready.material_file_handle || ""))
+        fail("MEDIA_MATERIAL_HANDLE_INVALID");
+      assertNumber(ready.size_bytes, 1, maxAllowed, "MEDIA_SOURCE_SIZE_OUT_OF_BOUNDS");
+      const filename = sanitizedFilename(ready.filename);
+      const media_type = sanitizedMime(ready.media_type);
+      if (!/^[0-9a-f]{64}$/.test(ready.sha256_hex || "")) fail("MEDIA_SOURCE_DIGEST_INVALID");
+      return {
+        material_file_handle: ready.material_file_handle,
+        filename, media_type, size_bytes: ready.size_bytes,
+        sha256_hex: ready.sha256_hex,
+        source_provenance: {
+          provider: source_ref.provider,
+          ref_kind: ready.source_provenance?.ref_kind || "verified_material",
+        },
+        expires_at: Number.isSafeInteger(ready.expires_at) ? ready.expires_at : null,
+      };
+    }
     const started = now();
     let source;
     let writer;
