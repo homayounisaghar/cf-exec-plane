@@ -1,0 +1,35 @@
+--- a/telegram-ingress.mjs
++++ b/telegram-ingress.mjs
+@@ -2486,6 +2486,7 @@
+           url:z.string().optional(),
+         }).passthrough()]).optional(),
+         upload_id:z.string().regex(/^[a-f0-9]{64}$/).optional(),
++        telegram_message_handle:z.string().regex(/^tgmsg:[0-9a-f-]{36}$/).optional(),
+       })).min(1).max(20).optional(),
+       batch_id:z.string().regex(/^[a-f0-9]{64}$/).optional(),
+       parallelism_per_file:z.number().int().min(1).max(514).optional(),
+@@ -2507,12 +2508,23 @@
+         for(const file of input.files){
+           if(seen.has(file.client_file_id))throw codedError("AUDIO_BATCH_DUPLICATE_ID");
+           seen.add(file.client_file_id);
+-          if(Boolean(file.file)===Boolean(file.upload_id))
++          const sourceCount=Number(Boolean(file.file))+Number(Boolean(file.upload_id))
++            +Number(Boolean(file.telegram_message_handle));
++          if(sourceCount!==1)
+             throw codedError("AUDIO_BATCH_SOURCE_AMBIGUOUS");
+         }
+         // Acquire all inputs before starting any processing. Cleanup after
+         // acceptance is deferred because the jobs read staged material.
+         for(const item of input.files){
++          if(item.telegram_message_handle){
++            ready.push({
++              client_id:item.client_file_id,
++              telegram_message_handle:item.telegram_message_handle,
++              speed_factor:input.speed_factor??4,
++              parallelism:input.parallelism_per_file??514,
++            });
++            continue;
++          }
+           let uploadId=item.upload_id;
+           if(item.file){
+             const staged=await stageChatUploadedFile(item.file);

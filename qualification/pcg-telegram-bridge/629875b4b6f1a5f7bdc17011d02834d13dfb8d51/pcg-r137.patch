@@ -1,0 +1,55 @@
+--- a/pcg_web_semantic_ops.mjs
++++ b/pcg_web_semantic_ops.mjs
+@@ -2305,15 +2305,43 @@
+         const files=req.args?.files;
+         if(!Array.isArray(files)||files.length<1||files.length>20)
+           return teachingEnvelope(operation,"PERPLEXITY_ASR_BATCH_FILE_COUNT_INVALID","Pass between 1 and 20 independently identified staged audio references.");
+-        result=await startPerplexityAsrBatch({files:files.map((f,i)=>({
+-          clientId:f?.client_id??("file-"+(i+1)),
+-          materialFileHandle:f?.material_file_handle,
+-          filename:f?.filename,
+-          sizeBytes:f?.size_bytes,
+-          sha256Hex:f?.sha256_hex,
+-          speedFactor:f?.speed_factor??4,
+-          parallelism:f?.parallelism??514,
+-        }))});
++        // Telegram is only an acquisition adapter. Once the 11 source files
++        // are staged, this executes ONE common Soniox batch request.
++        const telegramSources=files.filter(f=>Boolean(f?.telegram_message_handle));
++        if(telegramSources.length){
++          if(await detectPhase()!=="READY")
++            return teachingEnvelope(operation,"SESSION_NOT_READY","Telegram source session not ready.");
++        }
++        const admitted=await Promise.all(files.map(async(f,i)=>{
++          const clientId=f?.client_id??("file-"+(i+1));
++          const speedFactor=f?.speed_factor??4;
++          const parallelism=f?.parallelism??514;
++          if(!f?.telegram_message_handle){
++            return {
++              clientId,materialFileHandle:f?.material_file_handle,
++              filename:f?.filename,sizeBytes:f?.size_bytes,
++              sha256Hex:f?.sha256_hex,speedFactor,parallelism,
++            };
++          }
++          // The message handle is resolved by the current Telegram identity
++          // registry, never interpreted as a path or an arbitrary URL.
++          if(f?.material_file_handle)throw Error("ASR_BATCH_SOURCE_AMBIGUOUS");
++          const messageRef=identity.providerMessageRefForHandle(f.telegram_message_handle);
++          const message=await webKFetchMessage(pageNow(),messageRef.providerRef,messageRef.mid);
++          const attachment=(Array.isArray(message?.attachments)?message.attachments:[])
++            .find(a=>(a?.media_kind==="voice"||a?.media_kind==="audio")
++              &&typeof a.media_type==="string"&&a.media_type.startsWith("audio/"));
++          if(!attachment)throw Error("ASR_BATCH_TELEGRAM_AUDIO_NOT_FOUND");
++          const material=await acquireAudioMaterialForAsr(messageRef,attachment);
++          if(!Number.isSafeInteger(material.size_bytes)||material.size_bytes<1||material.size_bytes>64*1024*1024)
++            throw Error("PERPLEXITY_ASR_SOURCE_SIZE_INVALID");
++          return {
++            clientId,materialFileHandle:material.file_handle,
++            filename:material.filename,sizeBytes:material.size_bytes,
++            sha256Hex:material.sha256_hex,speedFactor,parallelism,
++          };
++        }));
++        result=await startPerplexityAsrBatch({files:admitted});
+       }
+       const pending=result.state==="QUEUED"||result.state==="RUNNING";
+       const failed=result.state==="FAILED"||result.state==="PARTIAL_FAILURE"||result.state==="INTERRUPTED";
