@@ -51,7 +51,7 @@ if [[ ! -d "$new" ]]; then
 import hashlib,json,pathlib,sys
 root=pathlib.Path(sys.argv[1])
 m=json.loads((root/'manifest.json').read_text())
-assert m['sequence']==135 and m['release_id']=='pcg-web-stage6-soniox-multifile20-r136'
+assert m['sequence']==136 and m['release_id']=='pcg-web-stage6-soniox-multifile20-r136'
 for filename,digest in m['files'].items():
  assert hashlib.sha256((root/filename).read_bytes()).hexdigest()==digest,filename
 print('PCG_STAGED_RELEASE_VERIFIED',len(m['files']))
@@ -72,7 +72,7 @@ rollback_on_failure(){
   if [[ -n "${smoke_staged_short:-}" ]]; then rm -f "$smoke_staged_short" || true; fi
   if [[ -n "${smoke_staged_long:-}" ]]; then rm -f "$smoke_staged_long" || true; fi
   if (( rc != 0 )) && (( activation_started == 1 )); then
-    echo "PCG_R136_FAILED_ROLLBACK_TO_R134_START code=$rc"
+    echo "PCG_R136_FAILED_ROLLBACK_TO_R135_START code=$rc"
     if docker compose -p "$project" -f "$rollback/compose.yaml" -f "$rollback/override-managed.yaml" up -d --no-deps --no-build --pull never --force-recreate pcg_perplexity_asr pcg_web; then
       good=0
       for i in $(seq 1 150); do
@@ -84,7 +84,7 @@ rollback_on_failure(){
       if (( good == 1 )); then
         ln -s "$rollback" "$active.rollback.next-$$"
         mv -Tf "$active.rollback.next-$$" "$active"
-        echo "PCG_R136_ROLLBACK_R134_ACTIVE_HEALTHY"
+        echo "PCG_R136_ROLLBACK_R135_ACTIVE_HEALTHY"
       else
         echo "PCG_R136_ROLLBACK_HEALTH_FAILED asr=$h1 web=$h2"
       fi
