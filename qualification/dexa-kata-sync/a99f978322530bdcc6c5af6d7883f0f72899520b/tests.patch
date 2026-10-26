@@ -1,0 +1,54 @@
+--- a/test_synthetic_e2e.mjs
++++ b/test_synthetic_e2e.mjs
+@@ -167,7 +167,7 @@
+     assert.match(mission.outcome.result, /پیک صرفاً آزمایشی/);
+ 
+     assert.equal(mission.kataCalls.length, 2);
+-    assert.ok(mission.kataCalls.every(x => x.catalogCount === 292 && x.method === "rank_v2.boosted_fusion"));
++    assert.ok(mission.kataCalls.every(x => x.catalogCount === 291 && x.method === "rank_v2.boosted_fusion"));
+     assert.equal(mission.plannerCalls.length, 2);
+     assert.ok(mission.plannerCalls.every(x => x.model === "SYNTHETIC_PLANNER" &&
+       x.actualBrowserBridge === false && x.didSend === false));
+--- a/test_api_guards.mjs
++++ b/test_api_guards.mjs
+@@ -28,7 +28,7 @@
+  if(!target){t.skip("No actual courier pilot in this environment");return;}
+  const r=await request("/api/missions/"+target.id);
+  assert.equal(r.status,200);const m=(await r.json()).mission;
+- assert.equal(m.state,"BLOCKED");assert.equal(m.kata?.catalogCount,292);
++ assert.equal(m.state,"BLOCKED");assert.equal(m.kata?.catalogCount,291);
+  assert.equal(m.planner?.model,"Instant");assert.ok(m.recipe?.length>0);
+  assert.equal(m.recipe?.[0]?.capabilityId,"UNRESOLVED");assert.equal(m.outcome?.proof?.effectsExecuted,0);
+  assert.ok(m.events.length>=10);
+--- a/test_dexa_catalog_broker_admission.mjs
++++ b/test_dexa_catalog_broker_admission.mjs
+@@ -3,20 +3,20 @@
+ import {catalogCounts,catalogList,catalogRoute,admitCatalogCall,inputSchemaFor} from "./dexa_catalog_registry.mjs";
+ const C=catalogCounts();
+ 
+-test("All 292 catalog cards are registered with truthful route and readiness coverage",()=>{
+- assert.equal(C.catalog,292);
+- assert.equal(C.cfMapped,188);
++test("All 291 catalog cards are registered with truthful route and readiness coverage",()=>{
++ assert.equal(C.catalog,291);
++ assert.equal(C.cfMapped,187);
+  assert.equal(C.noCfRoute,104);
+- assert.equal(C.cfReadOnly,100);
++ assert.equal(C.cfReadOnly,99);
+  assert.equal(C.cfWriteOrSensitive,88);
+  const rows=catalogList({oauthConnected:false});
+- assert.equal(rows.length,293); // 292 external + one bounded first-party DX001
+- assert.equal(new Set(rows.map(x=>x.id)).size,293);
+- assert.equal(rows.filter(x=>x.stage==="CF_OAUTH_CONNECTION_REQUIRED").length,188);
++ assert.equal(rows.length,292); // 291 external + one bounded first-party DX001
++ assert.equal(new Set(rows.map(x=>x.id)).size,292);
++ assert.equal(rows.filter(x=>x.stage==="CF_OAUTH_CONNECTION_REQUIRED").length,187);
+  assert.equal(rows.filter(x=>x.stage==="OTHER_CONNECTOR_NOT_BOUND").length,104);
+  assert.equal(rows.filter(x=>x.stage==="LOCAL_INTERNAL_READY").length,1);
+- assert.equal(catalogList({oauthConnected:true}).filter(x=>x.stage==="CF_OWNER_AUTHENTICATED_READY").length,188);
+- assert.equal(catalogList({oauthConnected:true}).filter(x=>x.executableNow).length,189);
++ assert.equal(catalogList({oauthConnected:true}).filter(x=>x.stage==="CF_OWNER_AUTHENTICATED_READY").length,187);
++ assert.equal(catalogList({oauthConnected:true}).filter(x=>x.executableNow).length,188);
+ });
+ test("Typed read-only tool input schema is validated, without contacting a provider",()=>{
+  const good=admitCatalogCall({capabilityId:"tool.cf.telegram_conversation_search",

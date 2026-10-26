@@ -1,0 +1,150 @@
+{
+  "removed": [
+    "telegram_transcribe"
+  ],
+  "updated": {
+    "audio_transcribe": {
+      "readOnly": true,
+      "description": "The single speech-to-text tool for 1-20 independently identified audio files in one concurrent request. Each files item accepts one native ChatGPT file, a completed upload_id, or an exact Telegram telegram_message_handle. client_file_id is optional and auto-generated when omitted. Submit batch_id to retrieve individual transcripts and progress. Default resource limits are managed by the shared Soniox engine; no speed setting.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "files": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "client_file_id": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9_.-]{1,80}$"
+                },
+                "file": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "download_url": {
+                          "type": "string"
+                        },
+                        "file_id": {
+                          "type": "string"
+                        },
+                        "mime_type": {
+                          "type": "string"
+                        },
+                        "file_name": {
+                          "type": "string"
+                        },
+                        "url": {
+                          "type": "string"
+                        }
+                      },
+                      "additionalProperties": true
+                    }
+                  ]
+                },
+                "upload_id": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "telegram_message_handle": {
+                  "type": "string",
+                  "pattern": "^tgmsg:[0-9a-f-]{36}$"
+                }
+              },
+              "additionalProperties": false
+            },
+            "minItems": 1,
+            "maxItems": 20
+          },
+          "batch_id": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      }
+    },
+    "telegram_reaction_get": {
+      "readOnly": true,
+      "description": "Immediate read-only hot path for questions such as 'what is my reaction on the latest message from X?'. Prefer message_handle when known; when the owner explicitly means the latest/last message, pass conversation as an exact display name or tgchat: handle and latest_message=true. Saved Messages does not expose ordinary visible reactions: tag metadata is suppressed and this tool returns no reaction emoji with ordinary_reaction_supported=false.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "message_handle": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "conversation": {
+            "type": "string",
+            "maxLength": 256
+          },
+          "latest_message": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      }
+    },
+    "audio_upload": {
+      "readOnly": false,
+      "description": "Reliable private staging path for owner-supplied audio when the ChatGPT native file handoff is unavailable. This never sends the file to Telegram. Use create, append with exact offsets and pass the completed upload_id inside the files array of audio_transcribe. Use status to resume or delete to clean up.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "create",
+              "append",
+              "status",
+              "delete"
+            ]
+          },
+          "upload_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "filename": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "media_type": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 128
+          },
+          "size_bytes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 67108864
+          },
+          "sha256_hex": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{64}$"
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "data_base64": {
+            "type": "string",
+            "maxLength": 2900000
+          }
+        },
+        "required": [
+          "action"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      }
+    }
+  }
+}

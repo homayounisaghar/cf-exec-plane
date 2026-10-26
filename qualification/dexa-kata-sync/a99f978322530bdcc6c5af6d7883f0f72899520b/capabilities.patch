@@ -1,0 +1,105 @@
+--- a/capabilities.json
++++ b/capabilities.json
+@@ -2934,12 +2934,11 @@
+   },
+   {
+     "capability_id": "tool.cf.audio_transcribe",
+-    "description": "Transcribe owner-supplied audio through the same anonymous Perplexity/Soniox whole-message engine as telegram_transcribe, without sending the file to Telegram. Preferred path: pass the ChatG",
++    "description": "Transcribe voice or audio to separate texts for 1 to 20 independent files in ONE concurrent request. Each files[] item contains exactly one native ChatGPT file, completed upload_id, or Telegram telegram_message_handle; client_file_id is optional. Submit only batch_id to poll individual transcripts and status. No speed control.",
+     "risk": "read_only",
+     "canonical_fields": [
+-      "file",
+-      "speed_factor",
+-      "upload_id"
++      "batch_id",
++      "files"
+     ],
+     "routes": [
+       {
+@@ -2947,9 +2946,8 @@
+         "role": "only",
+         "priority": 0,
+         "argument_map": {
+-          "file": "file",
+-          "speed_factor": "speed_factor",
+-          "upload_id": "upload_id"
++          "batch_id": "batch_id",
++          "files": "files"
+         },
+         "preconditions": [],
+         "schema_quality": "exact",
+@@ -2965,7 +2963,7 @@
+   },
+   {
+     "capability_id": "tool.cf.audio_upload",
+-    "description": "Reliable private staging path for owner-supplied audio when the ChatGPT native file handoff is unavailable. This never sends the file to Telegram. Use create, then one or more append calls w",
++    "description": "Reliable private staging path for owner-supplied audio when the ChatGPT native file handoff is unavailable. This never sends the file to Telegram. Use create, append with exact offsets and pass the completed upload_id inside the files array of audio_transcribe. Use status to resume or delete to clean up.",
+     "risk": "schema_and_policy_gate",
+     "canonical_fields": [
+       "action",
+@@ -4787,13 +4785,12 @@
+   },
+   {
+     "capability_id": "tool.cf.telegram_reaction_get",
+-    "description": "Immediate read-only hot path for questions such as 'what is my reaction on the latest message from X?'. Prefer message_handle when known; when the owner explicitly means the latest/last mess",
++    "description": "Read the owner's visible Telegram reaction on an exact message or the latest message of a named conversation. Supply message_handle or conversation and latest_message=true. Saved Messages exposes no ordinary reaction; tag metadata is suppressed.",
+     "risk": "read_only",
+     "canonical_fields": [
+       "conversation",
+       "latest_message",
+-      "message_handle",
+-      "speed_factor"
++      "message_handle"
+     ],
+     "routes": [
+       {
+@@ -4803,8 +4800,7 @@
+         "argument_map": {
+           "conversation": "conversation",
+           "latest_message": "latest_message",
+-          "message_handle": "message_handle",
+-          "speed_factor": "speed_factor"
++          "message_handle": "message_handle"
+         },
+         "preconditions": [],
+         "schema_quality": "exact",
+@@ -4877,39 +4873,6 @@
+         "provider": "telegram",
+         "location": "external_telegram",
+         "read_only": false,
+-        "output_shape_equivalence_verified": false
+-      }
+-    ],
+-    "merged": false,
+-    "fallback_on_connector_failure": "not_available",
+-    "scope": "single_native_tool_no_equivalence_claim"
+-  },
+-  {
+-    "capability_id": "tool.cf.telegram_transcribe",
+-    "description": "Immediate read-only hot path for converting an exact Telegram voice note, audio message, or round video to text. The default path uses the live high-accuracy anonymous Perplexity/Soniox whol",
+-    "risk": "read_only",
+-    "canonical_fields": [
+-      "conversation",
+-      "latest_message",
+-      "message_handle",
+-      "speed_factor"
+-    ],
+-    "routes": [
+-      {
+-        "tool_id": "CF.telegram_transcribe",
+-        "role": "only",
+-        "priority": 0,
+-        "argument_map": {
+-          "conversation": "conversation",
+-          "latest_message": "latest_message",
+-          "message_handle": "message_handle",
+-          "speed_factor": "speed_factor"
+-        },
+-        "preconditions": [],
+-        "schema_quality": "exact",
+-        "provider": "telegram",
+-        "location": "external_telegram",
+-        "read_only": true,
+         "output_shape_equivalence_verified": false
+       }
+     ],

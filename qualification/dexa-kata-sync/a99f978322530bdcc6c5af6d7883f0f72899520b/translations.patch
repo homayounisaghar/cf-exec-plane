@@ -1,0 +1,25 @@
+--- a/manual_fa_labels_by_id.tsv
++++ b/manual_fa_labels_by_id.tsv
+@@ -81,8 +81,8 @@
+ tool.cf.android_storage_stat|خواندن اطلاعات و مشخصات فایل در حافظه گوشی اندروید
+ tool.cf.android_storage_status|بررسی دسترسی به پوشه حافظه مجاز گوشی اندروید
+ tool.cf.android_storage_upload_to_server|فرستادن آپلود فایل از حافظه گوشی اندروید به سرور
+-tool.cf.audio_transcribe|تبدیل گفتار فایل صوتی به متن پیاده‌سازی صدا
+-tool.cf.audio_upload|آپلود فایل صوتی بارگذاری صدای کاربر
++tool.cf.audio_transcribe|تبدیل گفتار به متن و رونویسی همزمان از ۱ تا ۲۰ فایل صوتی یا ویس مستقل. فایل مستقیم، پیوست صوتی چت، پیام صوتی تلگرام و صدای بارگذاری‌شده پذیرفته می‌شود. در هر عضو files فقط یکی از file یا upload_id یا telegram_message_handle را بفرست. client_file_id اختیاری است؛ متن و وضعیت هر فایل جداست. برای پیگیری پردازش و دریافت تمام متن‌ها از batch_id استفاده کن. گزینه تنظیم سرعت یا تعداد اتصال ندارد.
++tool.cf.audio_upload|بارگذاری خصوصی فایل صوتی برای تبدیل گفتار به متن در زمانی که پیوست مستقیم قابل دریافت نیست؛ با create بارگذاری را بساز، با append و آفست دقیق بخش‌ها را بفرست، با status وضعیت را بررسی کن و در صورت نیاز با delete حذف کن. شناسه upload_id تکمیل‌شده را داخل آرایه files ابزار audio_transcribe قرار بده؛ این ابزار خودش گفتار را به متن تبدیل نمی‌کند.
+ tool.cf.bale_api_probe|بررسی اتصال و عملکرد API پیام‌رسان بله
+ tool.cf.bale_attachment_get|دریافت پیوست فایل و ضمیمه پیام در پیام‌رسان بله
+ tool.cf.bale_capability_gaps|دیدن محدودیت‌ها و قابلیت‌های پشتیبانی‌نشده پیام‌رسان بله
+@@ -144,10 +144,9 @@
+ tool.cf.telegram_message_search|جستجو در محتوای پیام‌های تلگرام سراسری یا یک چت
+ tool.cf.telegram_mute|بی‌صدا و سایلنت کردن یا فعال‌کردن اعلان‌های گفتگوی تلگرام
+ tool.cf.telegram_reaction_catalog|فهرست واکنش‌ها و ایموجی‌های مجاز تلگرام
+-tool.cf.telegram_reaction_get|خواندن واکنش ایموجی روی پیام تلگرام
++tool.cf.telegram_reaction_get|خواندن واکنش یا ایموجی خودم به پیام مشخص تلگرام یا آخرین پیام یک گفتگو؛ message_handle یا نام گفتگو و latest_message را مشخص کن. در پیام‌های ذخیره‌شده واکنش عادی قابل مشاهده نیست و برچسب‌ها نمایش داده نمی‌شوند.
+ tool.cf.telegram_reply|پاسخ دادن ریپلای و نقل‌قول به پیام مشخص تلگرام
+ tool.cf.telegram_semantic_invoke|اجرای عمل معنایی دلخواه از میان قابلیت‌های آماده تلگرام
+-tool.cf.telegram_transcribe|تبدیل گفتار پیام صوتی ویس تلگرام به متن رونوشت
+ tool.cf.telegram_unread_list|فهرست گفتگوهای دارای پیام خوانده نشده در تلگرام
+ tool.cf.telegram_voice_send_file|ارسال ویس پیام صوتی فایل صدا در تلگرام
+ tool.cf.voice_convert|تبدیل صدا به صدا با مدل صوتی شخصی روی سرور

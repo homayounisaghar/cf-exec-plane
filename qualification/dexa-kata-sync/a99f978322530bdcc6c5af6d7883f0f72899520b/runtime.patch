@@ -1,0 +1,93 @@
+--- a/kata_rank.py
++++ b/kata_rank.py
+@@ -8,7 +8,7 @@
+ import time
+ from pathlib import Path
+ 
+-ROOT = Path("/home/cfserver/connector-call-generator-prototype-v01/persian-catalog-search-v1")
++ROOT = Path(os.environ.get("DEXA_KATA_CATALOG_ROOT", "/home/cfserver/connector-call-generator-prototype-v01/persian-catalog-search-v1"))
+ sys.path.insert(0, str(ROOT))
+ import rank_v2
+ import rank_hybrid
+@@ -51,7 +51,7 @@
+     "توی", "تا", "این", "آن", "یک", "من", "تو", "خود", "هم",
+     "لطفا", "رو", "همین", "اون", "اینا", "اونا", "یه", "می",
+ })
+-# Root must already occur in the immutable 292-card catalog vocabulary.
++# Root must already occur in the immutable 291-card catalog vocabulary.
+ # A generic final-letter stripper would corrupt words like «سلام»; it is
+ # explicitly disallowed. Long possessive endings are checked first.
+ KATA_POSSESSIVE_SUFFIXES = ("هایم", "هایت", "هایش", "هایمان", "هایتان",
+@@ -112,7 +112,7 @@
+     # Two independent lexical retrievals: neither assesses conversation meaning.
+     # Current-message candidates always survive unchanged from the old ranker.
+     current_scores = kata_retrieval_scores(task)
+-    if len(current_scores) != rank_hybrid.N or rank_hybrid.N != 292:
++    if len(current_scores) != rank_hybrid.N or rank_hybrid.N != 291:
+         raise ValueError("CATALOG_VERSION_MISMATCH")
+     current_peak = max(current_scores)
+     # FIX 2026-10-24: An owner asking what somebody said needs a discoverable
+@@ -176,7 +176,12 @@
+             prop_specs = {}
+             for name, prop in raw_props.items():
+                 brief = {k: prop[k] for k in ("type", "minimum", "maximum",
+-                    "minLength", "maxLength", "enum") if k in prop}
++                    "minLength", "maxLength", "minItems", "maxItems", "enum")
++                    if k in prop}
++                item = prop.get("items")
++                if isinstance(item, dict) and item.get("type") == "object":
++                    brief["itemFields"] = list(item.get("properties", {}))
++                    brief["itemRequired"] = item.get("required", [])
+                 prop_specs[name] = brief
+             compact = {
+                 "capabilityId": card["capability_id"],
+--- a/rana_catalog.mjs
++++ b/rana_catalog.mjs
+@@ -5,8 +5,8 @@
+ const BASE = path.dirname(fileURLToPath(import.meta.url));
+ const RAW = JSON.parse(fs.readFileSync(path.join(BASE,"rana_capability_catalog.json"),"utf8"));
+ const SCHEMAS = JSON.parse(fs.readFileSync(path.join(BASE,"rana_cf_tool_schemas.json"),"utf8"));
+-if (!Array.isArray(RAW) || RAW.length !== 292) throw Error("RANA_CATALOG_VERSION_MISMATCH");
+-if (SCHEMAS.schema !== "dexa.connector-schemas.v1" || Object.keys(SCHEMAS.cf||{}).length !== 188)
++if (!Array.isArray(RAW) || RAW.length !== 291) throw Error("RANA_CATALOG_VERSION_MISMATCH");
++if (SCHEMAS.schema !== "dexa.connector-schemas.v1" || Object.keys(SCHEMAS.cf||{}).length !== 187)
+   throw Error("RANA_CONNECTOR_SCHEMA_VERSION_MISMATCH");
+ 
+ const CAPABILITIES = new Map();
+--- a/dexa_catalog_registry.mjs
++++ b/dexa_catalog_registry.mjs
+@@ -1,4 +1,4 @@
+-// Dexa general catalog admission. 292 catalog cards are descriptions, never grants.
++// Dexa general catalog admission. 291 catalog cards are descriptions, never grants.
+ // Only backend-owned routes, exact schemas and a separate owner's OAuth may execute.
+ import fs from "node:fs";
+ import path from "node:path";
+@@ -25,7 +25,7 @@
+  "tool.cf.telegram_conversation_search",
+  "tool.cf.telegram_unread_list"
+ ]);
+-if(cards.length!==292||Object.keys(cfSchemas).length!==188)throw Error("CATALOG_INTEGRITY_FAILED");
++if(cards.length!==291||Object.keys(cfSchemas).length!==187)throw Error("CATALOG_INTEGRITY_FAILED");
+ for(const card of cards){
+  if(compiled.has(card.capability_id))throw Error("CATALOG_DUPLICATE_ID");
+  const cfRoute=card.physical_tool_ids.find(x=>x.startsWith("CF."));
+--- a/server.mjs
++++ b/server.mjs
+@@ -1598,7 +1598,7 @@
+  let ranked;
+  if(originalKata){
+   ranked={capability_ids:[...originalKata.selectedCapabilityIds],
+-   catalog_count:originalKata.catalogCount||292,
++   catalog_count:originalKata.catalogCount||291,
+    method:"FROZEN_ORIGINAL_KATA_SHORTLIST"};
+   await appendEvent(m,"KATA_ORIGINAL_SHORTLIST_REUSED",
+    "همان فهرست ابزارهای مأموریت اولیه بدون جست‌وجوی مجدد استفاده شد.",
+@@ -1614,7 +1614,7 @@
+   await appendEvent(m,"KATA_FAST_CATALOG_READY",
+    "کاتا قابلیت‌های خواندنی مجاز برای برنامه‌ریزی اولیه را آماده کرد.",
+    "kata",{method:FAST_GENERAL_PLAN_VERSION,
+-    catalogCount:ranked.catalog_count||292,
++    catalogCount:ranked.catalog_count||291,
+     candidateCount:ranked.capability_ids.length,effectsExecuted:0});
+  }
+  // Model receives only bounded actual visible exchange notes, never old raw
