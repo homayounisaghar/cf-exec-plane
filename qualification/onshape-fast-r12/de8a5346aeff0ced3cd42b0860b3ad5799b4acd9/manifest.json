@@ -1,7 +1,7 @@
 {
   "schema": "capability-fabric.deploy.v1",
-  "sequence": 259,
-  "release_id": "onshape-vps-fast-r100-direct-orbit1-paa-storage-r259-follow-presence1",
+  "sequence": 260,
+  "release_id": "onshape-vps-fast-r100-direct-orbit1-paa-storage-r260-soniox16x1",
   "compose_file": "compose.yaml",
   "health_file": "health.sh",
   "health_timeout_seconds": 180,
@@ -30,7 +30,7 @@
     "package.json": "72b568b2db1bd490f9cc0ce8788ff739dea81a59bb0a1aa28c379e8632e1a1cb",
     "release-closure.json": "65eb3d9e4611443f3f30f16546c81de091a37ac62fe0c59e2d085add0e620891",
     "server.js": "4db4142ce31d0af224c0d426780f1b9f99ea17b16ff5592d0ae2faabe6e5c80f",
-    "telegram-ingress.mjs": "ff4d0cb16c8cb94af9f0e65f6f167cafa3dfc23a0c307fec009cd964d3625ff4",
+    "telegram-ingress.mjs": "d952dd67099ada04a1a0a33d9b44e8c94d3636333ebac29a093346427e97c840",
     "wechat-ingress.mjs": "bf2c4e8d579b6885e26cf332a9745ccf7fc3a0c9eae19bd755746d37d9bdb5e3",
     "wechat-preload.mjs": "6445449686b88316a3cb6b41f117205e309a6286b35d4ac095f552f360e592ee",
     "whatsapp-ingress.mjs": "626434fbdbec8d1d22c01bed93561d682546a4d2253fe59436bb81456a2eb1b5",
