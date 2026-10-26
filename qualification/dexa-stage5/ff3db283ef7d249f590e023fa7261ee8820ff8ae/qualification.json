@@ -1,0 +1,60 @@
+{
+  "limits": {
+    "dns_pinned_public_tls": true,
+    "max_model_text_bytes": 24000,
+    "max_redirects": 2,
+    "max_response_bytes": 180000,
+    "no_cookies_or_tokens_sent": true,
+    "url_literal_requires_owner_grounding": true,
+    "web_search_max_results": 5
+  },
+  "model_proof": {
+    "natural_persian_owner_url_weather": {
+      "answer_delivery_verified": true,
+      "external_writes": 0,
+      "original_kata_calls": 1,
+      "result": "SUCCEEDED_VERIFIED",
+      "same_qwen_calls": 2,
+      "verified_web_read_receipts": 1,
+      "verified_writer_receipts": 1
+    },
+    "no_source_first_weather": {
+      "initial_web_search_verified": true,
+      "new_bounded_public_web_obstacle_policy_added": true,
+      "post_fix_success_not_claimed": true,
+      "reason": "first_external_page_timeout",
+      "result": "FAILED_PILOT"
+    },
+    "provider": "Cerebras",
+    "public_web_writer_fixture": {
+      "durable_replay_extra_calls": 0,
+      "initial_plan_selected_by_model": false,
+      "read_count": 1,
+      "result": "SUCCEEDED_VERIFIED",
+      "verified_receipts": 2,
+      "writer_model_calls": 1
+    },
+    "selected_model": "qwen-3.8-27b"
+  },
+  "real_source_proof": {
+    "bing_rss_search": "PHYSICAL_PUBLIC_HTTPS_VERIFIED",
+    "bounded_web_page": "PHYSICAL_HTTPS_VERIFIED",
+    "open_meteo_current_weather": "PHYSICAL_HTTPS_AND_TIMESTAMP_VERIFIED"
+  },
+  "regression": {
+    "failed": 0,
+    "passed": 366,
+    "skipped": 1,
+    "skipped_are_not_passed": true,
+    "test_files": 47
+  },
+  "schema": "dexa.stage5.qualification.v1",
+  "scope": {
+    "new_cf_server_tool": false,
+    "private_production_missions_exported": false,
+    "stage4": "CLOSED_OWNER_ACCEPTED",
+    "stage5": "GUARDED_DEPLOY_CANDIDATE_NOT_OWNER_CLOSED",
+    "stage6": "NOT_STARTED"
+  },
+  "source_commit": "ff3db283ef7d249f590e023fa7261ee8820ff8ae"
+}

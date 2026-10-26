@@ -1,0 +1,25 @@
+{
+  "files": {
+    "activate-stage5.sh": "ba67d5607f8c4767f113fe507d25ec2e79af849512ac175d3a41a0745a2d06c0",
+    "baseline.sha256": "2c84182cd1e9c2f620dd5dd6f31985633a6f719e93af1567de6e9c4fb7834870",
+    "deploy-stage5.sh": "7afa163685db56a74ec680a434ed322dd8d698d607fd7524447d564b36933475",
+    "files/dexa_catalog_output_adapters_v1.mjs": "78cbc43d2989cae08244dba9738070234a02c821d100c068e17b0a9ca57cd6a4",
+    "files/dexa_catalog_output_shapes_v1.json": "975479c8bfa3f9597421168627294e696910d65613578d9267cd6f57911b8de3",
+    "files/dexa_catalog_registry.mjs": "25449ebad259fb883f52b6cab92c5e51d3a7ecdbc969966e8f5e1b63aef007fd",
+    "files/dexa_effect_contract_v1.mjs": "8597b58060a5bfe4d26ad3a7d17bf524cb8f36a799745eb463f6dfe9c0316f56",
+    "files/dexa_general_catalog_planner_v1.mjs": "5dc1df48502d0e52a9f90d5f034c04f40b7c01036d1e62299d2ea769b255b02b",
+    "files/dexa_general_plan_cycle_v2.mjs": "cbff1740dbff850bf683995e42b1aca5250278fd3b3df641e5d08a5221a6e07f",
+    "files/dexa_text_writer_v1.mjs": "c5cce7d444b82b3047f27a950e6d9a6342f2b0a45bd631ca3cb826d3bda0e08c",
+    "files/dexa_tool_plan_executor_v3.mjs": "73f4d8fe434b24273e6b207137e50d5586ffc2fb547ed522a0898b348f4ffde5",
+    "files/dexa_web_read_v1.mjs": "6689c213179a68251a5f15c1ecd108fe3a86e2aab373035fe0fc2ac5a8f8d587",
+    "files/dexa_writer_source_provenance_v1.mjs": "25961fc93bffaabc623b190415247b2b7da0c36c0e741c3fca5b2fd0d926f5e0",
+    "files/server.mjs": "4519f0ee2ef26d97fd0ae94d3d4d800964fb31e7c5ab56680e6fb8eb401f0c4a",
+    "proposed.sha256": "f51f2b69439359e61eca12dde1959279a6a7dc15f8a4fadfb1ea15496666eda3",
+    "qualification.json": "98a7635bd18387f7243f860120a4bbc368432871f13614b03ecc477a93a95f33"
+  },
+  "release_id": "dexa-stage5-20261027-v1",
+  "schema": "dexa.stage5.secret-free-release.v1",
+  "source_commit": "ff3db283ef7d249f590e023fa7261ee8820ff8ae",
+  "source_ref": "work/dexa-autonomous-loop-20261020",
+  "source_repo": "homayounisaghar/capability-fabric"
+}
