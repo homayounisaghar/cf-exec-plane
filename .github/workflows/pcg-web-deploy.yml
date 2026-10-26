@@ -80,6 +80,12 @@ jobs:
             done
             node --test "$SNAPSHOT/pcg_soniox_7sec.test.mjs"
           fi
+          if [[ "$EXPECTED_RELEASE" == "pcg-web-stage6-soniox-parallel-514-ffmpeg-r133" ]]; then
+            for file in pcg_perplexity_asr.mjs pcg_soniox_fixed_overlap.mjs pcg_soniox_word_align_dp.mjs pcg_ffmpeg_decode.mjs pcg_r133_smoke_check.mjs; do
+              node --check "$SNAPSHOT/$file"
+            done
+            node --test "$SNAPSHOT/pcg_soniox_7sec.test.mjs"
+          fi
 
       - name: Prepare SSH
         shell: bash
@@ -163,6 +169,22 @@ jobs:
               "${VPS_SSH_USER}@${VPS_HOST}" \
               "python3 /tmp/pcg-r132-job-errors.py; rm -f /tmp/pcg-r132-job-errors.py" </dev/null
             echo "PCG_SCOPED_R132_DEPLOY=success"
+            exit 0
+          fi
+          if [[ "$EXPECTED_RELEASE" == "pcg-web-stage6-soniox-parallel-514-ffmpeg-r133" ]]; then
+            [[ "$EXPECTED_SEQUENCE" == "133" && "$CANDIDATE_COMMIT" == "8b696b90906afcfe1a34afa001a1801f479137d9" ]]
+            script="$SNAPSHOT/activate-r133-managed-relay.sh"
+            printf '%s  %s\n' '6c5d802d1e961ffe5489971c316fdd20feafc287229811e77323d85d6b2a772d' "$script" | sha256sum -c -
+            scp -q -i "$SSH_DIR/key" -P "$SSH_PORT" \
+              -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+              -o UserKnownHostsFile="$SSH_DIR/known_hosts" \
+              "$script" "${VPS_SSH_USER}@${VPS_HOST}:/tmp/pcg-r133-managed-activate.sh"
+            ssh -i "$SSH_DIR/key" -p "$SSH_PORT" \
+              -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+              -o UserKnownHostsFile="$SSH_DIR/known_hosts" \
+              "${VPS_SSH_USER}@${VPS_HOST}" \
+              "set -e; test \"\$(id -u)\" = 0; mv /tmp/pcg-release.tgz /tmp/pcg-r133-release.tgz; install -m 0700 -o root -g root /tmp/pcg-r133-managed-activate.sh /run/pcg-r133-managed-activate.sh; rm -f /tmp/pcg-r133-managed-activate.sh; printf '%s  %s\\n' '6c5d802d1e961ffe5489971c316fdd20feafc287229811e77323d85d6b2a772d' /run/pcg-r133-managed-activate.sh | sha256sum -c -; bash /run/pcg-r133-managed-activate.sh" </dev/null
+            echo "PCG_SCOPED_R133_DEPLOY=success"
             exit 0
           fi
           cat > "$RUNNER_TEMP/pcg-remote.sh" <<'REMOTE'
