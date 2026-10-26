@@ -27,11 +27,11 @@ jobs:
 
         change="$(git diff --name-status HEAD^ HEAD)"
 
-        [[ "$change" == $''A\tserver-bootstrap/control/cf-asr-unified/cf-single-asr-r263-20261026.request'' ]] || exit 10
+        [[ "$change" == $''A\tserver-bootstrap/control/cf-asr-unified/cf-single-asr-r263-20261026-retry1.request'' ]] || exit 10
 
-        file=server-bootstrap/control/cf-asr-unified/cf-single-asr-r263-20261026.request
+        file=server-bootstrap/control/cf-asr-unified/cf-single-asr-r263-20261026-retry1.request
 
-        grep -Fxq "request_id=cf-single-asr-r263-20261026" "$file"
+        grep -Fxq "request_id=cf-single-asr-r263-20261026-retry1" "$file"
 
         grep -Fxq "candidate_commit=e9779d35e1f34211817acd3d3441f44f5b9c80bf" "$file"
 
@@ -62,7 +62,7 @@ jobs:
 
         patch --batch --fuzz=0 -p1 -d "$RUNNER_TEMP/r263" < "$BRIDGE"
 
-        printf ''%s  %s\n'' 4fc289ee9b19d45fdd269dec42f019c39fe84eeac869951be838282366ed7aa9 "$RUNNER_TEMP/r263/telegram-ingress.mjs"
+        printf ''%s  %s\n'' 35c7d7f9f4f43822860f00e354106692f57d5ff3e5c4a52738dad623a5216f48 "$RUNNER_TEMP/r263/telegram-ingress.mjs"
         | sha256sum -c -
 
         patch --batch --fuzz=0 -p1 -d "$RUNNER_TEMP/r263" < "$SNAP/cf-r263-unified.patch"
