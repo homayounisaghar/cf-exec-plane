@@ -1,0 +1,4 @@
+Private canonical source: homayounisaghar/capability-fabric work/pcg-multifile-20-r136-20261026
+Base: PCG r135, previously activated with 20-file live Soniox smoke
+Delta: concurrent single jobs, credential-only serialization, fair 514 global WS pool, first-round barrier, per-file measured socket metrics
+Same slicing, overlap, DP merger, ARM64 ffmpeg. No private audio or transcripts shipped.
