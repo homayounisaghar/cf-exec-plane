@@ -1,0 +1,19 @@
+{
+  "files": {
+    "activate-stage4-pause.sh": "c0e5c5922a27da704506cc5a014a6d599034e0d5f20fd8c985527d57b1c36eff",
+    "apply-mobile-stage4.py": "c9048567a08173e6509f9fb59027d7505017ff3a85c9d315668b65a99c7acda4",
+    "baseline-main.sha256": "ef47f4c81bcc62709d5adb73b4a2cd9efdb171e6c79d08702dd9f61f237246c0",
+    "baseline-mobile.sha256": "d76455a1368e35f68cdfc54a23d324091072ed0af039ca032d01f2e337947c0d",
+    "deploy-stage4-pause.sh": "0bcb6069aba22b8aa2aa9be076b151396d9e18c1299e05bfb6722073d15c8d50",
+    "files/dexa_mission_control_contract_v1.mjs": "86a4c849fca15fbc90ac0be2a13c99c82a93853260a50fba2ac0dbf45bcc4a7b",
+    "files/index.html": "c28ecd49c656a1ebfa5e7872bfc86619b548b1c925476b9f55ee07051eebceef",
+    "files/server.mjs": "fd77cc5d2427322fa6a4c44ad7aa1f71253b456db5310e575e21e5acbb04bb79",
+    "proposed-main.sha256": "b5f83326e8d221678e2a5270e89cda3a9dc618d3f0fd87e66a8683f7f02a0a2a",
+    "proposed-mobile.sha256": "0efc2923b56ad1ee053db45c7ff10eb4aa5aa66f8bd0cb1d3fdd664237be1e16"
+  },
+  "release_id": "dexa-stage4-pause-20261026-v2",
+  "schema": "dexa.stage4.pause.owner-v2.secret-free-release",
+  "source_commit": "5b1b77c1eb724e0f54c1b4fa2b40ae4aba5284c8",
+  "source_ref": "work/dexa-autonomous-loop-20261020",
+  "source_repo": "homayounisaghar/capability-fabric"
+}
