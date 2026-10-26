@@ -1,6 +1,6 @@
 {
   "schema": "onshape.direct-release-closure.v1",
-  "build_id": "onshape-vps-fast-r100-direct-orbit1-paa-storage-r259-follow-presence1",
+  "build_id": "onshape-vps-fast-r100-direct-orbit1-paa-storage-r260-soniox16x1",
   "required_runtime_config": {
     "browser_topology": "SINGLE_SESSION",
     "browser_contexts": 1,
