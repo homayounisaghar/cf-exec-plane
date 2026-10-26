@@ -1,0 +1,14 @@
+r135 immutable Soniox 20-file batch PCG release
+candidate_private_commit=3ae0063764028695227ec050d16c41afc80b72e3
+private_repo=homayounisaghar/capability-fabric
+base_snapshot=qualification/pcg-web/408b4bf431a1403a76cc758b3d5b7c6a8cc23c9f/
+release_id=pcg-web-stage6-soniox-multifile20-r135
+sequence=135
+max_batch_files=20
+global_soniox_websockets=514
+max_soniox_websockets_per_file=514
+scheduled_real_smoke=17x389s+3x3893s, 20 independent files in one batch, 2620 parts total
+manifest_sha256=4aceb51b53aa3ed5090eb6d5fcae53c95b8ffdb97d2060ce2d9e7102ef5494aa
+activator_sha256=c42b3af59d99041f1065f1b832ae7fd885bb3ce2f42594cb522dc99f64626355
+roll_back_release=pcg-web-stage6-soniox-parallel-514-ffmpeg-r134
+provider_content=private; no audio or transcript committed
