@@ -41,8 +41,8 @@ jobs:
           manifest_hash="$(awk -F= '$1=="manifest_sha256"{print $2}' "$req" | tr -d '[:space:]')"
           [[ "$id" == "$request_id" && "$id" =~ ^dexa-stage4-pause-20261026-[a-z0-9-]+$ ]] || exit 22
           [[ "$commit" =~ ^[0-9a-f]{40}$ && "$old" =~ ^[0-9a-f]{64}$ && "$manifest_hash" =~ ^[0-9a-f]{64}$ ]] || exit 23
-          [[ "$release" == dexa-stage4-pause-20261026-v2 ]] || exit 24
-          snap="qualification/dexa-stage4-pause/$commit"
+          [[ "$release" == dexa-stage4-pause-20261026-v3 ]] || exit 24
+          snap="qualification/dexa-stage4-pause/$commit/revision-v3"
           [[ -d "$snap" ]] || exit 25
           printf '%s  %s\n' "$manifest_hash" "$snap/manifest.json" | sha256sum -c -
           export SNAP="$snap" COMMIT="$commit" OLD="$old" RELEASE="$release"
@@ -59,7 +59,7 @@ jobs:
           names={f"files/{x}" for x in ("server.mjs","index.html","dexa_mission_control_contract_v1.mjs")}
           names.update(["baseline-main.sha256","proposed-main.sha256","baseline-mobile.sha256",
             "proposed-mobile.sha256","deploy-stage4-pause.sh","activate-stage4-pause.sh",
-            "apply-mobile-stage4.py"])
+            "apply-mobile-stage4.py","approved-old-index-sha256.txt"])
           assert set(m["files"])==names, "SNAPSHOT_CONTENT_ALLOWLIST_MISMATCH"
           for f,h in m["files"].items():
             p=root/f
