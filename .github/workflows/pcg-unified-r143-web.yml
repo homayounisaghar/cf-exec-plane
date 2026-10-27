@@ -81,9 +81,11 @@ jobs:
           set -euo pipefail
           stage="$RUNNER_TEMP/pcg-r143-archive"
           mkdir -p "$stage/files"
-          for f in pcg_web_semantic_ops.mjs pcg_web_webk_bridge.mjs pcg_web_telegram_media_adapter.mjs pcg_unified_media_acquisition.mjs; do
+          for f in pcg_web_webk_bridge.mjs pcg_web_telegram_media_adapter.mjs pcg_unified_media_acquisition.mjs; do
             cp "$PRIVATE_WORK/server-deploy/channels/pcg/current/$f" "$stage/files/$f"
           done
+          cp "$PRIVATE_WORK/projects/personal-communications-gateway/patches/pcg-r143-live-semantic-merge.patch" "$stage/semantic.patch"
+          printf '%s  %s\n' 10cb248b452405be710c2ddb6fc62bb4dff49e0cc27d49478469c930205e33db "$stage/semantic.patch" | sha256sum -c -
           python3 - "$stage" "$SOURCE_COMMIT" <<'PY'
           import pathlib,hashlib,json,sys
           root=pathlib.Path(sys.argv[1])
