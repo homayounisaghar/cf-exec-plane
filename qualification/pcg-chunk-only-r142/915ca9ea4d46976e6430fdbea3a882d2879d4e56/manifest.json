@@ -1,0 +1,13 @@
+{
+  "schema": "pcg.chunk-only.source-release.v1",
+  "source_repo": "homayounisaghar/capability-fabric",
+  "source_ref": "project/personal-communications-gateway",
+  "source_commit": "915ca9ea4d46976e6430fdbea3a882d2879d4e56",
+  "release_id": "pcg-web-stage6-unified-chunked-r142",
+  "files": {
+    "pcg_unified_media_acquisition.mjs": "652d7c7552f15d14c11e114c3f09b5e7c08a5aa4d21116cbb8518189bf95f20c",
+    "pcg_web_telegram_media_adapter.mjs": "3510e06873e49b7610258a62917bab819bc88cd51940bdf17a549ef710f93e54",
+    "pcg_web_webk_bridge.mjs": "2aee8ac8d7fad33165d222e3d4a9495e3c5c96be838ea8a93443dd9875d7caf0"
+  },
+  "activation_sha256": "70a58e8b9e0345756be093864ba7653885b6d550c3a64f57cf9c87683373ff04"
+}
