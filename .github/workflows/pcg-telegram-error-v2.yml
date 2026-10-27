@@ -1,0 +1,91 @@
+name: PCG Original Telegram Attachment Error V2
+on:
+  push:
+    branches: [main]
+    paths:
+      - server-bootstrap/control/pcg-telegram-error-v2/*.request
+permissions:
+  contents: read
+concurrency:
+  group: pcg-telegram-error-v2
+  cancel-in-progress: false
+jobs:
+  diagnose:
+    if: github.repository_owner == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Admit exactly one sanitized owner diagnostics request
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$(git diff --name-status HEAD^ HEAD)" == $'A\tserver-bootstrap/control/pcg-telegram-error-v2/pcg-telegram-error-20261027.request' ]]
+          grep -Fxq 'request_id=pcg-telegram-error-20261027' server-bootstrap/control/pcg-telegram-error-v2/pcg-telegram-error-20261027.request
+          [[ "$(wc -l < server-bootstrap/control/pcg-telegram-error-v2/pcg-telegram-error-20261027.request)" == 1 ]]
+      - name: Prepare authorized root SSH identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -n "$VPS_SSH_KEY" && -n "$VPS_HOST" && -n "$VPS_HOST_KEY" ]] || exit 21
+          [[ "$VPS_SSH_USER" == root ]] || { echo PCG_ASR_DIAGNOSTIC_ROOT_REQUIRED;exit 22; }
+          port="${VPS_PORT:-22}"
+          [[ "$port" =~ ^[0-9]+$ ]] || exit 23
+          ssh_dir="$RUNNER_TEMP/pcg-error-codes-ssh"
+          install -d -m 0700 "$ssh_dir"
+          printf '%s\n' "$VPS_SSH_KEY" > "$ssh_dir/key"
+          chmod 0600 "$ssh_dir/key"
+          read -r algorithm material extra <<< "${VPS_HOST_KEY//$'\r'/}"
+          [[ "$algorithm" == ssh-ed25519 && -n "$material" && -z "${extra:-}" ]] || exit 24
+          printf '%s %s %s\n' "$VPS_HOST" "$algorithm" "$material" > "$ssh_dir/known_hosts"
+          printf '[%s]:%s %s %s\n' "$VPS_HOST" "$port" "$algorithm" "$material" >> "$ssh_dir/known_hosts"
+          chmod 0600 "$ssh_dir/known_hosts"
+          echo "SSH_DIR=$ssh_dir" >> "$GITHUB_ENV"
+          echo "SSH_PORT=$port" >> "$GITHUB_ENV"
+
+
+      - name: Read owner-local verified message and report only error code
+        shell: bash
+        run: |
+          set -euo pipefail
+          sshopts=(-i "$SSH_DIR/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$SSH_DIR/known_hosts")
+          ssh "${sshopts[@]}" -p "$SSH_PORT" "${VPS_SSH_USER}@${VPS_HOST}" 'python3 -' <<'PY'
+          import json,pathlib,socket,datetime
+          D=pathlib.Path('/var/lib/capability-fabric/paa-remote/dexa-mvp/missions/ebf283b1-d060-4262-9e1e-4fd03f538ddf-workflow')
+          f=next(D.glob('v1-*.json'))
+          m=json.loads(f.read_text())['entries']['3']['result']['messages'][0]
+          msg=m['handle'];att=m['attachments'][0]['handle']
+          assert msg.startswith('tgmsg:') and att.startswith('tgatt:')
+          req={'op':'semantic.invoke','operation':'communication.attachment.download',
+          'purpose':'LOCAL_DOWNLOAD','args':{'message_handle':msg,'attachment_handle':att,
+          'portable_format':'original'}}
+          s=socket.socket(socket.AF_UNIX,socket.SOCK_STREAM);s.settimeout(65)
+          s.connect('/var/lib/capability-fabric/pcg/run/web.sock')
+          s.sendall((json.dumps(req)+'\\n').encode('utf8'))
+          b=b''
+          while b'\\n' not in b and len(b)<50000000:
+           p=s.recv(65536)
+           if not p:break
+           b+=p
+          s.close()
+          out=json.loads(b.split(b'\\n',1)[0])
+          safe={'schema':'pcg.attachment-download-diagnostic.v2',
+          'captured_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),
+          'state':out.get('state'),'ok':out.get('ok'),'operation':out.get('operation'),
+          'error_code':out.get('error'),'observation_fields':list(out.get('observation') or {})[:25],
+          'provider_state_checked':(out.get('observation') or {}).get('provider_state_checked'),
+          'provider_state_unchanged':(out.get('observation') or {}).get('provider_state_unchanged')}
+          p=pathlib.Path('/tmp/pcg-telegram-error-v2.json')
+          p.write_text(json.dumps(safe,ensure_ascii=False,indent=2)+'\\n')
+          p.chmod(0o644)
+          print('PCG_EXACT_TELEGRAM_ERROR_CAPTURED',safe['state'],safe['error_code'])
+          PY
