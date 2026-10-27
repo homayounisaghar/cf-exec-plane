@@ -46,14 +46,17 @@ import hashlib,json,pathlib,subprocess,sys
 stage=pathlib.Path(sys.argv[1]);old=pathlib.Path(sys.argv[2])
 j=json.loads((stage/'manifest.json').read_text())
 assert j['schema']=='pcg.unified.r143.source-release.v1'
-assert j['source_commit']=='9eec1c61a4af8259d974e62979b6e8a6a472ef56'
+assert j['source_commit']=='a17554b000159b7143ca56eb54ced72c52a67939'
 assert j['release_id']=='pcg-web-stage6-unified-r143'
 before={
  'pcg_web_semantic_ops.mjs':'701b895ab5080326e364ba27bf097e2c886409aa',
  'pcg_web_webk_bridge.mjs':'ba581682b8b4ef8b06fbc78f210c4f325442b385',
  'pcg_web_telegram_media_adapter.mjs':'38a376541de553c4981eec31444cbedf2a04df17',
  'pcg_unified_media_acquisition.mjs':'582c7a104f7e916768b66ea14b2ba3f13c76c55a'}
-assert set(j['files'])==set(before)
+assert set(j['files'])==set(before)-{'pcg_web_semantic_ops.mjs'}
+assert j['semantic_patch_sha256']=='10cb248b452405be710c2ddb6fc62bb4dff49e0cc27d49478469c930205e33db'
+assert j['semantic_merged_sha256']=='510c7451341b81c5167cfd63e3a89e7a051b97ec73b945dc45b742b796914605'
+assert hashlib.sha256((s/'semantic.patch').read_bytes()).hexdigest()==j['semantic_patch_sha256']
 for name,digest in j['files'].items():
  p=stage/'files'/name
  assert p.is_file() and not p.is_symlink() and hashlib.sha256(p.read_bytes()).hexdigest()==digest,name
@@ -67,10 +70,18 @@ print('R143_PINNED_SOURCES_VALID')
 PY
 mkdir -m 0755 "$incoming"
 cp -a "$old"/. "$incoming"/
-for f in pcg_web_semantic_ops.mjs pcg_web_webk_bridge.mjs pcg_web_telegram_media_adapter.mjs pcg_unified_media_acquisition.mjs; do
+for f in pcg_web_webk_bridge.mjs pcg_web_telegram_media_adapter.mjs pcg_unified_media_acquisition.mjs; do
  cp "$stage/files/$f" "$incoming/$f"
  node --check "$incoming/$f"
 done
+# Preserve the entire live r142 semantic/batch/parallelism/owner-upload flow.
+# Apply only the audited r143 acquisition delta to that exact source.
+patch --batch --fuzz=0 -p1 -d "$incoming" < "$stage/semantic.patch"
+printf '%s  %s\n' 510c7451341b81c5167cfd63e3a89e7a051b97ec73b945dc45b742b796914605 "$incoming/pcg_web_semantic_ops.mjs" | sha256sum -c -
+node --check "$incoming/pcg_web_semantic_ops.mjs"
+grep -Fq 'startPerplexityAsrBatch' "$incoming/pcg_web_semantic_ops.mjs"
+grep -Fq 'chatgpt: createReadyMaterialAdapter()' "$incoming/pcg_web_semantic_ops.mjs"
+echo R143_PRIOR_ASR_BATCH_AND_READY_MATERIAL_PRESERVED
 python3 - "$incoming" <<'PY'
 import hashlib,json,pathlib,sys
 p=pathlib.Path(sys.argv[1])
