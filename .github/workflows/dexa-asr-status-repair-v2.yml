@@ -60,7 +60,7 @@ jobs:
             assert hashlib.sha256(f.read_bytes()).hexdigest()==digest,filename
           q=json.loads((p/"qualification.json").read_text())
           assert q["source_commit"]==j["source_commit"]
-          assert q["node_focused_pass"]==35 and q["node_focused_fail"]==0
+          assert q["serial_test_pass"]==35 and q["serial_test_fail"]==0
           print("DEXA_AUDIO_SNAPSHOT_VERIFIED",len(j["files"]))
           PY
           (cd "$SNAP/files" && sha256sum -c ../proposed.sha256)
