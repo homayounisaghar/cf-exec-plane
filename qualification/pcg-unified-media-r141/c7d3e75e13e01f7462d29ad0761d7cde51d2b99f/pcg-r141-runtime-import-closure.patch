@@ -1,0 +1,10 @@
+--- a/compose.yaml
++++ b/compose.yaml
+@@ -218,6 +218,7 @@
+         rm -rf /tmp/pcg-web-app &&
+         mkdir -m 0700 /tmp/pcg-web-app &&
+         cp /release/pcg_web_*.mjs /tmp/pcg-web-app/ &&
++        cp /release/pcg_unified_media_acquisition.mjs /tmp/pcg-web-app/ &&
+         cp /release/pcg_web_package.json /tmp/pcg-web-app/package.json &&
+         cd /tmp/pcg-web-app &&
+         PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm install --omit=dev --ignore-scripts --no-audit --no-fund --package-lock=false &&
