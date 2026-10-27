@@ -1,0 +1,122 @@
+name: PCG Unified Provider Media r141
+on:
+  push:
+    branches: [main]
+    paths:
+      - server-bootstrap/control/pcg-unified-media-r141/*.request
+permissions:
+  contents: read
+concurrency:
+  group: pcg-unified-media-r141
+  cancel-in-progress: false
+jobs:
+  deploy:
+    if: github.repository_owner == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+      SNAP: qualification/pcg-unified-media-v1/7c1a400043da6ab9a5d0c02fc1ac28c7df653aea
+      SCRIPT: qualification/pcg-unified-media-r141/c7d3e75e13e01f7462d29ad0761d7cde51d2b99f/activate-r141-web-asr-only.sh
+      FIX: qualification/pcg-unified-media-r141/c7d3e75e13e01f7462d29ad0761d7cde51d2b99f/pcg-r141-runtime-import-closure.patch
+      BASE: qualification/pcg-web/4d12bcea796fe5c0a7c4e1b64d1e8f2e74d6b571
+      PRIOR: qualification/pcg-telegram-bridge/629875b4b6f1a5f7bdc17011d02834d13dfb8d51/pcg-r137.patch
+      FAST: qualification/pcg-fast-audio/73bbc1bec8ef3495359e6c359d5d59ed6cf023d6/pcg-r138-fastdownload.patch
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Admit one immutable owner request and verify pinned baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          path=server-bootstrap/control/pcg-unified-media/pcg-unified-media-r141-20261027.request
+          [[ "$(git diff --name-status HEAD^ HEAD)" == $'A\tserver-bootstrap/control/pcg-unified-media/pcg-unified-media-r141-20261027.request' ]] || exit 10
+          grep -Fxq 'request_id=pcg-unified-media-r141-20261027' "$path"
+          grep -Fxq 'candidate_private_commit=c7d3e75e13e01f7462d29ad0761d7cde51d2b99f' "$path"
+          grep -Fxq 'expected_pcg_sequence=138' "$path"
+          grep -Fxq 'expected_cf_release=onshape-vps-fast-r100-direct-orbit1-paa-storage-r263-single-asr-tool' "$path"
+          [[ "$(wc -l < "$path")" == 4 ]] || exit 11
+          printf '%s  %s\n' 427b16010399546df3fa7cf8b927412dd325cd1eb9b0a69417fcd30ec735bfd2 "$PRIOR" | sha256sum -c -
+          printf '%s  %s\n' fc2e8b0a488f04103ef492557bb8a5a46376f8b5096ad4edc2fed8722c320086 "$FAST" | sha256sum -c -
+      - name: Verify source snapshots, rebuild exact r140 and run regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          while read -r blob name; do
+            [[ "$(git hash-object "$SNAP/$name")" == "$blob" ]] || { echo "BAD_SOURCE_BLOB $name"; exit 16; }
+          done <<'BLOBS'
+          561da5b2747a644edb6f0fb98f16afe24d056c87 pcg_unified_media_acquisition.mjs
+          bc9dfcec817a83c92d92562b981e3575d8a30676 pcg_web_telegram_media_adapter.mjs
+          3906f4cc272f81bbf1175d0c9ef087a717a10746 pcg_web_ready_material_adapter.mjs
+          1bceacfa98329c4f278d1b1011f1873fdc12dfdc pcg_ffmpeg_decode.mjs
+          40872a26f93f1558475f2033596be6f12ac0fdde pcg-r140-unified-media.patch
+          27b060d618e4325e7e100ba1bb47eb9e9efcebdc pcg_unified_media_acquisition.test.mjs
+          5b33dfb1ffba567b849c83a1d5ed2da326c9def8 pcg_web_telegram_media_adapter.test.mjs
+          7e829ab055f8721278e5425f26383156499ef4fe pcg_web_ready_material_adapter.test.mjs
+          79477b66e8b71698262bd0a03f21dfd8925d0dfc pcg_ffmpeg_media_decode.test.mjs
+          e22df871719f1527b0a498cb1fad62fea4b36387 activate-r140-web-asr-only.sh
+          BLOBS
+          cp -a "$BASE" "$RUNNER_TEMP/r140"
+          patch --batch --fuzz=0 -p1 -d "$RUNNER_TEMP/r140" < "$PRIOR"
+          patch --batch --fuzz=0 -p1 -d "$RUNNER_TEMP/r140" < "$FAST"
+          printf '%s  %s\n' d7839e74c13cfc9ddf3de7e9e952c186237c1340b57c419e471cb9cb8d97e532 "$RUNNER_TEMP/r140/pcg_web_semantic_ops.mjs" | sha256sum -c -
+          patch --batch --fuzz=0 -p1 -d "$RUNNER_TEMP/r140" < "$SNAP/pcg-r140-unified-media.patch"
+          patch --batch --fuzz=0 -p1 -d "$RUNNER_TEMP/r140" < "$FIX"
+          for f in pcg_unified_media_acquisition.mjs pcg_web_telegram_media_adapter.mjs pcg_web_ready_material_adapter.mjs pcg_ffmpeg_decode.mjs pcg_unified_media_acquisition.test.mjs pcg_web_telegram_media_adapter.test.mjs pcg_web_ready_material_adapter.test.mjs pcg_ffmpeg_media_decode.test.mjs; do
+            cp "$SNAP/$f" "$RUNNER_TEMP/r140/$f"
+          done
+          cp "$BASE/pcg_soniox_7sec.test.mjs" "$RUNNER_TEMP/r140/"
+          [[ "$(git hash-object "$SCRIPT")" == 5e3654a9b922ee45cf3c146d0e8861e53907cb96 ]] || exit 17
+          [[ "$(git hash-object "$FIX")" == 4daf9cb444b87c15321d2b9d29cb8f46da6a1e85 ]] || exit 18
+          cp "$SCRIPT" "$RUNNER_TEMP/r140/activate-r141-web-asr-only.sh"
+          python3 - <<'PY'
+          import json,hashlib,os,pathlib
+          p=pathlib.Path(os.environ["RUNNER_TEMP"])/"r140"
+          m=json.loads((p/"manifest.json").read_text())
+          assert m["sequence"]==136
+          assert hashlib.sha256((p/"pcg_soniox_fixed_overlap.mjs").read_bytes()).hexdigest()=="760741b91c1d156ae43857dc329ca805e81d3bdb703dd62488fe9cdc5ba76642"
+          semantic=(p/"pcg_web_semantic_ops.mjs").read_text()
+          assert "chatgpt: createReadyMaterialAdapter()" in semantic
+          assert "webKPrepareLargeAttachmentDownload" in semantic
+          assert "createUnifiedMediaAcquirer" in semantic
+          assert "cp /release/pcg_unified_media_acquisition.mjs" in (p/"compose.yaml").read_text()
+          m["sequence"]=141
+          m["release_id"]="pcg-web-stage6-unified-media-r141"
+          m["files"]={f.name:hashlib.sha256(f.read_bytes()).hexdigest() for f in p.iterdir() if f.is_file() and f.name!="manifest.json"}
+          (p/"manifest.json").write_text(json.dumps(m,indent=2)+"\n")
+          for f,h in m["files"].items():
+            assert hashlib.sha256((p/f).read_bytes()).hexdigest()==h,f
+          print("PCG_R140_SNAPSHOT_MANIFEST_OK",len(m["files"]))
+          PY
+          node --check "$RUNNER_TEMP/r140/pcg_web_semantic_ops.mjs"
+          node --check "$RUNNER_TEMP/r140/pcg_perplexity_asr.mjs"
+          node --check "$RUNNER_TEMP/r140/pcg_ffmpeg_decode.mjs"
+          if ! command -v ffmpeg >/dev/null 2>&1; then sudo apt-get update -qq && sudo apt-get install -y ffmpeg; fi
+          node --test "$RUNNER_TEMP/r140/pcg_unified_media_acquisition.test.mjs" "$RUNNER_TEMP/r140/pcg_web_telegram_media_adapter.test.mjs" "$RUNNER_TEMP/r140/pcg_web_ready_material_adapter.test.mjs" "$RUNNER_TEMP/r140/pcg_ffmpeg_media_decode.test.mjs" "$RUNNER_TEMP/r140/pcg_soniox_7sec.test.mjs"
+          bash -n "$RUNNER_TEMP/r140/activate-r141-web-asr-only.sh"
+          tar -czf "$RUNNER_TEMP/pcg-unified-r141-release.tgz" -C "$RUNNER_TEMP/r140" .
+      - name: Activate only PCG web and Soniox decoder with verified rollback
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -n "$VPS_SSH_KEY" && -n "$VPS_HOST" && -n "$VPS_SSH_USER" && -n "$VPS_HOST_KEY" ]] || exit 20
+          port="$VPS_PORT"; test -n "$port" || port=22
+          case "$port" in *[!0-9]*) exit 21 ;; esac
+          dir="$RUNNER_TEMP/ssh"
+          install -d -m 0700 "$dir"
+          printf '%s\n' "$VPS_SSH_KEY" > "$dir/key"
+          chmod 0600 "$dir/key"
+          read -r key_type key_data extra < <(printf '%s\n' "$VPS_HOST_KEY" | tr -d '\r')
+          [[ "$key_type" == ssh-ed25519 && -n "$key_data" && -z "$extra" ]] || exit 22
+          printf '%s %s %s\n' "$VPS_HOST" "$key_type" "$key_data" > "$dir/known_hosts"
+          printf '[%s]:%s %s %s\n' "$VPS_HOST" "$port" "$key_type" "$key_data" >> "$dir/known_hosts"
+          scp -i "$dir/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$dir/known_hosts" -P "$port" "$RUNNER_TEMP/pcg-unified-r141-release.tgz" "$VPS_SSH_USER@$VPS_HOST:/tmp/pcg-unified-r141-release.tgz"
+          scp -i "$dir/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$dir/known_hosts" -P "$port" "$SCRIPT" "$VPS_SSH_USER@$VPS_HOST:/tmp/pcg-r141-activate.sh"
+          ssh -i "$dir/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$dir/known_hosts" -p "$port" "$VPS_SSH_USER@$VPS_HOST" 'set -e; test "$(id -u)" = 0; bash /tmp/pcg-r141-activate.sh' </dev/null
+          echo PCG_R141_WORKFLOW_ACTIVATION_RETURNED
