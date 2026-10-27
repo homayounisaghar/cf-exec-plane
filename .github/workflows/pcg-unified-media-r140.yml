@@ -34,9 +34,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          path=server-bootstrap/control/pcg-unified-media/pcg-unified-media-r140-20261027-retry2.request
-          [[ "$(git diff --name-status HEAD^ HEAD)" == $'A\tserver-bootstrap/control/pcg-unified-media/pcg-unified-media-r140-20261027-retry2.request' ]] || exit 10
-          grep -Fxq 'request_id=pcg-unified-media-r140-20261027-retry2' "$path"
+          path=server-bootstrap/control/pcg-unified-media/pcg-unified-media-r140-20261027-retry3.request
+          [[ "$(git diff --name-status HEAD^ HEAD)" == $'A\tserver-bootstrap/control/pcg-unified-media/pcg-unified-media-r140-20261027-retry3.request' ]] || exit 10
+          grep -Fxq 'request_id=pcg-unified-media-r140-20261027-retry3' "$path"
           grep -Fxq 'candidate_private_commit=7c1a400043da6ab9a5d0c02fc1ac28c7df653aea' "$path"
           grep -Fxq 'expected_pcg_sequence=138' "$path"
           grep -Fxq 'expected_cf_release=onshape-vps-fast-r100-direct-orbit1-paa-storage-r263-single-asr-tool' "$path"
@@ -71,7 +71,8 @@ jobs:
           done
           cp "$BASE/pcg_soniox_7sec.test.mjs" "$RUNNER_TEMP/r140/"
           [[ "$(git hash-object "$SCRIPT")" == fd086307a18a2e88d7a6f7ea1db5ba552692ec3c ]] || exit 17
-          cp "$SCRIPT" "$RUNNER_TEMP/r140/activate-r140-web-asr-only.sh"
+          # Preserve immutable r140 release identity; the instrumented activation script is out-of-band.
+          cp "$SNAP/activate-r140-web-asr-only.sh" "$RUNNER_TEMP/r140/activate-r140-web-asr-only.sh"
           python3 - <<'PY'
           import json,hashlib,os,pathlib
           p=pathlib.Path(os.environ["RUNNER_TEMP"])/"r140"
