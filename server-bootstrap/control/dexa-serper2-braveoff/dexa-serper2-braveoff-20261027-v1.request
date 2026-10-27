@@ -1,0 +1,5 @@
+request_id=dexa-serper2-braveoff-20261027-v1
+candidate_commit=807ae97e2fb9166b3ddadfddb7a704c62400c721
+expected_old_server_sha256=6689c213179a68251a5f15c1ecd108fe3a86e2aab373035fe0fc2ac5a8f8d587
+expected_release=dexa-serper2-braveoff-20261027-v1
+manifest_sha256=33d1afb4e8170b8ea540dd515c1423ba63575a34a5a371a67694e61e8d569cdf
