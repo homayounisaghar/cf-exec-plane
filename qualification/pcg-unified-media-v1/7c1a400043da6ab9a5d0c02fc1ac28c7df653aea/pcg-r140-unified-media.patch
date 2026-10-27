@@ -1,0 +1,180 @@
+--- a/pcg_web_semantic_ops.mjs
++++ b/pcg_web_semantic_ops.mjs
+@@ -1,4 +1,7 @@
+ import { createHash, randomUUID } from "node:crypto";
++import { createUnifiedMediaAcquirer } from "./pcg_unified_media_acquisition.mjs";
++import { createTelegramMediaAdapter } from "./pcg_web_telegram_media_adapter.mjs";
++import { createReadyMaterialAdapter } from "./pcg_web_ready_material_adapter.mjs";
+ import { createConversationIdentity } from "./pcg_web_identity.mjs";
+ import { createComposerFoundation } from "./pcg_web_composer.mjs";
+ import { createPrivateFileBroker } from "./pcg_web_file_broker.mjs";
+@@ -41,6 +44,35 @@
+   const transcriptionJobsByMessage = new Map();
+   const perplexityTranscriptionJobsByMessage = new Map();
+ 
++  // One private data-plane consumer-independent acquisition boundary. WebK
++  // source adapters do not know Soniox; local staging reuses the existing
++  // pcgfile: writer, exact-offset integrity, TTL, and cleanup.
++  const mediaAcquirer = createUnifiedMediaAcquirer({
++    adapters: {
++      chatgpt: createReadyMaterialAdapter(),
++      telegram: createTelegramMediaAdapter({
++        identity, getPage: pageNow,
++        webk: {
++          download: webKDownloadAttachment,
++          fetchMessage: webKFetchMessage,
++          prepareLarge: webKPrepareLargeAttachmentDownload,
++          readLarge: webKReadLargeAttachmentDownloadChunk,
++          finishLarge: webKFinishLargeAttachmentDownload,
++          abortLarge: webKAbortLargeAttachmentDownload,
++        },
++      }),
++    },
++    createMaterialFileWriter: args => materialSendNow().createMaterialFileWriter(args),
++    limits: {
++      directLimitBytes: 8 * 1024 * 1024,
++      chunkBytes: 8 * 1024 * 1024,
++      maxBytes: 2 * 1024 * 1024 * 1024,
++      maxChunks: 512,
++      maxElapsedMs: 10 * 60 * 1000,
++    },
++  });
++
++
+   function pageNow() {
+     const page = getPage();
+     if (!page || page.isClosed()) {
+@@ -2290,66 +2322,21 @@
+    * references. Follow up with {batch_id} to receive 20 independent results.
+    * Never send source audio to Telegram or conflate identical file content.
+    */
+-  // Fast small-audio path: reuse the verified Telegram attachment download
+-  // implementation, which performs restriction and read-state reconciliation.
+-  // Avoid the 30s WebK large-download session for small voice notes. Large
+-  // audio keeps the existing chunked source reader without changing Soniox.
+-  async function acquireTelegramAudioForBatch(messageRef){
+-    const MAX_DIRECT_BYTES=8*1024*1024;
+-    let download=null;
+-    try{
+-      download=await webKDownloadAttachment(
+-        pageNow(),messageRef.providerRef,messageRef.mid,"document",MAX_DIRECT_BYTES);
+-    }catch(err){
+-      if(err?.code!=="WEBK_DOWNLOAD_SIZE_OUT_OF_BOUNDS")throw err;
+-    }
+-    if(download){
+-      if(download.outcome!=="ACHIEVED"||download.provider_state_unchanged!==true){
+-        const err=new Error("ASR_TELEGRAM_SOURCE_STATE_IN_DOUBT");
+-        err.code="ASR_TELEGRAM_SOURCE_STATE_IN_DOUBT";
+-        throw err;
+-      }
+-      if(typeof download.media_type!=="string"||!download.media_type.startsWith("audio/")){
+-        const err=new Error("ASR_BATCH_TELEGRAM_AUDIO_NOT_FOUND");
+-        err.code="ASR_BATCH_TELEGRAM_AUDIO_NOT_FOUND";
+-        throw err;
+-      }
+-      const size=download.size_bytes;
+-      if(!Number.isSafeInteger(size)||size<1||size>MAX_DIRECT_BYTES){
+-        const err=new Error("ASR_BATCH_SOURCE_SIZE_INVALID");
+-        err.code="ASR_BATCH_SOURCE_SIZE_INVALID";
+-        throw err;
+-      }
+-      const bytes=Buffer.from(download.data_base64||"","base64");
+-      if(bytes.length!==size){
+-        const err=new Error("ASR_BATCH_SOURCE_BYTES_INVALID");
+-        err.code="ASR_BATCH_SOURCE_BYTES_INVALID";
+-        throw err;
+-      }
+-      const writer=materialSendNow().createMaterialFileWriter({
+-        filename:download.filename||("voice-"+messageRef.mid+".ogg"),
+-        mimeType:download.media_type,
+-        sizeBytes:size,
+-      });
+-      try{
+-        writer.append(bytes,0);
+-        return writer.finalize();
+-      }catch(err){
+-        try{writer.abort()}catch{}
+-        throw err;
+-      }
+-    }
+-    // Streaming fallback for documents exceeding the direct-download limit.
+-    const message=await webKFetchMessage(pageNow(),messageRef.providerRef,messageRef.mid);
+-    const attachment=(Array.isArray(message?.attachments)?message.attachments:[])
+-      .find(a=>(a?.media_kind==="voice"||a?.media_kind==="audio")
+-        &&typeof a.media_type==="string"&&a.media_type.startsWith("audio/"));
+-    if(!attachment){
+-      const err=new Error("ASR_BATCH_TELEGRAM_AUDIO_NOT_FOUND");
+-      err.code="ASR_BATCH_TELEGRAM_AUDIO_NOT_FOUND";
+-      throw err;
+-    }
+-    return acquireAudioMaterialForAsr(messageRef,attachment);
++  async function acquireTelegramAudioForBatch(messageHandle) {
++    // Identical verified material contract for small/large audio OR video.
++    const acquired = await mediaAcquirer.acquire({
++      source_ref: { provider: "telegram", handle: messageHandle },
++      owner_context: { scope: "authenticated_owner" },
++      authorization_context: { purpose: "TRANSCRIPTION_ONLY" },
++      transfer_limits: { max_bytes: 64 * 1024 * 1024 },
++    });
++    return {
++      file_handle: acquired.material_file_handle,
++      filename: acquired.filename,
++      media_type: acquired.media_type,
++      size_bytes: acquired.size_bytes,
++      sha256_hex: acquired.sha256_hex,
++    };
+   }
+ 
+   async function audioTranscribeBatch(req){
+@@ -2369,7 +2356,8 @@
+           return teachingEnvelope(operation,"PERPLEXITY_ASR_BATCH_FILE_COUNT_INVALID","Pass between 1 and 20 independently identified staged audio references.");
+         // Telegram is only an acquisition adapter. Once the 11 source files
+         // are staged, this executes ONE common Soniox batch request.
+-        const telegramSources=files.filter(f=>Boolean(f?.telegram_message_handle));
++        const telegramSources=files.filter(f=>Boolean(f?.telegram_message_handle) ||
++          f?.source_ref?.provider === "telegram");
+         if(telegramSources.length){
+           if(await detectPhase()!=="READY")
+             return teachingEnvelope(operation,"SESSION_NOT_READY","Telegram source session not ready.");
+@@ -2378,18 +2366,32 @@
+           const clientId=f?.client_id??("file-"+(i+1));
+           const speedFactor=f?.speed_factor??4;
+           const parallelism=f?.parallelism??514;
+-          if(!f?.telegram_message_handle){
++          const sourceRef = f?.source_ref;
++          if(sourceRef && (f?.telegram_message_handle || f?.material_file_handle))
++            throw Error("ASR_BATCH_SOURCE_AMBIGUOUS");
++          if(!f?.telegram_message_handle && (!sourceRef || sourceRef.provider === "chatgpt")){
++            // CF-server has already verified its owner-scoped upload ticket.
++            // Re-adopt the same material identity, WITHOUT a duplicate copy.
++            const readyRef=sourceRef || {
++              provider:"chatgpt",handle:f?.material_file_handle,
++              filename:f?.filename,media_type:f?.media_type,
++              size_bytes:f?.size_bytes,sha256_hex:f?.sha256_hex,
++            };
++            const acquired=await mediaAcquirer.acquire({
++              source_ref:readyRef,owner_context:{scope:"authenticated_owner"},
++              authorization_context:{verified_upload:true},
++              transfer_limits:{max_bytes:64*1024*1024},
++            });
+             return {
+-              clientId,materialFileHandle:f?.material_file_handle,
+-              filename:f?.filename,sizeBytes:f?.size_bytes,
+-              sha256Hex:f?.sha256_hex,speedFactor,parallelism,
++              clientId,materialFileHandle:acquired.material_file_handle,
++              filename:acquired.filename,sizeBytes:acquired.size_bytes,
++              sha256Hex:acquired.sha256_hex,speedFactor,parallelism,
+             };
+           }
+-          // The message handle is resolved by the current Telegram identity
+-          // registry, never interpreted as a path or an arbitrary URL.
+-          if(f?.material_file_handle)throw Error("ASR_BATCH_SOURCE_AMBIGUOUS");
+-          const messageRef=identity.providerMessageRefForHandle(f.telegram_message_handle);
+-          const material=await acquireTelegramAudioForBatch(messageRef);
++          const telegramHandle=f?.telegram_message_handle ||
++            (sourceRef?.provider==="telegram" ? sourceRef.handle : null);
++          if(!telegramHandle)throw Error("MEDIA_PROVIDER_NOT_ADMITTED");
++          const material=await acquireTelegramAudioForBatch(telegramHandle);
+           if(!Number.isSafeInteger(material.size_bytes)||material.size_bytes<1||material.size_bytes>64*1024*1024)
+             throw Error("PERPLEXITY_ASR_SOURCE_SIZE_INVALID");
+           return {
