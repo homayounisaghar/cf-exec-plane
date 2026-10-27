@@ -1,0 +1,102 @@
+name: Dexa ASR Status Repair V2
+on:
+  push:
+    branches: [main]
+    paths:
+      - server-bootstrap/control/dexa-asr-status-repair/*.request
+permissions:
+  contents: read
+concurrency:
+  group: dexa-asr-poll-repair-v2-guarded
+  cancel-in-progress: false
+jobs:
+  deploy:
+    if: github.repository_owner == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+      SNAP: qualification/dexa-asr-status-repair-v2/441fb7a4c979d6c52b0503aa677416de0c8e7a9e
+      RID: dexa-asr-status-repair-20261027-v2
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Admit exactly one immutable request and pinned source
+        shell: bash
+        run: |
+          set -euo pipefail
+          request=server-bootstrap/control/dexa-asr-status-repair/dexa-asr-status-repair-20261027-v2.request
+          mapfile -t changes < <(git diff --name-status HEAD^ HEAD)
+          [[ "${#changes[@]}" -eq 1 ]] || { echo SINGLE_REQUEST_COMMIT_REQUIRED; exit 11; }
+          [[ "${changes[0]}" == $'A\tserver-bootstrap/control/dexa-asr-status-repair/dexa-asr-status-repair-20261027-v2.request' ]] || exit 12
+          grep -Fxq 'request_id=dexa-asr-status-repair-20261027-v2' "$request"
+          grep -Fxq 'candidate_commit=441fb7a4c979d6c52b0503aa677416de0c8e7a9e' "$request"
+          grep -Fxq 'expected_release=dexa-asr-status-repair-20261027-v2' "$request"
+          grep -Fxq 'manifest_sha256=39abca8e7ced10aec95104c7704fb56f03b61c64f9050bfc6ee628a5194a4ee3' "$request"
+          [[ "$(wc -l < "$request")" -eq 4 ]] || exit 13
+          printf '%s  %s\n' 39abca8e7ced10aec95104c7704fb56f03b61c64f9050bfc6ee628a5194a4ee3 "$SNAP/manifest.json" | sha256sum -c -
+          python3 - <<'PY'
+          import hashlib,json,os,pathlib
+          p=pathlib.Path(os.environ["SNAP"])
+          j=json.loads((p/"manifest.json").read_text())
+          assert j["schema"]=="dexa.asr-status-repair.secret-free-release.v2"
+          assert j["source_repo"]=="homayounisaghar/capability-fabric"
+          assert j["source_ref"]=="work/dexa-autonomous-loop-20261020"
+          assert j["source_commit"]=="441fb7a4c979d6c52b0503aa677416de0c8e7a9e"
+          assert j["release_id"]=="dexa-asr-status-repair-20261027-v2"
+          names={"files/dexa_tool_plan_executor_v3.mjs","files/dexa_text_writer_v1.mjs","files/dexa_writer_source_provenance_v1.mjs"}
+          names.update({"deploy-dexa-asr-repair.sh","activate-dexa-asr-repair.sh",
+            "baseline.sha256","proposed.sha256","qualification.json"})
+          assert set(j["files"])==names
+          for filename,digest in j["files"].items():
+            f=p/filename
+            assert f.is_file() and not f.is_symlink(),filename
+            assert hashlib.sha256(f.read_bytes()).hexdigest()==digest,filename
+          q=json.loads((p/"qualification.json").read_text())
+          assert q["source_commit"]==j["source_commit"]
+          assert q["node_focused_pass"]==35 and q["node_focused_fail"]==0
+          print("DEXA_AUDIO_SNAPSHOT_VERIFIED",len(j["files"]))
+          PY
+          (cd "$SNAP/files" && sha256sum -c ../proposed.sha256)
+          for f in "$SNAP/files/"*.mjs; do node --check "$f"; done
+          sh -n "$SNAP/deploy-dexa-asr-repair.sh" "$SNAP/activate-dexa-asr-repair.sh"
+      - name: Prepare pinned SSH identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -n "$VPS_SSH_KEY" && -n "$VPS_HOST" && -n "$VPS_SSH_USER" && -n "$VPS_HOST_KEY" ]] || exit 20
+          [[ "$VPS_SSH_USER" == cfserver || "$VPS_SSH_USER" == root ]] || exit 21
+          port="${VPS_PORT:-22}"
+          [[ "$port" =~ ^[0-9]+$ ]] || exit 22
+          dir="$RUNNER_TEMP/dexa-audio-ssh"
+          install -d -m 0700 "$dir"
+          printf '%s\n' "$VPS_SSH_KEY" > "$dir/key"
+          chmod 0600 "$dir/key"
+          read -r algorithm material extra <<< "${VPS_HOST_KEY//$'\r'/}"
+          [[ "$algorithm" == ssh-ed25519 && -n "$material" && -z "${extra:-}" ]] || exit 23
+          printf '%s %s %s\n' "$VPS_HOST" "$algorithm" "$material" > "$dir/known_hosts"
+          printf '[%s]:%s %s %s\n' "$VPS_HOST" "$port" "$algorithm" "$material" >> "$dir/known_hosts"
+          chmod 0600 "$dir/known_hosts"
+          echo "SSH_DIR=$dir" >> "$GITHUB_ENV"
+          echo "SSH_PORT=$port" >> "$GITHUB_ENV"
+      - name: Activate bounded service-only release with verified rollback
+        shell: bash
+        run: |
+          set -euo pipefail
+          tar -C "$SNAP" -czf "$RUNNER_TEMP/$RID.tgz" .
+          sshopts=(-i "$SSH_DIR/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$SSH_DIR/known_hosts")
+          scp "${sshopts[@]}" -P "$SSH_PORT" "$RUNNER_TEMP/$RID.tgz" "${VPS_SSH_USER}@${VPS_HOST}:/tmp/$RID.tgz"
+          scp "${sshopts[@]}" -P "$SSH_PORT" "$SNAP/activate-dexa-asr-repair.sh" "${VPS_SSH_USER}@${VPS_HOST}:/tmp/$RID-activate.sh"
+          ssh "${sshopts[@]}" -p "$SSH_PORT" "${VPS_SSH_USER}@${VPS_HOST}" "sh /tmp/$RID-activate.sh $RID" </dev/null
+      - name: Confirm service itself is healthy after restart
+        shell: bash
+        run: |
+          set -euo pipefail
+          sshopts=(-i "$SSH_DIR/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$SSH_DIR/known_hosts")
+          ssh "${sshopts[@]}" -p "$SSH_PORT" "${VPS_SSH_USER}@${VPS_HOST}" "curl -fsS --max-time 6 http://127.0.0.1:9471/healthz | node -e 'let s=\"\";process.stdin.on(\"data\",x=>s+=x).on(\"end\",()=>{const d=JSON.parse(s);if(d.ok!==true||d.deploymentDrain?.active===true||d.activeMissions!==0||!Number.isSafeInteger(d.storedMissions))process.exit(4);console.log(\"DEXA_AUDIO_LINEAGE_HEALTH_VERIFIED missions=\"+d.storedMissions)})'" </dev/null

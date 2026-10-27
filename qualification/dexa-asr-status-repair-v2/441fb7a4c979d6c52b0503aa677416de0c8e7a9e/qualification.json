@@ -1,0 +1,20 @@
+{
+  "schema": "dexa.asr-status-repair.qual.v2",
+  "source_commit": "441fb7a4c979d6c52b0503aa677416de0c8e7a9e",
+  "source_ref": "work/dexa-autonomous-loop-20261020",
+  "scoped_files": [
+    "dexa_tool_plan_executor_v3.mjs",
+    "dexa_text_writer_v1.mjs",
+    "dexa_writer_source_provenance_v1.mjs"
+  ],
+  "serial_test_pass": 35,
+  "serial_test_fail": 0,
+  "cf_connector_changed": false,
+  "provider_status_batch_fields": "batch_id",
+  "notes": [
+    "Latest owner mission failed polling because Stage5 source regressed to request_id.",
+    "The same CF batch returned SUCCEEDED 1/1, 12/12 parts and nonempty 938-character transcript.",
+    "35/35 isolated serial tests passed with latest web-evidence source retained.",
+    "Old failed mission checkpoint is not replayed; fresh owner test required."
+  ]
+}

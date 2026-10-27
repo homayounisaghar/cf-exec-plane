@@ -1,0 +1,22 @@
+{
+  "schema": "dexa.asr-status-repair.secret-free-release.v2",
+  "source_repo": "homayounisaghar/capability-fabric",
+  "source_ref": "work/dexa-autonomous-loop-20261020",
+  "source_commit": "441fb7a4c979d6c52b0503aa677416de0c8e7a9e",
+  "release_id": "dexa-asr-status-repair-20261027-v2",
+  "source_git_blobs": {
+    "dexa_tool_plan_executor_v3.mjs": "b4db4e847be82d7fd7ce08f354611ebf6cfbf39d",
+    "dexa_text_writer_v1.mjs": "1d303ebb6555109812b5dd1e07292e7744254a0f",
+    "dexa_writer_source_provenance_v1.mjs": "9591ba8f5b474057f895064f02cf1de907aaabc3"
+  },
+  "files": {
+    "files/dexa_tool_plan_executor_v3.mjs": "f84b18c2265d57f0cc27ad9d8f8f4b55f3403ae727f502fcf187e787454fffba",
+    "files/dexa_text_writer_v1.mjs": "a51a495456d6c53e1a64945d2fc20ffda0f87278b981c86c68df2362aa43184b",
+    "files/dexa_writer_source_provenance_v1.mjs": "a17b2964cb3690b2d38fb9867202113718b2a5ee4309b50f2cd4276316f8a559",
+    "deploy-dexa-asr-repair.sh": "41518199fbe1d86c8b41a2ce68309a42636cf666869239ee52db4f4a340b653c",
+    "activate-dexa-asr-repair.sh": "b6ca4ebecb1ffe67b8aa8a9d146f5b6ff406b9c3dd9915c0f3c70ffe0f114a31",
+    "baseline.sha256": "4821c59f07be04a7d9e52c744de0e2476506a75955d53b0e7ed1133e5a33fefa",
+    "proposed.sha256": "54cba6a371ae9911590e8314b56fca15766b52e7686867a109c1c530385b3701",
+    "qualification.json": "0bdc612fdc428a50023296b8770d21f6e3bfb3c08c02aacb89948572c6d8f48b"
+  }
+}
