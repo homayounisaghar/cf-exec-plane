@@ -1,0 +1,50 @@
+{
+  "bing_rss_removed_as_search_provider": true,
+  "brave_backend": "brave.search-api",
+  "brave_backup_default_enabled": false,
+  "brave_backup_requires_explicit_service_env_opt_in": "DEXA_BRAVE_SEARCH_BACKUP_ENABLED=1",
+  "brave_credential_present": false,
+  "brave_only_synthetic_contract_tests": true,
+  "brave_real_provider_calls": 0,
+  "no_new_cf_tools": true,
+  "note": "Distinct key tokens do not prove independent subscription credit pools",
+  "primary_key_strategy": "round_robin_with_explicit_auth_quota_second_key_retry",
+  "primary_keys_configured": 2,
+  "primary_provider": "serper.google-search",
+  "quota_doubling_guaranteed": false,
+  "real_physical_serper_requests": 4,
+  "real_queries": [
+    "خبرآنلاین",
+    "اخبار امروز تهران"
+  ],
+  "real_selected_qwen_owner_news_link": {
+    "brave_enabled": false,
+    "external_writes": 0,
+    "kata_calls": 1,
+    "qwen_calls": 2,
+    "state": "SUCCEEDED_VERIFIED",
+    "web_search_receipts": 1,
+    "writer_receipts": 1
+  },
+  "regression": {
+    "fail": 0,
+    "pass": 395,
+    "skip": 1,
+    "test_files": 49
+  },
+  "restart_scope": [
+    "dexa-main.service"
+  ],
+  "schema": "dexa.search-provider-routing.qualification.v1",
+  "scope_excludes": [
+    "dexa-catalog-gateway.service",
+    "dexa-mobile-gateway.service",
+    "CF_SERVER",
+    "private_mission_records",
+    "private_secret_values"
+  ],
+  "serper_result_count_each": 5,
+  "stage": "5",
+  "stage5_owner_status": "LIVE_CANDIDATE_OWNER_ACCEPTANCE_PENDING",
+  "tool_schema_unchanged": "dexa.web-source.v1"
+}

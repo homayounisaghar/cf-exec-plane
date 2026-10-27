@@ -1,0 +1,15 @@
+{
+  "files": {
+    "activate-serper-braveoff.sh": "0a21feb64b74ce01f2b68d2c72f853bc91536efdbb7a95170c6e8e9e6e7bbe4f",
+    "baseline.sha256": "4ede1f81b20d37cf1a3cfe0467f07c87e392e9eda3335bef7ca0e0d4a114ba57",
+    "deploy-serper-braveoff.sh": "04561cf9cafc9193e675fd594de4fb18069faef9df93ae6114e3cb4747212a4d",
+    "files/dexa_web_read_v1.mjs": "cbf8fd500b002779e5faabdc7fc3b169d902c79706069709f9824322420c38d2",
+    "proposed.sha256": "1df6cbadbe4f7d3a551d4762c0183df4c1d8f4660567e43637e5bf6d4bc6ef44",
+    "qualification.json": "e026bb7db6aa03d1e906156246a1db5441875eae21845ef02b735d7f67393ebc"
+  },
+  "release_id": "dexa-serper2-braveoff-20261027-v1",
+  "schema": "dexa.serper2.brave-backup-disabled.secret-free-release.v1",
+  "source_commit": "807ae97e2fb9166b3ddadfddb7a704c62400c721",
+  "source_ref": "work/dexa-autonomous-loop-20261020",
+  "source_repo": "homayounisaghar/capability-fabric"
+}
