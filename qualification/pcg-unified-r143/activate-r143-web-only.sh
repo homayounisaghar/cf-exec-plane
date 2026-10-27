@@ -46,7 +46,7 @@ import hashlib,json,pathlib,subprocess,sys
 stage=pathlib.Path(sys.argv[1]);old=pathlib.Path(sys.argv[2])
 j=json.loads((stage/'manifest.json').read_text())
 assert j['schema']=='pcg.unified.r143.source-release.v1'
-assert j['source_commit']=='a5adcbb5870d606fd5b67887b7ce0e10593dfc2e'
+assert j['source_commit']=='9eec1c61a4af8259d974e62979b6e8a6a472ef56'
 assert j['release_id']=='pcg-web-stage6-unified-r143'
 before={
  'pcg_web_semantic_ops.mjs':'701b895ab5080326e364ba27bf097e2c886409aa',
