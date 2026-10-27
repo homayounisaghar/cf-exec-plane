@@ -1,0 +1,73 @@
+name: PCG r143 Existing Release Read-only Baseline
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'server-bootstrap/control/pcg-r143-baseline/*.request'
+permissions:
+  contents: read
+concurrency:
+  group: pcg-r143-baseline-diagnostic
+  cancel-in-progress: false
+jobs:
+  read:
+    if: github.repository_owner == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Require one immutable, read-only diagnostic request
+        shell: bash
+        run: |
+          set -euo pipefail
+          p=server-bootstrap/control/pcg-r143-baseline/pcg-r143-baseline-20261027-v1.request
+          [[ "$(git diff --name-status HEAD^ HEAD)" == $'A\tserver-bootstrap/control/pcg-r143-baseline/pcg-r143-baseline-20261027-v1.request' ]] || exit 11
+          grep -Fxq 'request_id=pcg-r143-baseline-20261027-v1' "$p"
+          [[ "$(wc -l < "$p")" == 1 ]]
+      - name: Read root-owned r142 manifest and source hashes, no file content
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -n "$VPS_SSH_KEY" && -n "$VPS_HOST" && -n "$VPS_HOST_KEY" && "$VPS_SSH_USER" == root ]] || exit 21
+          port="${VPS_PORT:-22}"
+          [[ "$port" =~ ^[0-9]+$ ]] || exit 22
+          d="$RUNNER_TEMP/pcg-r143-baseline-ssh"
+          mkdir -m 0700 "$d"
+          printf '%s\n' "$VPS_SSH_KEY" > "$d/key"
+          chmod 0600 "$d/key"
+          read -r algorithm material extra <<< "${VPS_HOST_KEY//$'\r'/}"
+          [[ "$algorithm" == ssh-ed25519 && -n "$material" && -z "${extra:-}" ]] || exit 23
+          printf '%s %s %s\n' "$VPS_HOST" "$algorithm" "$material" > "$d/known_hosts"
+          printf '[%s]:%s %s %s\n' "$VPS_HOST" "$port" "$algorithm" "$material" >> "$d/known_hosts"
+          chmod 0600 "$d/known_hosts"
+          ssh -i "$d/key" -p "$port" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$d/known_hosts" "$VPS_SSH_USER@$VPS_HOST" 'python3 -' <<'PY'
+          import json,pathlib,hashlib,subprocess,datetime
+          link=pathlib.Path('/opt/capability-fabric/channels/pcg/current')
+          base=link.resolve(strict=True)
+          root=pathlib.Path('/var/lib/capability-fabric/pcg/releases/pcg-web-stage6-unified-chunked-r142')
+          assert base==root,'ACTIVE_RELEASE_MOVED'
+          manifest=json.loads((base/'manifest.json').read_text())
+          assert manifest['sequence']==142 and manifest['release_id']=='pcg-web-stage6-unified-chunked-r142'
+          names=['pcg_unified_media_acquisition.mjs','pcg_web_telegram_media_adapter.mjs','pcg_web_semantic_ops.mjs','pcg_web_webk_bridge.mjs']
+          rows={}
+          for name in names:
+              f=base/name
+              digest=hashlib.sha256(f.read_bytes()).hexdigest()
+              blob=subprocess.check_output(['git','hash-object',str(f)],text=True).strip()
+              rows[name]={'sha256':digest,'git_blob':blob,'matches_release_manifest':digest==manifest['files'][name]}
+          p=subprocess.run(['docker','inspect','-f','{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}','capability-fabric-pcg-web'],capture_output=True,text=True,timeout=10)
+          output={'schema':'pcg.r143.baseline.hashes.v1','at':datetime.datetime.now(datetime.timezone.utc).isoformat(),'release_id':manifest['release_id'],'sequence':manifest['sequence'],'manifest_source_commit':manifest.get('source_commit',None),'manifest_sha256':hashlib.sha256((base/'manifest.json').read_bytes()).hexdigest(),'web_health':p.stdout.strip(),'web_health_inspect_exit':p.returncode,'files':rows}
+          path=pathlib.Path('/tmp/pcg-r143-baseline-20261027.json')
+          path.write_text(json.dumps(output,indent=2)+'\n')
+          path.chmod(0o644)
+          print('R143_BASELINE_READ_ONLY_SHA256_RECORDED',len(rows))
+          PY
