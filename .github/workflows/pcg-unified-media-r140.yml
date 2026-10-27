@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   deploy:
-    if: github.actor == 'homayounisaghar'
+    if: github.repository_owner == 'homayounisaghar'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
@@ -33,9 +33,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          path=server-bootstrap/control/pcg-unified-media/pcg-unified-media-r140-20261027.request
-          [[ "$(git diff --name-status HEAD^ HEAD)" == $'A\tserver-bootstrap/control/pcg-unified-media/pcg-unified-media-r140-20261027.request' ]] || exit 10
-          grep -Fxq 'request_id=pcg-unified-media-r140-20261027' "$path"
+          path=server-bootstrap/control/pcg-unified-media/pcg-unified-media-r140-20261027-retry1.request
+          [[ "$(git diff --name-status HEAD^ HEAD)" == $'A\tserver-bootstrap/control/pcg-unified-media/pcg-unified-media-r140-20261027-retry1.request' ]] || exit 10
+          grep -Fxq 'request_id=pcg-unified-media-r140-20261027-retry1' "$path"
           grep -Fxq 'candidate_private_commit=7c1a400043da6ab9a5d0c02fc1ac28c7df653aea' "$path"
           grep -Fxq 'expected_pcg_sequence=138' "$path"
           grep -Fxq 'expected_cf_release=onshape-vps-fast-r100-direct-orbit1-paa-storage-r263-single-asr-tool' "$path"
@@ -91,7 +91,7 @@ jobs:
           node --check "$RUNNER_TEMP/r140/pcg_web_semantic_ops.mjs"
           node --check "$RUNNER_TEMP/r140/pcg_perplexity_asr.mjs"
           node --check "$RUNNER_TEMP/r140/pcg_ffmpeg_decode.mjs"
-          command -v ffmpeg
+          if ! command -v ffmpeg >/dev/null 2>&1; then sudo apt-get update -qq && sudo apt-get install -y ffmpeg; fi
           node --test "$RUNNER_TEMP/r140/pcg_unified_media_acquisition.test.mjs" "$RUNNER_TEMP/r140/pcg_web_telegram_media_adapter.test.mjs" "$RUNNER_TEMP/r140/pcg_web_ready_material_adapter.test.mjs" "$RUNNER_TEMP/r140/pcg_ffmpeg_media_decode.test.mjs" "$RUNNER_TEMP/r140/pcg_soniox_7sec.test.mjs"
           bash -n "$RUNNER_TEMP/r140/activate-r140-web-asr-only.sh"
           tar -czf "$RUNNER_TEMP/pcg-unified-r140-release.tgz" -C "$RUNNER_TEMP/r140" .
