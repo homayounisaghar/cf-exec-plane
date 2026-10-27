@@ -1,0 +1,91 @@
+name: PCG Chunk Only r142 Web Release
+on:
+  push:
+    branches: [main]
+    paths:
+      - server-bootstrap/control/pcg-chunk-only-r142/*.request
+permissions:
+  contents: read
+concurrency:
+  group: pcg-chunk-only-r142-release
+  cancel-in-progress: false
+jobs:
+  deploy:
+    if: github.repository_owner == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+      SNAP: qualification/pcg-chunk-only-r142/915ca9ea4d46976e6430fdbea3a882d2879d4e56
+      RID: pcg-chunk-only-r142-20261027-v1
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Admit exactly one immutable request and pinned sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          request=server-bootstrap/control/pcg-chunk-only-r142/pcg-chunk-only-r142-20261027-v1.request
+          [[ "$(git diff --name-status HEAD^ HEAD)" == $'A\tserver-bootstrap/control/pcg-chunk-only-r142/pcg-chunk-only-r142-20261027-v1.request' ]] || { echo SINGLE_IMMUTABLE_REQUEST_ONLY; exit 11; }
+          grep -Fxq 'request_id=pcg-chunk-only-r142-20261027-v1' "$request"
+          grep -Fxq 'source_commit=915ca9ea4d46976e6430fdbea3a882d2879d4e56' "$request"
+          grep -Fxq 'expected_release=pcg-web-stage6-unified-chunked-r142' "$request"
+          grep -Fxq 'manifest_sha256=949decc8c7f415d784c255745ab45f8fc018b9a9688c89bb04bec7ce0984a7c2' "$request"
+          [[ "$(wc -l < "$request")" == 4 ]] || exit 12
+          printf '%s  %s\n' 949decc8c7f415d784c255745ab45f8fc018b9a9688c89bb04bec7ce0984a7c2 "$SNAP/manifest.json" | sha256sum -c -
+          printf '%s  %s\n' 70a58e8b9e0345756be093864ba7653885b6d550c3a64f57cf9c87683373ff04 "$SNAP/activate-r142-chunked-web-only.sh" | sha256sum -c -
+          python3 - <<'PY'
+          import hashlib,json,pathlib,os
+          root=pathlib.Path(os.environ["SNAP"])
+          m=json.loads((root/"manifest.json").read_text())
+          assert m["schema"]=="pcg.chunk-only.source-release.v1"
+          assert m["source_commit"]=="915ca9ea4d46976e6430fdbea3a882d2879d4e56"
+          assert m["release_id"]=="pcg-web-stage6-unified-chunked-r142"
+          assert set(m["files"])=={"pcg_unified_media_acquisition.mjs","pcg_web_telegram_media_adapter.mjs","pcg_web_webk_bridge.mjs"}
+          for name,digest in m["files"].items():
+            p=root/"files"/name
+            assert p.is_file() and not p.is_symlink()
+            assert hashlib.sha256(p.read_bytes()).hexdigest()==digest,name
+          assert hashlib.sha256((root/"activate-r142-chunked-web-only.sh").read_bytes()).hexdigest()==m["activation_sha256"]
+          print("PCG_R142_SOURCE_INTEGRITY_CHECKS_PASS")
+          PY
+      - name: Prepare authorized root SSH identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -n "$VPS_SSH_KEY" && -n "$VPS_HOST" && -n "$VPS_HOST_KEY" ]] || exit 21
+          [[ "$VPS_SSH_USER" == root ]] || { echo PCG_R142_ROOT_DEPLOY_USER_REQUIRED;exit 22; }
+          port="${VPS_PORT:-22}"
+          [[ "$port" =~ ^[0-9]+$ ]] || exit 23
+          ssh_dir="$RUNNER_TEMP/pcg-r142-ssh"
+          install -d -m 0700 "$ssh_dir"
+          printf '%s\n' "$VPS_SSH_KEY" > "$ssh_dir/key"
+          chmod 0600 "$ssh_dir/key"
+          read -r algorithm material extra <<< "${VPS_HOST_KEY//$'\r'/}"
+          [[ "$algorithm" == ssh-ed25519 && -n "$material" && -z "${extra:-}" ]] || exit 24
+          printf '%s %s %s\n' "$VPS_HOST" "$algorithm" "$material" > "$ssh_dir/known_hosts"
+          printf '[%s]:%s %s %s\n' "$VPS_HOST" "$port" "$algorithm" "$material" >> "$ssh_dir/known_hosts"
+          chmod 0600 "$ssh_dir/known_hosts"
+          echo "SSH_DIR=$ssh_dir" >> "$GITHUB_ENV"
+          echo "SSH_PORT=$port" >> "$GITHUB_ENV"
+      - name: Activate only PCG web with rollback and health
+        shell: bash
+        run: |
+          set -euo pipefail
+          tar -C "$SNAP" -czf "$RUNNER_TEMP/pcg-chunk-only-r142-release.tgz" files manifest.json
+          sshopts=(-i "$SSH_DIR/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$SSH_DIR/known_hosts")
+          scp "${sshopts[@]}" -P "$SSH_PORT" "$RUNNER_TEMP/pcg-chunk-only-r142-release.tgz" "${VPS_SSH_USER}@${VPS_HOST}:/tmp/pcg-chunk-only-r142-release.tgz"
+          scp "${sshopts[@]}" -P "$SSH_PORT" "$SNAP/activate-r142-chunked-web-only.sh" "${VPS_SSH_USER}@${VPS_HOST}:/tmp/pcg-r142-activate.sh"
+          ssh "${sshopts[@]}" -p "$SSH_PORT" "${VPS_SSH_USER}@${VPS_HOST}" 'bash /tmp/pcg-r142-activate.sh' </dev/null
+      - name: Read back the actual active PCG release
+        shell: bash
+        run: |
+          set -euo pipefail
+          sshopts=(-i "$SSH_DIR/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$SSH_DIR/known_hosts")
+          ssh "${sshopts[@]}" -p "$SSH_PORT" "${VPS_SSH_USER}@${VPS_HOST}" 'set -eu; test "$(readlink -f /opt/capability-fabric/channels/pcg/current)" = /var/lib/capability-fabric/pcg/releases/pcg-web-stage6-unified-chunked-r142; test "$(docker inspect -f "{{.State.Health.Status}}" capability-fabric-pcg-web)" = healthy; echo PCG_R142_LIVE_READBACK_CONFIRMED' </dev/null
