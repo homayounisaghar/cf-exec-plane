@@ -1,0 +1,43 @@
+{
+  "schema": "dexa.evidence-stage5-qualification.v1",
+  "privateSourceCommit": "f3065f12bec38560e35607a6ddcbfd2c6ddfe70b",
+  "releaseId": "dexa-evidence-20261027-v1",
+  "isolation": "owner VPS isolated directory; no mission records exported",
+  "readOnly": true,
+  "newModel": false,
+  "externalEffectWrites": 0,
+  "catalogExternalCardsPreserved": 291,
+  "cfMappedPreserved": 187,
+  "internalToolCountAfter": 4,
+  "providerPrimary": "Serper two distinct keys, round-robin",
+  "braveBackup": "CODE_PRESENT_DISABLED_NO_KEY_NO_HTTP",
+  "tests": {
+    "serialFiles": 48,
+    "total": 403,
+    "passed": 402,
+    "failed": 0,
+    "skipped": 1,
+    "notIncluded": [
+      "test_dexa_stage3_two_turn_mock_e2e.mjs",
+      "test_dexa_terminal_notice_without_get_20261024.mjs"
+    ],
+    "notIncludedReason": "headless Chromium physical host process/thread resource limit, independently re-tried and failed before browser startup"
+  },
+  "ownerEquivalentCanary": {
+    "goal": "latest completed Esteghlal match with opponent and result",
+    "realQwenCalls": 2,
+    "kataCalls": 1,
+    "verifiedEvidenceRanaReceipts": 1,
+    "verifiedWriterReceipts": 1,
+    "verifiedReadPageCount": 3,
+    "writerStatus": "COMPLETE",
+    "missionStatus": "SUCCEEDED_VERIFIED",
+    "providerWrites": 0,
+    "ownerAnswerDeliveryVerified": true
+  },
+  "limitations": [
+    "Unverified recency remains INSUFFICIENT; no independent truth oracle",
+    "Brave API has no key and remains explicitly disabled",
+    "Owner phone acceptance pending, Stage5 is not closed"
+  ]
+}

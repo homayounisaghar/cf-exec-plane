@@ -1,0 +1,20 @@
+{
+  "files": {
+    "activate-evidence-v1.sh": "6445b644678f30ea2a88758740bd1efc1c56c53a8fd29e6f29746319c9b146c4",
+    "baseline.sha256": "637889688fdf60c9619d6e869ee924fd26c903d93a3846e4b1542fea2ab64429",
+    "deploy-evidence-v1.sh": "ec7bb736b47f7972b0d9700afe918685e427372e77e35df3e8d8e6c910ba6dd8",
+    "files/dexa_catalog_registry.mjs": "33c3bc0c2bf3115192839cdeb75e2a5aef1b44ebaa02f05f37f89f574fcbffe1",
+    "files/dexa_general_plan_cycle_v2.mjs": "646f87b523608597ccf461765e931b45f0b3c9322fd8851b4e87ccee07169e38",
+    "files/dexa_text_writer_v1.mjs": "73a882f9608e2d2cc666fd7b2d6a394c0d3d39f64ef606f46d29bc229eeed6c3",
+    "files/dexa_tool_plan_executor_v3.mjs": "7e918a1a9e1d23f081939683d838da21abfc6fbfaa3937a955f49fa829c36b57",
+    "files/dexa_web_evidence_v1.mjs": "5b452ef44fbd7f0f0da3a8fc2e9639daad709bedab3fa2106d46d4e8d3bc668e",
+    "files/dexa_writer_source_provenance_v1.mjs": "c058ab215dbffc80fad01336f8309e5c12d018c7bef750ee6c4b48ede9dc8cee",
+    "proposed.sha256": "67ce6a16c077d4ecc09eb780f6712a9d6e21cd99307d62b523a812e78ccc1ccb",
+    "qualification.json": "37a4591e912737d642576bc842f1b4e1adcc1cb127d406d087f18388657cd413"
+  },
+  "release_id": "dexa-evidence-20261027-v1",
+  "schema": "dexa.evidence-multisource.secret-free-release.v1",
+  "source_commit": "f3065f12bec38560e35607a6ddcbfd2c6ddfe70b",
+  "source_ref": "work/dexa-autonomous-loop-20261020",
+  "source_repo": "homayounisaghar/capability-fabric"
+}
