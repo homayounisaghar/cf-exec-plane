@@ -21,7 +21,7 @@ jobs:
       VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
       VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
       SNAP: qualification/pcg-unified-media-v1/7c1a400043da6ab9a5d0c02fc1ac28c7df653aea
-      SCRIPT: qualification/pcg-unified-media-r141/c7d3e75e13e01f7462d29ad0761d7cde51d2b99f/activate-r141-web-asr-only.sh
+      SCRIPT: qualification/pcg-unified-media-r141/cd52b3b932f281048991d90e7ebb494c5800c9c1/activate-r141-web-asr-only-v2.sh
       FIX: qualification/pcg-unified-media-r141/c7d3e75e13e01f7462d29ad0761d7cde51d2b99f/pcg-r141-runtime-import-closure.patch
       BASE: qualification/pcg-web/4d12bcea796fe5c0a7c4e1b64d1e8f2e74d6b571
       PRIOR: qualification/pcg-telegram-bridge/629875b4b6f1a5f7bdc17011d02834d13dfb8d51/pcg-r137.patch
@@ -35,9 +35,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          path=server-bootstrap/control/pcg-unified-media-r141/pcg-unified-media-r141-20261027-retry1.request
-          [[ "$(git diff --name-status HEAD^ HEAD)" == $'A\tserver-bootstrap/control/pcg-unified-media-r141/pcg-unified-media-r141-20261027-retry1.request' ]] || exit 10
-          grep -Fxq 'request_id=pcg-unified-media-r141-20261027-retry1' "$path"
+          path=server-bootstrap/control/pcg-unified-media-r141/pcg-unified-media-r141-20261027-retry2.request
+          [[ "$(git diff --name-status HEAD^ HEAD)" == $'A\tserver-bootstrap/control/pcg-unified-media-r141/pcg-unified-media-r141-20261027-retry2.request' ]] || exit 10
+          grep -Fxq 'request_id=pcg-unified-media-r141-20261027-retry2' "$path"
           grep -Fxq 'candidate_private_commit=c7d3e75e13e01f7462d29ad0761d7cde51d2b99f' "$path"
           grep -Fxq 'expected_pcg_sequence=138' "$path"
           grep -Fxq 'expected_cf_release=onshape-vps-fast-r100-direct-orbit1-paa-storage-r263-single-asr-tool' "$path"
@@ -72,7 +72,7 @@ jobs:
             cp "$SNAP/$f" "$RUNNER_TEMP/r140/$f"
           done
           cp "$BASE/pcg_soniox_7sec.test.mjs" "$RUNNER_TEMP/r140/"
-          [[ "$(git hash-object "$SCRIPT")" == 5e3654a9b922ee45cf3c146d0e8861e53907cb96 ]] || exit 17
+          [[ "$(git hash-object "$SCRIPT")" == 00b96ab9184aeb2a63f80663f2a72336323427a6 ]] || exit 17
           [[ "$(git hash-object "$FIX")" == 4daf9cb444b87c15321d2b9d29cb8f46da6a1e85 ]] || exit 18
           cp "$SCRIPT" "$RUNNER_TEMP/r140/activate-r141-web-asr-only.sh"
           python3 - <<'PY'
