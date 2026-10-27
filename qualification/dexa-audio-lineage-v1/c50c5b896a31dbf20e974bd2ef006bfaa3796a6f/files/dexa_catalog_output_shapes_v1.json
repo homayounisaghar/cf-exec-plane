@@ -1,0 +1,266 @@
+{
+  "schema": "dexa.catalog-output-shapes.v1",
+  "adapters": {
+    "telegram_conversation_search": {
+      "arrays": {
+        "conversations": {
+          "fields": [
+            "rank",
+            "handle",
+            "name",
+            "type",
+            "peer_kind",
+            "pinned",
+            "sponsored",
+            "proxy_sponsor",
+            "sponsor_kind",
+            "is_forum",
+            "forum_kind",
+            "list_section",
+            "unread_count",
+            "unread_mark",
+            "has_unread"
+          ],
+          "semanticValueMappings": {
+            "type": {
+              "group": {
+                "path": [
+                  "peer_kind"
+                ],
+                "op": "in",
+                "value": [
+                  "group",
+                  "supergroup"
+                ]
+              },
+              "channel": {
+                "path": [
+                  "peer_kind"
+                ],
+                "op": "equal",
+                "value": "channel"
+              }
+            },
+            "peer_kind": {
+              "group": {
+                "path": [
+                  "peer_kind"
+                ],
+                "op": "in",
+                "value": [
+                  "group",
+                  "supergroup"
+                ]
+              }
+            }
+          },
+          "fieldTypes": {
+            "handle": "string",
+            "name": "string",
+            "type": "string",
+            "peer_kind": "string",
+            "pinned": "boolean",
+            "is_forum": "boolean",
+            "unread_count": "integer",
+            "has_unread": "boolean"
+          }
+        }
+      }
+    },
+    "telegram_conversation_list": {
+      "arrays": {
+        "conversations": {
+          "fields": [
+            "handle",
+            "name",
+            "type",
+            "kind",
+            "is_forum",
+            "forum_kind",
+            "pinned",
+            "unread_count",
+            "unread_mark",
+            "has_unread"
+          ],
+          "semanticValueMappings": {
+            "kind": {
+              "group": {
+                "path": [
+                  "kind"
+                ],
+                "op": "in",
+                "value": [
+                  "group",
+                  "supergroup"
+                ]
+              }
+            }
+          },
+          "fieldTypes": {
+            "handle": "string",
+            "name": "string",
+            "type": "string",
+            "kind": "string",
+            "is_forum": "boolean",
+            "pinned": "boolean",
+            "unread_count": "integer",
+            "has_unread": "boolean"
+          }
+        }
+      }
+    },
+    "telegram_message_list": {
+      "arrays": {
+        "messages": {
+          "fields": [
+            "handle",
+            "kind",
+            "sender_name",
+            "sender_id",
+            "text",
+            "date",
+            "outgoing",
+            "media_type",
+            "media_open_kind",
+            "media_unread",
+            "attachments",
+            "service_action",
+            "reply_count",
+            "has_replies",
+            "direct_to_target",
+            "has_reactions",
+            "reaction_total_count",
+            "reaction_distinct_count",
+            "reaction_counts"
+          ],
+          "semanticValueMappings": {
+            "media_type": {
+              "voice": {
+                "path": [
+                  "media_open_kind"
+                ],
+                "op": "equal",
+                "value": "voice"
+              }
+            },
+            "kind": {
+              "voice": {
+                "path": [
+                  "media_open_kind"
+                ],
+                "op": "equal",
+                "value": "voice"
+              }
+            }
+          },
+          "optionalFields": [
+            "media_type",
+            "media_open_kind"
+          ]
+        }
+      }
+    },
+    "telegram_unread_list": {
+      "arrays": {
+        "conversations": {
+          "fields": [
+            "handle",
+            "name",
+            "kind",
+            "unread_count",
+            "unread_mark",
+            "has_unread"
+          ],
+          "fieldTypes": {
+            "handle": "string",
+            "name": "string",
+            "kind": "string",
+            "unread_count": "integer",
+            "has_unread": "boolean"
+          }
+        }
+      }
+    },
+    "dexa_web_search": {
+      "arrays": {
+        "results": {
+          "fields": [
+            "title",
+            "url",
+            "snippet",
+            "publishedAt",
+            "observedAt",
+            "sourceTrust"
+          ],
+          "fieldTypes": {
+            "title": "string",
+            "url": "string",
+            "snippet": "string",
+            "publishedAt": "string",
+            "observedAt": "string",
+            "sourceTrust": "string"
+          },
+          "optionalFields": [
+            "publishedAt"
+          ]
+        }
+      }
+    },
+    "dexa_web_read": {
+      "record": {
+        "fields": [
+          "url",
+          "text",
+          "readAt",
+          "publishedAt",
+          "contentDigest",
+          "receiptId",
+          "sourceTrust",
+          "sourceVerification"
+        ],
+        "fieldTypes": {
+          "url": "string",
+          "text": "string",
+          "readAt": "string",
+          "publishedAt": "string",
+          "contentDigest": "string",
+          "receiptId": "string",
+          "sourceTrust": "string",
+          "sourceVerification": "string"
+        },
+        "optionalFields": [
+          "publishedAt"
+        ]
+      }
+    },
+    "audio_transcribe": {
+      "arrays": {
+        "files": {
+          "fields": [
+            "client_id",
+            "index",
+            "job_id",
+            "state",
+            "source_sha256",
+            "completed_parts",
+            "parts_total",
+            "transcript_available",
+            "transcript",
+            "error"
+          ],
+          "fieldTypes": {
+            "client_id": "string",
+            "index": "integer",
+            "job_id": "string",
+            "state": "string",
+            "source_sha256": "string",
+            "completed_parts": "integer",
+            "parts_total": "integer",
+            "transcript_available": "boolean",
+            "transcript": "string"
+          }
+        }
+      }
+    }
+  }
+}

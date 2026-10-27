@@ -1,0 +1,12 @@
+{
+  "schema": "dexa.audio-lineage.isolated-qa.v1",
+  "source_commit": "c50c5b896a31dbf20e974bd2ef006bfaa3796a6f",
+  "node_focused_pass": 35,
+  "node_focused_fail": 0,
+  "live_deployed": false,
+  "notes": [
+    "All new CF audio async, typed DAG, provenance, writer tests passed on owner VPS.",
+    "Six unrelated pre-existing broad regression failures reproduced against unchanged source.",
+    "No private provider content stored."
+  ]
+}

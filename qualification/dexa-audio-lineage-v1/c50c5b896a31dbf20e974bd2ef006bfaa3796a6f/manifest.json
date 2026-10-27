@@ -1,0 +1,20 @@
+{
+  "schema": "dexa.audio-lineage.secret-free-release.v1",
+  "source_repo": "homayounisaghar/capability-fabric",
+  "source_ref": "work/dexa-autonomous-loop-20261020",
+  "source_commit": "c50c5b896a31dbf20e974bd2ef006bfaa3796a6f",
+  "release_id": "dexa-audio-lineage-20261027-v1",
+  "files": {
+    "activate-dexa-audio-lineage.sh": "7236f18d16b5209c409daffee2b8936594594b57410b2463d63117fb4f3fd981",
+    "baseline.sha256": "75a8a864f186f346a96cbbb0ce7b7ebbdcdb71605c8d54b435fa87ed384d593f",
+    "deploy-dexa-audio-lineage.sh": "8e752cb53fc23788ae5c8b3764909b18d560287e52ed1bdd5498323e915ba582",
+    "files/dexa_async_receipt_protocol.mjs": "0173794420f3b57468333738e2db8e68d077e9acf2c8ebd4b5e079b244fe9d09",
+    "files/dexa_catalog_output_shapes_v1.json": "cf5abe9d9223ad63265a08f75122bf4efa8ccfb8a8001b4d7e6c4782a2ddd32b",
+    "files/dexa_text_writer_v1.mjs": "f4f173eda5a39f457530eb5cc27608babb788abce37f217e96f81d51e5efafd5",
+    "files/dexa_tool_plan_executor_v3.mjs": "080ca1bdfbd21f722cb79ff7f3685b9bcae145b0a6f5e9a71e6b9b1a807b3394",
+    "files/dexa_tool_plan_v3.mjs": "5ed461d721141720868ac1dfbb1c37dfa7a12d8468cef13217d79e3e695128a8",
+    "files/dexa_typed_planner_prompt_v3.mjs": "b685f174c49940b5188dc431b0f74e6f11ec88431a1de24f50f42b96ba6eb8ca",
+    "files/dexa_writer_source_provenance_v1.mjs": "ff892241f108092b60460e815064e27d428c3eec006c70a854cd513b9a959c25",
+    "proposed.sha256": "9a6971a242f1cbb138a55e7da871c1c2165903dd8e0827f39e474ce3d79cdb72"
+  }
+}
