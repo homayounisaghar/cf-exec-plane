@@ -30,9 +30,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          f=server-bootstrap/control/pcg-unified-r143/pcg-unified-r143-20261027-v2.request
-          [[ "$(git diff --name-status HEAD^ HEAD)" == $'A\tserver-bootstrap/control/pcg-unified-r143/pcg-unified-r143-20261027-v2.request' ]] || exit 11
-          grep -Fxq 'request_id=pcg-unified-r143-20261027-v2' "$f"
+          f=server-bootstrap/control/pcg-unified-r143/pcg-unified-r143-20261027-v3.request
+          [[ "$(git diff --name-status HEAD^ HEAD)" == $'A\tserver-bootstrap/control/pcg-unified-r143/pcg-unified-r143-20261027-v3.request' ]] || exit 11
+          grep -Fxq 'request_id=pcg-unified-r143-20261027-v3' "$f"
           grep -Fxq "source_commit=$SOURCE_COMMIT" "$f"
           grep -Fxq 'expected_release=pcg-web-stage6-unified-r143' "$f"
           [[ "$(wc -l < "$f")" == 3 ]] || exit 12
