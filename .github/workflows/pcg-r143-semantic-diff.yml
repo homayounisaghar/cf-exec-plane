@@ -1,0 +1,90 @@
+name: PCG r143 Read-only Semantic Merge Diagnostic
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'server-bootstrap/control/pcg-r143-semantic/*.request'
+permissions:
+  contents: read
+concurrency:
+  group: pcg-r143-semantic-diagnostic
+  cancel-in-progress: false
+jobs:
+  read:
+    if: github.repository_owner == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Require one immutable, read-only diagnostic request
+        shell: bash
+        run: |
+          set -euo pipefail
+          p=server-bootstrap/control/pcg-r143-semantic/pcg-r143-semantic-20261027-v1.request
+          [[ "$(git diff --name-status HEAD^ HEAD)" == $'A\tserver-bootstrap/control/pcg-r143-semantic/pcg-r143-semantic-20261027-v1.request' ]] || exit 11
+          grep -Fxq 'request_id=pcg-r143-semantic-20261027-v1' "$p"
+          [[ "$(wc -l < "$p")" == 1 ]]
+      - name: Read root-owned r142 manifest and source hashes, no file content
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -n "$VPS_SSH_KEY" && -n "$VPS_HOST" && -n "$VPS_HOST_KEY" && "$VPS_SSH_USER" == root ]] || exit 21
+          port="${VPS_PORT:-22}"
+          [[ "$port" =~ ^[0-9]+$ ]] || exit 22
+          d="$RUNNER_TEMP/pcg-r143-semantic-ssh"
+          mkdir -m 0700 "$d"
+          printf '%s\n' "$VPS_SSH_KEY" > "$d/key"
+          chmod 0600 "$d/key"
+          read -r algorithm material extra <<< "${VPS_HOST_KEY//$'\r'/}"
+          [[ "$algorithm" == ssh-ed25519 && -n "$material" && -z "${extra:-}" ]] || exit 23
+          printf '%s %s %s\n' "$VPS_HOST" "$algorithm" "$material" > "$d/known_hosts"
+          printf '[%s]:%s %s %s\n' "$VPS_HOST" "$port" "$algorithm" "$material" >> "$d/known_hosts"
+          chmod 0600 "$d/known_hosts"
+          ssh -i "$d/key" -p "$port" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$d/known_hosts" "$VPS_SSH_USER@$VPS_HOST" 'python3 -' <<'PY'
+          import json,pathlib,hashlib,tarfile,difflib,datetime
+          old=pathlib.Path('/var/lib/capability-fabric/pcg/releases/pcg-web-stage6-unified-chunked-r142')
+          baseline=(old/'pcg_web_semantic_ops.mjs').read_text()
+          manifest=json.loads((old/'manifest.json').read_text())
+          assert manifest['release_id']=='pcg-web-stage6-unified-chunked-r142'
+          assert hashlib.sha256(baseline.encode()).hexdigest()==manifest['files']['pcg_web_semantic_ops.mjs']
+          path='/tmp/pcg-unified-r143-candidate.tgz'
+          with tarfile.open(path,'r:gz') as tar:
+           candidate=tar.extractfile('files/pcg_web_semantic_ops.mjs').read().decode()
+          def extract(name,s,until):
+           pos=s.find(name)
+           if pos<0:return 'MISSING'
+           end=s.find(until,pos)
+           return s[pos:end if end>pos else pos+6000]
+          keys=['createUnifiedMediaAcquirer','createTelegramMediaAdapter','acquireAudioMaterialForAsr','webKDownloadAttachment']
+          lines=['BASE_GIT_BLOB '+__import__('subprocess').check_output(['git','hash-object',str(old/'pcg_web_semantic_ops.mjs')],text=True).strip(),
+            'BASE_BYTES '+str(len(baseline)),'CANDIDATE_BYTES '+str(len(candidate))]
+          for key in keys:
+           lines.append(key+' base='+str(baseline.count(key))+' candidate='+str(candidate.count(key)))
+          before=extract('async function acquireAudioMaterialForAsr',baseline,'async function pollLocalAsrJob')
+          after=extract('async function acquireAudioMaterialForAsr',candidate,'async function pollLocalAsrJob')
+          lines+=['=== BASE FUNCTION ===',before[:6500],'=== CANDIDATE FUNCTION ===',after[:6500]]
+          oldlines=baseline.splitlines(keepends=True)
+          newlines=candidate.splitlines(keepends=True)
+          sm=difflib.SequenceMatcher(None,oldlines,newlines,autojunk=False)
+          sections=[(tag,i1,i2,j1,j2) for tag,i1,i2,j1,j2 in sm.get_opcodes() if tag!='equal']
+          lines.append('DIFF_BLOCK_COUNT '+str(len(sections)))
+          for tag,i1,i2,j1,j2 in sections[:18]:
+           lines.append(f'DIFF {tag} old:{i1+1}-{i2} new:{j1+1}-{j2}')
+           for item in oldlines[i1:min(i2,i1+5)]:lines.append('- '+item.rstrip()[:220])
+           for item in newlines[j1:min(j2,j1+5)]:lines.append('+ '+item.rstrip()[:220])
+          target=pathlib.Path('/tmp/pcg-r143-semantic-diff-20261027.txt')
+          target.write_text('\n'.join(lines)+'\n')
+          target.chmod(0o640)
+          import grp
+          target.chown(-1,grp.getgrnam('cfserver').gr_gid)
+          print('R143_SEMANTIC_READONLY_DIFF_WRITTEN',len(sections))
+          PY
