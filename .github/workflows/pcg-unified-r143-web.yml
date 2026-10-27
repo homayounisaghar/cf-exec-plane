@@ -20,7 +20,7 @@ jobs:
       VPS_PORT: ${{ secrets.VPS_PORT }}
       VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
       VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
-      SOURCE_COMMIT: 9eec1c61a4af8259d974e62979b6e8a6a472ef56
+      SOURCE_COMMIT: a17554b000159b7143ca56eb54ced72c52a67939
     steps:
       - uses: actions/checkout@v4
         with:
@@ -30,9 +30,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          f=server-bootstrap/control/pcg-unified-r143/pcg-unified-r143-20261027-v1.request
-          [[ "$(git diff --name-status HEAD^ HEAD)" == $'A\tserver-bootstrap/control/pcg-unified-r143/pcg-unified-r143-20261027-v1.request' ]] || exit 11
-          grep -Fxq 'request_id=pcg-unified-r143-20261027-v1' "$f"
+          f=server-bootstrap/control/pcg-unified-r143/pcg-unified-r143-20261027-v2.request
+          [[ "$(git diff --name-status HEAD^ HEAD)" == $'A\tserver-bootstrap/control/pcg-unified-r143/pcg-unified-r143-20261027-v2.request' ]] || exit 11
+          grep -Fxq 'request_id=pcg-unified-r143-20261027-v2' "$f"
           grep -Fxq "source_commit=$SOURCE_COMMIT" "$f"
           grep -Fxq 'expected_release=pcg-web-stage6-unified-r143' "$f"
           [[ "$(wc -l < "$f")" == 3 ]] || exit 12
