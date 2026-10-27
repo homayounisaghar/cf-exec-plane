@@ -20,7 +20,7 @@ jobs:
       VPS_PORT: ${{ secrets.VPS_PORT }}
       VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
       VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
-      SOURCE_COMMIT: a5adcbb5870d606fd5b67887b7ce0e10593dfc2e
+      SOURCE_COMMIT: 9eec1c61a4af8259d974e62979b6e8a6a472ef56
     steps:
       - uses: actions/checkout@v4
         with:
