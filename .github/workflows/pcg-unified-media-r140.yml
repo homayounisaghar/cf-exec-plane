@@ -21,6 +21,7 @@ jobs:
       VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
       VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
       SNAP: qualification/pcg-unified-media-v1/7c1a400043da6ab9a5d0c02fc1ac28c7df653aea
+      SCRIPT: qualification/pcg-unified-media-r140-diagnostic/43083ce8e1387779f4cbf952e2ad70c63d48b3c9/activate-r140-web-asr-only.sh
       BASE: qualification/pcg-web/4d12bcea796fe5c0a7c4e1b64d1e8f2e74d6b571
       PRIOR: qualification/pcg-telegram-bridge/629875b4b6f1a5f7bdc17011d02834d13dfb8d51/pcg-r137.patch
       FAST: qualification/pcg-fast-audio/73bbc1bec8ef3495359e6c359d5d59ed6cf023d6/pcg-r138-fastdownload.patch
@@ -33,9 +34,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          path=server-bootstrap/control/pcg-unified-media/pcg-unified-media-r140-20261027-retry1.request
-          [[ "$(git diff --name-status HEAD^ HEAD)" == $'A\tserver-bootstrap/control/pcg-unified-media/pcg-unified-media-r140-20261027-retry1.request' ]] || exit 10
-          grep -Fxq 'request_id=pcg-unified-media-r140-20261027-retry1' "$path"
+          path=server-bootstrap/control/pcg-unified-media/pcg-unified-media-r140-20261027-retry2.request
+          [[ "$(git diff --name-status HEAD^ HEAD)" == $'A\tserver-bootstrap/control/pcg-unified-media/pcg-unified-media-r140-20261027-retry2.request' ]] || exit 10
+          grep -Fxq 'request_id=pcg-unified-media-r140-20261027-retry2' "$path"
           grep -Fxq 'candidate_private_commit=7c1a400043da6ab9a5d0c02fc1ac28c7df653aea' "$path"
           grep -Fxq 'expected_pcg_sequence=138' "$path"
           grep -Fxq 'expected_cf_release=onshape-vps-fast-r100-direct-orbit1-paa-storage-r263-single-asr-tool' "$path"
@@ -69,7 +70,8 @@ jobs:
             cp "$SNAP/$f" "$RUNNER_TEMP/r140/$f"
           done
           cp "$BASE/pcg_soniox_7sec.test.mjs" "$RUNNER_TEMP/r140/"
-          cp "$SNAP/activate-r140-web-asr-only.sh" "$RUNNER_TEMP/r140/"
+          [[ "$(git hash-object "$SCRIPT")" == fd086307a18a2e88d7a6f7ea1db5ba552692ec3c ]] || exit 17
+          cp "$SCRIPT" "$RUNNER_TEMP/r140/activate-r140-web-asr-only.sh"
           python3 - <<'PY'
           import json,hashlib,os,pathlib
           p=pathlib.Path(os.environ["RUNNER_TEMP"])/"r140"
@@ -111,6 +113,6 @@ jobs:
           printf '%s %s %s\n' "$VPS_HOST" "$key_type" "$key_data" > "$dir/known_hosts"
           printf '[%s]:%s %s %s\n' "$VPS_HOST" "$port" "$key_type" "$key_data" >> "$dir/known_hosts"
           scp -i "$dir/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$dir/known_hosts" -P "$port" "$RUNNER_TEMP/pcg-unified-r140-release.tgz" "$VPS_SSH_USER@$VPS_HOST:/tmp/pcg-unified-r140-release.tgz"
-          scp -i "$dir/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$dir/known_hosts" -P "$port" "$SNAP/activate-r140-web-asr-only.sh" "$VPS_SSH_USER@$VPS_HOST:/tmp/pcg-r140-activate.sh"
+          scp -i "$dir/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$dir/known_hosts" -P "$port" "$SCRIPT" "$VPS_SSH_USER@$VPS_HOST:/tmp/pcg-r140-activate.sh"
           ssh -i "$dir/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$dir/known_hosts" -p "$port" "$VPS_SSH_USER@$VPS_HOST" 'set -e; test "$(id -u)" = 0; bash /tmp/pcg-r140-activate.sh' </dev/null
           echo PCG_R140_WORKFLOW_ACTIVATION_RETURNED
