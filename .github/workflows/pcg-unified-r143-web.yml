@@ -90,11 +90,11 @@ jobs:
           import pathlib,hashlib,json,sys
           root=pathlib.Path(sys.argv[1])
           files={f.name:hashlib.sha256(f.read_bytes()).hexdigest() for f in (root/'files').iterdir()}
-          assert len(files)==4
-          j={'schema':'pcg.unified.r143.source-release.v1','source_commit':sys.argv[2],'release_id':'pcg-web-stage6-unified-r143','files':files}
+          assert len(files)==3
+          j={'schema':'pcg.unified.r143.source-release.v1','source_commit':sys.argv[2],'release_id':'pcg-web-stage6-unified-r143','files':files,'semantic_patch_sha256':hashlib.sha256((root/'semantic.patch').read_bytes()).hexdigest(),'semantic_merged_sha256':'510c7451341b81c5167cfd63e3a89e7a051b97ec73b945dc45b742b796914605'}
           (root/'manifest.json').write_text(json.dumps(j,indent=2)+'\n')
           PY
-          tar -C "$stage" -czf "$RUNNER_TEMP/pcg-unified-r143-candidate.tgz" files manifest.json
+          tar -C "$stage" -czf "$RUNNER_TEMP/pcg-unified-r143-candidate.tgz" files manifest.json semantic.patch
           echo "RELEASE_ARCHIVE=$RUNNER_TEMP/pcg-unified-r143-candidate.tgz" >> "$GITHUB_ENV"
       - name: Setup pinned authorized SSH identity
         shell: bash
