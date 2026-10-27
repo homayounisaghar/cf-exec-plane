@@ -56,7 +56,7 @@ before={
 assert set(j['files'])==set(before)-{'pcg_web_semantic_ops.mjs'}
 assert j['semantic_patch_sha256']=='10cb248b452405be710c2ddb6fc62bb4dff49e0cc27d49478469c930205e33db'
 assert j['semantic_merged_sha256']=='510c7451341b81c5167cfd63e3a89e7a051b97ec73b945dc45b742b796914605'
-assert hashlib.sha256((s/'semantic.patch').read_bytes()).hexdigest()==j['semantic_patch_sha256']
+assert hashlib.sha256((stage/'semantic.patch').read_bytes()).hexdigest()==j['semantic_patch_sha256']
 for name,digest in j['files'].items():
  p=stage/'files'/name
  assert p.is_file() and not p.is_symlink() and hashlib.sha256(p.read_bytes()).hexdigest()==digest,name
