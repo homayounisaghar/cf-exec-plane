@@ -1,0 +1,129 @@
+name: PCG Unified Media r143 Web-Only Guarded Deploy
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'server-bootstrap/control/pcg-unified-r143/*.request'
+permissions:
+  contents: read
+concurrency:
+  group: pcg-r143-web-only-release
+  cancel-in-progress: false
+jobs:
+  deploy:
+    if: github.repository_owner == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+      SOURCE_COMMIT: a5adcbb5870d606fd5b67887b7ce0e10593dfc2e
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Admit one pinned immutable request
+        shell: bash
+        run: |
+          set -euo pipefail
+          f=server-bootstrap/control/pcg-unified-r143/pcg-unified-r143-20261027-v1.request
+          [[ "$(git diff --name-status HEAD^ HEAD)" == $'A\tserver-bootstrap/control/pcg-unified-r143/pcg-unified-r143-20261027-v1.request' ]] || exit 11
+          grep -Fxq 'request_id=pcg-unified-r143-20261027-v1' "$f"
+          grep -Fxq "source_commit=$SOURCE_COMMIT" "$f"
+          grep -Fxq 'expected_release=pcg-web-stage6-unified-r143' "$f"
+          [[ "$(wc -l < "$f")" == 3 ]] || exit 12
+          echo R143_IMMUTABLE_REQUEST_ADMITTED
+      - name: Fetch pinned private source then scrub credential
+        shell: bash
+        env:
+          CF_REPO_READ_TOKEN: ${{ secrets.CF_REPO_READ_TOKEN }}
+        run: |
+          set -euo pipefail
+          : "${CF_REPO_READ_TOKEN:?}"
+          work="$RUNNER_TEMP/pcg-r143-private"
+          mkdir -m 0700 "$work"
+          git init "$work" >/dev/null
+          askpass="$RUNNER_TEMP/pcg-r143-askpass"
+          cat > "$askpass" <<'ASKPASS'
+          #!/usr/bin/env bash
+          case "${1:-}" in
+            *Username*) printf '%s\n' 'x-access-token' ;;
+            *Password*) printf '%s\n' "$CF_REPO_READ_TOKEN" ;;
+            *) exit 1 ;;
+          esac
+          ASKPASS
+          chmod 0700 "$askpass"
+          GIT_ASKPASS="$askpass" GIT_TERMINAL_PROMPT=0 git -C "$work" fetch --quiet --depth=1 https://github.com/homayounisaghar/capability-fabric.git "$SOURCE_COMMIT"
+          [[ "$(git -C "$work" rev-parse FETCH_HEAD)" == "$SOURCE_COMMIT" ]] || exit 13
+          git -C "$work" checkout --quiet --detach FETCH_HEAD
+          rm -f "$askpass"
+          unset CF_REPO_READ_TOKEN
+          echo "PRIVATE_WORK=$work" >> "$GITHUB_ENV"
+          echo R143_PINNED_PRIVATE_SOURCE_VERIFIED
+      - name: Syntax, unit and cross-path regression before any service change
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$PRIVATE_WORK"
+          for f in pcg_web_semantic_ops.mjs pcg_web_webk_bridge.mjs pcg_web_telegram_media_adapter.mjs pcg_unified_media_acquisition.mjs; do
+            node --check "server-deploy/channels/pcg/current/$f"
+          done
+          node --test server-deploy/channels/pcg/current/test_pcg_unified_media_acquisition_chunk_v2.mjs server-deploy/channels/pcg/current/test_pcg_telegram_adapter_20261027.mjs server-deploy/channels/pcg/current/test_pcg_webk_ranged_legacy_20261027.mjs
+          node --test tests/pcg_web_ready_material_adapter.test.mjs tests/pcg_web_telegram_media_adapter.test.mjs
+          echo R143_SOURCE_AND_MEDIA_TESTS_PASS
+      - name: Build source-pinned private archive, no repository token in payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          stage="$RUNNER_TEMP/pcg-r143-archive"
+          mkdir -p "$stage/files"
+          for f in pcg_web_semantic_ops.mjs pcg_web_webk_bridge.mjs pcg_web_telegram_media_adapter.mjs pcg_unified_media_acquisition.mjs; do
+            cp "$PRIVATE_WORK/server-deploy/channels/pcg/current/$f" "$stage/files/$f"
+          done
+          python3 - "$stage" "$SOURCE_COMMIT" <<'PY'
+          import pathlib,hashlib,json,sys
+          root=pathlib.Path(sys.argv[1])
+          files={f.name:hashlib.sha256(f.read_bytes()).hexdigest() for f in (root/'files').iterdir()}
+          assert len(files)==4
+          j={'schema':'pcg.unified.r143.source-release.v1','source_commit':sys.argv[2],'release_id':'pcg-web-stage6-unified-r143','files':files}
+          (root/'manifest.json').write_text(json.dumps(j,indent=2)+'\n')
+          PY
+          tar -C "$stage" -czf "$RUNNER_TEMP/pcg-unified-r143-candidate.tgz" files manifest.json
+          echo "RELEASE_ARCHIVE=$RUNNER_TEMP/pcg-unified-r143-candidate.tgz" >> "$GITHUB_ENV"
+      - name: Setup pinned authorized SSH identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -n "$VPS_SSH_KEY" && -n "$VPS_HOST" && -n "$VPS_HOST_KEY" ]] || exit 21
+          [[ "$VPS_SSH_USER" == root ]] || exit 22
+          port="${VPS_PORT:-22}"
+          [[ "$port" =~ ^[0-9]+$ ]] || exit 23
+          d="$RUNNER_TEMP/pcg-r143-ssh"
+          mkdir -m 0700 "$d"
+          printf '%s\n' "$VPS_SSH_KEY" > "$d/key"
+          chmod 0600 "$d/key"
+          read -r algorithm material extra <<< "${VPS_HOST_KEY//$'\r'/}"
+          [[ "$algorithm" == ssh-ed25519 && -n "$material" && -z "${extra:-}" ]] || exit 24
+          printf '%s %s %s\n' "$VPS_HOST" "$algorithm" "$material" > "$d/known_hosts"
+          printf '[%s]:%s %s %s\n' "$VPS_HOST" "$port" "$algorithm" "$material" >> "$d/known_hosts"
+          chmod 0600 "$d/known_hosts"
+          echo "SSH_DIR=$d" >> "$GITHUB_ENV"
+          echo "SSH_PORT=$port" >> "$GITHUB_ENV"
+      - name: Publish only PCG web with guarded rollback
+        shell: bash
+        run: |
+          set -euo pipefail
+          opts=(-i "$SSH_DIR/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$SSH_DIR/known_hosts")
+          scp "${opts[@]}" -P "$SSH_PORT" "$RELEASE_ARCHIVE" "$VPS_SSH_USER@$VPS_HOST:/tmp/pcg-unified-r143-candidate.tgz"
+          scp "${opts[@]}" -P "$SSH_PORT" qualification/pcg-unified-r143/activate-r143-web-only.sh "$VPS_SSH_USER@$VPS_HOST:/tmp/pcg-r143-activate.sh"
+          ssh "${opts[@]}" -p "$SSH_PORT" "$VPS_SSH_USER@$VPS_HOST" 'bash /tmp/pcg-r143-activate.sh' </dev/null
+      - name: Direct live host version and web health readback
+        shell: bash
+        run: |
+          set -euo pipefail
+          opts=(-i "$SSH_DIR/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$SSH_DIR/known_hosts")
+          ssh "${opts[@]}" -p "$SSH_PORT" "$VPS_SSH_USER@$VPS_HOST" 'set -eu; test "$(readlink -f /opt/capability-fabric/channels/pcg/current)" = /var/lib/capability-fabric/pcg/releases/pcg-web-stage6-unified-r143; test "$(docker inspect -f "{{.State.Health.Status}}" capability-fabric-pcg-web)" = healthy; echo R143_DIRECT_LIVE_READBACK_CONFIRMED' </dev/null
