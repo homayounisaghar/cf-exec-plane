@@ -29,9 +29,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          p=server-bootstrap/control/pcg-r143-semantic/pcg-r143-semantic-20261027-v2.request
-          [[ "$(git diff --name-status HEAD^ HEAD)" == $'A\tserver-bootstrap/control/pcg-r143-semantic/pcg-r143-semantic-20261027-v2.request' ]] || exit 11
-          grep -Fxq 'request_id=pcg-r143-semantic-20261027-v2' "$p"
+          p=server-bootstrap/control/pcg-r143-semantic/pcg-r143-semantic-20261027-v3.request
+          [[ "$(git diff --name-status HEAD^ HEAD)" == $'A\tserver-bootstrap/control/pcg-r143-semantic/pcg-r143-semantic-20261027-v3.request' ]] || exit 11
+          grep -Fxq 'request_id=pcg-r143-semantic-20261027-v3' "$p"
           [[ "$(wc -l < "$p")" == 1 ]]
       - name: Read root-owned r142 manifest and source hashes, no file content
         shell: bash
@@ -84,5 +84,12 @@ jobs:
           target=pathlib.Path('/tmp/pcg-r143-semantic-diff-20261027.txt')
           target.write_text('\n'.join(lines)+'\n')
           target.chmod(0o644)
-          print('R143_SEMANTIC_READONLY_DIFF_WRITTEN',len(sections))
+          # Preserve the actual, proven live implementation for a lossless merge.
+          import subprocess
+          inspect=pathlib.Path('/tmp/pcg-r143-existing-semantic-20261027.mjs')
+          subprocess.run(['install','-o','root','-g','1000','-m','0640',
+            str(old/'pcg_web_semantic_ops.mjs'),str(inspect)],check=True)
+          assert hashlib.sha256(inspect.read_bytes()).hexdigest()==manifest['files']['pcg_web_semantic_ops.mjs']
+          print('R143_LIVE_SOURCE_STAGED_OWNER_ONLY',len(baseline))
+
           PY
