@@ -35,9 +35,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          path=server-bootstrap/control/pcg-unified-media/pcg-unified-media-r141-20261027.request
-          [[ "$(git diff --name-status HEAD^ HEAD)" == $'A\tserver-bootstrap/control/pcg-unified-media/pcg-unified-media-r141-20261027.request' ]] || exit 10
-          grep -Fxq 'request_id=pcg-unified-media-r141-20261027' "$path"
+          path=server-bootstrap/control/pcg-unified-media-r141/pcg-unified-media-r141-20261027-retry1.request
+          [[ "$(git diff --name-status HEAD^ HEAD)" == $'A\tserver-bootstrap/control/pcg-unified-media-r141/pcg-unified-media-r141-20261027-retry1.request' ]] || exit 10
+          grep -Fxq 'request_id=pcg-unified-media-r141-20261027-retry1' "$path"
           grep -Fxq 'candidate_private_commit=c7d3e75e13e01f7462d29ad0761d7cde51d2b99f' "$path"
           grep -Fxq 'expected_pcg_sequence=138' "$path"
           grep -Fxq 'expected_cf_release=onshape-vps-fast-r100-direct-orbit1-paa-storage-r263-single-asr-tool' "$path"
