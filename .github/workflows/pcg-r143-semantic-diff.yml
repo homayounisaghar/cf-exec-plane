@@ -29,9 +29,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          p=server-bootstrap/control/pcg-r143-semantic/pcg-r143-semantic-20261027-v1.request
-          [[ "$(git diff --name-status HEAD^ HEAD)" == $'A\tserver-bootstrap/control/pcg-r143-semantic/pcg-r143-semantic-20261027-v1.request' ]] || exit 11
-          grep -Fxq 'request_id=pcg-r143-semantic-20261027-v1' "$p"
+          p=server-bootstrap/control/pcg-r143-semantic/pcg-r143-semantic-20261027-v2.request
+          [[ "$(git diff --name-status HEAD^ HEAD)" == $'A\tserver-bootstrap/control/pcg-r143-semantic/pcg-r143-semantic-20261027-v2.request' ]] || exit 11
+          grep -Fxq 'request_id=pcg-r143-semantic-20261027-v2' "$p"
           [[ "$(wc -l < "$p")" == 1 ]]
       - name: Read root-owned r142 manifest and source hashes, no file content
         shell: bash
@@ -83,8 +83,6 @@ jobs:
            for item in newlines[j1:min(j2,j1+5)]:lines.append('+ '+item.rstrip()[:220])
           target=pathlib.Path('/tmp/pcg-r143-semantic-diff-20261027.txt')
           target.write_text('\n'.join(lines)+'\n')
-          target.chmod(0o640)
-          import grp
-          target.chown(-1,grp.getgrnam('cfserver').gr_gid)
+          target.chmod(0o644)
           print('R143_SEMANTIC_READONLY_DIFF_WRITTEN',len(sections))
           PY
