@@ -1,0 +1,86 @@
+name: PCG r146 large-source ASR input and 1GiB PCM guarded release
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'server-bootstrap/control/pcg-asr-size-r146/*.request'
+permissions:
+  contents: read
+concurrency:
+  group: pcg-r146-asr-size-release
+  cancel-in-progress: false
+jobs:
+  deploy:
+    if: github.repository_owner == 'homayounisaghar' && github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+      ACTIVATOR: qualification/pcg-asr-size-r146/activate-r146-pcg-asr-size.sh
+      ACTIVATOR_SHA: 34bf250884d86ca4c7d7c886e4217632e8abbde5fc9138bde5a25720b789a131
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Admit the single owner-pinned release request
+        shell: bash
+        run: |
+          set -euo pipefail
+          f=server-bootstrap/control/pcg-asr-size-r146/pcg-asr-size-r146-20261028-v1.request
+          [[ "$(git diff --name-status HEAD^ HEAD)" == $'A\tserver-bootstrap/control/pcg-asr-size-r146/pcg-asr-size-r146-20261028-v1.request' ]] || exit 10
+          grep -Fxq 'request_id=pcg-asr-size-r146-20261028-v1' "$f"
+          grep -Fxq 'expected_release=pcg-web-stage6-unified-chunked-r146-asr-large-source-pcm1g' "$f"
+          grep -Fxq 'baseline_manifest_sha256=2adbae6b9c89ba73085329fb7e292f3114015c29d6b90d6c0c3f96e711b2d83e' "$f"
+          grep -Fxq 'candidate_manifest_sha256=b85691fbbff506926df920b258a79b295ccdbb2c44d5a92f37b5394e8bc578a4' "$f"
+          [[ "$(wc -l < "$f")" -eq 4 ]] || exit 11
+          printf '%s  %s\n' "$ACTIVATOR_SHA" "$ACTIVATOR" | sha256sum -c -
+          bash -n "$ACTIVATOR"
+          echo R146_REQUEST_ADMITTED_AND_ACTIVATOR_PINNED
+      - name: Configure pinned host-key SSH to authorized root
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -n "$VPS_SSH_KEY" && -n "$VPS_HOST" && -n "$VPS_HOST_KEY" ]] || exit 20
+          [[ "$VPS_SSH_USER" == root ]] || exit 21
+          port="${VPS_PORT:-22}"
+          [[ "$port" =~ ^[0-9]+$ ]] || exit 22
+          dir="$RUNNER_TEMP/pcg-r146-ssh"
+          install -d -m 0700 "$dir"
+          printf '%s\n' "$VPS_SSH_KEY" > "$dir/key"
+          chmod 0600 "$dir/key"
+          read -r typ key extra <<< "${VPS_HOST_KEY//$dollar'\r'/}"
+          [[ "$typ" == ssh-ed25519 && -n "$key" && -z "$extra" ]] || exit 23
+          printf '%s %s %s\n' "$VPS_HOST" "$typ" "$key" > "$dir/known_hosts"
+          printf '[%s]:%s %s %s\n' "$VPS_HOST" "$port" "$typ" "$key" >> "$dir/known_hosts"
+          chmod 0600 "$dir/known_hosts"
+          echo "SSH_DIR=$dir" >> "$GITHUB_ENV"
+          echo "SSH_PORT=$port" >> "$GITHUB_ENV"
+      - name: Publish pinned script and activate only PCG Web and Soniox
+        shell: bash
+        run: |
+          set -euo pipefail
+          opts=(-i "$SSH_DIR/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$SSH_DIR/known_hosts")
+          scp "${opts[@]}" -P "$SSH_PORT" "$ACTIVATOR" "${VPS_SSH_USER}@${VPS_HOST}:/tmp/pcg-r146-asr-size-activate.sh"
+          ssh "${opts[@]}" -p "$SSH_PORT" "${VPS_SSH_USER}@${VPS_HOST}" \
+            "set -eu; test \\"\\$(id -u)\\" = 0; printf '%s  %s\\n' '$ACTIVATOR_SHA' /tmp/pcg-r146-asr-size-activate.sh | sha256sum -c -; bash /tmp/pcg-r146-asr-size-activate.sh" </dev/null
+      - name: Verify installed hashes and service health on the host
+        shell: bash
+        run: |
+          set -euo pipefail
+          opts=(-i "$SSH_DIR/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$SSH_DIR/known_hosts")
+          ssh "${opts[@]}" -p "$SSH_PORT" "${VPS_SSH_USER}@${VPS_HOST}" 'set -eu
+            root=/var/lib/capability-fabric/pcg/releases/pcg-web-stage6-unified-chunked-r146-asr-large-source-pcm1g
+            test "$(readlink /opt/capability-fabric/channels/pcg/current)" = "$root"
+            test "$(sha256sum "$root/manifest.json" | cut -d " " -f1)" = b85691fbbff506926df920b258a79b295ccdbb2c44d5a92f37b5394e8bc578a4
+            test "$(sha256sum "$root/pcg_web_semantic_ops.mjs" | cut -d " " -f1)" = e299e765f89adf22723b001da58fb0f2740758ee0e7e7ad16afb7c1faaf6222c
+            test "$(sha256sum "$root/pcg_perplexity_asr.mjs" | cut -d " " -f1)" = 29426a9506951f28ffc828a88086ce4e7c6a2d350b97d5cbb5186aa422218021
+            test "$(sha256sum "$root/pcg_ffmpeg_decode.mjs" | cut -d " " -f1)" = 62e5cd8899f614f4c483736992220495b7bfc840580d361a1434ee8b4519dde5
+            test "$(sha256sum "$root/pcg_web_perplexity_asr_client.mjs" | cut -d " " -f1)" = dfecc91b9650649a04da5e804f8599129dd55975f9512375fddb4c13bdf97338
+            test "$(docker inspect -f "{{.State.Health.Status}}" capability-fabric-pcg-perplexity-asr)" = healthy
+            test "$(docker inspect -f "{{.State.Health.Status}}" capability-fabric-pcg-web)" = healthy
+            echo PCG_R146_DIRECT_LIVE_READBACK_OK' </dev/null
