@@ -53,7 +53,7 @@ jobs:
           install -d -m 0700 "$dir"
           printf '%s\n' "$VPS_SSH_KEY" > "$dir/key"
           chmod 0600 "$dir/key"
-          read -r typ key extra <<< "${VPS_HOST_KEY//$dollar'\r'/}"
+          read -r typ key extra <<< "${VPS_HOST_KEY//$'\r'/}"
           [[ "$typ" == ssh-ed25519 && -n "$key" && -z "$extra" ]] || exit 23
           printf '%s %s %s\n' "$VPS_HOST" "$typ" "$key" > "$dir/known_hosts"
           printf '[%s]:%s %s %s\n' "$VPS_HOST" "$port" "$typ" "$key" >> "$dir/known_hosts"
@@ -67,7 +67,7 @@ jobs:
           opts=(-i "$SSH_DIR/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$SSH_DIR/known_hosts")
           scp "${opts[@]}" -P "$SSH_PORT" "$ACTIVATOR" "${VPS_SSH_USER}@${VPS_HOST}:/tmp/pcg-r146-asr-size-activate.sh"
           ssh "${opts[@]}" -p "$SSH_PORT" "${VPS_SSH_USER}@${VPS_HOST}" \
-            "set -eu; test \\"\\$(id -u)\\" = 0; printf '%s  %s\\n' '$ACTIVATOR_SHA' /tmp/pcg-r146-asr-size-activate.sh | sha256sum -c -; bash /tmp/pcg-r146-asr-size-activate.sh" </dev/null
+            "set -eu; test \$(id -u) -eq 0; printf '%s  %s\n' '$ACTIVATOR_SHA' /tmp/pcg-r146-asr-size-activate.sh | sha256sum -c -; bash /tmp/pcg-r146-asr-size-activate.sh" </dev/null
       - name: Verify installed hashes and service health on the host
         shell: bash
         run: |
