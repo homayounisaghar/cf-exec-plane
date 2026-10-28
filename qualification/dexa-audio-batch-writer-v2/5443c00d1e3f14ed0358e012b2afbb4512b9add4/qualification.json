@@ -1,0 +1,20 @@
+{
+  "isolated_new_tests": {
+    "failed": 0,
+    "passed": 9
+  },
+  "previous_live_e2e": {
+    "audio_transcribe_receipt_verified": true,
+    "prior_mission_replayed": false,
+    "writer_contract_failure": "DX001_WRITER_MODEL_CONTRACT_INVALID"
+  },
+  "real_model_only_synthetic_canary": {
+    "evidence_indices_count": 11,
+    "source_file_count": 11,
+    "text_only": true,
+    "verified": true
+  },
+  "schema": "dexa.audio-batch-writer-qualification.v2",
+  "source_commit": "5443c00d1e3f14ed0358e012b2afbb4512b9add4",
+  "state": "candidate_not_yet_deployed"
+}

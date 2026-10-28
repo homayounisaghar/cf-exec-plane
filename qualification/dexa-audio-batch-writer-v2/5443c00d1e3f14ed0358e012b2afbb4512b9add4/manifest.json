@@ -1,0 +1,21 @@
+{
+  "files": {
+    "activate-dexa-audio-batch.sh": "b26f87d6d06f57c3d47e77146f98faa1f6f197f82b8f07e049befbae10b24883",
+    "baseline.sha256": "c59d0ea3bcc5f32f8023274fc1c6245c53e0d70e63e4fd081a9adda509e39dfd",
+    "deploy-dexa-audio-batch.sh": "1137bb5498033311f7c65da2b232a2f7a97030329fe055711df885461ecbf43c",
+    "files/dexa_text_writer_v1.mjs": "eb1165f35610cfe387bd944295889e2787c26774b4c4435f9642e920c2e2763a",
+    "proposed.sha256": "4b850697c1d9ed672e305c2adae08bc6bd76fb5ec5e56d42991d265ef99fdc2a",
+    "qualification.json": "4e292bfa1ad8e395b73791ab42ab8d0c671013e98166ae8d9d41334b95686a06",
+    "rollback-dexa-audio-batch.sh": "28dc057b9178fa7c98340874e6cb9c0eefa666c26f339ee53a475d22a71a997d",
+    "tests/test_dexa_writer_audio_batch_full_coverage_20261028.mjs": "53c4d266c2af9cbf1d32a1bfe6738e00c485bf710b5cef890900e79bead12697",
+    "tests/test_dexa_writer_multi_audio_citations_20261028.mjs": "27ba4d0921f076e920fd86cf418e3937ac21382ffbc186f20e6d084803edeba0"
+  },
+  "release_id": "dexa-audio-batch-writer-20261028-v2",
+  "schema": "dexa.audio-batch-writer.secret-free-release.v2",
+  "source_commit": "5443c00d1e3f14ed0358e012b2afbb4512b9add4",
+  "source_paths": {
+    "files/dexa_text_writer_v1.mjs": "projects/dexa/mvp-server/dexa_text_writer_v1.mjs"
+  },
+  "source_ref": "work/dexa-autonomous-loop-20261020",
+  "source_repo": "homayounisaghar/capability-fabric"
+}
