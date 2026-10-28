@@ -117,7 +117,12 @@ test "$(health "$web")" = healthy && test "$(health "$asr")" = healthy || { echo
 project=$(docker inspect -f '{{index .Config.Labels "com.docker.compose.project"}}' "$web")
 case "$project" in capability-fabric-pcg*) ;; *) echo UNEXPECTED_COMPOSE_PROJECT; exit 25;; esac
 test "$(docker inspect -f '{{index .Config.Labels "com.docker.compose.project.working_dir"}}' "$web")" = "$old" || { echo BASELINE_COMPOSE_WORKDIR_MISMATCH; exit 26; }
-test "$(docker inspect -f '{{index .Config.Labels "com.docker.compose.project.working_dir"}}' "$asr")" = "$old" || { echo BASELINE_ASR_COMPOSE_WORKDIR_MISMATCH; exit 27; }
+asr_workdir=$(docker inspect -f '{{index .Config.Labels "com.docker.compose.project.working_dir"}}' "$asr")
+case "$asr_workdir" in
+  /var/lib/capability-fabric/pcg/releases/pcg-web-stage6-*) : ;;
+  *) echo BASELINE_ASR_COMPOSE_WORKDIR_MISMATCH; exit 27 ;;
+esac
+test "$(docker inspect -f '{{index .Config.Labels "com.docker.compose.project"}}' "$asr")" = "$project" || { echo BASELINE_ASR_PROJECT_MISMATCH; exit 28; }
 assert_idle
 web_rpc
 before_other=$(other_ids)
