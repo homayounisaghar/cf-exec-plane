@@ -21,7 +21,7 @@ jobs:
       VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
       VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
       ACTIVATOR: qualification/pcg-asr-size-r146/activate-r146-pcg-asr-size.sh
-      ACTIVATOR_SHA: 34bf250884d86ca4c7d7c886e4217632e8abbde5fc9138bde5a25720b789a131
+      ACTIVATOR_SHA: ec3af08af01c46f0caabed6d2e1596e96975201c3f9f9fef89649a4f06e1ddf6
     steps:
       - uses: actions/checkout@v4
         with:
@@ -31,9 +31,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          f=server-bootstrap/control/pcg-asr-size-r146/pcg-asr-size-r146-20261028-v1.request
-          [[ "$(git diff --name-status HEAD^ HEAD)" == $'A\tserver-bootstrap/control/pcg-asr-size-r146/pcg-asr-size-r146-20261028-v1.request' ]] || exit 10
-          grep -Fxq 'request_id=pcg-asr-size-r146-20261028-v1' "$f"
+          f=server-bootstrap/control/pcg-asr-size-r146/pcg-asr-size-r146-20261028-v2.request
+          [[ "$(git diff --name-status HEAD^ HEAD)" == $'A\tserver-bootstrap/control/pcg-asr-size-r146/pcg-asr-size-r146-20261028-v2.request' ]] || exit 10
+          grep -Fxq 'request_id=pcg-asr-size-r146-20261028-v2' "$f"
           grep -Fxq 'expected_release=pcg-web-stage6-unified-chunked-r146-asr-large-source-pcm1g' "$f"
           grep -Fxq 'baseline_manifest_sha256=2adbae6b9c89ba73085329fb7e292f3114015c29d6b90d6c0c3f96e711b2d83e' "$f"
           grep -Fxq 'candidate_manifest_sha256=b85691fbbff506926df920b258a79b295ccdbb2c44d5a92f37b5394e8bc578a4' "$f"
