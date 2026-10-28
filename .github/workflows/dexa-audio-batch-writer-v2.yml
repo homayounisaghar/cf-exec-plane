@@ -1,0 +1,123 @@
+name: Dexa Audio Batch Writer V2
+on:
+  push:
+    branches: [main]
+    paths:
+      - server-bootstrap/control/dexa-audio-batch-writer-v2/*.request
+permissions:
+  contents: read
+concurrency:
+  group: dexa-audio-batch-writer-guarded
+  cancel-in-progress: false
+jobs:
+  deploy:
+    if: github.repository_owner == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Verify one immutable request and private source-pinned secret-free bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status HEAD^ HEAD)
+          [[ "${#changes[@]}" -eq 1 ]] || { echo SINGLE_REQUEST_REQUIRED; exit 11; }
+          IFS=$'\t' read -r action path <<< "${changes[0]}"
+          [[ "$action" == A && "$path" == server-bootstrap/control/dexa-audio-batch-writer-v2/*.request ]] || exit 12
+          rid="$(basename "$path" .request)"
+          [[ "$rid" == dexa-audio-batch-writer-20261028-v2 ]] || exit 13
+          grep -Fxq "request_id=$rid" "$path"
+          commit="$(awk -F= '$1=="candidate_commit"{print $2}' "$path")"
+          hash="$(awk -F= '$1=="manifest_sha256"{print $2}' "$path")"
+          expected="$(awk -F= '$1=="expected_release"{print $2}' "$path")"
+          [[ "$commit" =~ ^[0-9a-f]{40}$ && "$hash" =~ ^[0-9a-f]{64}$ && "$expected" == "$rid" ]] || exit 14
+          [[ "$(wc -l < "$path")" -eq 4 ]] || exit 15
+          snapshot="qualification/dexa-audio-batch-writer-v2/$commit"
+          [[ -d "$snapshot" ]] || exit 16
+          printf '%s  %s\n' "$hash" "$snapshot/manifest.json" | sha256sum -c -
+          export SNAP="$snapshot" SOURCE_COMMIT="$commit" RELEASE="$rid"
+          python3 - <<'PY'
+          import hashlib,json,os
+          from pathlib import Path
+          p=Path(os.environ['SNAP'])
+          m=json.loads((p/'manifest.json').read_text())
+          assert m['schema']=='dexa.audio-batch-writer.secret-free-release.v2'
+          assert m['source_repo']=='homayounisaghar/capability-fabric'
+          assert m['source_ref']=='work/dexa-autonomous-loop-20261020'
+          assert m['source_commit']==os.environ['SOURCE_COMMIT']
+          assert m['release_id']==os.environ['RELEASE']
+          names={'files/dexa_text_writer_v1.mjs',
+                 
+                 'tests/test_dexa_writer_audio_batch_full_coverage_20261028.mjs',
+                 'tests/test_dexa_writer_multi_audio_citations_20261028.mjs',
+                 'baseline.sha256','proposed.sha256','qualification.json',
+                 'activate-dexa-audio-batch.sh','deploy-dexa-audio-batch.sh',
+                 'rollback-dexa-audio-batch.sh'}
+          assert set(m['files'])==names
+          assert {str(x.relative_to(p)) for x in p.rglob('*') if x.is_file()}==names|{'manifest.json'}
+          for path,digest in m['files'].items():
+           f=p/path
+           assert f.is_file() and not f.is_symlink(),path
+           assert hashlib.sha256(f.read_bytes()).hexdigest()==digest,path
+          q=json.loads((p/'qualification.json').read_text())
+          assert q['source_commit']==m['source_commit']
+          assert q['isolated_new_tests']=={'passed':9,'failed':0}
+          assert q['real_model_only_synthetic_canary']['evidence_indices_count']==11
+          assert q['real_model_only_synthetic_canary']['verified'] is True
+          print('DEXA_AUDIO_BATCH_PUBLISHED_SNAPSHOT_PASS',len(m['files']))
+          PY
+          (cd "$snapshot/files" && sha256sum -c ../proposed.sha256)
+          for f in "$snapshot/files/"*.mjs "$snapshot/tests/"*.mjs; do node --check "$f"; done
+          for f in activate-dexa-audio-batch.sh deploy-dexa-audio-batch.sh rollback-dexa-audio-batch.sh;do
+            sh -n "$snapshot/$f"
+          done
+          echo "SNAP=$snapshot" >> "$GITHUB_ENV"
+          echo "RID=$rid" >> "$GITHUB_ENV"
+      - name: Establish pinned SSH host identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -n "$VPS_SSH_KEY" && -n "$VPS_HOST" && -n "$VPS_SSH_USER" && -n "$VPS_HOST_KEY" ]] || exit 20
+          [[ "$VPS_SSH_USER" == cfserver || "$VPS_SSH_USER" == root ]] || exit 21
+          port="${VPS_PORT:-22}"
+          [[ "$port" =~ ^[0-9]+$ ]] || exit 22
+          dir="$RUNNER_TEMP/dexa-audio-batch-ssh"
+          install -d -m 0700 "$dir"
+          printf '%s\n' "$VPS_SSH_KEY" > "$dir/key"
+          chmod 0600 "$dir/key"
+          read -r algo key extra <<< "${VPS_HOST_KEY//$'\r'/}"
+          [[ "$algo" == ssh-ed25519 && -n "$key" && -z "${extra:-}" ]] || exit 23
+          printf '%s %s %s\n' "$VPS_HOST" "$algo" "$key" > "$dir/known_hosts"
+          printf '[%s]:%s %s %s\n' "$VPS_HOST" "$port" "$algo" "$key" >> "$dir/known_hosts"
+          chmod 0600 "$dir/known_hosts"
+          echo "SSH_DIR=$dir" >> "$GITHUB_ENV"
+          echo "SSH_PORT=$port" >> "$GITHUB_ENV"
+      - name: Stage and activate only two Dexa modules with guarded rollback
+        shell: bash
+        run: |
+          set -euo pipefail
+          tar -C "$SNAP" -czf "$RUNNER_TEMP/$RID.tgz" .
+          sshopts=(-i "$SSH_DIR/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$SSH_DIR/known_hosts")
+          scp "${sshopts[@]}" -P "$SSH_PORT" "$RUNNER_TEMP/$RID.tgz" "${VPS_SSH_USER}@${VPS_HOST}:/tmp/$RID.tgz"
+          scp "${sshopts[@]}" -P "$SSH_PORT" "$SNAP/activate-dexa-audio-batch.sh" "${VPS_SSH_USER}@${VPS_HOST}:/tmp/$RID-activate.sh"
+          ssh "${sshopts[@]}" -p "$SSH_PORT" "${VPS_SSH_USER}@${VPS_HOST}" "sh /tmp/$RID-activate.sh $RID" </dev/null
+      - name: Confirm live health and exact module hashes
+        shell: bash
+        run: |
+          set -euo pipefail
+          sshopts=(-i "$SSH_DIR/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$SSH_DIR/known_hosts")
+          ssh "${sshopts[@]}" -p "$SSH_PORT" "${VPS_SSH_USER}@${VPS_HOST}" sh -s <<'REMOTE'
+          set -eu
+          cd /var/lib/capability-fabric/paa-remote/dexa-mvp
+          printf '%s  %s\n' '7e85289e160c9124b0151216e7ff803c8359222325effd2bd32334a007274684' 'dexa_typed_planner_prompt_v3.mjs' 'eb1165f35610cfe387bd944295889e2787c26774b4c4435f9642e920c2e2763a' 'dexa_text_writer_v1.mjs' | sha256sum -c --status
+          curl -fsS --max-time 8 http://127.0.0.1:9471/healthz | node -e 'let s="";process.stdin.on("data",b=>s+=b).on("end",()=>{const j=JSON.parse(s);if(j.ok!==true||j.activeMissions!==0||j.deploymentDrain?.active===true||j.plannerHotSlot?.ready!==true)process.exit(2);console.log("DEXA_AUDIO_BATCH_SERVICE_VERIFIED stored="+j.storedMissions)})'
+          REMOTE
