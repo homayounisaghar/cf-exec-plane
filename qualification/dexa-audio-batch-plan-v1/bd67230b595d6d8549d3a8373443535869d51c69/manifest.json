@@ -1,0 +1,23 @@
+{
+  "files": {
+    "activate-dexa-audio-batch.sh": "dd06994eb2295f1c851742a61ef2b99c0c48ba9b3ec43c32c470dd8ca3f92f11",
+    "baseline.sha256": "c0efd60728ed01007b7bc1be5cd4597f240da3d48197fed2548fe712048036f4",
+    "deploy-dexa-audio-batch.sh": "cf916915d0057c40a892b861371834cfe6b39d9039113aeb47405cb1c8757ff7",
+    "files/dexa_text_writer_v1.mjs": "117a322893a32ac3259776f8195d191ce7e2d53b6e95f2a4a728edef3961a652",
+    "files/dexa_typed_planner_prompt_v3.mjs": "7e85289e160c9124b0151216e7ff803c8359222325effd2bd32334a007274684",
+    "proposed.sha256": "6b762d2da653376a0fd1fc17110bfc1c405f0b9cf21cce290135a954acef5e23",
+    "qualification.json": "ce871fe1f34174a3e7cc5c2dbae85c00fd106b72969f8499e3d4238bcf72b475",
+    "rollback-dexa-audio-batch.sh": "a4b01cebfc412d66e54ad509336890964162364ce72acb7731019d29293b13bb",
+    "tests/test_dexa_audio_batch_contract_20261028.mjs": "e49afd660e5a990f75ce619a12d4d8beb46702aa682603f3124d2abbad022d9f",
+    "tests/test_dexa_writer_audio_batch_full_coverage_20261028.mjs": "53c4d266c2af9cbf1d32a1bfe6738e00c485bf710b5cef890900e79bead12697"
+  },
+  "release_id": "dexa-audio-batch-plan-20261028-v1",
+  "schema": "dexa.audio-batch-plan.secret-free-release.v1",
+  "source_commit": "bd67230b595d6d8549d3a8373443535869d51c69",
+  "source_paths": {
+    "files/dexa_text_writer_v1.mjs": "projects/dexa/mvp-server/dexa_text_writer_v1.mjs",
+    "files/dexa_typed_planner_prompt_v3.mjs": "projects/dexa/candidates/dexa-audio-batch-plan-20261028/dexa_typed_planner_prompt_v3.mjs"
+  },
+  "source_ref": "work/dexa-autonomous-loop-20261020",
+  "source_repo": "homayounisaghar/capability-fabric"
+}

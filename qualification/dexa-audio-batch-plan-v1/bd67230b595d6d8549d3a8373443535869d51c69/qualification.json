@@ -1,0 +1,32 @@
+{
+  "actual_model_only_plan_canary": {
+    "audio_batch_size": 11,
+    "audio_each": false,
+    "audio_transcribe_tool_calls": 1,
+    "elapsed_ms": 4042,
+    "live_provider_dispatch": false,
+    "plan_valid": true,
+    "provider": "Cerebras qwen-3.8-27b",
+    "total_steps": 8,
+    "writer_source_path": [
+      "files"
+    ]
+  },
+  "actual_owner_data": {
+    "actual_transcript_contents_in_qual": false,
+    "prior_private_batch_files": 11,
+    "prior_private_batch_transcript_character_total": 12434
+  },
+  "isolated_new_tests": {
+    "failed": 0,
+    "passed": 9
+  },
+  "prior_curated_regression": {
+    "failed": 1,
+    "known_unrelated_failure": "test_dexa_catalog_snapshot_refresh_20261026.mjs",
+    "passed": 36
+  },
+  "release_state": "isolated_source_only_not_deployed",
+  "schema": "dexa.audio-batch-plan-qualification.v1",
+  "source_commit": "bd67230b595d6d8549d3a8373443535869d51c69"
+}
