@@ -1,0 +1,60 @@
+--- a/server.js
++++ b/server.js
+@@ -25,6 +25,7 @@
+ if (!source.includes(implementationNeedle)) throw new Error("BASE_SERVER_IMPLEMENTATION_MARKER_MISSING");
+ source = source.replace(implementationNeedle, implementationReplacement);
+ const materialBridgeNeedle = 'const app = express();';
++const WECHAT_BRIDGE_IMPORT='import {installWeChatMaterialDownloadBridge} from "./wechat-material-download-bridge.mjs";\n';
+ const materialBridge = `
+ const WHATSAPP_MATERIAL_DOWNLOAD_ROOT = "/run/pcg-material-files";
+ const WHATSAPP_MATERIAL_DOWNLOAD_TTL_MS = 55 * 60 * 1000;
+@@ -149,6 +150,11 @@
+ const app = express();`;
+ if (!source.includes(materialBridgeNeedle)) throw new Error("BASE_SERVER_APP_MARKER_MISSING");
+ source = source.replace(materialBridgeNeedle, materialBridge);
++source=WECHAT_BRIDGE_IMPORT+source;
++const wechatAppNeedle='const app = express();';
++if(source.split(wechatAppNeedle).length!==2)throw Error('WECHAT_DOWNLOAD_APP_MARKER_MISSING');
++source=source.replace(wechatAppNeedle,wechatAppNeedle+'\n'+
++ 'globalThis.__cfStageWeChatMaterialDownload = installWeChatMaterialDownloadBridge({app,materialUpload:telegramMaterialUpload});');
+ 
+ const whatsappRouteNeedle = 'app.put("/mcp/upload/:upload_id", handleTelegramMaterialUploadPut);';
+ const whatsappRoute = `
+--- a/wechat-preload.mjs
++++ b/wechat-preload.mjs
+@@ -1,6 +1,7 @@
+ import { z } from "zod";
+ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+ import { registerWeChatConversationTool } from "./wechat-ingress.mjs";
++import { registerWeChatMediaTools } from "./wechat-media-tools.mjs";
+ 
+ const previousConnect=McpServer.prototype.connect;
+ if(typeof previousConnect!=="function") throw new Error("McpServer.connect is unavailable");
+@@ -8,6 +9,8 @@
+ McpServer.prototype.connect=async function(...args){
+   if(!this.__wechatPreloadRegistered){
+     registerWeChatConversationTool(this,z,{materialUpload:globalThis.__cfMaterialUpload});
++    registerWeChatMediaTools(this,z,{materialUpload:globalThis.__cfMaterialUpload,
++      stageMaterialDownload:globalThis.__cfStageWeChatMaterialDownload});
+     Object.defineProperty(this,"__wechatPreloadRegistered",{value:true,enumerable:false,configurable:false});
+   }
+   return previousConnect.apply(this,args);
+--- a/compose.yaml
++++ b/compose.yaml
+@@ -14,7 +14,7 @@
+         umask 077 &&
+         chmod 0700 /profile /run/onshape-secrets /agent-state &&
+         mkdir -p /tmp/app &&
+-        cp /release/package.json /release/server.js /release/core.js /release/browser.js /release/onshape-request.cjs /release/onshape-agent.js /release/telegram-ingress.mjs /release/bale-ingress.mjs /release/whatsapp-ingress.mjs /release/whatsapp-preload.mjs /release/paa-bale-preload.mjs /release/alibaba-ingress.mjs /release/paa-alibaba-preload.mjs /release/owner-auth.mjs /release/oauth-bridge.mjs /release/wechat-ingress.mjs /release/wechat-preload.mjs /release/cf-ops-tools.mjs /release/cf-ops-preload.mjs /tmp/app/ &&
++        cp /release/package.json /release/server.js /release/core.js /release/browser.js /release/onshape-request.cjs /release/onshape-agent.js /release/telegram-ingress.mjs /release/bale-ingress.mjs /release/whatsapp-ingress.mjs /release/whatsapp-preload.mjs /release/paa-bale-preload.mjs /release/alibaba-ingress.mjs /release/paa-alibaba-preload.mjs /release/owner-auth.mjs /release/oauth-bridge.mjs /release/wechat-ingress.mjs /release/wechat-preload.mjs /release/wechat-media-tools.mjs /release/wechat_media_cache_adapter_v1.mjs /release/wechat-material-download-bridge.mjs /release/cf-ops-tools.mjs /release/cf-ops-preload.mjs /tmp/app/ &&
+         cd /tmp/app &&
+         PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm install --omit=dev --ignore-scripts --no-audit --no-fund --package-lock=false &&
+         exec node --import ./paa-bale-preload.mjs --import ./whatsapp-preload.mjs --import ./paa-alibaba-preload.mjs --import ./wechat-preload.mjs --import ./cf-ops-preload.mjs server.js
+@@ -47,6 +47,7 @@
+       - /var/lib/capability-fabric/pcg/run/ingress:/run/pcg:ro
+       - /var/lib/capability-fabric/pcg/run/downloads:/run/pcg-downloads:ro
+       - /var/lib/capability-fabric/pcg/run/material-files:/run/pcg-material-files:ro
++      - /var/lib/capability-fabric/pcg/wechat/home/xwechat_files:/var/lib/capability-fabric/pcg/wechat/home/xwechat_files:ro
+       - /var/lib/capability-fabric/cf-ops-run:/run/cf-ops:ro
+     tmpfs:
+       - /tmp
