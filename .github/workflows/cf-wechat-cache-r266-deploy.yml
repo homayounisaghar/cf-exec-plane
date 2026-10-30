@@ -1,0 +1,96 @@
+name: CF WeChat Cached Media r266 Scoped Deploy
+on:
+  push:
+    branches: [main]
+    paths:
+      - server-bootstrap/control/cf-wechat-cache-r266/*.request
+permissions:
+  contents: read
+concurrency:
+  group: cf-wechat-cache-r266
+  cancel-in-progress: false
+jobs:
+  deploy:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      SNAP: qualification/cf-wechat-cache-r266/9b218171dad6fdcde3cc97aed855c1f1c2ae1f2c
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Require one immutable, owner-authored request
+        shell: bash
+        run: |
+          set -euo pipefail
+          request=server-bootstrap/control/cf-wechat-cache-r266/cf-wechat-cache-r266-20261030-v1.request
+          change="$(git diff --name-status HEAD^ HEAD)"
+          expected="$(printf 'A\t%s' "$request")"
+          [[ "$change" == "$expected" ]] || exit 10
+          [[ "$(wc -l < "$request")" -eq 4 ]] || exit 11
+          grep -Fxq 'request_id=cf-wechat-cache-r266-20261030-v1' "$request"
+          grep -Fxq 'candidate_commit=9b218171dad6fdcde3cc97aed855c1f1c2ae1f2c' "$request"
+          grep -Fxq 'expected_sequence=266' "$request"
+          grep -Fxq 'expected_release=onshape-vps-fast-r100-direct-orbit1-paa-storage-r266-wa-caption-wechat-cache-ref-20261030' "$request"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Qualify pinned minimal source and synthetic per-request cache test
+        shell: bash
+        run: |
+          set -euo pipefail
+          printf '%s  %s\n' 3f0c5d0630003b0912d9cf6f225bd1009ad7769f4fb9890b664b72716e68ee84 "$SNAP/wechat-media-tools.mjs" | sha256sum -c -
+          printf '%s  %s\n' 613ae0ddb2574ac68279f3cff2a156e04f2d9ee0810e36b6596ff3bf68e0e0d "$SNAP/wechat_media_cache_adapter_v1.mjs" | sha256sum -c -
+          printf '%s  %s\n' b9a01441be460b5beb8b7a9b96d6440577c2920e0d93abd63ee9d17a5c6074f7 "$SNAP/manifest.json" | sha256sum -c -
+          printf '%s  %s\n' 3ebf037025b7d32fe1fbb75d3f3fd58f3178b3bcee45260fb9f200f6468550f0 "$SNAP/release-closure.json" | sha256sum -c -
+          printf '%s  %s\n' d91afe3c0e9f2dff3c7b5c18c5763c57e3b29fd6945a1cd832642856f6ea40f1 "$SNAP/activate-cf-r266-cache-ref-guarded.sh" | sha256sum -c -
+          printf '%s  %s\n' 4e50602cc80c2e261b8feb4dc4055c410584f27baaf27841a11b1d8dea810d7f "$SNAP/test_cross_request_public.mjs" | sha256sum -c -
+          bash -n "$SNAP/activate-cf-r266-cache-ref-guarded.sh"
+          node --check "$SNAP/wechat-media-tools.mjs"
+          node --check "$SNAP/wechat_media_cache_adapter_v1.mjs"
+          node --test "$SNAP/test_cross_request_public.mjs"
+          python3 - <<'PY'
+          import json,os,pathlib
+          p=pathlib.Path(os.environ['SNAP'])
+          m=json.loads((p/'manifest.json').read_text())
+          c=json.loads((p/'release-closure.json').read_text())
+          assert m['sequence']==266
+          assert m['release_id']=='onshape-vps-fast-r100-direct-orbit1-paa-storage-r266-wa-caption-wechat-cache-ref-20261030'
+          assert c['build_id']==m['release_id']
+          assert len(m['files'])==32 and set(m['files'])==set(c['files'])
+          assert m['files']['whatsapp-ingress.mjs']=='264c4d9614551f2586dfcc157db61d8c99d81c6326e8d7b51123de37052c733d'
+          assert m['files']['wechat-media-tools.mjs']=='3f0c5d0630003b0912d9cf6f225bd1009ad7769f4fb9890b664b72716e68ee84'
+          print('CF_R266_PUBLIC_SOURCE_PINNED')
+          PY
+          tar -C "$SNAP" -czf "$RUNNER_TEMP/cf-wechat-cache-r266-bundle.tgz" \
+            wechat-media-tools.mjs wechat_media_cache_adapter_v1.mjs \
+            manifest.json release-closure.json test_cross_request_public.mjs
+      - name: Deliver secret-free snapshot to owner VPS using pinned SSH host
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -n "$VPS_SSH_KEY" && -n "$VPS_HOST" && -n "$VPS_SSH_USER" && -n "$VPS_HOST_KEY" ]] || exit 20
+          port="${VPS_PORT:-22}"
+          [[ "$port" =~ ^[0-9]+$ ]] || exit 21
+          dir="$RUNNER_TEMP/wechat-r266-ssh"
+          install -d -m 0700 "$dir"
+          printf '%s\n' "$VPS_SSH_KEY" > "$dir/key"
+          chmod 0600 "$dir/key"
+          read -r key_type key_data extra < <(printf '%s\n' "$VPS_HOST_KEY" | tr -d '\r')
+          [[ "$key_type" == ssh-ed25519 && -n "$key_data" && -z "${extra:-}" ]] || exit 22
+          printf '%s %s %s\n' "$VPS_HOST" "$key_type" "$key_data" > "$dir/known_hosts"
+          printf '[%s]:%s %s %s\n' "$VPS_HOST" "$port" "$key_type" "$key_data" >> "$dir/known_hosts"
+          chmod 0600 "$dir/known_hosts"
+          transport=(-i "$dir/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$dir/known_hosts")
+          scp "${transport[@]}" -P "$port" "$RUNNER_TEMP/cf-wechat-cache-r266-bundle.tgz" "$VPS_SSH_USER@$VPS_HOST:/tmp/cf-wechat-cache-r266-bundle.tgz"
+          scp "${transport[@]}" -P "$port" "$SNAP/activate-cf-r266-cache-ref-guarded.sh" "$VPS_SSH_USER@$VPS_HOST:/tmp/activate-cf-wechat-cache-r266.sh"
+          ssh "${transport[@]}" -p "$port" "$VPS_SSH_USER@$VPS_HOST" \
+            'set -e; test "$(id -u)" = 0; set +e; bash /tmp/activate-cf-wechat-cache-r266.sh > /tmp/cf-wechat-cache-r266-deploy-diagnostic.log 2>&1; rc=$?; set -e; chgrp 1000 /tmp/cf-wechat-cache-r266-deploy-diagnostic.log; chmod 0640 /tmp/cf-wechat-cache-r266-deploy-diagnostic.log; exit "$rc"' </dev/null
+          echo CF_R266_ROOT_SCRIPT_INVOKED_CONFIRM_DIRECT_SERVICE
