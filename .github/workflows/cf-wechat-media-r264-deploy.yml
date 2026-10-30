@@ -1,0 +1,82 @@
+name: CF WeChat Media r264 Scoped Deploy
+on:
+  push:
+    branches: [main]
+    paths:
+      - server-bootstrap/control/cf-wechat-media-r264/*.request
+permissions:
+  contents: read
+concurrency:
+  group: cf-wechat-media-r264
+  cancel-in-progress: false
+jobs:
+  deploy:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      SNAP: qualification/cf-wechat-media-r264/d87e99d971a3d2abe641c414d5e3ef983b48bef3
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+
+      - name: Require one immutable owner deploy request
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t changed < <(git diff --name-status HEAD^ HEAD)
+          [[ "${#changed[@]}" -eq 1 ]] || exit 10
+          IFS=$'\t' read -r status req <<< "${changed[0]}"
+          [[ "$status" == A ]] || exit 11
+          [[ "$req" == server-bootstrap/control/cf-wechat-media-r264/*.request ]] || exit 12
+          request_id="$(basename "$req" .request)"
+          [[ "$request_id" == cf-wechat-media-r264-20261030-v1 ]] || exit 13
+          [[ "$(wc -l < "$req")" -eq 4 ]] || exit 14
+          grep -Fxq 'request_id=cf-wechat-media-r264-20261030-v1' "$req"
+          grep -Fxq 'candidate_commit=d87e99d971a3d2abe641c414d5e3ef983b48bef3' "$req"
+          grep -Fxq 'expected_sequence=264' "$req"
+          grep -Fxq 'expected_release=onshape-vps-fast-r100-direct-orbit1-paa-storage-r264-wechat-media1' "$req"
+          [[ -f "$SNAP/build_public_r264.sh" && -f "$SNAP/manifest.json" ]] || exit 15
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Reassemble exact r263 and qualify only WeChat r264 overlay
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash -n "$SNAP/build_public_r264.sh"
+          bash -n "$SNAP/activate-cf-r264-wechat-media-guarded.sh"
+          bash "$SNAP/build_public_r264.sh" "$SNAP" "$RUNNER_TEMP/r264"
+          [[ -s "$RUNNER_TEMP/r264.tgz" ]] || exit 21
+
+      - name: Upload scoped archive and guarded activator
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -n "$VPS_SSH_KEY" && -n "$VPS_HOST" && -n "$VPS_SSH_USER" && -n "$VPS_HOST_KEY" ]] || exit 22
+          port="${VPS_PORT:-22}"
+          [[ "$port" =~ ^[0-9]+$ ]] || exit 23
+          sshdir="$RUNNER_TEMP/cf-r264-ssh"
+          install -d -m 0700 "$sshdir"
+          printf '%s\n' "$VPS_SSH_KEY" > "$sshdir/key"
+          chmod 0600 "$sshdir/key"
+          read -r key_type key_data extra < <(printf '%s\n' "$VPS_HOST_KEY" | tr -d '\r')
+          [[ "$key_type" == ssh-ed25519 && -n "$key_data" && -z "${extra:-}" ]] || exit 24
+          printf '%s %s %s\n' "$VPS_HOST" "$key_type" "$key_data" > "$sshdir/known_hosts"
+          printf '[%s]:%s %s %s\n' "$VPS_HOST" "$port" "$key_type" "$key_data" >> "$sshdir/known_hosts"
+          chmod 0600 "$sshdir/known_hosts"
+          transport=(-i "$sshdir/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$sshdir/known_hosts")
+          scp "${transport[@]}" -P "$port" "$RUNNER_TEMP/r264.tgz" "$VPS_SSH_USER@$VPS_HOST:/tmp/cf-r264-wechat-media-release.tgz"
+          scp "${transport[@]}" -P "$port" "$SNAP/activate-cf-r264-wechat-media-guarded.sh" "$VPS_SSH_USER@$VPS_HOST:/tmp/activate-cf-r264-wechat-media-guarded.sh"
+          ssh "${transport[@]}" -p "$port" "$VPS_SSH_USER@$VPS_HOST" \
+            'set -e; test "$(id -u)" = 0; set +e; bash /tmp/activate-cf-r264-wechat-media-guarded.sh > /tmp/cf-r264-wechat-deploy-diagnostic.log 2>&1; rc=$?; set -e; chgrp 1000 /tmp/cf-r264-wechat-deploy-diagnostic.log; chmod 0640 /tmp/cf-r264-wechat-deploy-diagnostic.log; exit "$rc"' </dev/null
+          echo "CF_R264_RELEASE_REQUEST_SENT_TO_OWNER_HOST"
