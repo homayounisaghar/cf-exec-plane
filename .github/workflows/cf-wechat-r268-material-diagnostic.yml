@@ -30,17 +30,17 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          request=server-bootstrap/control/cf-wechat-r268-material-diagnostic/cf-wechat-r268-material-diag-20261031-v1.request
+          request=server-bootstrap/control/cf-wechat-r268-material-diagnostic/cf-wechat-r268-material-diag-20261031-v2.request
           [[ "$(git diff --name-status HEAD^ HEAD)" == "$(printf 'A\t%s' "$request")" ]] || exit 10
           [[ "$(wc -l < "$request")" -eq 2 ]] || exit 11
-          grep -Fxq 'request_id=cf-wechat-r268-material-diag-20261031-v1' "$request"
+          grep -Fxq 'request_id=cf-wechat-r268-material-diag-20261031-v2' "$request"
           grep -Fxq 'purpose=read_only_mount_inspection' "$request"
       - name: Pinned, secret-free script integrity
         shell: bash
         run: |
           set -euo pipefail
-          bash -n "$SNAP/read-only.sh"
-          [[ "$(git hash-object "$SNAP/read-only.sh")" == "cc6036ba62f344b8e63211546903489613d1b770" ]]
+          bash -n "$SNAP/read-only-v2.sh"
+          [[ "$(git hash-object "$SNAP/read-only-v2.sh")" == "cbd4ca0ecfd3550ebb33032f98dfa6f58e29b1eb" ]]
       - name: Read owner-server mount topology without service mutation
         shell: bash
         run: |
@@ -59,5 +59,5 @@ jobs:
           chmod 0600 "$dir/known_hosts"
           transport=(-i "$dir/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$dir/known_hosts")
           ssh "${transport[@]}" -p "$port" "$VPS_SSH_USER@$VPS_HOST" \
-            'test "$(id -u)" = 0 && bash -s' < "$SNAP/read-only.sh"
+            'test "$(id -u)" = 0 && bash -s' < "$SNAP/read-only-v2.sh"
           echo CF_WECHAT_R268_DIAGNOSTIC_SENT_CHECK_PRIVATE_HOST_LOG
