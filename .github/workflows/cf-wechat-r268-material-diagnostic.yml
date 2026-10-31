@@ -1,0 +1,63 @@
+name: CF WeChat r268 Material Mount Read-Only Diagnostic
+on:
+  push:
+    branches: [main]
+    paths:
+      - server-bootstrap/control/cf-wechat-r268-material-diagnostic/*.request
+permissions:
+  contents: read
+concurrency:
+  group: cf-wechat-r268-material-diagnostic
+  cancel-in-progress: false
+jobs:
+  diagnose:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      SNAP: qualification/cf-wechat-r268-material-diagnostic/20261031
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Admit exactly one immutable read-only request
+        shell: bash
+        run: |
+          set -euo pipefail
+          request=server-bootstrap/control/cf-wechat-r268-material-diagnostic/cf-wechat-r268-material-diag-20261031-v1.request
+          [[ "$(git diff --name-status HEAD^ HEAD)" == "$(printf 'A\t%s' "$request")" ]] || exit 10
+          [[ "$(wc -l < "$request")" -eq 2 ]] || exit 11
+          grep -Fxq 'request_id=cf-wechat-r268-material-diag-20261031-v1' "$request"
+          grep -Fxq 'purpose=read_only_mount_inspection' "$request"
+      - name: Pinned, secret-free script integrity
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash -n "$SNAP/read-only.sh"
+          printf '%s  %s\n' 'SCRIPT_SHA256_TO_BE_SET' "$SNAP/read-only.sh" | sha256sum -c -
+      - name: Read owner-server mount topology without service mutation
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -n "$VPS_SSH_KEY" && -n "$VPS_HOST" && -n "$VPS_SSH_USER" && -n "$VPS_HOST_KEY" ]] || exit 20
+          port="${VPS_PORT:-22}"
+          [[ "$port" =~ ^[0-9]+$ ]] || exit 21
+          dir="$RUNNER_TEMP/wechat-r268-diag-ssh"
+          install -d -m 0700 "$dir"
+          printf '%s\n' "$VPS_SSH_KEY" > "$dir/key"
+          chmod 0600 "$dir/key"
+          read -r key_type key_data extra < <(printf '%s\n' "$VPS_HOST_KEY" | tr -d '\r')
+          [[ "$key_type" == ssh-ed25519 && -n "$key_data" && -z "${extra:-}" ]] || exit 22
+          printf '%s %s %s\n' "$VPS_HOST" "$key_type" "$key_data" > "$dir/known_hosts"
+          printf '[%s]:%s %s %s\n' "$VPS_HOST" "$port" "$key_type" "$key_data" >> "$dir/known_hosts"
+          chmod 0600 "$dir/known_hosts"
+          transport=(-i "$dir/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$dir/known_hosts")
+          ssh "${transport[@]}" -p "$port" "$VPS_SSH_USER@$VPS_HOST" \
+            'test "$(id -u)" = 0 && bash -s' < "$SNAP/read-only.sh"
+          echo CF_WECHAT_R268_DIAGNOSTIC_SENT_CHECK_PRIVATE_HOST_LOG
