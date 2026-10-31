@@ -1,0 +1,108 @@
+name: CF WeChat File Handoff r268 Dry-Run Guarded Deploy
+on:
+  push:
+    branches: [main]
+    paths:
+      - server-bootstrap/control/cf-wechat-file-send-r268/*.request
+permissions:
+  contents: read
+concurrency:
+  group: cf-wechat-file-send-r268
+  cancel-in-progress: false
+jobs:
+  deploy:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      SNAP: qualification/cf-wechat-file-send-r268/3197f62d4761721741f1a5c16f35a05d4dd51443
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Require one immutable owner request
+        shell: bash
+        run: |
+          set -euo pipefail
+          request=server-bootstrap/control/cf-wechat-file-send-r268/cf-wechat-file-send-r268-20261031-v1.request
+          change="$(git diff --name-status HEAD^ HEAD)"
+          expected="$(printf 'A\t%s' "$request")"
+          [[ "$change" == "$expected" ]] || exit 10
+          [[ "$(wc -l < "$request")" -eq 4 ]] || exit 11
+          grep -Fxq 'request_id=cf-wechat-file-send-r268-20261031-v1' "$request"
+          grep -Fxq 'candidate_commit=3197f62d4761721741f1a5c16f35a05d4dd51443' "$request"
+          grep -Fxq 'expected_sequence=268' "$request"
+          grep -Fxq 'expected_release=onshape-vps-fast-r100-direct-orbit1-paa-storage-r268-wechat-file-handoff-dryrun-20261031' "$request"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Qualify pinned, secret-free release and rollback
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$SNAP"
+          printf '%s  %s\n' '194d3c1664620bdd211b803c649b814d6d5182337698a87bc7610285bebf2440' wechat-media-tools.mjs | sha256sum -c -
+          printf '%s  %s\n' '281aa17eb6916e52276e4b92bb65bbc1e7858be2ca86c6133a491e035c4ac390' wechat_media_cache_adapter_v1.mjs | sha256sum -c -
+          printf '%s  %s\n' 'e27ba8c8483639dd80810ffe96534f529a178a3549b2305ab6db62ebcf4ff6dc' manifest.json | sha256sum -c -
+          printf '%s  %s\n' '4ba42914d33faf7a9ab8bdd9373f5197be1a6c66746b4d45e8de16a6d740ef9a' release-closure.json | sha256sum -c -
+          printf '%s  %s\n' '97347ee1af75cc895a4fabd2dbd921f075632727eff54bd27fc54c48743af18a' test_r267_stable_public.mjs | sha256sum -c -
+          printf '%s  %s\n' '3e283a192ad0bbbcf970afff279d4fbc99c04d1d3a8a6e42cf1eaa0a384ea12b' wechat_file_handoff.test.mjs | sha256sum -c -
+          printf '%s  %s\n' 'e70325ffd8de1f0099cf73f70dd945b3d8ee4319e8d8bc8246329c677539c9e7' wechat_file_receipt_guard.mjs | sha256sum -c -
+          printf '%s  %s\n' '471ee35170d66c623a187acf33ba2d02afd27739b73b301493d0b6f49378563d' wechat_file_receipt_guard.test.mjs | sha256sum -c -
+          printf '%s  %s\n' '19cfe116a911ebd57bd192e56471ed7bb6cfd6890bca647a0266c43425a02bed' test_wechat_file_send_integration.mjs | sha256sum -c -
+          printf '%s  %s\n' '3bfd80211d2d997736ba498561f64ce4f2e666378766bc002b7f74372d9e84bf' test_wechat_file_send_dispatch.py | sha256sum -c -
+          printf '%s  %s\n' '29b0f679da7503608a06c602a9f20554b5e7c680938f715eac7c9b95d3ac0765' wechat_file_send_dispatch.py | sha256sum -c -
+          printf '%s  %s\n' '11800f8f4abe4f96e99670e3cf6b37e5d0948bac46f5fec46110164778b29e68' wechat_semantic_helper_file_send_candidate.py | sha256sum -c -
+          printf '%s  %s\n' '82ded4c9e7edb2d2b42b6afdd673e86ff644dd382a5dd747ff895010628f38ac' activate-cf-wechat-file-send-r268-guarded.sh | sha256sum -c -
+          bash -n activate-cf-wechat-file-send-r268-guarded.sh
+          node --check wechat-media-tools.mjs
+          python3 -m py_compile wechat_file_send_dispatch.py wechat_semantic_helper_file_send_candidate.py
+          node --test test_r267_stable_public.mjs wechat_file_handoff.test.mjs wechat_file_receipt_guard.test.mjs test_wechat_file_send_integration.mjs
+          python3 -m unittest -v test_wechat_file_send_dispatch
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          m=json.loads(Path("manifest.json").read_text())
+          c=json.loads(Path("release-closure.json").read_text())
+          assert m["sequence"]==268
+          assert c["build_id"]==m["release_id"]
+          assert len(m["files"])==32
+          assert set(c["files"])==set(m["files"])
+          assert m["files"]["wechat-media-tools.mjs"]=="194d3c1664620bdd211b803c649b814d6d5182337698a87bc7610285bebf2440"
+          assert m["files"]["whatsapp-ingress.mjs"]=="264c4d9614551f2586dfcc157db61d8c99d81c6326e8d7b51123de37052c733d"
+          print("CF_R268_DRYRUN_SOURCE_VERIFIED")
+          PY
+          tar -czf "$RUNNER_TEMP/cf-wechat-file-send-r268-bundle.tgz" \
+            wechat-media-tools.mjs wechat_media_cache_adapter_v1.mjs manifest.json release-closure.json \
+            test_r267_stable_public.mjs wechat_file_handoff.test.mjs \
+            wechat_file_receipt_guard.mjs wechat_file_receipt_guard.test.mjs \
+            test_wechat_file_send_integration.mjs test_wechat_file_send_dispatch.py \
+            wechat_file_send_dispatch.py wechat_semantic_helper_file_send_candidate.py
+      - name: Publish one scope-limited guarded release to the owner VPS
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -n "$VPS_SSH_KEY" && -n "$VPS_HOST" && -n "$VPS_SSH_USER" && -n "$VPS_HOST_KEY" ]] || exit 20
+          port="${VPS_PORT:-22}"
+          [[ "$port" =~ ^[0-9]+$ ]] || exit 21
+          dir="$RUNNER_TEMP/wechat-r268-ssh"
+          install -d -m 0700 "$dir"
+          printf '%s\n' "$VPS_SSH_KEY" > "$dir/key"
+          chmod 0600 "$dir/key"
+          read -r key_type key_data extra < <(printf '%s\n' "$VPS_HOST_KEY" | tr -d '\r')
+          [[ "$key_type" == ssh-ed25519 && -n "$key_data" && -z "${extra:-}" ]] || exit 22
+          printf '%s %s %s\n' "$VPS_HOST" "$key_type" "$key_data" > "$dir/known_hosts"
+          printf '[%s]:%s %s %s\n' "$VPS_HOST" "$port" "$key_type" "$key_data" >> "$dir/known_hosts"
+          chmod 0600 "$dir/known_hosts"
+          transport=(-i "$dir/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$dir/known_hosts")
+          scp "${transport[@]}" -P "$port" "$RUNNER_TEMP/cf-wechat-file-send-r268-bundle.tgz" "$VPS_SSH_USER@$VPS_HOST:/tmp/cf-wechat-file-send-r268-bundle.tgz"
+          scp "${transport[@]}" -P "$port" "$SNAP/activate-cf-wechat-file-send-r268-guarded.sh" "$VPS_SSH_USER@$VPS_HOST:/tmp/activate-cf-wechat-file-send-r268-guarded.sh"
+          ssh "${transport[@]}" -p "$port" "$VPS_SSH_USER@$VPS_HOST" \
+            'set -e; test "$(id -u)" = 0; set +e; bash /tmp/activate-cf-wechat-file-send-r268-guarded.sh > /tmp/cf-wechat-file-send-r268-diagnostic.log 2>&1; rc=$?; set -e; chgrp 1000 /tmp/cf-wechat-file-send-r268-diagnostic.log; chmod 0640 /tmp/cf-wechat-file-send-r268-diagnostic.log; exit "$rc"' </dev/null
+          echo CF_WECHAT_R268_RELEASE_SCRIPT_INVOKED_VERIFY_LIVE_DIRECTLY
