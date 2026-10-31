@@ -1,0 +1,20 @@
+name: WeChat native voice r268 offline qualification
+on:
+  push:
+    branches:
+      - wechat-native-voice-r268-qualification
+    paths:
+      - 'research-stage/wechat-native-voice-r268/**'
+jobs:
+  offline-guards:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compile candidate modules
+        run: python -m py_compile research-stage/wechat-native-voice-r268/voice_plan_guard.py research-stage/wechat-native-voice-r268/wx_voice_fail_closed_candidate.py research-stage/wechat-native-voice-r268/wx_voice_complete_candidate.py
+      - name: Run planner and receipt tests
+        working-directory: research-stage/wechat-native-voice-r268
+        run: python -m unittest -v test_voice_plan_guard.py
