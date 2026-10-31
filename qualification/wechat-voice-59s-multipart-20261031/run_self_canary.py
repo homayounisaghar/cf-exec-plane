@@ -36,24 +36,24 @@ def main():
  for i in range(1,3):
   payload="voice:%s:%s:%d/%d"%(str(src.resolve()),digest,i,2)
   if wx_common.already_attempted("File Transfer",payload):raise RuntimeError("PART_ALREADY_ATTEMPTED_NO_RETRY")
+ receipt_path=ROOT/"v10_last.json"
+ archive=ROOT/"v10_last_before_qa_20261031.json"
+ if archive.exists():raise RuntimeError("OLD_RECEIPT_ARCHIVE_EXISTS_NO_OVERWRITE")
  fd=os.open(STARTED,os.O_WRONLY|os.O_CREAT|os.O_EXCL,0o600)
  with os.fdopen(fd,"w") as f:f.write("ONE_SHOT_STARTED_NO_RETRY\n");f.flush();os.fsync(f.fileno())
+ if receipt_path.exists():os.replace(receipt_path,archive)
  pathhash=hashlib.sha256(str(src.resolve()).encode()).hexdigest()
  cmd=["systemd-run","--user","--scope","--collect","--quiet","/bin/bash","./with_wechat_env.sh",
       "/usr/bin/env","WXV_STRATEGY=complete","PULSE_SERVER=unix:/run/user/1000/pulse/native",
       "/usr/bin/python3","./wx_voice_fix.py","send-voice","File Transfer",str(src.resolve()),pathhash,"2"]
  started=time.monotonic()
- receipt_path=ROOT/"v10_last.json"
- archive=ROOT/"v10_last_before_qa_20261031.json"
- if archive.exists():raise RuntimeError("OLD_RECEIPT_ARCHIVE_EXISTS_NO_OVERWRITE")
- if receipt_path.exists():os.replace(receipt_path,archive)
  dispatch_started=time.time_ns()
  proc=run(cmd,cwd=ROOT,timeout=300,check=False)
  if not receipt_path.is_file() or receipt_path.stat().st_mtime_ns < dispatch_started:raise RuntimeError("NO_FRESH_ENGINE_RECEIPT_OUTCOME_UNKNOWN_DO_NOT_RETRY")
  result=json.loads(receipt_path.read_text())
  rep=result.get("result") or {}
  rows=rep.get("results") or []
- verified=(result.get("ok") is True and rep.get("status")=="VOICE_ALL_SENT" and len(rows)==2 and
+ parts_verified=(result.get("ok") is True and rep.get("status")=="VOICE_ALL_SENT" and len(rows)==2 and
            [x.get("chunk") for x in rows]==[1,2] and
            all(x.get("status")=="VOICE_SENT_VERIFIED" and x.get("direction")=="out" and
                x.get("capture_seen") is True and x.get("pacat_rc")==0 and
@@ -71,6 +71,10 @@ def main():
   post["temporary_wechat_audio_modules_remaining"]=("wxv11_" in mods)
   post["elapsed_s"]=round(time.monotonic()-started,2)
  except Exception as e:post["postflight_error"]=type(e).__name__+":"+str(e)[:250]
+ post_ok=(not post.get("postflight_error") and post.get("auth",{}).get("authenticated") is True and
+          post.get("pulse_default")=="cf_wechat_preboot_mic" and
+          post.get("temporary_wechat_audio_modules_remaining") is False)
+ verified=parts_verified and post_ok
  report={"state":"TWO_PARTS_VERIFIED" if verified else "PARTIAL_OR_IN_DOUBT_NO_RETRY",
          "engine_exit":proc.returncode,"overall":rep.get("status"),"fix":rep.get("fix_version"),
          "strategy":rep.get("strategy"),"source_duration_s":rep.get("duration_s"),
