@@ -306,6 +306,14 @@ host_handoff_sha="$(sha256sum "$handoff_probe" | awk '{print $1}')"
 [[ "$container_handoff_sha" == "$host_handoff_sha" ]] || {
   echo CF_R268_HANDOFF_MOUNT_NOT_SHARED; exit 55;
 }
+docker exec "$server" sh -c 'umask 077; printf "CF_WECHAT_R268_CONTAINER_WRITABLE\\n" > /tmp/app/.wechat-handoff/.r268-write-probe'
+[[ "$(cat "$new/.wechat-handoff/.r268-write-probe")" == CF_WECHAT_R268_CONTAINER_WRITABLE ]] || {
+  echo CF_R268_HANDOFF_MOUNT_NOT_WRITABLE; exit 58;
+}
+docker exec "$server" rm -f /tmp/app/.wechat-handoff/.r268-write-probe
+[[ ! -e "$new/.wechat-handoff/.r268-write-probe" ]] || {
+  echo CF_R268_HANDOFF_MOUNT_CLEANUP_FAILED; exit 59;
+}
 rm -f "$handoff_probe"
 [[ "$(docker exec "$server" test -r "$material_probe"; echo $?)" == 0 ]] || {
   echo CF_R268_MATERIAL_MOUNT_LOST; exit 56;
