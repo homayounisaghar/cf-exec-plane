@@ -72,6 +72,10 @@ def main():
         raise RuntimeError("VOICE_BACKUP_HASH_MISMATCH")
     s = voice.read_text()
     s = replace_once(s,
+        '"""Voice messages v11: send ANY audio file as WeChat voice message(s).',
+        '"""Unreleased fail-closed native voice engine candidate based on pinned v11.7.\\n\\nNOT a deployed or live-qualified CF capability. Original 59-second planner retained.\\n\\nVoice messages v11: send ANY audio file as WeChat voice message(s).',
+        "candidate-docstring")
+    s = replace_once(s,
         '                    if c.already_attempted(name, payload):\n                        rep["results"].append({"chunk": i + 1, "status": "SKIPPED_ALREADY_ATTEMPTED"})\n                        continue',
         '                    if c.already_attempted(name, payload):\n                        rep["results"].append({"chunk": i + 1, "status": "STOPPED_PRIOR_ATTEMPT_NEEDS_RECONCILIATION"})\n                        break',
         "stop-after-prior-chunk")
@@ -90,6 +94,9 @@ def main():
     if "mk.unlink()" in s or "marker_released" in s:
         raise RuntimeError("UNSAFE_MARKER_REMOVAL_REMAINS")
     voice.write_text(s)
+    candidate_blob = run(["git","hash-object",str(voice)]).stdout.strip()
+    if candidate_blob != "d99995233af193a95740b26503457572c9674017":
+        raise RuntimeError("FAIL_CLOSED_CANDIDATE_BLOB_MISMATCH " + candidate_blob)
     fix_pin = ROOT / "wx_voice_fix_v1116.py"
     fetch(BASE + "/" + FIX_COMMIT + "/research-stage/wechat-ui-engine-v2/4afbc0853d7ab64180a2b4fca9b52c363f7c03d5/wx_voice_fix_v1116.py", fix_pin, FIX_BLOB)
     fix = fix_pin.read_text()
@@ -118,8 +125,19 @@ def main():
         '    rep["fix_version"] = "v11.18-complete-local-candidate"',
         "candidate-version")
     active_fix = ROOT / "wx_voice_fix.py"
+    fix_backup = ROOT / "wx_voice_fix_v1116_original.py"
     if active_fix.exists():
-        raise RuntimeError("ACTIVE_FIX_ALREADY_EXISTS_NO_OVERWRITE")
+        if run(["git","hash-object",str(active_fix)]).stdout.strip() != FIX_BLOB:
+            raise RuntimeError("ACTIVE_FIX_NOT_PINNED_V11_16_NO_OVERWRITE")
+        if fix_backup.exists():
+            raise RuntimeError("FIX_BACKUP_ALREADY_EXISTS_NO_OVERWRITE")
+        shutil.copy2(active_fix,fix_backup)
+    else:
+        if fix_backup.exists():
+            raise RuntimeError("FIX_BACKUP_ALREADY_EXISTS_NO_OVERWRITE")
+        shutil.copy2(fix_pin,fix_backup)
+    if run(["git","hash-object",str(fix_backup)]).stdout.strip() != FIX_BLOB:
+        raise RuntimeError("FIX_BACKUP_HASH_MISMATCH")
     active_fix.write_text(fix)
     for f in (voice, active_fix):
         run(["python3","-m","py_compile",str(f)])
