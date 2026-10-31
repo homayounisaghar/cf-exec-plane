@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
-      SNAP: qualification/cf-wechat-real-r269/f574f5c9a3df74b979609fd2e15e65f09390cfae
+      SNAP: qualification/cf-wechat-real-r269/cb5bb79322530d26c40d789dfa950464a543062e
       VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
       VPS_HOST: ${{ secrets.VPS_HOST }}
       VPS_PORT: ${{ secrets.VPS_PORT }}
@@ -30,11 +30,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          request=server-bootstrap/control/cf-wechat-real-r269/cf-wechat-real-r269-20261031-v1.request
+          request=server-bootstrap/control/cf-wechat-real-r269/cf-wechat-real-r269-20261031-v2.request
           [[ "$(git diff --name-status HEAD^ HEAD)" == "$(printf 'A\t%s' "$request")" ]] || exit 10
           [[ "$(wc -l < "$request")" -eq 4 ]] || exit 11
-          grep -Fxq 'request_id=cf-wechat-real-r269-20261031-v1' "$request"
-          grep -Fxq 'candidate_commit=f574f5c9a3df74b979609fd2e15e65f09390cfae' "$request"
+          grep -Fxq 'request_id=cf-wechat-real-r269-20261031-v2' "$request"
+          grep -Fxq 'candidate_commit=cb5bb79322530d26c40d789dfa950464a543062e' "$request"
           grep -Fxq 'expected_sequence=269' "$request"
           grep -Fxq 'expected_release=onshape-vps-fast-r100-direct-orbit1-paa-storage-r269-wechat-real-file-send-20261031' "$request"
       - uses: actions/setup-node@v4
@@ -53,7 +53,7 @@ jobs:
           printf '%s  %s\n' '75cee2819528bc9b16504429464a2bcfd0911866fa22c60e74a4670ba5e55214' test_wechat_file_dryrun_bridge.mjs | sha256sum -c -
           printf '%s  %s\n' '12930969cef862fb55022828f1cd45848988b63fc949db8fb8e92112ea90b8c9' wechat_semantic_helper_r268_stream_dryrun.py | sha256sum -c -
           printf '%s  %s\n' '2a3ee95c9b820fc348bd38dbf19a3f11381d64b9e5936f252983be3d3fcfa262' test_wechat_helper_r268_stream_dryrun.py | sha256sum -c -
-          printf '%s  %s\n' 'ee2cc0044811fc3036b9e029fe2699b57e6155c461fab81a2f77ac30fa4f97b1' activate-cf-r269-real-file-send-guarded.sh | sha256sum -c -
+          printf '%s  %s\n' 'b33e3f16bc63dcc34a973547029a62c56c115573f94ab8480752ee6baa5912a1' activate-cf-r269-real-file-send-guarded.sh | sha256sum -c -
           node --check wechat-media-tools.mjs
           python3 -m py_compile wechat_semantic_helper_r268_stream_dryrun.py
           bash -n activate-cf-r269-real-file-send-guarded.sh
