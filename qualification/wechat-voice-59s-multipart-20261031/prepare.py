@@ -73,7 +73,7 @@ def main():
     s = voice.read_text()
     s = replace_once(s,
         '"""Voice messages v11: send ANY audio file as WeChat voice message(s).',
-        '"""Unreleased fail-closed native voice engine candidate based on pinned v11.7.\\n\\nNOT a deployed or live-qualified CF capability. Original 59-second planner retained.\\n\\nVoice messages v11: send ANY audio file as WeChat voice message(s).',
+        '"""Unreleased fail-closed native voice engine candidate based on pinned v11.7.\n\nNOT a deployed or live-qualified CF capability. Original 59-second planner retained.\n\nVoice messages v11: send ANY audio file as WeChat voice message(s).',
         "candidate-docstring")
     s = replace_once(s,
         '                    if c.already_attempted(name, payload):\n                        rep["results"].append({"chunk": i + 1, "status": "SKIPPED_ALREADY_ATTEMPTED"})\n                        continue',
