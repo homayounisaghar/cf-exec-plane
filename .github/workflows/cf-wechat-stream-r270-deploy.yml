@@ -1,0 +1,68 @@
+name: CF WeChat 1GiB Stream r270 Guarded Release
+on:
+  push:
+    branches: [main]
+    paths: [server-bootstrap/control/cf-wechat-stream-r270/*.request]
+permissions: {contents: read}
+concurrency: {group: cf-wechat-stream-r270, cancel-in-progress: false}
+jobs:
+  deploy:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      SNAP: qualification/cf-wechat-stream-r270/20261031-1g
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 2, persist-credentials: false}
+      - name: Admit exact one-file immutable request
+        shell: bash
+        run: |
+          set -euo pipefail
+          request=server-bootstrap/control/cf-wechat-stream-r270/cf-wechat-stream-r270-20261031-v1.request
+          [[ "$(git diff --name-status HEAD^ HEAD)" == "$(printf 'A\t%s' "$request")" ]] || exit 10
+          [[ "$(wc -l < "$request")" == 4 ]] || exit 11
+          grep -Fxq 'request_id=cf-wechat-stream-r270-20261031-v1' "$request"
+          grep -Fxq 'candidate_commit=1659121efda04db0c534c5e3ca5b1cc7b14ca9ee' "$request"
+          grep -Fxq 'expected_sequence=270' "$request"
+          grep -Fxq 'expected_release=onshape-vps-fast-r100-direct-orbit1-paa-storage-r270-wechat-stream-1g-20261031' "$request"
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - name: Verify secret-free snapshot and no-send streaming test
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$SNAP"
+          printf '%s  %s\n' 'd38e5d2064081a090b4a87c5867c4c683085b82270be61dfeb69265b5e10998f' wechat-media-tools.mjs | sha256sum -c -
+          printf '%s  %s\n' 'f0ac97553d22b763c3ab01719de4858445e61d1ef2e9944ffa9c6b0052f37460' wechat-semantic-helper.py | sha256sum -c -
+          bash -n activate-r270.sh
+          node --check wechat-media-tools.mjs
+          python3 -m py_compile wechat-semantic-helper.py
+          node test_stream.mjs
+          grep -Fq 'MAX_FILE_SEND_BYTES=1024*1024*1024' wechat-media-tools.mjs
+          grep -Fq 'MAX_STREAM_FILE_BYTES = 1024 * 1024 * 1024' wechat-semantic-helper.py
+      - name: Scoped authenticated release and rollback
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -n "$VPS_SSH_KEY" && -n "$VPS_HOST" && -n "$VPS_SSH_USER" && -n "$VPS_HOST_KEY" ]] || exit 20
+          port="${VPS_PORT:-22}"
+          [[ "$port" =~ ^[0-9]+$ ]] || exit 21
+          dir="$RUNNER_TEMP/r270-ssh"; install -d -m 0700 "$dir"
+          printf '%s\n' "$VPS_SSH_KEY" > "$dir/key"; chmod 0600 "$dir/key"
+          read -r kt kd extra < <(printf '%s\n' "$VPS_HOST_KEY" | tr -d '\r')
+          [[ "$kt" == ssh-ed25519 && -n "$kd" && -z "${extra:-}" ]] || exit 22
+          printf '%s %s %s\n' "$VPS_HOST" "$kt" "$kd" > "$dir/known_hosts"
+          printf '[%s]:%s %s %s\n' "$VPS_HOST" "$port" "$kt" "$kd" >> "$dir/known_hosts"
+          chmod 0600 "$dir/known_hosts"
+          transport=(-i "$dir/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$dir/known_hosts")
+          ssh "${transport[@]}" -p "$port" "$VPS_SSH_USER@$VPS_HOST" 'test "$(id -u)" = 0 && install -d -m 0700 /tmp/cf-wechat-r270-payload' </dev/null
+          scp "${transport[@]}" -P "$port" "$SNAP/wechat-media-tools.mjs" "$SNAP/wechat-semantic-helper.py" "$VPS_SSH_USER@$VPS_HOST:/tmp/cf-wechat-r270-payload/"
+          scp "${transport[@]}" -P "$port" "$SNAP/activate-r270.sh" "$VPS_SSH_USER@$VPS_HOST:/tmp/cf-wechat-r270-activate.sh"
+          ssh "${transport[@]}" -p "$port" "$VPS_SSH_USER@$VPS_HOST" 'set +e; bash /tmp/cf-wechat-r270-activate.sh > /tmp/cf-wechat-r270-diagnostic.log 2>&1; rc=$?; set -e; chgrp 1000 /tmp/cf-wechat-r270-diagnostic.log; chmod 0640 /tmp/cf-wechat-r270-diagnostic.log; rm -rf /tmp/cf-wechat-r270-payload; exit "$rc"' </dev/null
+          echo CF_WECHAT_R270_REQUEST_EXECUTED_VERIFY_LIVE_SERVER
