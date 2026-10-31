@@ -43,18 +43,24 @@ def main():
       "/usr/bin/env","WXV_STRATEGY=complete","PULSE_SERVER=unix:/run/user/1000/pulse/native",
       "/usr/bin/python3","./wx_voice_fix.py","send-voice","File Transfer",str(src.resolve()),pathhash,"2"]
  started=time.monotonic()
- proc=run(cmd,cwd=ROOT,timeout=300,check=False)
  receipt_path=ROOT/"v10_last.json"
- if not receipt_path.is_file():raise RuntimeError("NO_ENGINE_RECEIPT_OUTCOME_UNKNOWN_DO_NOT_RETRY")
+ archive=ROOT/"v10_last_before_qa_20261031.json"
+ if archive.exists():raise RuntimeError("OLD_RECEIPT_ARCHIVE_EXISTS_NO_OVERWRITE")
+ if receipt_path.exists():os.replace(receipt_path,archive)
+ dispatch_started=time.time_ns()
+ proc=run(cmd,cwd=ROOT,timeout=300,check=False)
+ if not receipt_path.is_file() or receipt_path.stat().st_mtime_ns < dispatch_started:raise RuntimeError("NO_FRESH_ENGINE_RECEIPT_OUTCOME_UNKNOWN_DO_NOT_RETRY")
  result=json.loads(receipt_path.read_text())
  rep=result.get("result") or {}
  rows=rep.get("results") or []
  verified=(result.get("ok") is True and rep.get("status")=="VOICE_ALL_SENT" and len(rows)==2 and
+           [x.get("chunk") for x in rows]==[1,2] and
            all(x.get("status")=="VOICE_SENT_VERIFIED" and x.get("direction")=="out" and
                x.get("capture_seen") is True and x.get("pacat_rc")==0 and
                x.get("pacat_finished_before_release") is True and
                x.get("held_s") is not None and float(x["held_s"])<=60.0 and
-               x.get("bubble_s") is not None and 1<=int(x["bubble_s"])<=60
+               x.get("bubble_s") is not None and 1<=int(x["bubble_s"])<=60 and
+               abs(float(x.get("bubble_s"))-float(x.get("audio_s")))<=1.0
                for x in rows))
  post={}
  try:
