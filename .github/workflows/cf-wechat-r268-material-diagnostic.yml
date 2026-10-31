@@ -40,7 +40,7 @@ jobs:
         run: |
           set -euo pipefail
           bash -n "$SNAP/read-only.sh"
-          printf '%s  %s\n' 'SCRIPT_SHA256_TO_BE_SET' "$SNAP/read-only.sh" | sha256sum -c -
+          [[ "$(git hash-object "$SNAP/read-only.sh")" == "cc6036ba62f344b8e63211546903489613d1b770" ]]
       - name: Read owner-server mount topology without service mutation
         shell: bash
         run: |
