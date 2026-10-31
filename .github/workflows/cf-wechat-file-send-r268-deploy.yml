@@ -30,12 +30,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          request=server-bootstrap/control/cf-wechat-file-send-r268/cf-wechat-file-send-r268-20261031-v2.request
+          request=server-bootstrap/control/cf-wechat-file-send-r268/cf-wechat-file-send-r268-20261031-v3.request
           change="$(git diff --name-status HEAD^ HEAD)"
           expected="$(printf 'A\t%s' "$request")"
           [[ "$change" == "$expected" ]] || exit 10
           [[ "$(wc -l < "$request")" -eq 4 ]] || exit 11
-          grep -Fxq 'request_id=cf-wechat-file-send-r268-20261031-v2' "$request"
+          grep -Fxq 'request_id=cf-wechat-file-send-r268-20261031-v3' "$request"
           grep -Fxq 'candidate_commit=3197f62d4761721741f1a5c16f35a05d4dd51443' "$request"
           grep -Fxq 'expected_sequence=268' "$request"
           grep -Fxq 'expected_release=onshape-vps-fast-r100-direct-orbit1-paa-storage-r268-wechat-file-handoff-dryrun-20261031' "$request"
@@ -59,7 +59,7 @@ jobs:
           printf '%s  %s\n' '3bfd80211d2d997736ba498561f64ce4f2e666378766bc002b7f74372d9e84bf' test_wechat_file_send_dispatch.py | sha256sum -c -
           printf '%s  %s\n' '29b0f679da7503608a06c602a9f20554b5e7c680938f715eac7c9b95d3ac0765' wechat_file_send_dispatch.py | sha256sum -c -
           printf '%s  %s\n' '11800f8f4abe4f96e99670e3cf6b37e5d0948bac46f5fec46110164778b29e68' wechat_semantic_helper_file_send_candidate.py | sha256sum -c -
-          printf '%s  %s\n' 'd89840c0d1655a796fc74963517592d7102cde7e' activate-cf-wechat-file-send-r268-guarded.sh | sha256sum -c -
+          printf '%s  %s\n' '05010ec7ae6db57d5accf5e69bed76366c4442f2dadeaac11c33d8f7242e6a35' activate-cf-wechat-file-send-r268-guarded.sh | sha256sum -c -
           bash -n activate-cf-wechat-file-send-r268-guarded.sh
           node --check wechat-media-tools.mjs
           python3 -m py_compile wechat_file_send_dispatch.py wechat_semantic_helper_file_send_candidate.py
