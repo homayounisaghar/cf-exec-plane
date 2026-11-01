@@ -30,16 +30,16 @@ jobs:
         run: |
           set -euo pipefail
           dir=qualification/dexa-wechat-ui-proof-v1-20261101
-          req=server-bootstrap/control/dexa-wechat-ui-proof-v1/dexa-wechat-ui-proof-v1-20261101-v1.request
+          req=server-bootstrap/control/dexa-wechat-ui-proof-v1/dexa-wechat-ui-proof-v1-20261101-v2.request
           [[ "$(git diff --name-status "$GITHUB_SHA^" "$GITHUB_SHA")" == $'A\t'"$req" ]]
           [[ "$(wc -l < "$req")" -eq 5 ]]
-          grep -Fxq 'request_id=dexa-wechat-ui-proof-v1-20261101-v1' "$req"
+          grep -Fxq 'request_id=dexa-wechat-ui-proof-v1-20261101-v2' "$req"
           grep -Fxq 'expected_cf=193' "$req"
           grep -Fxq 'expected_catalog=297' "$req"
           grep -Fxq 'source_commit=11e63c9eb20ae2ac6173bfc1917947d0bedcdd7d' "$req"
           grep -Fxq 'manifest_blob_sha=ca832b89eb8bb04a3682b4628a9228bfdeff47b8' "$req"
           [[ "$(git hash-object "$dir/manifest.json")" == "ca832b89eb8bb04a3682b4628a9228bfdeff47b8" ]]
-          [[ "$(git hash-object "$dir/deploy.sh")" == "76cf79b4f6b9fd4e1cf1b93bd5e4ad0969ca938d" ]]
+          [[ "$(git hash-object "$dir/deploy.sh")" == "87b0ad2bdfaeb4a50d3be8a688a28898ff71d9fb" ]]
           sh -n "$dir/deploy.sh"
           python3 - <<'PY'
           import pathlib,json
