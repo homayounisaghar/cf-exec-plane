@@ -1,4 +1,4 @@
-name: Dexa Read Plan V2: Bounded Queries and Verified Unread Outputs
+name: Dexa Read Plan V2 Bounded Queries and Verified Unread Outputs
 on:
   push:
     branches: [main]
