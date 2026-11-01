@@ -9,7 +9,7 @@
       "candidate": "7c5d31f33f15db519b0968c4c4659b0b6b91082e3c2b4960569819598a1821d4"
     },
     "dexa/test_dexa_unified_provider_scope_v1.py": {
-      "baseline": "ce418a690fab4a0928c21e431f5b441d7680c1b4c72f412b2ed2e2c6",
+      "baseline": "ce418a690fab4a0928c21e431c8af311f45e441d7680c1b4c72f412b2ed2e2c6",
       "candidate": "2d1b4ff2dac98d67f1b273ef731f1efac3ce262d12eba098f791bf08c8571b33"
     }
   },
