@@ -29,19 +29,19 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          dir=qualification/dexa-chat-read-plan-v2-20261101
-          req=server-bootstrap/control/dexa-chat-read-plan-v2/dexa-chat-read-plan-v2-20261101-v1.request
+          dir=qualification/dexa-chat-read-plan-v2-20261101-v2
+          req=server-bootstrap/control/dexa-chat-read-plan-v2/dexa-chat-read-plan-v2-20261101-v2.request
           [[ "$(git diff --name-status "$GITHUB_SHA^" "$GITHUB_SHA")" == $'A\t'"$req" ]]
           [[ "$(wc -l < "$req")" -eq 4 ]]
-          grep -Fxq 'request_id=dexa-chat-read-plan-v2-20261101-v1' "$req"
+          grep -Fxq 'request_id=dexa-chat-read-plan-v2-20261101-v2' "$req"
           grep -Fxq 'source_commit=a0694eb4d7f4ba73d5a6433a058d8185eefb7ca5' "$req"
           grep -Fxq 'manifest_sha=4ec557ca9b2e6e003a6a79e40ce40fd4c3528a45' "$req"
-          grep -Fxq 'deploy_sha=43f3959c8dab0fac0151e0be381fa6590ee53526' "$req"
+          grep -Fxq 'deploy_sha=c7977ca75d42abfbe1009b44c429509ef7a38162' "$req"
           [[ "$(git hash-object "$dir/manifest.json")" == "4ec557ca9b2e6e003a6a79e40ce40fd4c3528a45" ]]
-          [[ "$(git hash-object "$dir/deploy.sh")" == "43f3959c8dab0fac0151e0be381fa6590ee53526" ]]
+          [[ "$(git hash-object "$dir/deploy.sh")" == "c7977ca75d42abfbe1009b44c429509ef7a38162" ]]
           python3 - <<'PY'
           import hashlib,json,pathlib
-          root=pathlib.Path('qualification/dexa-chat-read-plan-v2-20261101')
+          root=pathlib.Path('qualification/dexa-chat-read-plan-v2-20261101-v2')
           m=json.loads((root/'manifest.json').read_text())
           assert m['source_commit']=='a0694eb4d7f4ba73d5a6433a058d8185eefb7ca5'
           assert len(m['files'])==4
@@ -71,9 +71,9 @@ jobs:
         run: |
           set -euo pipefail
           opts=(-i "$RUNNER_TEMP/ssh/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts")
-          remote=/tmp/dexa-chat-read-plan-v2-20261101
-          ssh "${opts[@]}" -p "$SSH_PORT" "$VPS_SSH_USER@$VPS_HOST" 'mkdir -p -m 755 /tmp/dexa-chat-read-plan-v2-20261101/dexa'
+          remote=/tmp/dexa-chat-read-plan-v2-20261101-v2
+          ssh "${opts[@]}" -p "$SSH_PORT" "$VPS_SSH_USER@$VPS_HOST" 'mkdir -p -m 755 /tmp/dexa-chat-read-plan-v2-20261101-v2/dexa'
           for file in manifest.json deploy.sh dexa/dexa_catalog_output_shapes_v1.json dexa/dexa_general_plan_cycle_v2.mjs dexa/test_dexa_chat_semantic_planner_v1.mjs dexa/test_dexa_unread_output_contract_v2.mjs; do
-            scp "${opts[@]}" -P "$SSH_PORT" "qualification/dexa-chat-read-plan-v2-20261101/$file" "$VPS_SSH_USER@$VPS_HOST:$remote/$file"
+            scp "${opts[@]}" -P "$SSH_PORT" "qualification/dexa-chat-read-plan-v2-20261101-v2/$file" "$VPS_SSH_USER@$VPS_HOST:$remote/$file"
           done
-          ssh "${opts[@]}" -p "$SSH_PORT" "$VPS_SSH_USER@$VPS_HOST" 'bash /tmp/dexa-chat-read-plan-v2-20261101/deploy.sh' </dev/null
+          ssh "${opts[@]}" -p "$SSH_PORT" "$VPS_SSH_USER@$VPS_HOST" 'bash /tmp/dexa-chat-read-plan-v2-20261101-v2/deploy.sh' </dev/null

@@ -1,0 +1,22 @@
+{
+  "schema": "dexa.chat-read-plan-v2.release.v1",
+  "source_commit": "a0694eb4d7f4ba73d5a6433a058d8185eefb7ca5",
+  "files": {
+    "dexa/dexa_catalog_output_shapes_v1.json": {
+      "baseline": "6970b7fb7467397e6753da7ea82b66bd0455a22bdb67544c853138eb872fefc5",
+      "candidate": "bd8c8e9ad85c997abd2a90c83b38e86ba47634d0f80988a6169b9a7a2761f707"
+    },
+    "dexa/dexa_general_plan_cycle_v2.mjs": {
+      "baseline": "828c7cdcbbfbbf0775f2277c199c392a634a977ce37a83f0ccd406f5ffeeb76b",
+      "candidate": "5a31f992e4517737ce357603c76f7710562346be5dda73c21bb58a7d3256e615"
+    },
+    "dexa/test_dexa_chat_semantic_planner_v1.mjs": {
+      "baseline": "fee7093eae34ab662f7eca73924b6ccb8e195d2aa94bd807ba7c26e0b9aa34ff",
+      "candidate": "31e21310b645cbafa32d9c7d798eba8435ca53d9dcc06b850cd97ca1786e779d"
+    },
+    "dexa/test_dexa_unread_output_contract_v2.mjs": {
+      "baseline": null,
+      "candidate": "61ca39860857df9d263b098b642ad4ae7ea615a62fe2cbfa8d05f85a41626c5c"
+    }
+  }
+}
