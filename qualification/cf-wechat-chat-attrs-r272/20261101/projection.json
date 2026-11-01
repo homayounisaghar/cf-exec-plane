@@ -1,0 +1,15 @@
+{
+  "schema": "cf.wechat.conversation-attributes-projection.v1",
+  "source": "provider-native-wechat-accessibility",
+  "target_file": "wechat-ingress.mjs",
+  "baseline_fragment": "muted:Boolean(item?.muted), pinned:null,",
+  "candidate_fragment": "muted:Boolean(item?.muted), pinned:typeof item?.pinned===\"boolean\"?item.pinned:null,",
+  "semantics": {
+    "pinned_true": "only an observed exact native UI badge",
+    "pinned_false": "only an explicit native boolean false",
+    "pinned_unknown": "null when not observed; never infer from row position",
+    "preview": "display status labels excluded by native semantic helper",
+    "writes": "none",
+    "tool_schema_changed": false
+  }
+}
