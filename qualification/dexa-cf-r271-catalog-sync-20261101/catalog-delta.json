@@ -1,0 +1,244 @@
+{
+  "schema": "dexa.cf-catalog-r271-delta.v1",
+  "cf_build": "onshape-vps-fast-r100-direct-orbit1-paa-storage-r271-telegram-link-only-20261101",
+  "base": {
+    "catalog": 291,
+    "schemas": 187,
+    "capability_sha256": "6fcafa453758397c31934e5d7cc2157eb91d09902ea4b29fbcc9ff0ff799f332",
+    "schema_sha256": "a38df7a7071aba405ace196af024b1627363592d90ef814af0cd7140150c0cde"
+  },
+  "telegram_description": "Download one exact Telegram attachment without marking a chat read. Returns attachment metadata and a time-limited resource_link for the original or selected portable MP3; it does not return inline original or preview Base64. Supports images, documents, video, animation, stickers and voice/audio.",
+  "telegram_fa": "دریافت پیوست مشخص پیام تلگرام شامل عکس، سند، ویدیو، گیف، استیکر یا صدا بدون تغییر وضعیت خوانده‌شدن؛ خروجی شامل اطلاعات فایل و پیوند دانلود موقت است، نه محتوای اصلی یا پیش‌نمایش درون‌خطی.",
+  "new_tools": [
+    {
+      "name": "wechat_file_upload",
+      "readOnly": false,
+      "description": "Create, inspect or delete a resumable WeChat material ticket; this does NOT send the file to a chat.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "create",
+              "status",
+              "delete"
+            ]
+          },
+          "upload_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "filename": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "media_type": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 128
+          },
+          "size_bytes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483648
+          },
+          "sha256_hex": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{64}$"
+          }
+        },
+        "required": [
+          "action"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "card": {
+        "capability_id": "tool.cf.wechat_file_upload",
+        "fa_description": "ساخت، بررسی وضعیت یا حذف بلیت بارگذاری چندبخشی فایل برای وی‌چت؛ این ابزار فایل را به گفتگو ارسال نمی‌کند. در ساخت، نام، نوع، اندازه و هش فایل را مشخص کن؛ سقف بارگذاری ۲ گیگابایت است.",
+        "en_description": "Create, inspect or delete a resumable WeChat material ticket; this does NOT send the file to a chat.",
+        "physical_tool_ids": [
+          "CF.wechat_file_upload"
+        ],
+        "provider": "cf",
+        "risk": "schema_and_policy_gate",
+        "source_index": 291
+      }
+    },
+    {
+      "name": "wechat_file_upload_chunk",
+      "readOnly": false,
+      "description": "Append a bounded base64 chunk to an existing resumable material upload ticket; no WeChat UI action.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "upload_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483648
+          },
+          "data_base64": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2900000
+          }
+        },
+        "required": [
+          "upload_id",
+          "offset",
+          "data_base64"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "card": {
+        "capability_id": "tool.cf.wechat_file_upload_chunk",
+        "fa_description": "افزودن یک بخش رمزگذاری‌شدهٔ فایل به بلیت بارگذاری وی‌چت با شناسه و آفست دقیق؛ این کار هیچ پیام یا فایلی را برای مخاطب ارسال نمی‌کند.",
+        "en_description": "Append a bounded base64 chunk to an existing resumable material upload ticket; no WeChat UI action.",
+        "physical_tool_ids": [
+          "CF.wechat_file_upload_chunk"
+        ],
+        "provider": "cf",
+        "risk": "schema_and_policy_gate",
+        "source_index": 292
+      }
+    },
+    {
+      "name": "wechat_cached_media_list",
+      "readOnly": true,
+      "description": "List bounded locally available decrypted WeChat file/video/image/audio cache entries. NEVER asserts a message or sender match, all-account history or uncached media.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "all",
+              "file",
+              "image",
+              "video",
+              "audio"
+            ]
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          }
+        },
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "card": {
+        "capability_id": "tool.cf.wechat_cached_media_list",
+        "fa_description": "فهرست محدود فایل‌ها، عکس‌ها، ویدیوها و صداهای ازپیش رمزگشایی‌شده در حافظهٔ محلی وی‌چت؛ هویت فرستنده یا پیام و کل تاریخچه را اثبات نمی‌کند.",
+        "en_description": "List bounded locally available decrypted WeChat file/video/image/audio cache entries. NEVER asserts a message or sender match, all-account history or uncached media.",
+        "physical_tool_ids": [
+          "CF.wechat_cached_media_list"
+        ],
+        "provider": "cf",
+        "risk": "read_only",
+        "source_index": 293
+      }
+    },
+    {
+      "name": "wechat_cached_media_get",
+      "readOnly": true,
+      "description": "Stage one exact previously listed decrypted WeChat cache file into the shared short-lived download plane. No message/sender identity proof, no UI navigation and no encrypted database access.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "file_ref": {
+            "type": "string",
+            "pattern": "^wechatcache:[0-9a-f]{48}$"
+          }
+        },
+        "required": [
+          "file_ref"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "card": {
+        "capability_id": "tool.cf.wechat_cached_media_get",
+        "fa_description": "آماده‌سازی دانلود موقت یک فایل محلی وی‌چت با شناسهٔ دقیق حاصل از فهرست رسانه‌های ذخیره‌شده؛ بدون باز کردن گفتگو و بدون ادعای شناسایی پیام یا فرستنده.",
+        "en_description": "Stage one exact previously listed decrypted WeChat cache file into the shared short-lived download plane. No message/sender identity proof, no UI navigation and no encrypted database access.",
+        "physical_tool_ids": [
+          "CF.wechat_cached_media_get"
+        ],
+        "provider": "cf",
+        "risk": "read_only",
+        "source_index": 294
+      }
+    },
+    {
+      "name": "wechat_file_send",
+      "readOnly": false,
+      "description": "Send one ready, hash-verified file up to 1 GiB through the native WeChat chooser to a uniquely matched exact chat. A durable one-shot marker is reserved before any possible send; never blindly retry. UI_OUTBOUND_OBSERVED means a fresh outgoing file row, NOT independent provider delivery confirmation. Supports dry_run=true without sending.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "target": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "upload_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "dry_run": {
+            "type": "boolean"
+          },
+          "allow_mark_read": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "target",
+          "upload_id"
+        ],
+        "additionalProperties": false,
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "card": {
+        "capability_id": "tool.cf.wechat_file_send",
+        "fa_description": "ارسال یک فایل آماده و راستی‌آزمایی‌شده تا سقف ۱ گیگابایت به گفتگوی دقیق وی‌چت با انتخاب‌گر بومی. عملیات یک‌بارمصرف است؛ در نتیجه نامطمئن دوباره ارسال نکن. مشاهدهٔ حباب خروجی به معنی تأیید مستقل تحویل نیست؛ حالت dry_run بدون ارسال پشتیبانی می‌شود.",
+        "en_description": "Send one ready, hash-verified file up to 1 GiB through the native WeChat chooser to a uniquely matched exact chat. A durable one-shot marker is reserved before any possible send; never blindly retry. UI_OUTBOUND_OBSERVED means a fresh outgoing file row, NOT independent provider delivery confirmation. Supports dry_run=true without sending.",
+        "physical_tool_ids": [
+          "CF.wechat_file_send"
+        ],
+        "provider": "cf",
+        "risk": "schema_and_policy_gate",
+        "source_index": 295
+      }
+    },
+    {
+      "name": "wechat_native_voice_capability",
+      "readOnly": true,
+      "description": "Report native WeChat voice-message injection qualification truth. An audio file upload is NOT a native voice message.",
+      "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {}
+      },
+      "card": {
+        "capability_id": "tool.cf.wechat_native_voice_capability",
+        "fa_description": "گزارش وضعیت واقعی پشتیبانی و تأیید قابلیت پیام صوتی بومی وی‌چت؛ این ابزار پیام صوتی ارسال نمی‌کند و بارگذاری فایل صوتی معادل پیام صوتی بومی نیست.",
+        "en_description": "Report native WeChat voice-message injection qualification truth. An audio file upload is NOT a native voice message.",
+        "physical_tool_ids": [
+          "CF.wechat_native_voice_capability"
+        ],
+        "provider": "cf",
+        "risk": "read_only",
+        "source_index": 296
+      }
+    }
+  ]
+}
