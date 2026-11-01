@@ -1,0 +1,79 @@
+name: Dexa Chat Semantics and Bounded Replan V1
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'server-bootstrap/control/dexa-chat-semantics-v1/*.request'
+permissions:
+  contents: read
+concurrency:
+  group: dexa-chat-semantics-v1
+  cancel-in-progress: false
+jobs:
+  deploy:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Verify immutable retry request and exact snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir=qualification/dexa-chat-semantics-v1-20261101
+          req=server-bootstrap/control/dexa-chat-semantics-v1/dexa-chat-semantics-v1-20261101-v1.request
+          [[ "$(git diff --name-status "$GITHUB_SHA^" "$GITHUB_SHA")" == $'A\t'"$req" ]]
+          [[ "$(wc -l < "$req")" -eq 4 ]]
+          grep -Fxq 'request_id=dexa-chat-semantics-v1-20261101-v1' "$req"
+          grep -Fxq 'source_commit=2e531920edf10b0bc5f6a50480699b161faa96c5' "$req"
+          grep -Fxq 'manifest_sha=d16524695b2cd1a179e24feb1510fa43610f969c' "$req"
+          grep -Fxq 'deploy_sha=52fa113723958774d17b55311e3b13a98c6737dd' "$req"
+          [[ "$(git hash-object "$dir/manifest.json")" == "d16524695b2cd1a179e24feb1510fa43610f969c" ]]
+          [[ "$(git hash-object "$dir/deploy.sh")" == "52fa113723958774d17b55311e3b13a98c6737dd" ]]
+          python3 - <<'PY'
+          import hashlib,json,pathlib
+          root=pathlib.Path('qualification/dexa-chat-semantics-v1-20261101')
+          m=json.loads((root/'manifest.json').read_text())
+          assert m['source_commit']=='2e531920edf10b0bc5f6a50480699b161faa96c5'
+          assert len(m['files'])==7
+          for rel,v in m['files'].items():
+           assert hashlib.sha256((root/rel).read_bytes()).hexdigest()==v['candidate'],rel
+          print('RETRY_SNAPSHOT_7_VERIFIED')
+          PY
+          sh -n "$dir/deploy.sh"
+      - name: Pin and prepare SSH
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -n "$VPS_SSH_KEY" && -n "$VPS_HOST" && -n "$VPS_SSH_USER" && -n "$VPS_HOST_KEY" ]]
+          [[ "$VPS_SSH_USER" == cfserver || "$VPS_SSH_USER" == root ]]
+          port="${VPS_PORT:-22}"
+          case "$port" in *[!0-9]*) exit 22 ;; esac
+          mkdir -m 700 "$RUNNER_TEMP/ssh"
+          printf '%s\n' "$VPS_SSH_KEY" > "$RUNNER_TEMP/ssh/key"
+          chmod 600 "$RUNNER_TEMP/ssh/key"
+          read -r key_type key_data extra <<< "$(printf '%s\n' "$VPS_HOST_KEY" | tr -d '\r')"
+          [[ "$key_type" == ssh-ed25519 && -n "$key_data" && -z "$extra" ]]
+          printf '%s %s %s\n' "$VPS_HOST" "$key_type" "$key_data" > "$RUNNER_TEMP/ssh/known_hosts"
+          printf '[%s]:%s %s %s\n' "$VPS_HOST" "$port" "$key_type" "$key_data" >> "$RUNNER_TEMP/ssh/known_hosts"
+          echo "SSH_PORT=$port" >> "$GITHUB_ENV"
+      - name: Guarded native helper + Dexa install, preserved WeChat GUI and checked receipt, exact hash and health readback
+        shell: bash
+        run: |
+          set -euo pipefail
+          opts=(-i "$RUNNER_TEMP/ssh/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts")
+          remote=/tmp/dexa-chat-semantics-v1-20261101
+          ssh "${opts[@]}" -p "$SSH_PORT" "$VPS_SSH_USER@$VPS_HOST" 'mkdir -p -m 755 /tmp/dexa-chat-semantics-v1-20261101/native /tmp/dexa-chat-semantics-v1-20261101/dexa'
+          for file in manifest.json deploy.sh native/wechat_semantic_helper_chooser_fixed_20261031.py native/test_wechat_chat_projection_v1.py dexa/rana.mjs dexa/dexa_verified_replan_prefix_v1.mjs dexa/test_dexa_verified_replan_prefix_v1.mjs dexa/dexa_general_plan_cycle_v2.mjs dexa/test_dexa_chat_semantic_planner_v1.mjs; do
+            scp "${opts[@]}" -P "$SSH_PORT" "qualification/dexa-chat-semantics-v1-20261101/$file" "$VPS_SSH_USER@$VPS_HOST:$remote/$file"
+          done
+          ssh "${opts[@]}" -p "$SSH_PORT" "$VPS_SSH_USER@$VPS_HOST" 'sh /tmp/dexa-chat-semantics-v1-20261101/deploy.sh' </dev/null
