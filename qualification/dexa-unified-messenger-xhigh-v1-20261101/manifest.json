@@ -1,0 +1,54 @@
+{
+  "schema": "dexa.unified-messenger-wechat-xhigh.release.v1",
+  "source_commit": "5042d059ebb59fb581a2309965b314f4d68b00b9",
+  "requires_cf": "onshape-vps-fast-r100-direct-orbit1-paa-storage-r273-wechat-message-list-20261101",
+  "delta_git_blob": "d42529ecdae288018506ed21817548dffc2cc0df",
+  "files": {
+    "dexa/kata_rank.py": {
+      "baseline": "ea8a9d1d34c7022c2614dc4e534bb36a86809ac4bb301e4a9e4feec613d9f740",
+      "candidate": "c4585462fc8aced8d02e377520d4dedd93b61db5430e9628c66940de31c898e9"
+    },
+    "dexa/dexa_messaging_record_contract_v1.mjs": {
+      "baseline": "0981fa9ab5ad4432d7fdf7902bbeb312096993fdf57d9f148ba03089671c426f",
+      "candidate": "671c9e033be4ee2e711d7211c1d4560b3087bddd07bab5dd2fb717b510f6c1ce"
+    },
+    "dexa/cerebras_api_planner.mjs": {
+      "baseline": "b890bfd90721dcf9ea8e7a5041ddf3c4cfd6c05f89b24ae9e6f0eb2c7b69d351",
+      "candidate": "86b27c0bcffa037777ec49b7bdb2407ac5e9c95042d8fffc9884b3a8df53fc4d"
+    },
+    "dexa/test_dexa_cerebras_api_planner_v1.mjs": {
+      "baseline": "0b135e7e268b99f41133a423ca3c023213e2d0851a9debffa172ca4170534c60",
+      "candidate": "10cfba580cfc23f07eeddcac7331e3a7f538334103d1b3b9b89f41bf56eeb065"
+    },
+    "dexa/test_dexa_universal_unread_contract_v1.mjs": {
+      "baseline": null,
+      "candidate": "e5228577ca8804bbd22e92b1e3383262184c474339643c246fe8cd46120e2ddc"
+    },
+    "dexa/test_dexa_unified_provider_scope_v1.py": {
+      "baseline": null,
+      "candidate": "ce418a690fab4a0928c21e431c8af311f45e441d7680c1b4c72f412b2ed2e2c6"
+    },
+    "dexa/test_dexa_wechat_message_list_v1.mjs": {
+      "baseline": null,
+      "candidate": "25d537fa5837bdfa95b50c870f00950b86e06db70e194dea4d9cde2b28e447f4"
+    }
+  },
+  "catalog": {
+    "rana_capability_catalog": {
+      "baseline": "42ae440a8060729807754fb34e185c7620e701334f9ee187cdbc11e213cb2b39",
+      "candidate": "f1e973edf75261ad498390f68308325e36cd74c48e67afade956093bad4f6829"
+    },
+    "rana_cf_tool_schemas": {
+      "baseline": "377a627e9310778b8b6f5e0f493f26c435a1d76ba9998ca2d0cb697773cf61cd",
+      "candidate": "ceaaf2b35f6aa3df1d00fc930cd3cb67ddf89fbf020b10a2caa37ffa0c433ccb"
+    },
+    "dexa_catalog_output_shapes": {
+      "baseline": "bd8c8e9ad85c997abd2a90c83b38e86ba47634d0f80988a6169b9a7a2761f707",
+      "candidate": "ad4ae691c4cbbe612bc993ea4bcb2e91f8b20f4df209cfb9bb643a7530fea64d"
+    },
+    "ranker_catalog": {
+      "baseline": "42ae440a8060729807754fb34e185c7620e701334f9ee187cdbc11e213cb2b39",
+      "candidate": "f1e973edf75261ad498390f68308325e36cd74c48e67afade956093bad4f6829"
+    }
+  }
+}
