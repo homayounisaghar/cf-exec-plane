@@ -1,0 +1,33 @@
+{
+  "schema": "dexa.first-chat-navigation.v1",
+  "source_repository": "homayounisaghar/capability-fabric",
+  "source_ref": "work/dexa-autonomous-loop-20261020",
+  "source_commit": "c598d56c5a5752704f43a63f2f23552c94f3eff6",
+  "scope": "dexa-main-only",
+  "files": {
+    "dexa_provider_identity_closure_v1.mjs": {
+      "before": "323289a2f453132af921e37b420256a3870c67ce169602798a95c4fd1b88bde3",
+      "after": "28053cde86373bc7c4ee14bbb4190198d698be361d4883e577f8821fb731862c"
+    },
+    "dexa_general_plan_cycle_v2.mjs": {
+      "before": "31f484eafbada19c37b9a885bbf66253fee897bdc7a3d2c85139c3e54b406d5e",
+      "after": "1fb43ecaee322ee8ea19ddddedc9b1b3161b518e2b15818236d3b00acfc49d3d"
+    },
+    "dexa_typed_planner_prompt_v3.mjs": {
+      "before": "785a61f27abb025b79b5e8a45c0f36e5911dfbe3b115b0037a6fdb18d98439a6",
+      "after": "e05d2a84b372f27871f08736072ffa0b466b5ed1ab1664ea996d1669652623a5"
+    },
+    "test_dexa_wechat_previous_first_navigation_v1.mjs": {
+      "before": null,
+      "after": "d7924bbb755c034e6d0021c5d72fe920a238d6fcb487dd0e1c53e698f4bb609f"
+    }
+  },
+  "no_cf_server_change": true,
+  "no_connector_refresh": true,
+  "no_wechat_gui_restart": true,
+  "test_suite": [
+    "test_dexa_wechat_previous_first_navigation_v1.mjs",
+    "test_dexa_native_recipient_contract_v1.mjs",
+    "test_dexa_universal_prior_reply_scope_v1.mjs"
+  ]
+}
