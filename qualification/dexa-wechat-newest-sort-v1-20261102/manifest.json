@@ -1,0 +1,30 @@
+{
+  "schema": "dexa.wechat-newest-sort.v1",
+  "source_repository": "homayounisaghar/capability-fabric",
+  "source_ref": "work/dexa-autonomous-loop-20261020",
+  "source_commit": "5ccc0a4c210391f558561d85c7037fe35be5b490",
+  "scope": "dexa-main-only",
+  "files": {
+    "dexa_general_plan_contract_v1.mjs": {
+      "before": "f94ff20c1a8cfae808043667fdcb18af3a42363ad04b5d1700e47a32cad500be",
+      "after": "fee6db91d33236914d831497c91bce358e391db2f1c97467c08cf40baafdea14"
+    },
+    "test_dexa_wechat_newest_chronology_v1.mjs": {
+      "before": null,
+      "after": "b7a6f80784c2c7169547b3024e748c707edf93893b2162605abec2554bdaf825"
+    }
+  },
+  "expected_pass": 54,
+  "tests": [
+    "test_dexa_wechat_newest_chronology_v1.mjs",
+    "test_dexa_native_visible_body_answer_v1.mjs",
+    "test_dexa_wechat_previous_first_navigation_v1.mjs",
+    "test_dexa_native_recipient_contract_v1.mjs",
+    "test_dexa_universal_unread_contract_v1.mjs",
+    "test_dexa_unread_output_contract_v2.mjs"
+  ],
+  "no_cf_server_change": true,
+  "no_wechat_gui_restart": true,
+  "no_wechat_helper_restart": true,
+  "no_connector_refresh": true
+}
