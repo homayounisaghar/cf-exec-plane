@@ -1,0 +1,21 @@
+{
+  "schema": "cf.wechat.message-list-register.v1",
+  "source": "r272 root release ingress plus native helper route",
+  "replacements": [
+    {
+      "name": "advertise_capability",
+      "from": "  [\"wechat_message_search\",\"read\",\"Return WeChat Chat History search results when the provider UI exposes them.\"],",
+      "to": "  [\"wechat_message_search\",\"read\",\"Return WeChat Chat History search results when the provider UI exposes them.\"],\n  [\"wechat_message_list\",\"conditional-read\",\"Read exact selected WeChat conversation visible message rows; unread-state changes require explicit allowance.\"],"
+    },
+    {
+      "name": "truthful_gap",
+      "from": "  { operation:\"wechat_message_list\", state:\"NOT_RELIABLY_IMPLEMENTABLE_CURRENT_RUNTIME\", reason:\"The official Linux accessibility tree exposes the Messages viewport but not stable message children. Opening chats can also change read state. Screenshot-based chat_view is the bounded fallback.\" },",
+      "to": "  { operation:\"wechat_complete_message_history\", state:\"UNAVAILABLE\", reason:\"Current visible native message rows are virtualized and do not prove complete history, stable sender IDs, or all message directions.\" },"
+    },
+    {
+      "name": "tool_registration",
+      "from": "  server.registerTool(\"wechat_selected_conversation\",{",
+      "to": "  server.registerTool(\"wechat_message_list\",{\n    title:\"List visible messages in one WeChat conversation\",\n    description:\"Select one EXACT WeChat chat (default refuses marking unread messages read), then return only message rows currently exposed in the native accessibility Messages viewport, in top-to-bottom order. No full history, stable message IDs, or guaranteed sender identity/direction. Empty visible rows never prove an empty chat.\",\n    inputSchema:{target:z.string().trim().min(1).max(256),\n      limit:z.number().int().min(1).max(50).optional(),\n      allow_mark_read:z.boolean().optional()},\n    annotations:{readOnlyHint:false,destructiveHint:false,idempotentHint:false,openWorldHint:true},\n  },async({target,limit=10,allow_mark_read=false})=>{\n    try {\n      const x=await postJson(semanticUrl,\"/message-list\",\n        {target,limit,allow_mark_read},\"WECHAT_MESSAGE_LIST_FAILED\",16000);\n      if(x?.provider!==\"wechat\"||x?.conversation!==target||\n         x?.complete!==false||!Array.isArray(x?.messages)||\n         ![\"ACHIEVED\",\"INCOMPLETE\"].includes(x.state)||\n         x.messages.length>limit ||\n         x.scope!==\"bounded_visible_messages_only\")\n        throw codedError(\"WECHAT_MESSAGE_LIST_PROOF_INVALID\");\n      return result({ok:true,state:x.state,provider:\"wechat\",...x});\n    } catch(error) {return failure(error,\"WECHAT_MESSAGE_LIST_FAILED\");}\n  });\n\n  server.registerTool(\"wechat_selected_conversation\",{"
+    }
+  ]
+}
