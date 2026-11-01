@@ -1,0 +1,79 @@
+name: Native WeChat Bounded Message List V1
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'server-bootstrap/control/cf-native-wechat-messages-v1/*.request'
+permissions:
+  contents: read
+concurrency:
+  group: cf-native-wechat-messages-v1
+  cancel-in-progress: false
+jobs:
+  deploy:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Verify immutable retry request and exact snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir=qualification/cf-native-wechat-messages-v1-20261101
+          req=server-bootstrap/control/cf-native-wechat-messages-v1/cf-native-wechat-messages-v1-20261101.request
+          [[ "$(git diff --name-status "$GITHUB_SHA^" "$GITHUB_SHA")" == $'A\t'"$req" ]]
+          [[ "$(wc -l < "$req")" -eq 4 ]]
+          grep -Fxq 'request_id=cf-native-wechat-messages-v1-20261101' "$req"
+          grep -Fxq 'source_commit=5042d059ebb59fb581a2309965b314f4d68b00b9' "$req"
+          grep -Fxq 'manifest_sha=89b952ac3c678e91c6337c147c7528c9ac1bf2c3' "$req"
+          grep -Fxq 'deploy_sha=4d02615e6b3fccbf00c5a4e36958fc4b85ecc443' "$req"
+          [[ "$(git hash-object "$dir/manifest.json")" == "89b952ac3c678e91c6337c147c7528c9ac1bf2c3" ]]
+          [[ "$(git hash-object "$dir/deploy.sh")" == "4d02615e6b3fccbf00c5a4e36958fc4b85ecc443" ]]
+          python3 - <<'PY'
+          import hashlib,json,pathlib
+          root=pathlib.Path('qualification/cf-native-wechat-messages-v1-20261101')
+          m=json.loads((root/'manifest.json').read_text())
+          assert m['source_commit']=='5042d059ebb59fb581a2309965b314f4d68b00b9'
+          assert len(m['files'])==3
+          for rel,v in m['files'].items():
+           assert hashlib.sha256((root/rel).read_bytes()).hexdigest()==v['candidate'],rel
+          print('NATIVE_WECHAT_MESSAGES_SNAPSHOT_3_VERIFIED')
+          PY
+          bash -n "$dir/deploy.sh"
+      - name: Pin and prepare SSH
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -n "$VPS_SSH_KEY" && -n "$VPS_HOST" && -n "$VPS_SSH_USER" && -n "$VPS_HOST_KEY" ]]
+          [[ "$VPS_SSH_USER" == cfserver || "$VPS_SSH_USER" == root ]]
+          port="${VPS_PORT:-22}"
+          case "$port" in *[!0-9]*) exit 22 ;; esac
+          mkdir -m 700 "$RUNNER_TEMP/ssh"
+          printf '%s\n' "$VPS_SSH_KEY" > "$RUNNER_TEMP/ssh/key"
+          chmod 600 "$RUNNER_TEMP/ssh/key"
+          read -r key_type key_data extra <<< "$(printf '%s\n' "$VPS_HOST_KEY" | tr -d '\r')"
+          [[ "$key_type" == ssh-ed25519 && -n "$key_data" && -z "$extra" ]]
+          printf '%s %s %s\n' "$VPS_HOST" "$key_type" "$key_data" > "$RUNNER_TEMP/ssh/known_hosts"
+          printf '[%s]:%s %s %s\n' "$VPS_HOST" "$port" "$key_type" "$key_data" >> "$RUNNER_TEMP/ssh/known_hosts"
+          echo "SSH_PORT=$port" >> "$GITHUB_ENV"
+      - name: Guarded native-helper-only deploy and live AT-SPI read verification
+        shell: bash
+        run: |
+          set -euo pipefail
+          opts=(-i "$RUNNER_TEMP/ssh/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts")
+          remote=/tmp/cf-native-wechat-messages-v1-20261101
+          ssh "${opts[@]}" -p "$SSH_PORT" "$VPS_SSH_USER@$VPS_HOST" 'mkdir -p -m 755 /tmp/cf-native-wechat-messages-v1-20261101/native'
+          for file in manifest.json deploy.sh native/wechat_semantic_helper_chooser_fixed_20261031.py native/wechat_message_projection_v1.py native/test_wechat_message_projection_v1.py; do
+            scp "${opts[@]}" -P "$SSH_PORT" "qualification/cf-native-wechat-messages-v1-20261101/$file" "$VPS_SSH_USER@$VPS_HOST:$remote/$file"
+          done
+          ssh "${opts[@]}" -p "$SSH_PORT" "$VPS_SSH_USER@$VPS_HOST" 'bash /tmp/cf-native-wechat-messages-v1-20261101/deploy.sh' </dev/null
