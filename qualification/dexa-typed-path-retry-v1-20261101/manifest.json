@@ -1,0 +1,32 @@
+{
+  "schema": "dexa.typed-path-retry.release.v1",
+  "release_id": "dexa-typed-path-retry-v1-20261101",
+  "canonicalSource": {
+    "repo": "homayounisaghar/capability-fabric",
+    "ref": "work/dexa-autonomous-loop-20261020",
+    "commit": "3db4d0f8d0a9582e831b478818172ed13f46322f"
+  },
+  "expected": {
+    "catalog": 297,
+    "nativeCF": 193,
+    "minimumPreservedMissions": 403,
+    "offlineTests": 122
+  },
+  "patchSha256": "aeefa0036868c4f32d799a2750c561d60ca1bb9d5d6c70aa2f5730d4fec77b60",
+  "liveBaselineSha256": {
+    "dexa_general_plan_cycle_v2.mjs": "db0b4f5f0b1a5b31be7dd8c76293194060c5097dc20297c2ad2cb41f9339621f",
+    "dexa_typed_planner_prompt_v3.mjs": "e9fb57aa211fa09472d1b3412c09d766bbeb9a6e1eebf26e31d1a077a009b1c8",
+    "test_dexa_native_recipient_contract_v1.mjs": "75c69229dd178f662e694c07da581ac9bc1caea74fcccb5cb88c5a022badc703"
+  },
+  "candidateSha256": {
+    "dexa_general_plan_cycle_v2.mjs": "e18d53a78c6f362eaf113d08db35dd21e397c17f1172663d3f09ddae3ce53135",
+    "dexa_typed_planner_prompt_v3.mjs": "11239b650405f1a348ec44820f6ce5cba8a8df540a7362932e7f4ce3caad5e71",
+    "test_dexa_native_recipient_contract_v1.mjs": "36f89dde95466ae773e7cfecaf83136cd3336904c0b1394321f5f0851149ecf5"
+  },
+  "servicesToRestart": [
+    "dexa-catalog-gateway.service",
+    "dexa-main.service"
+  ],
+  "cfServerChanged": false,
+  "providerSendForQualification": false
+}
