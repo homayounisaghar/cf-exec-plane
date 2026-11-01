@@ -1,0 +1,85 @@
+name: Dexa WeChat Latest Edge Proof V1
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'server-bootstrap/control/dexa-wechat-latest-edge-v1/*.request'
+permissions:
+  contents: read
+concurrency:
+  group: dexa-wechat-latest-edge-v1
+  cancel-in-progress: false
+jobs:
+  deploy:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Verify immutable request and secret-free source
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir=qualification/dexa-wechat-latest-edge-v1-20261102
+          req=server-bootstrap/control/dexa-wechat-latest-edge-v1/dexa-wechat-latest-edge-v1-20261102-v1.request
+          [[ "$(git diff --name-status "$GITHUB_SHA^" "$GITHUB_SHA")" == "A"$'\t'"$req" ]]
+          [[ "$(wc -l < "$req")" -eq 4 ]]
+          grep -Fxq 'request_id=dexa-wechat-latest-edge-v1-20261102-v1' "$req"
+          grep -Fxq 'source_commit=fc33ed08dd9c5fd894b46f3b80295a88e58a2852' "$req"
+          grep -Fxq "manifest_sha=$(git hash-object "$dir/manifest.json")" "$req"
+          grep -Fxq "deploy_sha=$(git hash-object "$dir/deploy.sh")" "$req"
+          [[ "$(git hash-object "$dir/native/wechat_latest_edge_v1.py")" == "950274ae9f398d6cf2f0d92ff40f0b8a59367c65" ]]
+          [[ "$(git hash-object "$dir/native/test_wechat_latest_edge_v1.py")" == "74f32fe318884acddf9e39a95fb1a601e54a2ce6" ]]
+          [[ "$(git hash-object "$dir/native/apply_latest_edge_v1.py")" == "d7e6697046d5dfcfdc38f8364a7224b7ae26a5b2" ]]
+          python3 - <<'PY'
+          import hashlib,json,pathlib
+          root=pathlib.Path('qualification/dexa-wechat-latest-edge-v1-20261102')
+          doc=json.loads((root/'manifest.json').read_text())
+          assert doc['schema']=='dexa.wechat-latest-edge.v1'
+          assert doc['source_commit']=='fc33ed08dd9c5fd894b46f3b80295a88e58a2852'
+          assert doc['scope']=='native-wechat-helper-only'
+          assert doc['python_helper_restart']
+          assert doc['no_cf_server_change'] and doc['no_dexa_main_restart']
+          assert doc['no_connector_refresh'] and doc['no_wechat_gui_restart']
+          assert len(doc['files'])==3
+          for file,sha in doc['files'].items():
+           assert hashlib.sha256((root/'native'/file).read_bytes()).hexdigest()==sha,file
+          PY
+          bash -n "$dir/deploy.sh"
+      - name: Establish pinned SSH target
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -n "$VPS_SSH_KEY" && -n "$VPS_HOST" && -n "$VPS_SSH_USER" && -n "$VPS_HOST_KEY" ]]
+          [[ "$VPS_SSH_USER" == cfserver || "$VPS_SSH_USER" == root ]]
+          port="${VPS_PORT:-22}"
+          case "$port" in *[!0-9]*) exit 22 ;; esac
+          mkdir -m 700 "$RUNNER_TEMP/ssh"
+          printf '%s\n' "$VPS_SSH_KEY" > "$RUNNER_TEMP/ssh/key"
+          chmod 600 "$RUNNER_TEMP/ssh/key"
+          read -r key_type key_data extra <<< "$(printf '%s\n' "$VPS_HOST_KEY" | tr -d '\r')"
+          [[ "$key_type" == ssh-ed25519 && -n "$key_data" && -z "$extra" ]]
+          printf '%s %s %s\n' "$VPS_HOST" "$key_type" "$key_data" > "$RUNNER_TEMP/ssh/known_hosts"
+          printf '[%s]:%s %s %s\n' "$VPS_HOST" "$port" "$key_type" "$key_data" >> "$RUNNER_TEMP/ssh/known_hosts"
+          echo "SSH_PORT=$port" >> "$GITHUB_ENV"
+      - name: Install Dexa-only policy and verify live rollback gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir=qualification/dexa-wechat-latest-edge-v1-20261102
+          remote=/tmp/dexa-wechat-latest-edge-v1-20261102
+          ssh -i "$RUNNER_TEMP/ssh/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" -p "$SSH_PORT" "$VPS_SSH_USER@$VPS_HOST" "mkdir -p -m 755 $remote/native"
+          for file in manifest.json deploy.sh native/wechat_latest_edge_v1.py native/test_wechat_latest_edge_v1.py native/apply_latest_edge_v1.py;do
+            scp -i "$RUNNER_TEMP/ssh/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" -P "$SSH_PORT" "$dir/$file" "$VPS_SSH_USER@$VPS_HOST:$remote/$file"
+          done
+          ssh -i "$RUNNER_TEMP/ssh/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts" -p "$SSH_PORT" "$VPS_SSH_USER@$VPS_HOST" "bash $remote/deploy.sh" </dev/null
+          echo WECHAT_LATEST_EDGE_REQUEST_SENT_VERIFY_LIVE
