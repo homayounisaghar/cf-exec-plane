@@ -11,7 +11,7 @@
     "nativeCF": 193,
     "minimumPreservedMissions": 406,
     "offlineTests": 138,
-    "postreleaseTests": 43
+    "postreleaseTests": 55
   },
   "patchSha256": "4f8ee5f338b109c0aacd6417657cb4e403fd8b20f36f69213f74b650983b8c1e",
   "liveBaselineSha256": {
