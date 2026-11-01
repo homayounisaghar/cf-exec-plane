@@ -1,0 +1,5 @@
+request_id=dexa-material-stream-v1-20261101-v1
+expected_cf=193
+expected_catalog=297
+source_commit=35b4d31d07bded71c436faa74997066110c0fcd3
+manifest_blob_sha=1ca03b9fb6d2ab4561b33c6bca5e40ecff6ccd34
