@@ -1,0 +1,5 @@
+request_id=dexa-video-evidence-v1-20261101-v1
+expected_cf=193
+expected_catalog=297
+source_commit=ea7d3dff09cf8e9c0461b888c097dbd25ab62afa
+manifest_blob_sha=c7df7fb79d4fb51fef9895d68cbebe229ae5f166
