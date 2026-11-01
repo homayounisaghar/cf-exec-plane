@@ -83,7 +83,12 @@ installed=1
 for n in wechat_latest_edge_v1.py "$HELPER";do
  from="$W/stage/$n"
  [[ "$n" == "$HELPER" ]] && from="$W/stage/patched_helper.py"
- cp "$from" "$TARGET/.$n.new";chmod 600 "$TARGET/.$n.new"
+ cp "$from" "$TARGET/.$n.new"
+ if [[ "$n" == "$HELPER" ]];then
+  chmod --reference="$W/backup/$HELPER" "$TARGET/.$n.new"
+ else
+  chmod 600 "$TARGET/.$n.new"
+ fi
  mv -f "$TARGET/.$n.new" "$TARGET/$n"
 done
 python3 - "$SRC/manifest.json" "$TARGET" <<'PY'
