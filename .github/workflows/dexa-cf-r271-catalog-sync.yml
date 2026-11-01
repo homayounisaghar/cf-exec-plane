@@ -29,17 +29,17 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          req=server-bootstrap/control/dexa-cf-r271-catalog-sync/dexa-cf-r271-catalog-sync-20261101-v3.request
+          req=server-bootstrap/control/dexa-cf-r271-catalog-sync/dexa-cf-r271-catalog-sync-20261101-v4.request
           [[ "$(git diff --name-status "$GITHUB_SHA^" "$GITHUB_SHA")" == $'A\t'"$req" ]]
-          grep -Fxq 'request_id=dexa-cf-r271-catalog-sync-20261101-v3' "$req"
+          grep -Fxq 'request_id=dexa-cf-r271-catalog-sync-20261101-v4' "$req"
           grep -Fxq 'expected_cf=193' "$req"
           grep -Fxq 'expected_catalog=297' "$req"
           [[ "$(wc -l < "$req")" -eq 5 ]]
           grep -Fxq "catalog_blob_sha=5be062e7b07a775e69f5ec9119119b58ce548090" "$req"
-          grep -Fxq "script_blob_sha=6eb46d456b43c65ae2b1d23f4b4e8083a2e0e340" "$req"
+          grep -Fxq "script_blob_sha=bfc3c81c784c2e0d7f8e3a4dd875e469a8ae108f" "$req"
           [[ "$(git hash-object qualification/dexa-cf-r271-catalog-sync-20261101/catalog-delta.json)" == "5be062e7b07a775e69f5ec9119119b58ce548090" ]]
-          [[ "$(git hash-object qualification/dexa-cf-r271-catalog-sync-20261101/deploy-v3.sh)" == "6eb46d456b43c65ae2b1d23f4b4e8083a2e0e340" ]]
-          sh -n qualification/dexa-cf-r271-catalog-sync-20261101/deploy-v3.sh
+          [[ "$(git hash-object qualification/dexa-cf-r271-catalog-sync-20261101/deploy-v4.sh)" == "bfc3c81c784c2e0d7f8e3a4dd875e469a8ae108f" ]]
+          sh -n qualification/dexa-cf-r271-catalog-sync-20261101/deploy-v4.sh
           python3 - <<'PY'
           import json,pathlib
           d=json.loads(pathlib.Path('qualification/dexa-cf-r271-catalog-sync-20261101/catalog-delta.json').read_text())
@@ -71,5 +71,5 @@ jobs:
           set -euo pipefail
           opts=(-i "$RUNNER_TEMP/ssh/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts")
           scp "${opts[@]}" -P "$SSH_PORT" qualification/dexa-cf-r271-catalog-sync-20261101/catalog-delta.json "$VPS_SSH_USER@$VPS_HOST:/tmp/dexa-cf-r271-catalog-delta-20261101.json"
-          scp "${opts[@]}" -P "$SSH_PORT" qualification/dexa-cf-r271-catalog-sync-20261101/deploy-v3.sh "$VPS_SSH_USER@$VPS_HOST:/tmp/dexa-cf-r271-catalog-deploy-20261101-v3.sh"
-          ssh "${opts[@]}" -p "$SSH_PORT" "$VPS_SSH_USER@$VPS_HOST" 'sh /tmp/dexa-cf-r271-catalog-deploy-20261101-v3.sh' </dev/null
+          scp "${opts[@]}" -P "$SSH_PORT" qualification/dexa-cf-r271-catalog-sync-20261101/deploy-v4.sh "$VPS_SSH_USER@$VPS_HOST:/tmp/dexa-cf-r271-catalog-deploy-20261101-v4.sh"
+          ssh "${opts[@]}" -p "$SSH_PORT" "$VPS_SSH_USER@$VPS_HOST" 'sh /tmp/dexa-cf-r271-catalog-deploy-20261101-v4.sh' </dev/null
