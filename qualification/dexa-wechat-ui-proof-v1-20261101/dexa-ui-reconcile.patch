@@ -1,0 +1,151 @@
+--- a/dexa_tool_plan_executor_v3.mjs
++++ b/dexa_tool_plan_executor_v3.mjs
+@@ -26,6 +26,7 @@
+  from "./dexa_writer_source_provenance_v1.mjs";
+ import {catalogEffectClass,isProviderEffect} from "./dexa_effect_contract_v1.mjs";
+ import {stageMaterialStream} from "./dexa_material_stream_v1.mjs";
++import {reconcileNativeUiFileSend} from './dexa_native_ui_observation_v1.mjs';
+ import {optionalPredicateFieldProven}
+  from "./dexa_catalog_output_adapters_v1.mjs";
+ const KEY="/home/cfserver/.local/share/dexa-catalog-gateway-20261023/internal-key";
+@@ -236,6 +237,7 @@
+  onVerifiedFileRead=async()=>null,workflow=null,
+  statusInvoker=invokeReadOnlyCatalog,bilingualVerifiedLabels=[],
+  ownerGoal=null,writerInvoker=null,
++ nativeUiReceiptReader=reconcileNativeUiFileSend,
+  connectionProbe=authenticatedCatalogReady
+  }={}){
+  let plan;
+@@ -433,6 +435,7 @@
+    let providerEffectProof=null;
+    let fanoutEvidence=null,fanoutCount=0;
+    let asyncTerminal=null,catalogReadAttemptCount=1;
++   let nativeRecovery=null;
+    if(step.kind==="TOOL"){
+     const route=catalogRoute(step.capabilityId);
+     if(!route?.cfName){
+@@ -482,6 +485,17 @@
+       proof:{effectsExecuted:0,blockedStepId:step.id,receipts}});
+     }
+     verifiedToolArgs=admitted.args;
++    // Strict read-only recovery of the SAME provider-native attempt.
++    // Never call the write again to discover its result.
++    const observePriorSend=()=>{
++     const pending=workflow?.pendingDispatch(step);
++     const material=[...results.values()].find(v=>
++      v?.upload_id===admitted.args.upload_id&&
++      v?.state==='READY_VERIFIED');
++     return pending?.dispatchedAt?nativeUiReceiptReader({
++      capabilityId:step.capabilityId,requestArgs:admitted.args,
++      material,dispatchedAt:pending.dispatchedAt}):null;
++    };
+     argsDigest=preparedEach?.inputDigest||(preparedStream?SHA({
+      mode:"STREAM",sourceDigest:SHA(preparedStream.source),
+      upload:admitted.args,chunkCapabilityId:preparedStream.chunkCapabilityId}):SHA(admitted.args));
+@@ -523,10 +537,13 @@
+        proof:{component:"workflow_kernel",stepId:step.id,
+         providerErrorCode:start.errorCode,effectsExecuted:0}};
+      }
+-     if(start.state==="IN_DOUBT")
+-      return {state:"OUTCOME_UNKNOWN",reason:"WORKFLOW_EFFECT_IN_DOUBT",
+-       result:"اجرای گام نامطمئن است؛ بدون تطبیق وضعیت واقعی تکرار نخواهد شد.",
+-       proof:{effectsExecuted:0,blockedStepId:step.id}};
++     if(start.state==="IN_DOUBT"){
++      nativeRecovery=observePriorSend();
++      if(!nativeRecovery)
++       return {state:"OUTCOME_UNKNOWN",reason:"WORKFLOW_EFFECT_IN_DOUBT",
++        result:"اجرای گام نامطمئن است؛ بدون تطبیق وضعیت واقعی تکرار نخواهد شد.",
++        proof:{effectsExecuted:0,blockedStepId:step.id}};
++     }
+      if(start.state==="FAILED_VERIFIED"||start.state==="SKIPPED_DEPENDENCY")
+       return {state:"FAILED",reason:start.reasonCode,
+        result:"گام خواندنی قبلاً با علت ثبت‌شده ناموفق شده است؛ درخواست دوباره فرستاده نشد.",
+@@ -540,7 +557,11 @@
+     // side-effect-free catalog reads, and only on known transient errors.
+     const retrySafeRead=route.retrySafeRead===true&&admitted.readOnly===true;
+     const maxAttempts=retrySafeRead?MAX_PURE_READ_ATTEMPTS:1;
+-    for(let attempt=1;attempt<=maxAttempts;attempt++){
++    if(nativeRecovery){
++     response={result:nativeRecovery.result,
++      providerTool:nativeRecovery.providerTool,
++      effectProof:nativeRecovery.effectProof,durationMs:0};
++    }else for(let attempt=1;attempt<=maxAttempts;attempt++){
+      dispatchAttempts=attempt;
+      try{
+       if(preparedEach){
+@@ -594,6 +615,19 @@
+     catalogReadAttemptCount=preparedEach?fanoutCount:
+      (Number.isSafeInteger(response?.result?.bilingualLookup?.providerReadCount)?
+        response.result.bilingualLookup.providerReadCount:dispatchAttempts);
++    if(error&&workflow&&!retrySafeRead&&
++       route.cfName==='wechat_file_send'){
++     // The native helper may have durably observed a fresh outgoing UI row
++     // but its HTTP reply was lost/rejected. Read its immutable local witness
++     // after the FIRST send; no second provider invocation or blind retry.
++     nativeRecovery=observePriorSend();
++     if(nativeRecovery){
++      response={result:nativeRecovery.result,
++       providerTool:nativeRecovery.providerTool,
++       effectProof:nativeRecovery.effectProof,durationMs:0};
++      error=null;
++     }
++    }
+     if(error){
+      const code=String(error?.code||error?.message||"CATALOG_UNKNOWN").slice(0,100);
+      // These two in-process public HTTPS operations are independently
+@@ -667,7 +701,8 @@
+        proof:{effectsExecuted:effectCount(),verifiedReceipts:receipts,
+         blockedStepId:step.id}};
+     }
+-    evidenceKind=preparedStream?"VERIFIED_BOUNDED_MATERIAL_STREAM":
++    evidenceKind=nativeRecovery?"PROVIDER_NATIVE_DURABLE_UI_POSTDISPATCH":
++      preparedStream?"VERIFIED_BOUNDED_MATERIAL_STREAM":
+       route.internalExecutor==="bounded_cerebras_text"?
+       "DX001_DURABLE_TEXT_TOOL_RESULT":
+       route.internalExecutor==="bounded_public_web"?"DX005_VERIFIED_PUBLIC_WEB_READ":
+@@ -767,6 +802,7 @@
+     asyncStatusProviderTool:asyncTerminal?.providerStatusTool||null,
+     providerDurationMs:toolDuration,
+     catalogReadAttemptCount,
++    ...(nativeRecovery?{nativeObservationDigest:nativeRecovery.nativeObservationDigest}:{}),
+     ...(artifactInputs.length?{artifactInputRefs:[...artifactInputs]}:{}),
+     ...(fanoutEvidence?{fanoutCount,fanoutEvidence}:{}),
+     startedAt:stepStarted,completedAt,
+--- a/dexa_workflow_kernel.mjs
++++ b/dexa_workflow_kernel.mjs
+@@ -155,6 +155,15 @@
+  }
+  return {
+   target,summary,
++  // Read-only metadata for an already dispatched write. No new attempts.
++  pendingDispatch(step){
++   const current=entry(step);
++   if(!current||current.readOnly!==false||
++      !["DISPATCHED","IN_DOUBT"].includes(current.state))
++    return null;
++   return Object.freeze({state:current.state,
++    dispatchedAt:current.dispatchedAt,inputHash:current.inputHash});
++  },
+   get(step){
+    const current=entry(step);
+    if(!current||current.state!=="COMPLETED")return null;
+@@ -259,7 +268,18 @@
+     if(prev.resultHash!==SHA(result))failure("WORKFLOW_DUPLICATE_RESULT_CONFLICT");
+     return {result:prev.result,receipt:prev.receipt};
+    }
+-   if(!prev||!["DISPATCHED","WAITING_USER","WAITING_EXTERNAL"].includes(prev.state))
++   const recoveredNativeUI=prev?.state==="IN_DOUBT"&&
++    step.kind==="TOOL"&&prev.readOnly===false&&
++    receipt?.evidenceKind==="PROVIDER_NATIVE_DURABLE_UI_POSTDISPATCH"&&
++    receipt?.physicalTool==="wechat_file_send"&&
++    receipt?.effectProof?.receiptBasis===
++     "CF_NATIVE_UI_FRESH_OUTBOUND_ONLY_NOT_PROVIDER_DELIVERY"&&
++    /^[0-9a-f]{64}$/.test(receipt?.nativeObservationDigest||"")&&
++    result?.state==="UI_OUTBOUND_OBSERVED"&&
++    result?.provider_confirmed===false&&
++    result?.blind_retry_safe===false;
++   if(!prev||(!["DISPATCHED","WAITING_USER","WAITING_EXTERNAL"].includes(prev.state)&&
++      !recoveredNativeUI))
+     failure("WORKFLOW_COMPLETION_WITHOUT_DISPATCH");
+    assertInput(prev,inputHash);
+    const raw=stringify(result);
