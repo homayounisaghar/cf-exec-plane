@@ -9,7 +9,7 @@ export HOME=/home/cfserver
 export XDG_RUNTIME_DIR=/run/user/1000
 export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus
 SRC=/tmp/dexa-wechat-ui-proof-v1-20261101
-WORK=/home/cfserver/.local/share/dexa/wechat-ui-proof-v1-release-20261101
+WORK=/home/cfserver/.local/share/dexa/wechat-ui-proof-v1-release-20261101-v2
 DEXA=/var/lib/capability-fabric/paa-remote/dexa-mvp
 NATIVE=/home/cfserver/wechat-media-tools-candidate-20261030
 HELPER="$NATIVE/wechat_semantic_helper_chooser_fixed_20261031.py"
@@ -90,7 +90,7 @@ for name in ('wechat_native_ui_receipt_v1.py','test_wechat_native_ui_receipt_v1.
 for p in live.iterdir():
  if p.is_file() and not p.is_symlink() and p.suffix in ('.mjs','.json','.txt'):
   shutil.copyfile(p,cand/'dexa'/p.name)
-shutil.copyfile(helper,cand/'native'/'wechat_semantic_helper_chooser_fixed_20261031.py')
+shutil.copyfile(helper,cand/'native'/'wechat_semantic_helper.py')
 for name in newfiles:
  shutil.copyfile(src/name,cand/'dexa'/name)
 for name in ('wechat_native_ui_receipt_v1.py','test_wechat_native_ui_receipt_v1.py'):
@@ -101,7 +101,7 @@ for rel,where in [('dexa-ui-reconcile.patch',cand/'dexa'),
     input=(src/rel).read_bytes(),capture_output=True)
  assert p.returncode==0,'PATCH_FAILED:'+rel+':'+p.stderr.decode()[:260]
 nativeMap={
- 'nativeHelper':cand/'native'/'wechat_semantic_helper_chooser_fixed_20261031.py',
+ 'nativeHelper':cand/'native'/'wechat_semantic_helper.py',
  'nativeWitness':cand/'native'/'wechat_native_ui_receipt_v1.py',
  'nativeTest':cand/'native'/'test_wechat_native_ui_receipt_v1.py'}
 for name,expected in m['candidateSha256'].items():
@@ -112,7 +112,7 @@ PY
 for name in dexa_tool_plan_executor_v3.mjs dexa_workflow_kernel.mjs dexa_native_ui_observation_v1.mjs test_dexa_native_ui_observation_v1.mjs; do
  node --check "$CAND/dexa/$name"
 done
-python3 -m py_compile "$CAND/native/wechat_native_ui_receipt_v1.py" "$CAND/native/wechat_semantic_helper_chooser_fixed_20261031.py"
+python3 -m py_compile "$CAND/native/wechat_native_ui_receipt_v1.py" "$CAND/native/wechat_semantic_helper.py"
 (cd "$CAND/native";python3 -m unittest -q test_wechat_native_ui_receipt_v1.py) > "$WORK/native-qa.log" 2>&1
 grep -q 'Ran 5 tests' "$WORK/native-qa.log" || exit 46
 grep -q '^OK$' "$WORK/native-qa.log" || exit 47
@@ -151,7 +151,7 @@ m=json.loads(Path(sys.argv[1]).read_text());cand=Path(sys.argv[2]);helper=Path(s
 targets=[
  (cand/'native'/'wechat_native_ui_receipt_v1.py',helper.parent/'wechat_native_ui_receipt_v1.py'),
  (cand/'native'/'test_wechat_native_ui_receipt_v1.py',helper.parent/'test_wechat_native_ui_receipt_v1.py'),
- (cand/'native'/helper.name,helper),
+ (cand/'native'/'wechat_semantic_helper.py',helper),
  (cand/'dexa'/'dexa_native_ui_observation_v1.mjs',live/'dexa_native_ui_observation_v1.mjs'),
  (cand/'dexa'/'test_dexa_native_ui_observation_v1.mjs',live/'test_dexa_native_ui_observation_v1.mjs'),
  (cand/'dexa'/'dexa_workflow_kernel.mjs',live/'dexa_workflow_kernel.mjs'),
