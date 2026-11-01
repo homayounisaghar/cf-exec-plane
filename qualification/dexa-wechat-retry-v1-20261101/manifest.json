@@ -1,0 +1,34 @@
+{
+  "schema": "dexa.wechat-retry.release.v1",
+  "source_commit": "cb26d6f4675dc44b80fd954a3aef273a5a0b05fa",
+  "files": {
+    "native/wechat_native_ui_receipt_v1.py": {
+      "baseline": "56d5ef6963c725b93330db6e00775d2b15ad8bc20ace6238feebc392a3b6f902",
+      "candidate": "fe257515b4f3cb5ba61b3c6c039036e6a87cc140ba27178ca4b858c4d94725cf"
+    },
+    "native/wechat_semantic_helper_chooser_fixed_20261031.py": {
+      "baseline": "866e9c9406e454fe1b61ccb9c2f0a7d279b8f59678128a93d94e34d7395592ad",
+      "candidate": "b594fae784ea0f5c73d34d697cefe39a6e239883be485c5ae0c8560b5db7e961"
+    },
+    "native/test_wechat_native_ui_receipt_v1.py": {
+      "baseline": "3230f2fa9cf52471973f1c0086ef62d323466486687d2951ad3594fc5cc643d9",
+      "candidate": "cd0bb0a617d922df346da035ebc3c7f427d91a2c8852f485d4732b0737592a8c"
+    },
+    "dexa/dexa_native_ui_observation_v1.mjs": {
+      "baseline": "26713ceeb46c7389e15e5e680b604d0fcfd809ff0a8927e316f13fcd03f6d784",
+      "candidate": "0b892b910be1eb7833c2c85ce0b2dbeef611b8c6ffa3b0675fdf0780ccb80caf"
+    },
+    "dexa/test_dexa_native_ui_observation_v1.mjs": {
+      "baseline": "fcaf1a4b37993730c2908a06448661b5ba3978f52f5d256aa3abdf29a9226bb3",
+      "candidate": "3ce75dc6be349fb1e9926a5689c30d21466e4cdf77395dab64a5c3fd35897b77"
+    },
+    "dexa/dexa_catalog_gateway.mjs": {
+      "baseline": "f286607d4d6fe5ba9d9d36ec8393d51c491a4a8f85df9f34cf7cb78cd102bf04",
+      "candidate": "0e9fc023861febde1f376363451a99e42a38de6b1160b0ff4134723553679b9f"
+    },
+    "dexa/dexa_tool_plan_executor_v3.mjs": {
+      "baseline": "e22d5fd68287dccf11a055779a5777bc326d9ae90cffa07c46643d5215a9062b",
+      "candidate": "872e3737dbaff04aa420716848ea6b7d54043a412d8cef71762bd9109c2e3992"
+    }
+  }
+}
