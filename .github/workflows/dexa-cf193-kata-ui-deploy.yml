@@ -15,11 +15,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      VPS_SSH_KEY: \${{ secrets.VPS_SSH_KEY }}
-      VPS_HOST: \${{ secrets.VPS_HOST }}
-      VPS_PORT: \${{ secrets.VPS_PORT }}
-      VPS_SSH_USER: \${{ secrets.VPS_SSH_USER }}
-      VPS_HOST_KEY: \${{ secrets.VPS_HOST_KEY }}
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -29,9 +29,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          req=server-bootstrap/control/dexa-cf193-kata-ui/dexa-cf193-kata-ui-20261101-v1.request
+          req=server-bootstrap/control/dexa-cf193-kata-ui/dexa-cf193-kata-ui-20261101-v2.request
           [[ "$(git diff --name-status "$GITHUB_SHA^" "$GITHUB_SHA")" == $'A\t'"$req" ]]
-          grep -Fxq 'request_id=dexa-cf193-kata-ui-20261101-v1' "$req"
+          grep -Fxq 'request_id=dexa-cf193-kata-ui-20261101-v2' "$req"
           grep -Fxq 'expected_catalog=297' "$req"
           grep -Fxq 'expected_cf=193' "$req"
           grep -Fxq 'script_blob_sha=239e5fff7a90b4c21553a45b400eaec75c0550f7' "$req"
@@ -45,7 +45,7 @@ jobs:
           set -euo pipefail
           [[ -n "$VPS_SSH_KEY" && -n "$VPS_HOST" && -n "$VPS_SSH_USER" && -n "$VPS_HOST_KEY" ]]
           [[ "$VPS_SSH_USER" == root || "$VPS_SSH_USER" == cfserver ]]
-          port="\${VPS_PORT:-22}"
+          port="${VPS_PORT:-22}"
           case "$port" in *[!0-9]*) exit 22 ;; esac
           install -d -m 0700 "$RUNNER_TEMP/ssh"
           printf '%s\n' "$VPS_SSH_KEY" > "$RUNNER_TEMP/ssh/key"
@@ -60,5 +60,5 @@ jobs:
         run: |
           set -euo pipefail
           opts=(-i "$RUNNER_TEMP/ssh/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$RUNNER_TEMP/ssh/known_hosts")
-          scp "\${opts[@]}" -P "$SSH_PORT" qualification/dexa-cf193-kata-ui-20261101-v1/deploy.sh "$VPS_SSH_USER@$VPS_HOST:/tmp/dexa-cf193-kata-ui-20261101-v1.sh"
-          ssh "\${opts[@]}" -p "$SSH_PORT" "$VPS_SSH_USER@$VPS_HOST" 'sh /tmp/dexa-cf193-kata-ui-20261101-v1.sh' </dev/null
+          scp "${opts[@]}" -P "$SSH_PORT" qualification/dexa-cf193-kata-ui-20261101-v1/deploy.sh "$VPS_SSH_USER@$VPS_HOST:/tmp/dexa-cf193-kata-ui-20261101-v1.sh"
+          ssh "${opts[@]}" -p "$SSH_PORT" "$VPS_SSH_USER@$VPS_HOST" 'sh /tmp/dexa-cf193-kata-ui-20261101-v1.sh' </dev/null
