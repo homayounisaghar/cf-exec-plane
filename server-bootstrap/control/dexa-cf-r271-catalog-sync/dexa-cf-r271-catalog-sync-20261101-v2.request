@@ -1,0 +1,5 @@
+request_id=dexa-cf-r271-catalog-sync-20261101-v2
+expected_cf=193
+expected_catalog=297
+catalog_blob_sha=5be062e7b07a775e69f5ec9119119b58ce548090
+script_blob_sha=c0a7b2af291a42123814bedee6c065049f41a6e3
