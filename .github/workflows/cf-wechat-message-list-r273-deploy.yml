@@ -36,7 +36,7 @@ jobs:
         run: |
           set -euo pipefail
           cd "$SNAP"
-          [[ "$(git hash-object activate-r273.sh)" == 'a90fe3e80ff7a8435a2cc9d6efdfff97d63ffe6a' ]]
+          [[ "$(git hash-object activate-r273.sh)" == '0ca0726baf12c9837ff1b4a9fb4ce269638ee837' ]]
           [[ "$(git hash-object patch.json)" == '168945fc49c0dc67b06b9909dfe0c2686d33bec5' ]]
           [[ "$(git hash-object test_wechat_message_list_cf_v1.mjs)" == 'd2eec6be584028325856d72ab95ea64d0f0dbd30' ]]
           bash -n activate-r273.sh
