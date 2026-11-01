@@ -1,0 +1,5 @@
+request_id=dexa-tool-mode-v1-20261101-v1
+expected_cf=193
+expected_catalog=297
+source_commit=cf74c08771715dc9182852b6818b85da444e4edb
+manifest_blob_sha=70afe6f6ed6587f9ea2adbb88b9fde6ec1c9bd62
