@@ -76,7 +76,7 @@ print('CF_R273_RELEASE_HASHES_OK')
 PY
 node --check "$stage/wechat-ingress.mjs"
 WECHAT_CF_CANDIDATE="$stage/wechat-ingress.mjs" node --test "$pkg/test_wechat_message_list_cf_v1.mjs" > "$pkg/qa.log" 2>&1
-grep -q '^# pass 3 "$pkg/qa.log" && grep -q '^# fail 0$' "$pkg/qa.log"
+grep -q '^# pass 3$' "$pkg/qa.log" && grep -q '^# fail 0$' "$pkg/qa.log"
 docker compose -p capability-fabric -f "$stage/compose.yaml" config --quiet
 ( set -C; printf 'Native WeChat bounded message list r273\n' > "$marker" )
 marked=1
@@ -111,46 +111,7 @@ done
 [[ "$(pgrep -u 1000 -x wechat | head -n1)" == "$wechat_pid" ]] || exit 25
 read -r a n d <<< "$(health)"
 [[ "$a" == 0 && "$n" -ge "$before_stored" && "$d" == 1 ]] || exit 26
-ln -s "$new" "$active.r273.$"
-mv -Tf "$active.r273.$" "$active"
-committed=1
-printf 'CF_WECHAT_MESSAGE_LIST_R273_LIVE_HEALTHY\n'
- "$pkg/qa.log" && grep -q '^# fail 0$' "$pkg/qa.log"
-docker compose -p capability-fabric -f "$stage/compose.yaml" config --quiet
-( set -C; printf 'Native WeChat bounded message list r273\n' > "$marker" )
-marked=1
-chown cfserver:cfserver "$marker"
-stable=0
-for ((i=0;i<75;i++));do
- if x="$(health 2>/dev/null)";then
-   read -r a n d <<< "$x"
-   if [[ "$a" == 0 && "$d" == 1 ]];then stable=$((stable+1));else stable=0;fi
-   (( stable>=3 )) && break
- else stable=0;fi
- sleep 1
-done
-(( stable>=3 )) || exit 20
-[[ "$(readlink -f "$active")" == "$old" ]] || exit 21
-chown -R root:root "$stage"
-chmod -R go-w,a+rX "$stage"
-mv "$stage" "$new"
-installed=1
-gateway_id="$(docker inspect -f '{{.Id}}' capability-fabric-onshape-gateway)"
-restarted=1
-docker compose -p capability-fabric -f "$new/compose.yaml" up -d --no-deps --no-build --pull never --force-recreate onshape_server
-ready=0
-for ((i=0;i<180;i++));do
- st="$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' capability-fabric-onshape-server 2>/dev/null || true)"
- if [[ "$st" == healthy && "$(curl -fsS --max-time 4 http://127.0.0.1:8788/ 2>/dev/null || true)" == 'cf-onshape-single ok' ]];then ready=1;break;fi
- sleep 1
-done
-(( ready==1 )) || { echo CF_R273_NOT_HEALTHY;exit 22; }
-[[ "$(docker inspect -f '{{.Id}}' capability-fabric-onshape-gateway)" == "$gateway_id" ]] || exit 23
-[[ "$(docker exec capability-fabric-onshape-server sha256sum /tmp/app/wechat-ingress.mjs | awk '{print $1}')" == "$(sha "$new/wechat-ingress.mjs")" ]] || exit 24
-[[ "$(pgrep -u 1000 -x wechat | head -n1)" == "$wechat_pid" ]] || exit 25
-read -r a n d <<< "$(health)"
-[[ "$a" == 0 && "$n" -ge "$before_stored" && "$d" == 1 ]] || exit 26
-ln -s "$new" "$active.r273.$"
-mv -Tf "$active.r273.$" "$active"
+ln -s "$new" "$active.r273.$$"
+mv -Tf "$active.r273.$$" "$active"
 committed=1
 printf 'CF_WECHAT_MESSAGE_LIST_R273_LIVE_HEALTHY\n'
