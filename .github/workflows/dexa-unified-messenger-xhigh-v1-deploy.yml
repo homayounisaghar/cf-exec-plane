@@ -38,7 +38,7 @@ jobs:
           grep -Fxq 'manifest_sha=f58c5fd12d8bbc42b959ffac2ddcbd7b217ecd90' "$req"
           grep -Fxq 'deploy_sha=64bba373921c8760dbd10a9bedbb0c9e2bf16d29' "$req"
           [[ "$(git hash-object "$dir/manifest.json")" == "f58c5fd12d8bbc42b959ffac2ddcbd7b217ecd90" ]]
-          [[ "$(git hash-object "$dir/deploy-v2.sh")" == "edf583fea7c60ab7fec8430741f3e52e60d224b9" ]]
+          [[ "$(git hash-object "$dir/deploy-v2.sh")" == "64bba373921c8760dbd10a9bedbb0c9e2bf16d29" ]]
           python3 - <<'PY'
           import hashlib,json,pathlib
           root=pathlib.Path('qualification/dexa-unified-messenger-xhigh-v1-20261101')
