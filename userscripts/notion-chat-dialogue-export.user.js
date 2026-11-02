@@ -282,8 +282,14 @@
 
     // Verify the conversation did not change while records were downloaded.
     const orderBefore = history.order.join(',');
-    await readRecords(SYNC_PATH, 'thread', [id], id, history.spaceId);
-    if (history.order.join(',') !== orderBefore) {
+    const latest = await readRecords(SYNC_PATH, 'thread', [id], id, history.spaceId);
+    const finalRecord = Object.entries(latest?.recordMap?.thread || {})
+      .find(([key]) => normalizeID(key) === id);
+    const finalThread = unwrapRecord(finalRecord?.[1]);
+    const finalOrder = Array.isArray(finalThread?.messages)
+      ? finalThread.messages.map(refID).filter(Boolean).join(',')
+      : null;
+    if (finalOrder !== orderBefore) {
       throw Error('گفتگو هنگام استخراج تغییر کرد؛ دوباره دکمه را بزنید.');
     }
     status('تمام رکوردهای گفتگو دریافت شد. در حال ساخت فایل…');
