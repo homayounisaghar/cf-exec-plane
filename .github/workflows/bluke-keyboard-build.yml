@@ -153,3 +153,22 @@ jobs:
           } else {
             gh release create $tag $zip --target $env:GITHUB_SHA --title "Bluke Windows Language Bridge v1.2.0" --notes "Self-contained Windows x64 companion. No .NET runtime installation required."
           }
+
+  signed_export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reassemble and verify signed APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          DIR='projects/bluke-keyboard/artifacts/signed-v1.2.0'
+          cat "$DIR"/apk.b64.part-* | base64 -d > Bluke-Persian-Keyboard-v1.2.0.apk
+          printf '%s  %s\n' '1449fe6b9e7f227feb7ad2b3b5b9afd22a807ad099297f614138ec057a1e4119' 'Bluke-Persian-Keyboard-v1.2.0.apk' | sha256sum -c -
+          unzip -t Bluke-Persian-Keyboard-v1.2.0.apk >/dev/null
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Bluke-Persian-Keyboard-v1.2.0-signed-test
+          path: Bluke-Persian-Keyboard-v1.2.0.apk
+          if-no-files-found: error
+          retention-days: 30
