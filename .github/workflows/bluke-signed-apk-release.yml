@@ -1,0 +1,67 @@
+name: Publish Bluke signed test APK
+
+on:
+  push:
+    branches:
+      - build/bluke-keyboard-v1-20261102
+    paths:
+      - 'projects/bluke-keyboard/artifacts/signed-v1.2.0/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout signed APK chunks
+        uses: actions/checkout@v4
+
+      - name: Reassemble and verify the exact signed APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          DIR='projects/bluke-keyboard/artifacts/signed-v1.2.0'
+          cat "$DIR"/apk.b64.part-* | base64 -d > Bluke-Persian-Keyboard-v1.2.0.apk
+          EXPECTED="$(sed -n 's/^sha256=//p' "$DIR/MANIFEST.txt")"
+          ACTUAL="$(sha256sum Bluke-Persian-Keyboard-v1.2.0.apk | awk '{print $1}')"
+          test "$ACTUAL" = "$EXPECTED"
+          test "$(stat -c %s Bluke-Persian-Keyboard-v1.2.0.apk)" = "4249239"
+          unzip -t Bluke-Persian-Keyboard-v1.2.0.apk >/dev/null
+          printf '%s  %s\n' "$ACTUAL" 'Bluke-Persian-Keyboard-v1.2.0.apk' > SHA256SUMS.txt
+          cp "$DIR/MANIFEST.txt" BUILD-METADATA.txt
+
+      - name: Publish direct APK download on GitHub Releases
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG='bluke-persian-v1.2.0-test-signed'
+          ASSETS=(
+            Bluke-Persian-Keyboard-v1.2.0.apk
+            SHA256SUMS.txt
+            BUILD-METADATA.txt
+          )
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "${ASSETS[@]}" --clobber
+          else
+            gh release create "$TAG" "${ASSETS[@]}" \
+              --target "$GITHUB_SHA" \
+              --title 'Bluke Persian Keyboard v1.2.0 - signed test APK' \
+              --notes 'Installable test APK, verified against the signed artifact SHA-256 and the recorded APK signer certificate. This is a separate test-signing line, not an update to the upstream Bluke package.' \
+              --prerelease
+          fi
+
+      - name: Upload verified APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Bluke-Persian-Keyboard-v1.2.0-GitHub-Release
+          path: |
+            Bluke-Persian-Keyboard-v1.2.0.apk
+            SHA256SUMS.txt
+            BUILD-METADATA.txt
+          if-no-files-found: error
+          retention-days: 30
