@@ -7,6 +7,8 @@ on:
     paths-ignore:
       - 'projects/bluke-keyboard/exports/**'
       - 'projects/bluke-keyboard/artifacts/**'
+      - '.github/workflows/bluke-keyboard-build.yml'
+      - '.github/workflows/bluke-signed-apk-release.yml'
   workflow_dispatch:
 
 permissions:
