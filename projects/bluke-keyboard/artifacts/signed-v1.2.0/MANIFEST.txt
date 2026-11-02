@@ -1,0 +1,13 @@
+file=Bluke-Persian-Keyboard-v1.2.0.apk
+bytes=4249239
+base64_chars=5665652
+chunks=30
+chunk_chars=192000
+sha256=1449fe6b9e7f227feb7ad2b3b5b9afd22a807ad099297f614138ec057a1e4119
+package=dev.arnv.bluke.persian
+version=1.2.0
+min_sdk=28
+target_sdk=36
+signature_scheme=v3
+signer_certificate_sha256=98ddd8be680ae40f501c632d5ddd7eb6b35eae048051468f8ac6b605b158dcae
+signing=owner-generated-test-certificate
