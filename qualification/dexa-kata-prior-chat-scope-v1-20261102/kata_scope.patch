@@ -1,0 +1,34 @@
+--- a/kata_rank.py
++++ b/kata_rank.py
+@@ -92,6 +92,21 @@
+ def kata_retrieval_scores(raw: str):
+     return rank_v2.boosted_fusion(kata_retrieval_query(raw))
+ 
++def verified_prior_bullet_title_in_owner_task(task: str, reply: str | None) -> bool:
++    """A name copied from the last VERIFIED owner-visible list is a provider hint,
++    never an identity/handle or permission for a write. Other history is ignored."""
++    if not isinstance(reply, str) or "•" not in reply:
++        return False
++    for raw in reply.split("•")[1:]:
++        title = raw.strip().splitlines()[0].strip()
++        title = re.sub(r"\s*[（(][^()（）]{0,80}[)）]\s*$", "", title).strip()
++        if not 4 <= len(title) <= 120:
++            continue
++        if re.search(r"(?<!\w)" + re.escape(title) + r"(?!\w)", task, re.IGNORECASE):
++            return True
++    return False
++
++
+ def make(task: str, previous_user_message: str | None = None,
+          tool_profile: str | None = None, conversation_memory=None,
+          memory_rank_text: str | None = None) -> dict:
+@@ -185,7 +200,8 @@
+             r"اون(?:ها|‌ها)?|آن(?:ها|‌ها)?|این(?:ها|‌ها)?|قبلی|بالا|"
+             r"(?<![A-Za-z])(?:it|that|those|them|same|previous|above|there)(?![A-Za-z]))",
+             task, flags=re.IGNORECASE)
+-        if (referential and isinstance(latest, dict)
++        prior_named_title = isinstance(latest, dict) and verified_prior_bullet_title_in_owner_task(task, latest.get("reply"))
++        if ((referential or prior_named_title) and isinstance(latest, dict)
+                 and latest.get("status") == "SUCCEEDED_VERIFIED"
+                 and latest.get("replyAvailable") is True
+                 and isinstance(latest.get("replyRefId"), str)
