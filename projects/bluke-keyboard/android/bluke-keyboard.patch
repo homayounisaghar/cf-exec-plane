@@ -1,0 +1,412 @@
+diff --git a/app/build.gradle.kts b/app/build.gradle.kts
+index 377f852..2abb992 100644
+--- a/app/build.gradle.kts
++++ b/app/build.gradle.kts
+@@ -12,11 +12,11 @@ android {
+   compileSdk { version = release(36) { minorApiLevel = 1 } }
+ 
+   defaultConfig {
+-    applicationId = "dev.arnv.bluke"
++    applicationId = "dev.arnv.bluke.persian"
+     minSdk = 28
+     targetSdk = 36
+-    versionCode = 10
+-    versionName = "1.1.0"
++    versionCode = 11
++    versionName = "1.2.0"
+ 
+     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+   }
+diff --git a/app/src/main/AndroidManifest.xml b/app/src/main/AndroidManifest.xml
+index cbbc075..550575f 100644
+--- a/app/src/main/AndroidManifest.xml
++++ b/app/src/main/AndroidManifest.xml
+@@ -2,6 +2,8 @@
+ <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+     xmlns:tools="http://schemas.android.com/tools">
+ 
++    <uses-permission android:name="android.permission.INTERNET" />
++    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+     <uses-permission android:name="android.permission.BLUETOOTH" />
+     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+diff --git a/app/src/main/java/dev/arnv/bluke/bluetooth/HostLanguageServer.kt b/app/src/main/java/dev/arnv/bluke/bluetooth/HostLanguageServer.kt
+new file mode 100644
+index 0000000..b59ddd6
+--- /dev/null
++++ b/app/src/main/java/dev/arnv/bluke/bluetooth/HostLanguageServer.kt
+@@ -0,0 +1,121 @@
++package dev.arnv.bluke.bluetooth
++
++import android.util.Log
++import kotlinx.coroutines.CoroutineScope
++import kotlinx.coroutines.Dispatchers
++import kotlinx.coroutines.Job
++import kotlinx.coroutines.SupervisorJob
++import kotlinx.coroutines.delay
++import kotlinx.coroutines.flow.MutableStateFlow
++import kotlinx.coroutines.flow.StateFlow
++import kotlinx.coroutines.flow.asStateFlow
++import kotlinx.coroutines.isActive
++import kotlinx.coroutines.launch
++import org.json.JSONObject
++import java.io.BufferedReader
++import java.io.BufferedWriter
++import java.io.InputStreamReader
++import java.io.OutputStreamWriter
++import java.net.InetAddress
++import java.net.InetSocketAddress
++import java.net.ServerSocket
++import java.net.Socket
++import java.net.SocketException
++
++/** Receives only the active Windows keyboard-layout identifier. */
++class HostLanguageServer {
++    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
++    private val _layoutPreference = MutableStateFlow<String?>(null)
++    val layoutPreference: StateFlow<String?> = _layoutPreference.asStateFlow()
++
++    @Volatile private var serverSocket: ServerSocket? = null
++    @Volatile private var clientSocket: Socket? = null
++    private var serverJob: Job? = null
++
++    @Synchronized
++    fun start() {
++        if (serverJob?.isActive == true) return
++        serverJob = scope.launch { runServer() }
++    }
++
++    private suspend fun runServer() {
++        while (isActive) {
++            var server: ServerSocket? = null
++            try {
++                server = ServerSocket().apply {
++                    reuseAddress = true
++                    bind(InetSocketAddress(InetAddress.getByName("0.0.0.0"), PORT), 2)
++                }
++                serverSocket = server
++                Log.i(TAG, "Host-language bridge listening on port $PORT")
++                while (isActive) {
++                    val client = server.accept()
++                    clientSocket = client
++                    try {
++                        handleClient(client)
++                    } catch (e: Exception) {
++                        if (isActive) Log.w(TAG, "Host-language client ended", e)
++                    } finally {
++                        clientSocket = null
++                        runCatching { client.close() }
++                    }
++                }
++            } catch (e: Exception) {
++                if (isActive) {
++                    Log.w(TAG, "Host-language server retry", e)
++                    delay(RETRY_DELAY_MS)
++                }
++            } finally {
++                runCatching { server?.close() }
++                if (serverSocket === server) serverSocket = null
++            }
++        }
++    }
++
++    private fun handleClient(client: Socket) {
++        client.tcpNoDelay = true
++        val reader = BufferedReader(InputStreamReader(client.getInputStream(), Charsets.UTF_8))
++        val writer = BufferedWriter(OutputStreamWriter(client.getOutputStream(), Charsets.UTF_8))
++        while (!client.isClosed) {
++            val line = reader.readLine() ?: break
++            if (line.length > MAX_MESSAGE_LENGTH) break
++            val layout = parseLayoutPreference(line)
++            val response = JSONObject()
++            if (layout != null) {
++                _layoutPreference.value = layout
++                response.put("ok", true)
++                response.put("layout", layout)
++            } else response.put("ok", false)
++            writer.write(response.toString())
++            writer.newLine()
++            writer.flush()
++        }
++    }
++
++    internal fun parseLayoutPreference(line: String): String? = runCatching {
++        val payload = JSONObject(line)
++        if (payload.optString("protocol") != PROTOCOL) return null
++        payload.optString("layout").takeIf(SUPPORTED_LAYOUTS::contains)
++    }.getOrNull()
++
++    @Synchronized
++    fun stop() {
++        runCatching { clientSocket?.close() }
++        runCatching { serverSocket?.close() }
++        clientSocket = null
++        serverSocket = null
++        serverJob?.cancel()
++        serverJob = null
++    }
++
++    companion object {
++        const val PORT = 39472
++        private const val TAG = "BlukeHostLanguage"
++        private const val PROTOCOL = "bluke-language-v1"
++        private const val MAX_MESSAGE_LENGTH = 1024
++        private const val RETRY_DELAY_MS = 1500L
++        private val SUPPORTED_LAYOUTS = setOf(
++            "us_qwerty", "fr_azerty", "de_qwertz", "ru_jcuken", "fa_persian_standard",
++        )
++    }
++}
+diff --git a/app/src/main/java/dev/arnv/bluke/ui/HomeScreen.kt b/app/src/main/java/dev/arnv/bluke/ui/HomeScreen.kt
+index 6d09d21..c1ad849 100644
+--- a/app/src/main/java/dev/arnv/bluke/ui/HomeScreen.kt
++++ b/app/src/main/java/dev/arnv/bluke/ui/HomeScreen.kt
+@@ -61,6 +61,7 @@ import androidx.compose.ui.unit.sp
+ import androidx.core.content.edit
+ import androidx.core.net.toUri
+ import dev.arnv.bluke.bluetooth.BluetoothKeyboardManager
++import dev.arnv.bluke.bluetooth.HostLanguageServer
+ import dev.arnv.bluke.bluetooth.BluetoothState
+ import dev.arnv.bluke.bluetooth.ConsumerControl
+ import dev.arnv.bluke.bluetooth.CURRENT_HID_DESCRIPTOR_REVISION
+@@ -83,6 +84,12 @@ fun HomeScreen(
+     soundSynth: KeyboardSoundSynthesizer
+ ) {
+     val context = LocalContext.current
++    val hostLanguageServer = remember { HostLanguageServer() }
++    var hostLanguageSyncStatus by remember { mutableStateOf("Waiting for Windows") }
++    DisposableEffect(hostLanguageServer) {
++        hostLanguageServer.start()
++        onDispose { hostLanguageServer.stop() }
++    }
+     val btLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {}
+     val homeViewModel: HomeViewModel = viewModel(factory = HomeViewModel.factory(btManager))
+     val homeUiState by homeViewModel.uiState.collectAsStateWithLifecycle()
+@@ -105,6 +112,18 @@ fun HomeScreen(
+             )
+         )
+     }
++    LaunchedEffect(hostLanguageServer) {
++        hostLanguageServer.layoutPreference.collect { preference ->
++            val layout = KeyboardCharacterLayout.fromHostPreference(preference)
++            if (layout != null && layout != characterLayout) {
++                characterLayout = layout
++                sharedPrefs.edit {
++                    putString(KEYBOARD_CHARACTER_LAYOUT_PREFERENCE, layout.preferenceValue)
++                }
++                hostLanguageSyncStatus = "Windows: ${layout.displayName}"
++            }
++        }
++    }
+     var isKeyboardActive by rememberSaveable { mutableStateOf(false) }
+     BackHandler(enabled = isKeyboardActive) {
+         isKeyboardActive = false
+diff --git a/app/src/main/java/dev/arnv/bluke/ui/KeyboardCharacterLayouts.kt b/app/src/main/java/dev/arnv/bluke/ui/KeyboardCharacterLayouts.kt
+index 2c48079..1fd19f6 100644
+--- a/app/src/main/java/dev/arnv/bluke/ui/KeyboardCharacterLayouts.kt
++++ b/app/src/main/java/dev/arnv/bluke/ui/KeyboardCharacterLayouts.kt
+@@ -12,11 +12,15 @@ enum class KeyboardCharacterLayout(
+     GERMAN_QWERTZ("de_qwertz", "QWERTZ", "German"),
+     DVORAK("dvorak", "Dvorak", "Dvorak"),
+     COLEMAK("colemak", "Colemak", "Colemak"),
+-    RUSSIAN_JCUKEN("ru_jcuken", "ЙЦУКЕН", "Russian");
++    RUSSIAN_JCUKEN("ru_jcuken", "ЙЦУКЕН", "Russian"),
++    PERSIAN_STANDARD("fa_persian_standard", "فارسی", "Persian Standard");
+ 
+     companion object {
+         fun fromPreference(value: String?): KeyboardCharacterLayout =
+             entries.firstOrNull { it.preferenceValue == value } ?: US_QWERTY
++
++        fun fromHostPreference(value: String?): KeyboardCharacterLayout? =
++            entries.firstOrNull { it.preferenceValue == value }
+     }
+ 
+     fun next(): KeyboardCharacterLayout = entries[(ordinal + 1) % entries.size]
+@@ -33,10 +37,9 @@ internal fun List<List<KeyLayoutInfo>>.withCharacterLayout(
+ ): List<List<KeyLayoutInfo>> {
+     val overrides = characterLayout.legendOverrides()
+     if (overrides.isEmpty()) return this
+-
+     return map { row ->
+         row.map { key ->
+-            overrides[key.keyCode]?.let { legend ->
++            overrides[key.physicalKeyCode]?.let { legend ->
+                 key.copy(
+                     legend = legend.normal,
+                     shiftedLegend = legend.shifted,
+@@ -140,6 +143,51 @@ private fun KeyboardCharacterLayout.legendOverrides(): Map<Int, KeyLegend> = whe
+         physicalLegend(KeyboardLayouts.KEY_PERIOD, "Ю"),
+         physicalLegend(KeyboardLayouts.KEY_SLASH, ".", ","),
+     )
++    KeyboardCharacterLayout.PERSIAN_STANDARD -> mapOf(
++        physicalLegend(KeyboardLayouts.KEY_1, "۱", "!"),
++        physicalLegend(KeyboardLayouts.KEY_2, "۲", "@"),
++        physicalLegend(KeyboardLayouts.KEY_3, "۳", "#"),
++        physicalLegend(KeyboardLayouts.KEY_4, "۴", "\$"),
++        physicalLegend(KeyboardLayouts.KEY_5, "۵", "%"),
++        physicalLegend(KeyboardLayouts.KEY_6, "۶", "^"),
++        physicalLegend(KeyboardLayouts.KEY_7, "۷", "&"),
++        physicalLegend(KeyboardLayouts.KEY_8, "۸", "*"),
++        physicalLegend(KeyboardLayouts.KEY_9, "۹", "("),
++        physicalLegend(KeyboardLayouts.KEY_0, "۰", ")"),
++        physicalLegend(KeyboardLayouts.KEY_Q, "ض"),
++        physicalLegend(KeyboardLayouts.KEY_W, "ص"),
++        physicalLegend(KeyboardLayouts.KEY_E, "ث"),
++        physicalLegend(KeyboardLayouts.KEY_R, "ق"),
++        physicalLegend(KeyboardLayouts.KEY_T, "ف"),
++        physicalLegend(KeyboardLayouts.KEY_Y, "غ"),
++        physicalLegend(KeyboardLayouts.KEY_U, "ع"),
++        physicalLegend(KeyboardLayouts.KEY_I, "ه"),
++        physicalLegend(KeyboardLayouts.KEY_O, "خ"),
++        physicalLegend(KeyboardLayouts.KEY_P, "ح"),
++        physicalLegend(KeyboardLayouts.KEY_LBRACKET, "ج"),
++        physicalLegend(KeyboardLayouts.KEY_RBRACKET, "چ"),
++        physicalLegend(KeyboardLayouts.KEY_A, "ش"),
++        physicalLegend(KeyboardLayouts.KEY_S, "س"),
++        physicalLegend(KeyboardLayouts.KEY_D, "ی"),
++        physicalLegend(KeyboardLayouts.KEY_F, "ب"),
++        physicalLegend(KeyboardLayouts.KEY_G, "ل"),
++        physicalLegend(KeyboardLayouts.KEY_H, "ا"),
++        physicalLegend(KeyboardLayouts.KEY_J, "ت"),
++        physicalLegend(KeyboardLayouts.KEY_K, "ن"),
++        physicalLegend(KeyboardLayouts.KEY_L, "م"),
++        physicalLegend(KeyboardLayouts.KEY_SEMICOLON, "ک"),
++        physicalLegend(KeyboardLayouts.KEY_APOSTROPHE, "گ"),
++        physicalLegend(KeyboardLayouts.KEY_Z, "ظ"),
++        physicalLegend(KeyboardLayouts.KEY_X, "ط"),
++        physicalLegend(KeyboardLayouts.KEY_C, "ز"),
++        physicalLegend(KeyboardLayouts.KEY_V, "ر"),
++        physicalLegend(KeyboardLayouts.KEY_B, "ذ"),
++        physicalLegend(KeyboardLayouts.KEY_N, "د"),
++        physicalLegend(KeyboardLayouts.KEY_M, "پ"),
++        physicalLegend(KeyboardLayouts.KEY_COMMA, "و"),
++        physicalLegend(KeyboardLayouts.KEY_PERIOD, "."),
++        physicalLegend(KeyboardLayouts.KEY_SLASH, "/"),
++    )
+ }
+ 
+ private fun physicalLegend(
+diff --git a/app/src/main/java/dev/arnv/bluke/ui/KeyboardLayouts.kt b/app/src/main/java/dev/arnv/bluke/ui/KeyboardLayouts.kt
+index f955ff7..5d5842b 100644
+--- a/app/src/main/java/dev/arnv/bluke/ui/KeyboardLayouts.kt
++++ b/app/src/main/java/dev/arnv/bluke/ui/KeyboardLayouts.kt
+@@ -371,7 +371,7 @@ object KeyboardLayouts {
+             """.trimIndent()
+ 
+             KeyboardLayoutType.OBLIVION_75 -> """
+-                [[{c:"#d64827",t:"#2a82ad"},"Esc",{c:"#4d4d4d",t:"#b7b2a6"},"F1","F2","F3","F4",{x:0.5,c:"#d7d6d2"},"F5","F6","F7","F8",{x:0.5,c:"#4d4d4d",t:"#b7b2a6"},"F9","F10","F11","F12",{x:1.0,c:"#d64827"},"Delete"],
++                [[{c:"#d64827",t:"#2a82ad"},"Esc",{c:"#4d4d4d",t:"#b7b2a6"},"F1","F2","F3","F4",{x:0.25,c:"#d7d6d2"},"F5","F6","F7","F8",{x:0.25,c:"#4d4d4d",t:"#b7b2a6"},"F9","F10","F11","F12",{x:0.5,c:"#4d4d4d",t:"#b7b2a6"},"PrtSc",{c:"#d64827"},"Delete"],
+                 [{y:0.25,c:"#d7d6d2",t:"#4d4d4d"},"~\n`","!\n1","@\n2","#\n3","$\n4","%\n5","^\n6","&\n7","*\n8","(\n9",")\n0","_\n-","+\n=",{c:"#4d4d4d",t:"#d64827",w:2},"Backspace","Home"],
+                 [{w:1.5},"Tab",{c:"#d7d6d2",t:"#4d4d4d"},"Q","W","E","R","T","Y","U","I","O","P","{\n[","}\n]",{w:1.5},"|\n\\",{c:"#4d4d4d",t:"#b7b2a6"},"PgUp"],
+                 [{w:1.75},"Caps Lock",{c:"#d7d6d2",t:"#4d4d4d"},"A","S","D","F","G","H","J","K","L",":\n;","\"\n'",{c:"#4d4d4d",t:"#d64827",w:2.25},"Enter","PgDn"],
+diff --git a/app/src/main/res/values/strings.xml b/app/src/main/res/values/strings.xml
+index fa5d7f7..1b6f439 100644
+--- a/app/src/main/res/values/strings.xml
++++ b/app/src/main/res/values/strings.xml
+@@ -1,5 +1,5 @@
+ <resources>
+-    <string name="app_name">Bluke</string>
++    <string name="app_name">Bluke Persian Keyboard</string>
+     <string name="bluetooth_session_channel">Bluetooth connection</string>
+     <string name="bluetooth_session_notification">Keeps your Bluetooth controls connected when you switch apps.</string>
+ </resources>
+diff --git a/app/src/test/java/dev/arnv/bluke/bluetooth/HostLanguageServerTest.kt b/app/src/test/java/dev/arnv/bluke/bluetooth/HostLanguageServerTest.kt
+new file mode 100644
+index 0000000..df265f9
+--- /dev/null
++++ b/app/src/test/java/dev/arnv/bluke/bluetooth/HostLanguageServerTest.kt
+@@ -0,0 +1,28 @@
++package dev.arnv.bluke.bluetooth
++
++import org.junit.Assert.assertEquals
++import org.junit.Assert.assertNull
++import org.junit.Test
++
++class HostLanguageServerTest {
++    private val server = HostLanguageServer()
++
++    @Test
++    fun acceptsPersianAndEnglishLayoutMessages() {
++        assertEquals(
++            "fa_persian_standard",
++            server.parseLayoutPreference("""{"protocol":"bluke-language-v1","layout":"fa_persian_standard"}"""),
++        )
++        assertEquals(
++            "us_qwerty",
++            server.parseLayoutPreference("""{"protocol":"bluke-language-v1","layout":"us_qwerty"}"""),
++        )
++    }
++
++    @Test
++    fun rejectsUnknownProtocolAndUnlistedLayouts() {
++        assertNull(server.parseLayoutPreference("""{"protocol":"other","layout":"us_qwerty"}"""))
++        assertNull(server.parseLayoutPreference("""{"protocol":"bluke-language-v1","layout":"fr"}"""))
++        assertNull(server.parseLayoutPreference("not-json"))
++    }
++}
+diff --git a/app/src/test/java/dev/arnv/bluke/ui/PersianCharacterLayoutTest.kt b/app/src/test/java/dev/arnv/bluke/ui/PersianCharacterLayoutTest.kt
+new file mode 100644
+index 0000000..4c08b7f
+--- /dev/null
++++ b/app/src/test/java/dev/arnv/bluke/ui/PersianCharacterLayoutTest.kt
+@@ -0,0 +1,60 @@
++package dev.arnv.bluke.ui
++
++import org.junit.Assert.assertEquals
++import org.junit.Assert.assertNotNull
++import org.junit.Test
++
++class PersianCharacterLayoutTest {
++    @Test
++    fun persianStandardShowsPersianLegendsAtStandardPhysicalPositions() {
++        val keys = KeyboardLayouts.getLayout(
++            KeyboardGeometry.COMPACT_75,
++            KeyboardCharacterLayout.PERSIAN_STANDARD,
++        ).flatten()
++
++        assertEquals("ض", keys.single { it.physicalKeyCode == KeyboardLayouts.KEY_Q }.legend)
++        assertEquals("ص", keys.single { it.physicalKeyCode == KeyboardLayouts.KEY_W }.legend)
++        assertEquals("ف", keys.single { it.physicalKeyCode == KeyboardLayouts.KEY_T }.legend)
++        assertEquals("ش", keys.single { it.physicalKeyCode == KeyboardLayouts.KEY_A }.legend)
++        assertEquals("ل", keys.single { it.physicalKeyCode == KeyboardLayouts.KEY_G }.legend)
++        assertEquals("پ", keys.single { it.physicalKeyCode == KeyboardLayouts.KEY_M }.legend)
++        assertEquals(KeyboardLayouts.KEY_Q, keys.single { it.physicalKeyCode == KeyboardLayouts.KEY_Q }.keyCode)
++    }
++
++    @Test
++    fun persianDigitsAndShiftedSymbolsAreDisplayed() {
++        val keys = KeyboardLayouts.getLayout(
++            KeyboardGeometry.COMPACT_75,
++            KeyboardCharacterLayout.PERSIAN_STANDARD,
++        ).flatten()
++        assertEquals("۱", keys.single { it.physicalKeyCode == KeyboardLayouts.KEY_1 }.legend)
++        assertEquals("!", keys.single { it.physicalKeyCode == KeyboardLayouts.KEY_1 }.shiftedLegend)
++        assertEquals("۰", keys.single { it.physicalKeyCode == KeyboardLayouts.KEY_0 }.legend)
++    }
++
++    @Test
++    fun hostLayoutIdentifiersMapOnlySupportedLayouts() {
++        assertEquals(
++            KeyboardCharacterLayout.PERSIAN_STANDARD,
++            KeyboardCharacterLayout.fromHostPreference("fa_persian_standard"),
++        )
++        assertEquals(
++            KeyboardCharacterLayout.US_QWERTY,
++            KeyboardCharacterLayout.fromHostPreference("us_qwerty"),
++        )
++        assertEquals(null, KeyboardCharacterLayout.fromHostPreference("unknown"))
++    }
++
++    @Test
++    fun compact75HasPrintScreenBesideDeleteAtOneUnitWidth() {
++        val row = KeyboardLayouts.getLayout(
++            KeyboardGeometry.COMPACT_75,
++            KeyboardCharacterLayout.US_QWERTY,
++        ).first()
++        val printScreen = row.single { it.keyCode == KeyboardLayouts.KEY_PRINTSCREEN }
++        val delete = row.single { it.keyCode == KeyboardLayouts.KEY_DELETE }
++        assertEquals(1.0f, printScreen.widthRatio)
++        assertEquals(1.0f, delete.widthRatio)
++        assertEquals(printScreen.x + printScreen.widthRatio, delete.x)
++    }
++}
