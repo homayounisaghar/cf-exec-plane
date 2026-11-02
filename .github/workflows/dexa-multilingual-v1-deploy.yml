@@ -29,10 +29,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          req=server-bootstrap/control/dexa-multilingual-v1/dexa-multilingual-v1-20261102-v1.request
+          req=server-bootstrap/control/dexa-multilingual-v1/dexa-multilingual-v1-20261102-v2.request
           dir=qualification/dexa-multilingual-v1-20261102
           [[ "$(git diff --name-status "$GITHUB_SHA^" "$GITHUB_SHA")" == $'A\t'"$req" ]]
-          [[ "$(cat "$req")" == "request_id=dexa-multilingual-v1-20261102-v1" ]]
+          [[ "$(cat "$req")" == "request_id=dexa-multilingual-v1-20261102-v2" ]]
           while read -r name expected; do
             [[ "$(git hash-object "$dir/$name")" == "$expected" ]]
           done <<'HASHES'
@@ -72,5 +72,5 @@ jobs:
           for f in changes.patch baseline.sha256 dexa_memory_read_v1.mjs dexa_outgoing_language_policy_v1.mjs test_dexa_memory_to_writer_translation_v1.mjs test_dexa_outgoing_language_policy_v1.mjs deploy.sh; do
             scp "${opts[@]}" -P "$SSH_PORT" "$d/$f" "$VPS_SSH_USER@$VPS_HOST:$remote/$f"
           done
-          ssh "${opts[@]}" -p "$SSH_PORT" "$VPS_SSH_USER@$VPS_HOST" "bash $remote/deploy.sh" </dev/null
+          ssh "${opts[@]}" -p "$SSH_PORT" "$VPS_SSH_USER@$VPS_HOST" "if [ \$(id -u) -eq 0 ]; then chown -R cfserver:cfserver $remote; runuser -u cfserver -- bash $remote/deploy.sh; else bash $remote/deploy.sh; fi" </dev/null
           echo DEPLOY_REQUEST_SENT_CHECK_LIVE_SERVICE
