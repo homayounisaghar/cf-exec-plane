@@ -11,11 +11,11 @@ internal static class ForegroundInputLayout
     [DllImport("user32.dll")]
     private static extern IntPtr GetKeyboardLayout(uint threadId);
 
-    public static ushort ReadLanguageId()
+    public static (ushort LanguageId, long Hkl) Read()
     {
         var window = GetForegroundWindow();
         var threadId = window == IntPtr.Zero ? 0 : GetWindowThreadProcessId(window, out _);
-        var layout = GetKeyboardLayout(threadId);
-        return (ushort)(layout.ToInt64() & 0xFFFF);
+        var hkl = GetKeyboardLayout(threadId).ToInt64();
+        return ((ushort)(hkl & 0xFFFF), hkl);
     }
 }
