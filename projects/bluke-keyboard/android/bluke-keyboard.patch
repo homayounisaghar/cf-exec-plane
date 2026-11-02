@@ -1,5 +1,5 @@
 diff --git a/app/build.gradle.kts b/app/build.gradle.kts
-index 377f852..ca9b263 100644
+index 377f852..35fa092 100644
 --- a/app/build.gradle.kts
 +++ b/app/build.gradle.kts
 @@ -12,11 +12,11 @@ android {
@@ -12,178 +12,16 @@ index 377f852..ca9b263 100644
      targetSdk = 36
 -    versionCode = 10
 -    versionName = "1.1.0"
-+    versionCode = 13
-+    versionName = "1.2.2"
++    versionCode = 14
++    versionName = "1.2.3"
  
      testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
    }
-diff --git a/app/src/main/java/dev/arnv/bluke/bluetooth/BluetoothKeyboardManager.kt b/app/src/main/java/dev/arnv/bluke/bluetooth/BluetoothKeyboardManager.kt
-index 10c16be..6228ac3 100644
---- a/app/src/main/java/dev/arnv/bluke/bluetooth/BluetoothKeyboardManager.kt
-+++ b/app/src/main/java/dev/arnv/bluke/bluetooth/BluetoothKeyboardManager.kt
-@@ -131,6 +131,9 @@ class BluetoothKeyboardManager(private val context: Context) {
-     private val _capsLockState = MutableStateFlow(false)
-     val capsLockState: StateFlow<Boolean> = _capsLockState
- 
-+    private val _hostLayoutPreference = MutableStateFlow<String?>(null)
-+    val hostLayoutPreference: StateFlow<String?> = _hostLayoutPreference
-+
-     private val _numLockState = MutableStateFlow(true)
-     val numLockState: StateFlow<Boolean> = _numLockState
- 
-@@ -1263,8 +1266,9 @@ class BluetoothKeyboardManager(private val context: Context) {
-             if (activeRegistrationAttempt !== attempt) return
-             logHidEvent("callback setReport device=${device.address} type=$type id=$id length=${data.size}")
-             if (type == BluetoothHidDevice.REPORT_TYPE_OUTPUT) {
--                if (id == 1.toByte()) {
--                    parseLedReport(data)
-+                when (id.toInt() and 0xff) {
-+                    1 -> parseLedReport(data)
-+                    HOST_LAYOUT_REPORT_ID -> receiveHostLayoutReport(id.toInt() and 0xff, data)
-                 }
-             }
-             try {
-@@ -1278,8 +1282,9 @@ class BluetoothKeyboardManager(private val context: Context) {
-             super.onInterruptData(device, reportId, data)
-             if (activeRegistrationAttempt !== attempt) return
-             logHidEvent("callback interruptData device=${device.address} id=$reportId length=${data.size}")
--            if (reportId == 1.toByte()) {
--                parseLedReport(data)
-+            when (reportId.toInt() and 0xff) {
-+                1 -> parseLedReport(data)
-+                HOST_LAYOUT_REPORT_ID -> receiveHostLayoutReport(reportId.toInt() and 0xff, data)
-             }
-         }
- 
-@@ -1301,6 +1306,12 @@ class BluetoothKeyboardManager(private val context: Context) {
-             logHidEvent("callback virtualCableUnplug device=${device.address}")
-         }
- 
-+        private fun receiveHostLayoutReport(reportId: Int, data: ByteArray) {
-+            val preference = hostLayoutPreferenceFromReport(reportId, data) ?: return
-+            _hostLayoutPreference.value = preference
-+            logHidEvent("host keyboard layout received=$preference")
-+        }
-+
-         private fun parseLedReport(data: ByteArray?) {
-             if (data == null || data.isEmpty()) return
-             val ledByte = if (data.size > 1 && data[0] == 1.toByte()) {
-diff --git a/app/src/main/java/dev/arnv/bluke/bluetooth/GamepadDescriptor.kt b/app/src/main/java/dev/arnv/bluke/bluetooth/GamepadDescriptor.kt
-index b813898..e4bcd3f 100644
---- a/app/src/main/java/dev/arnv/bluke/bluetooth/GamepadDescriptor.kt
-+++ b/app/src/main/java/dev/arnv/bluke/bluetooth/GamepadDescriptor.kt
-@@ -35,6 +35,19 @@ internal val SHARED_HID_DESCRIPTOR = byteArrayOf(
-     0x81.toByte(), 0x00.toByte(),         //   INPUT (Data,Ary,Abs) - Keycodes (6 bytes)
-     0xc0.toByte(),                        // END_COLLECTION
- 
-+    // Bluke host keyboard layout feedback (Report ID 5, Windows -> Android).
-+    // A separate vendor-defined top-level collection keeps this out of the key reports.
-+    0x06.toByte(), 0x00.toByte(), 0xff.toByte(), // USAGE_PAGE (Vendor Defined 0xFF00)
-+    0x09.toByte(), 0x01.toByte(),         // USAGE (Bluke Host Layout)
-+    0xa1.toByte(), 0x01.toByte(),         // COLLECTION (Application)
-+    0x85.toByte(), 0x05.toByte(),         //   REPORT_ID (5)
-+    0x15.toByte(), 0x00.toByte(),         //   LOGICAL_MINIMUM (0)
-+    0x26.toByte(), 0xff.toByte(), 0x00.toByte(), // LOGICAL_MAXIMUM (255)
-+    0x75.toByte(), 0x08.toByte(),         //   REPORT_SIZE (8)
-+    0x95.toByte(), 0x01.toByte(),         //   REPORT_COUNT (1)
-+    0x91.toByte(), 0x02.toByte(),         //   OUTPUT (Data,Var,Abs) - layout code
-+    0xc0.toByte(),                        // END_COLLECTION
-+
-     // Mouse/Trackpad (Report ID 2)
-     0x05.toByte(), 0x01.toByte(),         // USAGE_PAGE (Generic Desktop)
-     0x09.toByte(), 0x02.toByte(),         // USAGE (Mouse)
-diff --git a/app/src/main/java/dev/arnv/bluke/bluetooth/HidDescriptorRevision.kt b/app/src/main/java/dev/arnv/bluke/bluetooth/HidDescriptorRevision.kt
-index 09d7d1d..e9ee57c 100644
---- a/app/src/main/java/dev/arnv/bluke/bluetooth/HidDescriptorRevision.kt
-+++ b/app/src/main/java/dev/arnv/bluke/bluetooth/HidDescriptorRevision.kt
-@@ -1,7 +1,7 @@
- package dev.arnv.bluke.bluetooth
- 
- internal const val HID_DESCRIPTOR_REVISION_PREFERENCE = "hid_descriptor_revision"
--internal const val CURRENT_HID_DESCRIPTOR_REVISION = 5
-+internal const val CURRENT_HID_DESCRIPTOR_REVISION = 6
- 
- internal fun requiresHidDescriptorRefresh(
-     savedRevision: Int,
-diff --git a/app/src/main/java/dev/arnv/bluke/bluetooth/HostLayoutReport.kt b/app/src/main/java/dev/arnv/bluke/bluetooth/HostLayoutReport.kt
-new file mode 100644
-index 0000000..37165b3
---- /dev/null
-+++ b/app/src/main/java/dev/arnv/bluke/bluetooth/HostLayoutReport.kt
-@@ -0,0 +1,26 @@
-+package dev.arnv.bluke.bluetooth
-+
-+internal const val HOST_LAYOUT_REPORT_ID = 5
-+internal const val HOST_LAYOUT_USAGE_PAGE = 0xFF00
-+internal const val HOST_LAYOUT_USAGE = 0x0001
-+
-+/**
-+ * Maps the one-byte vendor-defined Bluetooth HID output report sent by the Windows companion.
-+ * Codes: 0=US, 1=French, 2=German, 3=Russian, 4=Persian.
-+ */
-+internal fun hostLayoutPreferenceFromReport(reportId: Int, data: ByteArray): String? {
-+    if (reportId != HOST_LAYOUT_REPORT_ID) return null
-+    val code = when {
-+        data.size >= 2 && (data[0].toInt() and 0xFF) == HOST_LAYOUT_REPORT_ID -> data[1].toInt() and 0xFF
-+        data.isNotEmpty() -> data[0].toInt() and 0xFF
-+        else -> return null
-+    }
-+    return when (code) {
-+        0 -> "us_qwerty"
-+        1 -> "fr_azerty"
-+        2 -> "de_qwertz"
-+        3 -> "ru_jcuken"
-+        4 -> "fa_persian_standard"
-+        else -> null
-+    }
-+}
-diff --git a/app/src/main/java/dev/arnv/bluke/ui/HomeScreen.kt b/app/src/main/java/dev/arnv/bluke/ui/HomeScreen.kt
-index 6d09d21..bca934c 100644
---- a/app/src/main/java/dev/arnv/bluke/ui/HomeScreen.kt
-+++ b/app/src/main/java/dev/arnv/bluke/ui/HomeScreen.kt
-@@ -105,6 +105,16 @@ fun HomeScreen(
-             )
-         )
-     }
-+    val hostLayoutPreference by btManager.hostLayoutPreference.collectAsStateWithLifecycle()
-+    LaunchedEffect(hostLayoutPreference) {
-+        val layout = KeyboardCharacterLayout.fromHostPreference(hostLayoutPreference)
-+        if (layout != null && layout != characterLayout) {
-+            characterLayout = layout
-+            sharedPrefs.edit {
-+                putString(KEYBOARD_CHARACTER_LAYOUT_PREFERENCE, layout.preferenceValue)
-+            }
-+        }
-+    }
-     var isKeyboardActive by rememberSaveable { mutableStateOf(false) }
-     BackHandler(enabled = isKeyboardActive) {
-         isKeyboardActive = false
-@@ -785,7 +795,19 @@ fun HomeScreen(
-                                     fontWeight = FontWeight.Bold,
-                                     fontFamily = FontFamily.SansSerif
-                                 )
--                                
-+                                Text(
-+                                    text = "BT layout: " + (
-+                                        hostLayoutPreference?.let {
-+                                            KeyboardCharacterLayout.fromHostPreference(it)?.displayName
-+                                        } ?: "waiting"
-+                                    ),
-+                                    color = if (hostLayoutPreference != null) Color(0xFF39FF14) else Color(0xFFFFC266),
-+                                    fontSize = 8.sp,
-+                                    maxLines = 1,
-+                                    overflow = TextOverflow.Ellipsis,
-+                                    fontFamily = FontFamily.SansSerif
-+                                )
-+
-                                 // Reconnect Button
-                                 ReconnectHostButton(btManager)
-                             }
 diff --git a/app/src/main/java/dev/arnv/bluke/ui/KeyboardCharacterLayouts.kt b/app/src/main/java/dev/arnv/bluke/ui/KeyboardCharacterLayouts.kt
-index 2c48079..1fd19f6 100644
+index 2c48079..42fc65f 100644
 --- a/app/src/main/java/dev/arnv/bluke/ui/KeyboardCharacterLayouts.kt
 +++ b/app/src/main/java/dev/arnv/bluke/ui/KeyboardCharacterLayouts.kt
-@@ -12,11 +12,15 @@ enum class KeyboardCharacterLayout(
+@@ -12,7 +12,8 @@ enum class KeyboardCharacterLayout(
      GERMAN_QWERTZ("de_qwertz", "QWERTZ", "German"),
      DVORAK("dvorak", "Dvorak", "Dvorak"),
      COLEMAK("colemak", "Colemak", "Colemak"),
@@ -193,18 +31,8 @@ index 2c48079..1fd19f6 100644
  
      companion object {
          fun fromPreference(value: String?): KeyboardCharacterLayout =
-             entries.firstOrNull { it.preferenceValue == value } ?: US_QWERTY
-+
-+        fun fromHostPreference(value: String?): KeyboardCharacterLayout? =
-+            entries.firstOrNull { it.preferenceValue == value }
-     }
+@@ -36,7 +37,7 @@ internal fun List<List<KeyLayoutInfo>>.withCharacterLayout(
  
-     fun next(): KeyboardCharacterLayout = entries[(ordinal + 1) % entries.size]
-@@ -33,10 +37,9 @@ internal fun List<List<KeyLayoutInfo>>.withCharacterLayout(
- ): List<List<KeyLayoutInfo>> {
-     val overrides = characterLayout.legendOverrides()
-     if (overrides.isEmpty()) return this
--
      return map { row ->
          row.map { key ->
 -            overrides[key.keyCode]?.let { legend ->
@@ -212,7 +40,7 @@ index 2c48079..1fd19f6 100644
                  key.copy(
                      legend = legend.normal,
                      shiftedLegend = legend.shifted,
-@@ -140,6 +143,51 @@ private fun KeyboardCharacterLayout.legendOverrides(): Map<Int, KeyLegend> = whe
+@@ -140,6 +141,51 @@ private fun KeyboardCharacterLayout.legendOverrides(): Map<Int, KeyLegend> = whe
          physicalLegend(KeyboardLayouts.KEY_PERIOD, "Ю"),
          physicalLegend(KeyboardLayouts.KEY_SLASH, ".", ","),
      )
@@ -318,69 +146,5 @@ index 6d68033..b57d1f6 100644
 +        )
      }
  }
-diff --git a/app/src/test/java/dev/arnv/bluke/ui/PersianCharacterLayoutTest.kt b/app/src/test/java/dev/arnv/bluke/ui/PersianCharacterLayoutTest.kt
-new file mode 100644
-index 0000000..4c08b7f
---- /dev/null
-+++ b/app/src/test/java/dev/arnv/bluke/ui/PersianCharacterLayoutTest.kt
-@@ -0,0 +1,60 @@
-+package dev.arnv.bluke.ui
-+
-+import org.junit.Assert.assertEquals
-+import org.junit.Assert.assertNotNull
-+import org.junit.Test
-+
-+class PersianCharacterLayoutTest {
-+    @Test
-+    fun persianStandardShowsPersianLegendsAtStandardPhysicalPositions() {
-+        val keys = KeyboardLayouts.getLayout(
-+            KeyboardGeometry.COMPACT_75,
-+            KeyboardCharacterLayout.PERSIAN_STANDARD,
-+        ).flatten()
-+
-+        assertEquals("ض", keys.single { it.physicalKeyCode == KeyboardLayouts.KEY_Q }.legend)
-+        assertEquals("ص", keys.single { it.physicalKeyCode == KeyboardLayouts.KEY_W }.legend)
-+        assertEquals("ف", keys.single { it.physicalKeyCode == KeyboardLayouts.KEY_T }.legend)
-+        assertEquals("ش", keys.single { it.physicalKeyCode == KeyboardLayouts.KEY_A }.legend)
-+        assertEquals("ل", keys.single { it.physicalKeyCode == KeyboardLayouts.KEY_G }.legend)
-+        assertEquals("پ", keys.single { it.physicalKeyCode == KeyboardLayouts.KEY_M }.legend)
-+        assertEquals(KeyboardLayouts.KEY_Q, keys.single { it.physicalKeyCode == KeyboardLayouts.KEY_Q }.keyCode)
-+    }
-+
-+    @Test
-+    fun persianDigitsAndShiftedSymbolsAreDisplayed() {
-+        val keys = KeyboardLayouts.getLayout(
-+            KeyboardGeometry.COMPACT_75,
-+            KeyboardCharacterLayout.PERSIAN_STANDARD,
-+        ).flatten()
-+        assertEquals("۱", keys.single { it.physicalKeyCode == KeyboardLayouts.KEY_1 }.legend)
-+        assertEquals("!", keys.single { it.physicalKeyCode == KeyboardLayouts.KEY_1 }.shiftedLegend)
-+        assertEquals("۰", keys.single { it.physicalKeyCode == KeyboardLayouts.KEY_0 }.legend)
-+    }
-+
-+    @Test
-+    fun hostLayoutIdentifiersMapOnlySupportedLayouts() {
-+        assertEquals(
-+            KeyboardCharacterLayout.PERSIAN_STANDARD,
-+            KeyboardCharacterLayout.fromHostPreference("fa_persian_standard"),
-+        )
-+        assertEquals(
-+            KeyboardCharacterLayout.US_QWERTY,
-+            KeyboardCharacterLayout.fromHostPreference("us_qwerty"),
-+        )
-+        assertEquals(null, KeyboardCharacterLayout.fromHostPreference("unknown"))
-+    }
-+
-+    @Test
-+    fun compact75HasPrintScreenBesideDeleteAtOneUnitWidth() {
-+        val row = KeyboardLayouts.getLayout(
-+            KeyboardGeometry.COMPACT_75,
-+            KeyboardCharacterLayout.US_QWERTY,
-+        ).first()
-+        val printScreen = row.single { it.keyCode == KeyboardLayouts.KEY_PRINTSCREEN }
-+        val delete = row.single { it.keyCode == KeyboardLayouts.KEY_DELETE }
-+        assertEquals(1.0f, printScreen.widthRatio)
-+        assertEquals(1.0f, delete.widthRatio)
-+        assertEquals(printScreen.x + printScreen.widthRatio, delete.x)
-+    }
-+}
+
+[executed on device: ubuntu-16gb-hel1-2 (a1c21909-360a-4044-b63e-263af0ebd786)]
