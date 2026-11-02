@@ -1,5 +1,5 @@
 diff --git a/app/build.gradle.kts b/app/build.gradle.kts
-index 377f852..2abb992 100644
+index 377f852..62f21f7 100644
 --- a/app/build.gradle.kts
 +++ b/app/build.gradle.kts
 @@ -12,11 +12,11 @@ android {
@@ -12,30 +12,34 @@ index 377f852..2abb992 100644
      targetSdk = 36
 -    versionCode = 10
 -    versionName = "1.1.0"
-+    versionCode = 11
-+    versionName = "1.2.0"
++    versionCode = 12
++    versionName = "1.2.1"
  
      testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
    }
 diff --git a/app/src/main/AndroidManifest.xml b/app/src/main/AndroidManifest.xml
-index cbbc075..550575f 100644
+index cbbc075..e06cc0d 100644
 --- a/app/src/main/AndroidManifest.xml
 +++ b/app/src/main/AndroidManifest.xml
-@@ -2,6 +2,8 @@
+@@ -2,6 +2,12 @@
  <manifest xmlns:android="http://schemas.android.com/apk/res/android"
      xmlns:tools="http://schemas.android.com/tools">
  
 +    <uses-permission android:name="android.permission.INTERNET" />
 +    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
++    <uses-permission
++        android:name="android.permission.NEARBY_WIFI_DEVICES"
++        android:usesPermissionFlags="neverForLocation"
++        tools:targetApi="tiramisu" />
      <uses-permission android:name="android.permission.BLUETOOTH" />
      <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
      <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
 diff --git a/app/src/main/java/dev/arnv/bluke/bluetooth/HostLanguageServer.kt b/app/src/main/java/dev/arnv/bluke/bluetooth/HostLanguageServer.kt
 new file mode 100644
-index 0000000..a51bebb
+index 0000000..c017d0e
 --- /dev/null
 +++ b/app/src/main/java/dev/arnv/bluke/bluetooth/HostLanguageServer.kt
-@@ -0,0 +1,129 @@
+@@ -0,0 +1,147 @@
 +package dev.arnv.bluke.bluetooth
 +
 +import android.util.Log
@@ -43,8 +47,8 @@ index 0000000..a51bebb
 +import kotlinx.coroutines.Dispatchers
 +import kotlinx.coroutines.Job
 +import kotlinx.coroutines.SupervisorJob
-+import kotlinx.coroutines.delay
 +import kotlinx.coroutines.currentCoroutineContext
++import kotlinx.coroutines.delay
 +import kotlinx.coroutines.flow.MutableStateFlow
 +import kotlinx.coroutines.flow.StateFlow
 +import kotlinx.coroutines.flow.asStateFlow
@@ -61,11 +65,17 @@ index 0000000..a51bebb
 +import java.net.Socket
 +import java.net.SocketException
 +
-+/** Receives only the active Windows keyboard-layout identifier. */
++/**
++ * Receives only the active Windows keyboard-layout identifier.
++ * Keystrokes remain on Bluetooth HID; this channel never carries typed text.
++ */
 +class HostLanguageServer {
 +    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 +    private val _layoutPreference = MutableStateFlow<String?>(null)
 +    val layoutPreference: StateFlow<String?> = _layoutPreference.asStateFlow()
++
++    private val _status = MutableStateFlow("Waiting for permission")
++    val status: StateFlow<String> = _status.asStateFlow()
 +
 +    @Volatile private var serverSocket: ServerSocket? = null
 +    @Volatile private var clientSocket: Socket? = null
@@ -74,6 +84,7 @@ index 0000000..a51bebb
 +    @Synchronized
 +    fun start() {
 +        if (serverJob?.isActive == true) return
++        _status.value = "Starting"
 +        serverJob = scope.launch { runServer() }
 +    }
 +
@@ -82,15 +93,20 @@ index 0000000..a51bebb
 +        while (coroutineContext.isActive) {
 +            var server: ServerSocket? = null
 +            try {
++                _status.value = "Starting"
 +                server = ServerSocket().apply {
 +                    reuseAddress = true
 +                    bind(InetSocketAddress(InetAddress.getByName("0.0.0.0"), PORT), 2)
 +                }
 +                serverSocket = server
-+                Log.i(TAG, "Host-language bridge listening on port $PORT")
++                _status.value = "Listening on $PORT"
++                Log.i(TAG, "Host-language bridge listening on 0.0.0.0:$PORT")
++
 +                while (coroutineContext.isActive) {
 +                    val client = server.accept()
 +                    clientSocket = client
++                    _status.value = "Windows connected"
++                    Log.i(TAG, "Windows host connected from ${client.inetAddress.hostAddress}")
 +                    try {
 +                        handleClient(client)
 +                    } catch (e: Exception) {
@@ -98,11 +114,13 @@ index 0000000..a51bebb
 +                    } finally {
 +                        clientSocket = null
 +                        runCatching { client.close() }
++                        if (coroutineContext.isActive) _status.value = "Listening on $PORT"
 +                    }
 +                }
 +            } catch (e: Exception) {
 +                if (coroutineContext.isActive) {
-+                    Log.w(TAG, "Host-language server retry", e)
++                    _status.value = "Error: ${e.javaClass.simpleName}"
++                    Log.e(TAG, "Host-language server failed", e)
 +                    delay(RETRY_DELAY_MS)
 +                }
 +            } finally {
@@ -110,6 +128,7 @@ index 0000000..a51bebb
 +                if (serverSocket === server) serverSocket = null
 +            }
 +        }
++        _status.value = "Stopped"
 +    }
 +
 +    private fun handleClient(client: Socket) {
@@ -125,7 +144,9 @@ index 0000000..a51bebb
 +                _layoutPreference.value = layout
 +                response.put("ok", true)
 +                response.put("layout", layout)
-+            } else response.put("ok", false)
++            } else {
++                response.put("ok", false)
++            }
 +            writer.write(response.toString())
 +            writer.newLine()
 +            writer.flush()
@@ -150,6 +171,7 @@ index 0000000..a51bebb
 +        serverSocket = null
 +        serverJob?.cancel()
 +        serverJob = null
++        _status.value = "Stopped"
 +    }
 +
 +    companion object {
@@ -166,10 +188,23 @@ index 0000000..a51bebb
 +    }
 +}
 diff --git a/app/src/main/java/dev/arnv/bluke/ui/HomeScreen.kt b/app/src/main/java/dev/arnv/bluke/ui/HomeScreen.kt
-index 6d09d21..6ab7299 100644
+index 6d09d21..de9a9ee 100644
 --- a/app/src/main/java/dev/arnv/bluke/ui/HomeScreen.kt
 +++ b/app/src/main/java/dev/arnv/bluke/ui/HomeScreen.kt
-@@ -61,6 +61,7 @@ import androidx.compose.ui.unit.sp
+@@ -1,6 +1,8 @@
+ package dev.arnv.bluke.ui
++import android.Manifest
+ import android.annotation.SuppressLint
+ import android.app.Activity
++import android.content.pm.PackageManager
+ import android.util.Log
+ import android.bluetooth.BluetoothDevice
+ import android.content.Intent
+@@ -58,9 +60,11 @@ import dev.arnv.bluke.HelpActivity
+ import dev.arnv.bluke.QuickCycleActivity
+ import dev.arnv.bluke.SoundPacksActivity
+ import androidx.compose.ui.unit.sp
++import androidx.core.content.ContextCompat
  import androidx.core.content.edit
  import androidx.core.net.toUri
  import dev.arnv.bluke.bluetooth.BluetoothKeyboardManager
@@ -177,19 +212,40 @@ index 6d09d21..6ab7299 100644
  import dev.arnv.bluke.bluetooth.BluetoothState
  import dev.arnv.bluke.bluetooth.ConsumerControl
  import dev.arnv.bluke.bluetooth.CURRENT_HID_DESCRIPTOR_REVISION
-@@ -83,6 +84,11 @@ fun HomeScreen(
+@@ -83,6 +87,32 @@ fun HomeScreen(
      soundSynth: KeyboardSoundSynthesizer
  ) {
      val context = LocalContext.current
 +    val hostLanguageServer = remember { HostLanguageServer() }
-+    DisposableEffect(hostLanguageServer) {
-+        hostLanguageServer.start()
++    var nearbyWifiPermissionGranted by remember(context) {
++        mutableStateOf(
++            Build.VERSION.SDK_INT < 36 ||
++                ContextCompat.checkSelfPermission(
++                    context,
++                    Manifest.permission.NEARBY_WIFI_DEVICES
++                ) == PackageManager.PERMISSION_GRANTED
++        )
++    }
++    val nearbyWifiPermissionLauncher = rememberLauncherForActivityResult(
++        ActivityResultContracts.RequestPermission()
++    ) { granted ->
++        nearbyWifiPermissionGranted = granted
++    }
++    LaunchedEffect(Unit) {
++        if (Build.VERSION.SDK_INT >= 36 && !nearbyWifiPermissionGranted) {
++            nearbyWifiPermissionLauncher.launch(Manifest.permission.NEARBY_WIFI_DEVICES)
++        }
++    }
++    DisposableEffect(hostLanguageServer, nearbyWifiPermissionGranted) {
++        if (nearbyWifiPermissionGranted) hostLanguageServer.start()
++        else hostLanguageServer.stop()
 +        onDispose { hostLanguageServer.stop() }
 +    }
++    val hostBridgeStatus by hostLanguageServer.status.collectAsStateWithLifecycle()
      val btLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {}
      val homeViewModel: HomeViewModel = viewModel(factory = HomeViewModel.factory(btManager))
      val homeUiState by homeViewModel.uiState.collectAsStateWithLifecycle()
-@@ -105,6 +111,17 @@ fun HomeScreen(
+@@ -105,6 +135,17 @@ fun HomeScreen(
              )
          )
      }
@@ -207,6 +263,25 @@ index 6d09d21..6ab7299 100644
      var isKeyboardActive by rememberSaveable { mutableStateOf(false) }
      BackHandler(enabled = isKeyboardActive) {
          isKeyboardActive = false
+@@ -785,7 +826,17 @@ fun HomeScreen(
+                                     fontWeight = FontWeight.Bold,
+                                     fontFamily = FontFamily.SansSerif
+                                 )
+-                                
++                                Text(
++                                    text = if (!nearbyWifiPermissionGranted) "LAN: permission" else "LAN: $hostBridgeStatus",
++                                    color = if (nearbyWifiPermissionGranted &&
++                                        (hostBridgeStatus.startsWith("Listening") || hostBridgeStatus == "Windows connected")
++                                    ) Color(0xFF39FF14) else Color(0xFFFFC266),
++                                    fontSize = 8.sp,
++                                    maxLines = 1,
++                                    overflow = TextOverflow.Ellipsis,
++                                    fontFamily = FontFamily.SansSerif
++                                )
++
+                                 // Reconnect Button
+                                 ReconnectHostButton(btManager)
+                             }
 diff --git a/app/src/main/java/dev/arnv/bluke/ui/KeyboardCharacterLayouts.kt b/app/src/main/java/dev/arnv/bluke/ui/KeyboardCharacterLayouts.kt
 index 2c48079..1fd19f6 100644
 --- a/app/src/main/java/dev/arnv/bluke/ui/KeyboardCharacterLayouts.kt
