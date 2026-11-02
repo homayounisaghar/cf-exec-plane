@@ -6,6 +6,7 @@ on:
       - build/bluke-keyboard-v1-20261102
     paths:
       - 'projects/bluke-keyboard/artifacts/signed-v1.2.0/**'
+      - '.github/workflows/bluke-signed-apk-release.yml'
   workflow_dispatch:
 
 permissions:
@@ -24,7 +25,7 @@ jobs:
         run: |
           set -euo pipefail
           DIR='projects/bluke-keyboard/artifacts/signed-v1.2.0'
-          cat "$DIR"/apk.b64.part-* | base64 -d > Bluke-Persian-Keyboard-v1.2.0.apk
+          cat "$DIR"/apk.b64.part-* > Bluke-Persian-Keyboard-v1.2.0.apk
           EXPECTED="$(sed -n 's/^sha256=//p' "$DIR/MANIFEST.txt")"
           ACTUAL="$(sha256sum Bluke-Persian-Keyboard-v1.2.0.apk | awk '{print $1}')"
           test "$ACTUAL" = "$EXPECTED"
