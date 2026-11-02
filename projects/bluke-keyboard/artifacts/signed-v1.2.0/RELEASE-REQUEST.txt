@@ -1,0 +1,1 @@
+Publish the exact signed APK described by MANIFEST.txt. The release workflow reassembles all base64 chunks and verifies the SHA-256 before publishing.
