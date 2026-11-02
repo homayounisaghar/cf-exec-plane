@@ -1,0 +1,112 @@
+name: Bluke Persian Keyboard Build
+
+on:
+  push:
+    branches:
+      - build/bluke-keyboard-v1-20261102
+    paths-ignore:
+      - 'projects/bluke-keyboard/artifacts/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout secret-free build snapshot
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Prepare preinstalled Android SDK
+        shell: bash
+        run: |
+          set -eu
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          test -x "$SDKMANAGER"
+          "$SDKMANAGER" --version
+          set +o pipefail
+          yes | "$SDKMANAGER" --licenses >/dev/null
+          set -o pipefail
+          "$SDKMANAGER" "platforms;android-36" "build-tools;36.0.0" "platform-tools"
+
+      - name: Fetch pinned upstream Bluke source
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone https://github.com/arnav-kr/Bluke.git upstream
+          git -C upstream checkout bcf4f1492b51bcbb97fc7b792f73ad6bed75c759
+          test "$(git -C upstream rev-parse HEAD)" = "bcf4f1492b51bcbb97fc7b792f73ad6bed75c759"
+          cp projects/bluke-keyboard/android/bluke-keyboard.patch upstream/bluke-keyboard.patch
+          cd upstream
+          git apply --check bluke-keyboard.patch
+          git apply bluke-keyboard.patch
+          grep -q 'applicationId = "dev.arnv.bluke.persian"' app/build.gradle.kts
+          grep -q 'HostLanguageServer' app/src/main/java/dev/arnv/bluke/ui/HomeScreen.kt
+          grep -q 'PERSIAN_STANDARD' app/src/main/java/dev/arnv/bluke/ui/KeyboardCharacterLayouts.kt
+          grep -q '"PrtSc"' app/src/main/java/dev/arnv/bluke/ui/KeyboardLayouts.kt
+
+      - name: Build tests and unsigned release APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd upstream
+          # The public build is intentionally unsigned; durable signing is a separate private promotion.
+          sed -i '/signingConfig = signingConfigs.getByName("release")/d' app/build.gradle.kts
+          chmod +x gradlew
+          ./gradlew --no-daemon testDebugUnitTest assembleRelease
+
+      - name: Align and verify unsigned APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p out/android
+          APK="upstream/app/build/outputs/apk/release/app-release-unsigned.apk"
+          test -s "$APK"
+          "$ANDROID_HOME/build-tools/36.0.0/zipalign" -f 4 "$APK" out/android/Bluke-Persian-v1.2.0-unsigned-aligned.apk
+          "$ANDROID_HOME/build-tools/36.0.0/zipalign" -c 4 out/android/Bluke-Persian-v1.2.0-unsigned-aligned.apk
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging out/android/Bluke-Persian-v1.2.0-unsigned-aligned.apk | grep "package: name='dev.arnv.bluke.persian' versionCode='11' versionName='1.2.0'"
+          unzip -l out/android/Bluke-Persian-v1.2.0-unsigned-aligned.apk | grep -q 'classes.dex'
+          sha256sum out/android/Bluke-Persian-v1.2.0-unsigned-aligned.apk > out/android/SHA256SUMS.txt
+          printf '%s\n' 'upstream=arnav-kr/Bluke' 'upstream_commit=bcf4f1492b51bcbb97fc7b792f73ad6bed75c759' 'application_id=dev.arnv.bluke.persian' 'version_code=11' 'version_name=1.2.0' 'signing=unsigned-public-build' > out/android/BUILD-METADATA.txt
+
+      - name: Upload Android signing kit
+        uses: actions/upload-artifact@v4
+        with:
+          name: Bluke-Persian-Android-v1.2.0-signing-kit
+          path: out/android/*
+          if-no-files-found: error
+          retention-days: 30
+
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout bridge source
+        uses: actions/checkout@v4
+
+      - name: Set up .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Publish self-contained Windows bridge
+        shell: pwsh
+        run: |
+          dotnet publish projects/bluke-keyboard/windows/BlukeLanguageBridge.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o out/windows
+          if (!(Test-Path out/windows/BlukeLanguageBridge.exe)) { throw "Windows bridge executable missing" }
+
+      - name: Upload Windows companion
+        uses: actions/upload-artifact@v4
+        with:
+          name: Bluke-Language-Bridge-Windows-x64
+          path: out/windows/*
+          if-no-files-found: error
+          retention-days: 30
