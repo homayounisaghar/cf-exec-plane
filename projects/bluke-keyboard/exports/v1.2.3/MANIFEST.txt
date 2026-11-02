@@ -1,0 +1,6 @@
+file=Bluke-Persian-v1.2.3-recovery-debug-signed.apk
+bytes=64259672
+parts=357
+sha256=ac3a7da13da0f63f21c50d05e9cf4c6bf063354fa51e529fc4bb6914ae494039
+encoding=base64
+chunk_bytes=240000
