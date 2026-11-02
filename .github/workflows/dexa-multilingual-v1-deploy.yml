@@ -72,5 +72,5 @@ jobs:
           for f in changes.patch baseline.sha256 dexa_memory_read_v1.mjs dexa_outgoing_language_policy_v1.mjs test_dexa_memory_to_writer_translation_v1.mjs test_dexa_outgoing_language_policy_v1.mjs deploy.sh; do
             scp "${opts[@]}" -P "$SSH_PORT" "$d/$f" "$VPS_SSH_USER@$VPS_HOST:$remote/$f"
           done
-          ssh "${opts[@]}" -p "$SSH_PORT" "$VPS_SSH_USER@$VPS_HOST" "if [ \$(id -u) -eq 0 ]; then chown -R cfserver:cfserver $remote; runuser -u cfserver -- bash $remote/deploy.sh; else bash $remote/deploy.sh; fi" </dev/null
+          ssh "${opts[@]}" -p "$SSH_PORT" "$VPS_SSH_USER@$VPS_HOST" "if [ \$(id -u) -eq 0 ]; then chown -R cfserver:cfserver $remote /home/cfserver/dexa-multilingual-release-20261102; runuser -u cfserver -- bash $remote/deploy.sh; else bash $remote/deploy.sh; fi" </dev/null
           echo DEPLOY_REQUEST_SENT_CHECK_LIVE_SERVICE
