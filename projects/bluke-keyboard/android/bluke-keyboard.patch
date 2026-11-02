@@ -32,10 +32,10 @@ index cbbc075..550575f 100644
      <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
 diff --git a/app/src/main/java/dev/arnv/bluke/bluetooth/HostLanguageServer.kt b/app/src/main/java/dev/arnv/bluke/bluetooth/HostLanguageServer.kt
 new file mode 100644
-index 0000000..d15b54a
+index 0000000..a51bebb
 --- /dev/null
 +++ b/app/src/main/java/dev/arnv/bluke/bluetooth/HostLanguageServer.kt
-@@ -0,0 +1,123 @@
+@@ -0,0 +1,129 @@
 +package dev.arnv.bluke.bluetooth
 +
 +import android.util.Log
@@ -132,11 +132,15 @@ index 0000000..d15b54a
 +        }
 +    }
 +
-+    internal fun parseLayoutPreference(line: String): String? = runCatching {
-+        val payload = JSONObject(line)
-+        if (payload.optString("protocol") != PROTOCOL) return null
-+        payload.optString("layout").takeIf(SUPPORTED_LAYOUTS::contains)
-+    }.getOrNull()
++    internal fun parseLayoutPreference(line: String): String? {
++        if (line.length > MAX_MESSAGE_LENGTH) return null
++        val trimmed = line.trim()
++        if (!trimmed.startsWith("{") || !trimmed.endsWith("}")) return null
++        val protocol = JSON_STRING_FIELD.find(trimmed)?.groupValues?.get(2)
++        if (protocol != PROTOCOL) return null
++        val layout = LAYOUT_STRING_FIELD.find(trimmed)?.groupValues?.get(2)
++        return layout?.takeIf(SUPPORTED_LAYOUTS::contains)
++    }
 +
 +    @Synchronized
 +    fun stop() {
@@ -154,13 +158,15 @@ index 0000000..d15b54a
 +        private const val PROTOCOL = "bluke-language-v1"
 +        private const val MAX_MESSAGE_LENGTH = 1024
 +        private const val RETRY_DELAY_MS = 1500L
++        private val JSON_STRING_FIELD = Regex("""("protocol"\s*:\s*"([^"\\]*)")""")
++        private val LAYOUT_STRING_FIELD = Regex("""("layout"\s*:\s*"([^"\\]*)")""")
 +        private val SUPPORTED_LAYOUTS = setOf(
 +            "us_qwerty", "fr_azerty", "de_qwertz", "ru_jcuken", "fa_persian_standard",
 +        )
 +    }
 +}
 diff --git a/app/src/main/java/dev/arnv/bluke/ui/HomeScreen.kt b/app/src/main/java/dev/arnv/bluke/ui/HomeScreen.kt
-index 6d09d21..c1ad849 100644
+index 6d09d21..6ab7299 100644
 --- a/app/src/main/java/dev/arnv/bluke/ui/HomeScreen.kt
 +++ b/app/src/main/java/dev/arnv/bluke/ui/HomeScreen.kt
 @@ -61,6 +61,7 @@ import androidx.compose.ui.unit.sp
@@ -171,12 +177,11 @@ index 6d09d21..c1ad849 100644
  import dev.arnv.bluke.bluetooth.BluetoothState
  import dev.arnv.bluke.bluetooth.ConsumerControl
  import dev.arnv.bluke.bluetooth.CURRENT_HID_DESCRIPTOR_REVISION
-@@ -83,6 +84,12 @@ fun HomeScreen(
+@@ -83,6 +84,11 @@ fun HomeScreen(
      soundSynth: KeyboardSoundSynthesizer
  ) {
      val context = LocalContext.current
 +    val hostLanguageServer = remember { HostLanguageServer() }
-+    var hostLanguageSyncStatus by remember { mutableStateOf("Waiting for Windows") }
 +    DisposableEffect(hostLanguageServer) {
 +        hostLanguageServer.start()
 +        onDispose { hostLanguageServer.stop() }
@@ -184,7 +189,7 @@ index 6d09d21..c1ad849 100644
      val btLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {}
      val homeViewModel: HomeViewModel = viewModel(factory = HomeViewModel.factory(btManager))
      val homeUiState by homeViewModel.uiState.collectAsStateWithLifecycle()
-@@ -105,6 +112,18 @@ fun HomeScreen(
+@@ -105,6 +111,17 @@ fun HomeScreen(
              )
          )
      }
@@ -196,7 +201,6 @@ index 6d09d21..c1ad849 100644
 +                sharedPrefs.edit {
 +                    putString(KEYBOARD_CHARACTER_LAYOUT_PREFERENCE, layout.preferenceValue)
 +                }
-+                hostLanguageSyncStatus = "Windows: ${layout.displayName}"
 +            }
 +        }
 +    }
@@ -312,6 +316,18 @@ index fa5d7f7..1b6f439 100644
      <string name="bluetooth_session_channel">Bluetooth connection</string>
      <string name="bluetooth_session_notification">Keeps your Bluetooth controls connected when you switch apps.</string>
  </resources>
+diff --git a/app/src/test/java/dev/arnv/bluke/ExampleRobolectricTest.kt b/app/src/test/java/dev/arnv/bluke/ExampleRobolectricTest.kt
+index d8e6a5e..e6d40b8 100644
+--- a/app/src/test/java/dev/arnv/bluke/ExampleRobolectricTest.kt
++++ b/app/src/test/java/dev/arnv/bluke/ExampleRobolectricTest.kt
+@@ -16,6 +16,6 @@ class ExampleRobolectricTest {
+   fun `read string from context`() {
+     val context = ApplicationProvider.getApplicationContext<Context>()
+     val appName = context.getString(R.string.app_name)
+-    assertEquals("Bluke", appName)
++    assertEquals("Bluke Persian Keyboard", appName)
+   }
+ }
 diff --git a/app/src/test/java/dev/arnv/bluke/bluetooth/HostLanguageServerTest.kt b/app/src/test/java/dev/arnv/bluke/bluetooth/HostLanguageServerTest.kt
 new file mode 100644
 index 0000000..df265f9
@@ -346,6 +362,24 @@ index 0000000..df265f9
 +        assertNull(server.parseLayoutPreference("not-json"))
 +    }
 +}
+diff --git a/app/src/test/java/dev/arnv/bluke/ui/KeyboardCharacterLayoutsTest.kt b/app/src/test/java/dev/arnv/bluke/ui/KeyboardCharacterLayoutsTest.kt
+index 6d68033..b57d1f6 100644
+--- a/app/src/test/java/dev/arnv/bluke/ui/KeyboardCharacterLayoutsTest.kt
++++ b/app/src/test/java/dev/arnv/bluke/ui/KeyboardCharacterLayoutsTest.kt
+@@ -75,8 +75,12 @@ class KeyboardCharacterLayoutsTest {
+             KeyboardCharacterLayout.US_QWERTY.next(),
+         )
+         assertEquals(
+-            KeyboardCharacterLayout.US_QWERTY,
++            KeyboardCharacterLayout.PERSIAN_STANDARD,
+             KeyboardCharacterLayout.RUSSIAN_JCUKEN.next(),
+         )
++        assertEquals(
++            KeyboardCharacterLayout.US_QWERTY,
++            KeyboardCharacterLayout.PERSIAN_STANDARD.next(),
++        )
+     }
+ }
 diff --git a/app/src/test/java/dev/arnv/bluke/ui/PersianCharacterLayoutTest.kt b/app/src/test/java/dev/arnv/bluke/ui/PersianCharacterLayoutTest.kt
 new file mode 100644
 index 0000000..4c08b7f
