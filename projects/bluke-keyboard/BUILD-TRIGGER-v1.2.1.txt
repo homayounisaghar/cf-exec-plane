@@ -1,0 +1,1 @@
+Build v1.2.1 with Android 16 local-network permission request and explicit LAN bridge diagnostics.
