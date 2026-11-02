@@ -1,0 +1,6 @@
+file=Bluke-Persian-v1.2.2-debug-signed-aligned.apk
+bytes=64259672
+parts=357
+sha256=e8130c025793efeb22937e7fe6c187534f9039883bcb281fe0595a13efabe9b4
+encoding=base64
+chunk_bytes=240000
