@@ -73,12 +73,12 @@ jobs:
           mkdir -p out/android
           APK="upstream/app/build/outputs/apk/release/app-release-unsigned.apk"
           test -s "$APK"
-          "$ANDROID_HOME/build-tools/36.0.0/zipalign" -f 4 "$APK" out/android/Bluke-Persian-v1.2.0-unsigned-aligned.apk
-          "$ANDROID_HOME/build-tools/36.0.0/zipalign" -c 4 out/android/Bluke-Persian-v1.2.0-unsigned-aligned.apk
-          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging out/android/Bluke-Persian-v1.2.0-unsigned-aligned.apk | grep "package: name='dev.arnv.bluke.persian' versionCode='11' versionName='1.2.0'"
-          unzip -l out/android/Bluke-Persian-v1.2.0-unsigned-aligned.apk | grep -q 'classes.dex'
-          sha256sum out/android/Bluke-Persian-v1.2.0-unsigned-aligned.apk > out/android/SHA256SUMS.txt
-          printf '%s\n' 'upstream=arnav-kr/Bluke' 'upstream_commit=bcf4f1492b51bcbb97fc7b792f73ad6bed75c759' 'application_id=dev.arnv.bluke.persian' 'version_code=11' 'version_name=1.2.0' 'signing=unsigned-public-build' > out/android/BUILD-METADATA.txt
+          "$ANDROID_HOME/build-tools/36.0.0/zipalign" -f 4 "$APK" out/android/Bluke-Persian-v1.2.1-unsigned-aligned.apk
+          "$ANDROID_HOME/build-tools/36.0.0/zipalign" -c 4 out/android/Bluke-Persian-v1.2.1-unsigned-aligned.apk
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging out/android/Bluke-Persian-v1.2.1-unsigned-aligned.apk | grep "package: name='dev.arnv.bluke.persian' versionCode='12' versionName='1.2.1'"
+          unzip -l out/android/Bluke-Persian-v1.2.1-unsigned-aligned.apk | grep -q 'classes.dex'
+          sha256sum out/android/Bluke-Persian-v1.2.1-unsigned-aligned.apk > out/android/SHA256SUMS.txt
+          printf '%s\n' 'upstream=arnav-kr/Bluke' 'upstream_commit=bcf4f1492b51bcbb97fc7b792f73ad6bed75c759' 'application_id=dev.arnv.bluke.persian' 'version_code=12' 'version_name=1.2.1' 'signing=unsigned-public-build' > out/android/BUILD-METADATA.txt
 
       - name: Publish verified APK as a public release asset
         shell: bash
@@ -86,9 +86,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          TAG='bluke-persian-v1.2.0-unsigned'
+          TAG='bluke-persian-v1.2.1-unsigned'
           ASSETS=(
-            out/android/Bluke-Persian-v1.2.0-unsigned-aligned.apk
+            out/android/Bluke-Persian-v1.2.1-unsigned-aligned.apk
             out/android/SHA256SUMS.txt
             out/android/BUILD-METADATA.txt
           )
@@ -97,7 +97,7 @@ jobs:
           else
             gh release create "$TAG" "${ASSETS[@]}" \
               --target "$GITHUB_SHA" \
-              --title 'Bluke Persian Keyboard v1.2.0 (unsigned)' \
+              --title 'Bluke Persian Keyboard v1.2.1 (unsigned)' \
               --notes 'Verified Android APK and build metadata. Public build is unsigned; sign locally with the private persistent keystore before installation.' \
               --prerelease
           fi
@@ -106,22 +106,22 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          APK='out/android/Bluke-Persian-v1.2.0-unsigned-aligned.apk'
-          EXPORT_DIR='projects/bluke-keyboard/exports/v1.2.0'
+          APK='out/android/Bluke-Persian-v1.2.1-unsigned-aligned.apk'
+          EXPORT_DIR='projects/bluke-keyboard/exports/v1.2.1'
           rm -rf "$EXPORT_DIR"
           mkdir -p "$EXPORT_DIR"
-          base64 -w0 "$APK" > /tmp/bluke-persian-v1.2.0.apk.b64
-          split -b 240000 -d -a 3 /tmp/bluke-persian-v1.2.0.apk.b64 "$EXPORT_DIR/apk.b64.part-"
+          base64 -w0 "$APK" > /tmp/bluke-persian-v1.2.1.apk.b64
+          split -b 240000 -d -a 3 /tmp/bluke-persian-v1.2.1.apk.b64 "$EXPORT_DIR/apk.b64.part-"
           SHA="$(sha256sum "$APK" | awk '{print $1}')"
           BYTES="$(stat -c %s "$APK")"
           PARTS="$(find "$EXPORT_DIR" -name 'apk.b64.part-*' | wc -l)"
-          printf 'file=Bluke-Persian-v1.2.0-unsigned-aligned.apk\nbytes=%s\nparts=%s\nsha256=%s\nencoding=base64\nchunk_bytes=240000\n' "$BYTES" "$PARTS" "$SHA" > "$EXPORT_DIR/MANIFEST.txt"
+          printf 'file=Bluke-Persian-v1.2.1-unsigned-aligned.apk\nbytes=%s\nparts=%s\nsha256=%s\nencoding=base64\nchunk_bytes=240000\n' "$BYTES" "$PARTS" "$SHA" > "$EXPORT_DIR/MANIFEST.txt"
           cp out/android/SHA256SUMS.txt "$EXPORT_DIR/"
           cp out/android/BUILD-METADATA.txt "$EXPORT_DIR/"
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -f "$EXPORT_DIR"
-          git commit -m 'Export Bluke Persian v1.2.0 APK in bounded chunks [skip ci]'
+          git commit -m 'Export Bluke Persian v1.2.1 APK in bounded chunks [skip ci]'
           git push origin "HEAD:$GITHUB_REF_NAME"
 
   windows:
@@ -149,11 +149,11 @@ jobs:
         run: |
           $zip = "out/Bluke-Language-Bridge-Windows-x64.zip"
           Compress-Archive -Path "out/windows/*" -DestinationPath $zip -Force
-          $tag = "bluke-language-bridge-v1.2.0"
+          $tag = "bluke-language-bridge-v1.2.1"
           if (gh release view $tag 2>$null) {
             gh release upload $tag $zip --clobber
           } else {
-            gh release create $tag $zip --target $env:GITHUB_SHA --title "Bluke Windows Language Bridge v1.2.0" --notes "Self-contained Windows x64 companion. No .NET runtime installation required."
+            gh release create $tag $zip --target $env:GITHUB_SHA --title "Bluke Windows Language Bridge v1.2.1" --notes "Self-contained Windows x64 companion. No .NET runtime installation required."
           }
 
   signed_export:
