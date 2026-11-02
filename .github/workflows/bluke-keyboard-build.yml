@@ -163,7 +163,7 @@ jobs:
         run: |
           set -euo pipefail
           DIR='projects/bluke-keyboard/artifacts/signed-v1.2.0'
-          cat "$DIR"/apk.b64.part-* | base64 -d > Bluke-Persian-Keyboard-v1.2.0.apk
+          cat "$DIR"/apk.b64.part-* > Bluke-Persian-Keyboard-v1.2.0.apk
           printf '%s  %s\n' '1449fe6b9e7f227feb7ad2b3b5b9afd22a807ad099297f614138ec057a1e4119' 'Bluke-Persian-Keyboard-v1.2.0.apk' | sha256sum -c -
           unzip -t Bluke-Persian-Keyboard-v1.2.0.apk >/dev/null
       - uses: actions/upload-artifact@v4
