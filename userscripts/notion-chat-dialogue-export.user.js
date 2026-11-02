@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Notion AI - Export current chat as dialogue TXT
 // @namespace    local.notion.chat-dialogue-export
-// @version      1.3.0
-// @description  Fetch Notion AI dialogue from verified server records without manual scrolling.
+// @version      1.4.0
+// @description  Export Notion AI dialogue via read-only server history, with automated scroll-and-capture fallback.
 // @match        https://app.notion.com/*
 // @match        https://www.notion.so/*
 // @match        https://notion.so/*
@@ -16,56 +16,41 @@
 
 (() => {
   'use strict';
-
-  // Observed protocol: /api/v3/syncRecordValuesSpaceInitial returns a
-  // recordMap with thread (ordered message IDs) and thread_message records.
-  // Protocol reference: https://github.com/git-scarrow/notion-forge (MIT).
-  // Only read-only same-origin Notion sync requests are made when the user
-  // clicks Export; otherwise we passively observe Notion's own requests.
-  // No tokens are persisted and no chat content is sent to third parties.
-  const SYNC_PATH = '/api/v3/syncRecordValuesMain';
-  const SYNC_ROUTES = [SYNC_PATH, '/api/v3/syncRecordValuesSpaceInitial', '/api/v3/syncRecordValues'];
-  const LIST_ROUTE = '/api/v3/getInferenceTranscriptsForUser';
+  const VERSION = '1.4.0';
+  const API_BASE = '/api/v3/';
+  const SYNC_ROUTES = ['syncRecordValuesMain', 'syncRecordValuesSpaceInitial', 'syncRecordValues'];
+  const idOf = value => typeof value === 'string' ? value.toLowerCase().replace(/-/g, '') : '';
+  const validID = value => /^[a-f0-9]{32}$/.test(value);
+  const dash = value => value.replace(/^(.{8})(.{4})(.{4})(.{4})(.{12})$/, '$1-$2-$3-$4-$5');
+  const nativeFetch = window.fetch.bind(window);
+  const headerHints = new Map();
+  const spaces = new Set();
   const diagnostics = [];
-  let matchedSpaceCount = 0;
-  function trace(entry) {
-    // Sanitized: only route, HTTP code and record counts; no messages, IDs or credentials.
-    if (diagnostics.length < 160) diagnostics.push(entry);
-  }
-  const USER_ROUTE = '/api/v3/loadUserContent';
-  const headerHints = {};
-  const knownSpaces = new Set();
-  const apiOrigins = new Set();
-  let lastObservedAPIOrigin = '';
-  const histories = new Map();
-  const originalFetch = window.fetch.bind(window);
-  const normalizeID = value => typeof value === 'string'
-    ? value.toLowerCase().replace(/-/g, '') : '';
-  const recordValue = entry => entry?.value?.value ?? entry?.value ?? entry;
-  const refID = value => normalizeID(typeof value === 'string' ? value : value?.id);
+  const transcripts = new Map();
+  let busy = false, panel, button, reportButton, statusText;
+  let observedOrigin = location.origin;
 
   function currentID() {
-    const isChat = location.pathname.replace(/\/$/, '') === '/chat' ||
-      new URLSearchParams(location.search).get('wfv') === 'chat';
-    const id = new URLSearchParams(location.search).get('t') || '';
-    return isChat && /^[\da-f]{32}$|^[\da-f]{8}(?:-[\da-f]{4}){3}-[\da-f]{12}$/i.test(id)
-      ? normalizeID(id) : null;
+    const p = new URLSearchParams(location.search);
+    if (location.pathname.replace(/\/$/, '') !== '/chat' && p.get('wfv') !== 'chat') return '';
+    const id = idOf(p.get('t'));
+    return validID(id) ? id : '';
   }
-
-  function getHistory(id) {
-    if (!histories.has(id)) histories.set(id, { order: null, title: '', spaceId: '', verified: false, records: new Map() });
-    // Avoid retaining data from other chats after navigation.
-    for (const key of histories.keys()) if (key !== id) histories.delete(key);
-    return histories.get(id);
+  function checkID(id) {
+    if (!id || id !== currentID()) throw Error('چت هنگام گرفتن خروجی تغییر کرده است.');
   }
-
-  function recordMapOf(data) {
-    return data?.recordMap ?? data?.result?.recordMap ?? data?.data?.recordMap ?? {};
+  function logDiagnostic(event) {
+    if (diagnostics.length < 150) diagnostics.push(event);
   }
-  function unwrapRecord(entry) {
-    // Older and newer v3 record maps use one or two 'value' envelopes.
-    let v = entry;
-    for (let i = 0; i < 4 && v && typeof v === 'object'; i++) {
+  function showStatus(s) {
+    if (statusText) statusText.textContent = s;
+  }
+  function mapOf(value) {
+    return value?.recordMap ?? value?.result?.recordMap ?? value?.data?.recordMap ?? {};
+  }
+  function unwrap(value) {
+    let v = value;
+    for (let n = 0; n < 4 && v && typeof v === 'object'; n++) {
       if (Array.isArray(v.messages) || v.step || v.parent_id ||
           (v.id && (v.data || v.space_id || v.type))) break;
       if (!v.value || typeof v.value !== 'object') break;
@@ -73,458 +58,552 @@
     }
     return v;
   }
-  function recordOrder(thread) {
-    const raw = Array.isArray(thread?.messages) ? thread.messages :
-      Array.isArray(thread?.data?.messages) ? thread.data.messages : null;
-    if (!raw) return null;
-    const ids = raw.map(refID);
-    return ids.every(x => /^[a-f0-9]{32}$/.test(x)) ? ids : null;
+  function orderOf(thread) {
+    const source = Array.isArray(thread?.messages) ? thread.messages :
+      (Array.isArray(thread?.data?.messages) ? thread.data.messages : null);
+    if (!source) return null;
+    const ids = source.map(x => idOf(typeof x === 'string' ? x : x?.id));
+    return ids.every(validID) && new Set(ids).size === ids.length ? ids : null;
   }
-  function observeSync(payload, id) {
-    if (!id || currentID() !== id) return;
-    const rm = recordMapOf(payload);
-    const history = getHistory(id);
-
-    for (const [key, envelope] of Object.entries(rm.thread || {})) {
-      const thread = unwrapRecord(envelope);
-      if (!thread || (normalizeID(key) !== id && normalizeID(thread.id) !== id)) continue;
-      const order = recordOrder(thread);
-      if (order && (!history.order || order.length >= history.order.length)) history.order = order;
-      if (typeof thread.data?.title === 'string') history.title = thread.data.title;
-      if (typeof thread.space_id === 'string' && /^[a-f0-9-]{32,36}$/i.test(thread.space_id)) {
-        history.spaceId = normalizeID(thread.space_id);
-        knownSpaces.add(history.spaceId);
-      }
-    }
-
-    for (const [key, envelope] of Object.entries(rm.thread_message || {})) {
-      const msg = unwrapRecord(envelope);
-      if (!msg || typeof msg !== 'object') continue;
-      const msgID = normalizeID(key);
-      if (!/^[a-f0-9]{32}$/.test(msgID)) continue;
-      const belongs = normalizeID(msg.parent_id ?? msg.thread_id) === id ||
-        history.order?.includes(msgID);
-      if (!belongs || (!msg.step && typeof msg.role !== 'string')) continue;
-      history.records.set(msgID, msg);
-    }
-    updateStatus();
+  function history(id) {
+    if (!transcripts.has(id)) transcripts.set(id, { order: null, title: '', spaceId: '', records: new Map() });
+    for (const key of transcripts.keys()) if (key !== id) transcripts.delete(key);
+    return transcripts.get(id);
   }
-
-  function notionAPIURL(input) {
+  function consumeRecordMap(response, id) {
+    if (id !== currentID()) return;
+    const rm = mapOf(response), h = history(id);
+    for (const [key, entry] of Object.entries(rm.thread || {})) {
+      const v = unwrap(entry);
+      if (idOf(key) !== id && idOf(v?.id) !== id) continue;
+      const order = orderOf(v);
+      if (order && (!h.order || order.length >= h.order.length)) h.order = order;
+      if (typeof v?.data?.title === 'string') h.title = v.data.title;
+      if (validID(idOf(v?.space_id))) { h.spaceId = idOf(v.space_id); spaces.add(h.spaceId); }
+    }
+    for (const [key, entry] of Object.entries(rm.thread_message || {})) {
+      const mid = idOf(key), v = unwrap(entry);
+      if (!validID(mid) || !v || (!v.step && !v.role)) continue;
+      if (idOf(v.parent_id || v.thread_id) === id || h.order?.includes(mid)) h.records.set(mid, v);
+    }
+  }
+  function observeHeaders(input, init) {
     try {
-      const raw = typeof input === 'string' || input instanceof URL ? input : input?.url;
-      const url = new URL(raw, location.href);
-      return url.protocol === 'https:' &&
-        ['app.notion.com', 'www.notion.so', 'notion.so'].includes(url.hostname) &&
-        url.pathname.startsWith('/api/v3/') ? url : null;
+      const arg = typeof input === 'string' || input instanceof URL ? input : input.url;
+      const url = new URL(arg, location.href);
+      if (!['app.notion.com', 'www.notion.so', 'notion.so'].includes(url.hostname) ||
+          !url.pathname.startsWith(API_BASE)) return null;
+      observedOrigin = url.origin;
+      const headers = new Headers(input?.headers || {});
+      new Headers(init?.headers || {}).forEach((v, k) => headers.set(k, v));
+      for (const name of ['x-notion-active-user-header', 'notion-client-version', 'x-notion-client-version', 'x-notion-space-id']) {
+        if (headers.has(name)) headerHints.set(name, headers.get(name));
+      }
+      const spaceId = idOf(headers.get('x-notion-space-id'));
+      if (validID(spaceId)) spaces.add(spaceId);
+      return url;
     } catch { return null; }
   }
-
-  function rememberHeaderHints(input, init) {
-    const target = notionAPIURL(input);
-    if (!target) return;
-    apiOrigins.add(target.origin);
-    lastObservedAPIOrigin = target.origin;
-    try {
-      const combined = new Headers(input?.headers || {});
-      if (init?.headers) new Headers(init.headers).forEach((value, key) => combined.set(key, value));
-      // Do not collect cookies, authorization, or session tokens.
-      for (const name of ['x-notion-active-user-header', 'x-notion-client-version', 'notion-client-version', 'x-notion-space-id']) {
-        if (combined.has(name)) headerHints[name] = combined.get(name);
-        if (name === 'x-notion-space-id' && /^[a-f0-9-]{32,36}$/i.test(headerHints[name] || '')) knownSpaces.add(normalizeID(headerHints[name]));
-      }
-    } catch { /* Observation must not break Notion. */ }
-  }
-
-  function isSyncURL(input) {
-    try {
-      return SYNC_ROUTES.includes(notionAPIURL(input)?.pathname);
-    } catch { return false; }
-  }
-
-  // Observe existing Notion fetches. The original request and response are
-  // passed through unmodified; only a response clone is read asynchronously.
+  // Passively watch Notion's original fetches, without changing their contents.
   window.fetch = function (input, init) {
-    rememberHeaderHints(input, init);
-    const id = currentID();
-    const watch = !!id && isSyncURL(input);
-    const result = originalFetch(input, init);
-    if (!watch) return result;
-    return result.then(response => {
-      try {
-        if (response.ok) response.clone().json()
-          .then(json => observeSync(json, id))
-          .catch(() => {});
-      } catch { /* Observation must never break Notion. */ }
+    const url = observeHeaders(input, init), id = currentID();
+    const observe = !!id && url && SYNC_ROUTES.some(route => url.pathname === API_BASE + route);
+    const original = nativeFetch(input, init);
+    if (!observe) return original;
+    return original.then(response => {
+      if (response.ok) {
+        try { response.clone().json().then(json => consumeRecordMap(json, id)).catch(() => {}); }
+        catch { /* Never interfere with Notion. */ }
+      }
       return response;
     });
   };
-
-  function dashedID(id) {
-    return `${id.slice(0, 8)}-${id.slice(8, 12)}-${id.slice(12, 16)}-${id.slice(16, 20)}-${id.slice(20)}`;
-  }
-
-  function ensureCurrent(id) {
-    if (currentID() !== id) throw Error('چت هنگام دریافت تاریخچه تغییر کرد.');
-  }
-
-  function readHeaders(spaceId) {
-    const headers = {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-      'notion-audit-log-platform': 'web'
-    };
-    for (const name of ['x-notion-active-user-header', 'notion-client-version', 'x-notion-client-version']) {
-      if (headerHints[name]) headers[name] = headerHints[name];
+  function headersFor(spaceId) {
+    const result = { 'Content-Type': 'application/json', Accept: 'application/json',
+      'notion-audit-log-platform': 'web' };
+    for (const key of ['x-notion-active-user-header', 'notion-client-version', 'x-notion-client-version']) {
+      if (headerHints.has(key)) result[key] = headerHints.get(key);
     }
-    // Ensure the workspace header always agrees with the requested pointer.
-    if (spaceId) headers['x-notion-space-id'] = dashedID(spaceId);
-    return headers;
+    if (spaceId) result['x-notion-space-id'] = dash(spaceId);
+    return result;
   }
-
-  async function postRead(route, body, id, spaceId, type) {
-    ensureCurrent(id);
+  async function post(path, payload, id, spaceId) {
+    checkID(id);
+    const safeURL = observedOrigin + API_BASE + path;
     let response;
     try {
-      const target = (lastObservedAPIOrigin || location.origin) + route;
-      response = await originalFetch(target, {
-        method: 'POST', credentials: 'include', cache: 'no-store',
-        headers: readHeaders(spaceId), body: JSON.stringify(body)
-      });
+      response = await nativeFetch(safeURL, { method: 'POST', credentials: 'include', cache: 'no-store',
+        headers: headersFor(spaceId), body: JSON.stringify(payload) });
     } catch (err) {
-      trace({ type, route, network: String(err?.name || 'network_error') });
-      throw Error('Network/CORS: ' + route);
+      logDiagnostic({ route: path, networkError: err?.name || 'NetworkError' });
+      throw Error('خطا در اتصال به مسیر خواندن نوشن');
     }
-    ensureCurrent(id);
+    checkID(id);
     if (!response.ok) {
-      trace({ type, route, http: response.status });
-      throw Error('HTTP ' + response.status + ' at ' + route);
+      logDiagnostic({ route: path, http: response.status });
+      throw Error('پاسخ سرور: ' + response.status);
     }
-    let data;
-    try { data = await response.json(); }
-    catch {
-      trace({ type, route, http: response.status, invalidJSON: true });
-      throw Error('Invalid JSON at ' + route);
-    }
-    ensureCurrent(id);
-    const rm = recordMapOf(data);
-    trace({
-      type, route, http: response.status,
-      tables: Object.keys(rm).filter(x => !x.startsWith('__')).slice(0, 12),
-      threadRecords: Object.keys(rm.thread || {}).filter(x => /^[a-f0-9-]{32,36}$/i.test(x)).length,
-      messageRecords: Object.keys(rm.thread_message || {}).filter(x => /^[a-f0-9-]{32,36}$/i.test(x)).length,
-      responseKeys: Object.keys(data || {}).slice(0, 12),
-      errorCode: typeof data?.code === 'string' ? data.code.slice(0, 60) : undefined
-    });
-    if (data?.error && !(rm.thread || rm.thread_message)) {
-      throw Error('Read returned error at ' + route);
-    }
+    const data = await response.json();
+    checkID(id);
+    const rm = mapOf(data);
+    logDiagnostic({ route: path, http: response.status, tables: Object.keys(rm).slice(0, 12),
+      threadRecords: Object.keys(rm.thread || {}).length, messageRecords: Object.keys(rm.thread_message || {}).length });
+    consumeRecordMap(data, id);
     return data;
   }
-
-  async function readRecords(route, table, ids, id, spaceId, compact = false) {
-    const requests = ids.map(rawID => ({
-      pointer: {
-        table, id: compact ? rawID : dashedID(rawID),
-        ...(spaceId ? { spaceId: dashedID(spaceId) } : {})
-      },
-      version: -1
-    }));
-    const data = await postRead(route, { requests }, id, spaceId, table);
-    observeSync(data, id);
-    return data;
+  async function sync(table, ids, id, spaceId, route = 'syncRecordValuesMain') {
+    return post(route, { requests: ids.map(x => ({ pointer: {
+      table, id: dash(x), ...(spaceId ? { spaceId: dash(spaceId) } : {}) }, version: -1 })) }, id, spaceId);
   }
-
-  async function discoverSpaces(id) {
-    const data = await postRead(USER_ROUTE, {}, id, '', 'user-content');
-    for (const [key, entry] of Object.entries(recordMapOf(data).space || {})) {
-      const space = unwrapRecord(entry);
-      const sid = normalizeID(space?.id || key);
-      if (/^[a-f0-9]{32}$/.test(sid)) knownSpaces.add(sid);
-    }
-    return [...knownSpaces].slice(0, 60);
-  }
-
-  async function checkListedThread(id, spaceId) {
-    if (!spaceId) return false;
-    const sid = dashedID(spaceId);
-    const data = await postRead(LIST_ROUTE, {
-      threadParentPointer: { table: 'space', id: sid, spaceId: sid },
-      limit: 100
-    }, id, spaceId, 'thread-list');
-    const transcripts = Array.isArray(data?.transcripts) ? data.transcripts : [];
-    const ids = [...(Array.isArray(data?.threadIds) ? data.threadIds : []),
-      ...transcripts.map(t => t?.id)].map(normalizeID);
-    const found = ids.includes(id);
-    trace({ type: 'thread-list-match', match: found, count: ids.length,
-      hasMore: data?.hasMore === true });
-    if (found) {
-      const h = getHistory(id);
-      h.spaceId = spaceId;
-      const match = transcripts.find(t => normalizeID(t?.id) === id);
-      if (match && typeof match.title === 'string') h.title = match.title;
-      matchedSpaceCount += 1;
-    }
-    return found;
-  }
-
-  function missingIDs(id) {
-    const h = histories.get(id);
-    return h?.order?.filter(msgID => !h.records.has(msgID)) || [];
-  }
-
-  async function loadFullHistory(id, status) {
-    ensureCurrent(id);
-    diagnostics.length = 0;
-    matchedSpaceCount = 0;
-    const history = getHistory(id);
-    const preferredSpace = history.spaceId;
-    history.order = null;
-    history.records.clear();
-    history.verified = false;
-    history.route = '';
-    status('در حال خواندن تاریخچهٔ کامل از سرور نوشن…');
-
-    let lastError = null;
-    const tried = new Set();
-    const localSpaces = [preferredSpace, headerHints['x-notion-space-id'], ...knownSpaces]
-      .map(normalizeID).filter(x => /^[a-f0-9]{32}$/.test(x));
-    const spaces = [...new Set([...localSpaces, ''])];
+  async function findSpace(id) {
+    if (validID(history(id).spaceId)) return history(id).spaceId;
     try {
-      await discoverSpaces(id);
-      for (const sid of knownSpaces) if (!spaces.includes(sid)) spaces.push(sid);
-    } catch (err) {
-      lastError = err;
-    }
-    // A real transcript-list hit is stronger evidence of the right workspace.
-    const matched = new Set();
-    for (const sid of spaces.filter(Boolean).slice(0, 30)) {
-      ensureCurrent(id);
-      try { if (await checkListedThread(id, sid)) { matched.add(sid); break; } }
-      catch (err) { lastError = err; }
-    }
-    const sortedSpaces = [...matched, ...spaces.filter(sid => !matched.has(sid))].slice(0, 30);
-    let found = false;
-    let activeRoute = '';
-
-    for (const sid of sortedSpaces) {
-      if (found) break;
-      for (const route of SYNC_ROUTES) {
-        if (found) break;
-        const key = route + '|' + sid;
-        if (tried.has(key)) continue;
-        tried.add(key);
-        status('در حال بررسی مسیر تاریخچهٔ نوشن: ' + tried.size);
-        try {
-          const data = await readRecords(route, 'thread', [id], id, sid);
-          const row = Object.entries(recordMapOf(data).thread || {})
-            .find(([key]) => normalizeID(key) === id);
-          const thread = unwrapRecord(row?.[1]);
-          const order = recordOrder(thread);
-          if (order && order.length) {
-            history.order = order;
-            history.verified = true;
-            if (sid) history.spaceId = sid;
-            else if (thread.space_id) history.spaceId = normalizeID(thread.space_id);
-            history.route = route;
-            activeRoute = route;
-            found = true;
-          }
-        } catch (err) { lastError = err; }
+      const data = await post('loadUserContent', {}, id, '');
+      for (const [key, entry] of Object.entries(mapOf(data).space || {})) {
+        const sid = idOf(unwrap(entry)?.id || key);
+        if (validID(sid)) spaces.add(sid);
       }
-    }
-    if (!found) {
-      trace({ type: 'summary', spaceCandidates: spaces.length,
-        listMatches: matchedSpaceCount, routeProbes: tried.size });
-      throw Error('رکورد چت از مسیرهای خواندن نوشن برنگشت. «گزارش خطا» را بزن؛ فایل ناقص ذخیره نشد.');
-    }
-
-    const total = history.order.length;
-    if (total > 20000 || new Set(history.order).size !== total)
-      throw Error('فهرست پیام‌های نوشن نامعتبر یا بیش از حد بزرگ است.');
-    const routes = [activeRoute, ...SYNC_ROUTES.filter(r => r !== activeRoute)];
-    for (let pass = 0; pass < 2; pass++) {
-      const ids = missingIDs(id);
-      if (!ids.length) break;
-      const size = pass === 0 ? 35 : 10;
-      for (let i = 0; i < ids.length; i += size) {
-        ensureCurrent(id);
-        const batch = ids.slice(i, i + size);
-        status('دریافت پیام‌ها: ' + (total - missingIDs(id).length) + '/' + total);
-        for (const route of routes) {
-          const remain = batch.filter(x => !history.records.has(x));
-          if (!remain.length) break;
-          try { await readRecords(route, 'thread_message', remain, id, history.spaceId); }
-          catch (err) { lastError = err; }
+    } catch { /* Some sessions hide bootstrap, continue with observed headers. */ }
+    for (const sid of [...spaces].slice(0, 20)) {
+      checkID(id);
+      try {
+        const data = await post('getInferenceTranscriptsForUser', {
+          threadParentPointer: { table: 'space', id: dash(sid), spaceId: dash(sid) }, limit: 100
+        }, id, sid);
+        const h = history(id);
+        const ids = [...(data.threadIds || []), ...(data.transcripts || []).map(x => x.id)].map(idOf);
+        logDiagnostic({ stage: 'thread-list', matched: ids.includes(id), count: ids.length, hasMore: !!data.hasMore });
+        if (ids.includes(id)) {
+          h.spaceId = sid;
+          const meta = (data.transcripts || []).find(x => idOf(x.id) === id);
+          if (meta?.title) h.title = meta.title;
+          if (h.order?.length) return sid;
+          return sid;
         }
-      }
+      } catch { /* Attempt next workspace. */ }
     }
-    if (missingIDs(id).length)
-      throw Error(missingIDs(id).length + ' پیام از ' + total + ' پیام دریافت نشد. فایل ناقص ذخیره نشد.');
-
-    const previous = history.order.join(',');
-    const latest = await readRecords(activeRoute, 'thread', [id], id, history.spaceId);
-    const finalRow = Object.entries(recordMapOf(latest).thread || {})
-      .find(([key]) => normalizeID(key) === id);
-    const finalOrder = recordOrder(unwrapRecord(finalRow?.[1]));
-    if (!finalOrder || finalOrder.join(',') !== previous)
-      throw Error('چت هنگام استخراج تغییر کرد؛ بعد از پایان پاسخ دوباره دکمه را بزن.');
-    status('تمام پیام‌های فهرست‌شده از سرور دریافت شد.');
+    return '';
   }
-
-  function textOfRichValue(value) {
+  function textRich(value) {
     if (typeof value === 'string') return value.trim();
     if (!Array.isArray(value)) return '';
-    return value.map(chunk => {
-      if (typeof chunk === 'string') return chunk;
-      if (!Array.isArray(chunk)) return '';
-      const plain = typeof chunk[0] === 'string' ? chunk[0] : '';
-      if (plain !== '\u2023') return plain;
-      const mention = (Array.isArray(chunk[1]) ? chunk[1] : [])
-        .find(a => Array.isArray(a) && ['p', 'u', 'a'].includes(a[0]) && a[1]);
-      const category = { p: 'page', u: 'user', a: 'agent' };
-      return mention ? `[${category[mention[0]]}:${mention[1]}]` : plain;
-    }).join('').trim();
+    return value.map(a => typeof a === 'string' ? a : Array.isArray(a) ? String(a[0] || '') : '').join('').trim();
   }
-
-  function displayTurn(msg) {
-    const step = msg.step || {};
-    const kind = step.type || msg.role;
-    if (kind === 'user' || kind === 'human') {
-      const text = textOfRichValue(step.value ?? msg.content);
+  function fromStep(record) {
+    const step = record?.step || {}, type = step.type || record?.role;
+    if (type === 'user' || type === 'human') {
+      const text = textRich(step.value ?? record.content);
       return text ? { role: 'user', text } : null;
     }
-    if (kind !== 'agent-inference' && kind !== 'assistant') return null;
-    const content = Array.isArray(step.value)
-      ? step.value.filter(v => v?.type === 'text' && typeof v.content === 'string')
-        .map(v => v.content)
-      : typeof step.value === 'string' ? [step.value] :
-        typeof msg.content === 'string' ? [msg.content] : [];
-    const text = content.join('\n\n')
-      .replace(/<lang\b[^>]*\/>/g, '')
-      .replace(/<edit_reference\b[^>]*>[\s\S]*?<\/edit_reference>/g, '')
-      .trim();
-    return text ? { role: 'assistant', text } : null;
+    if (type === 'agent-inference' || type === 'assistant') {
+      const v = step.value ?? record.content;
+      const text = (Array.isArray(v) ? v.filter(x => x?.type === 'text' && typeof x.content === 'string')
+        .map(x => x.content).join('\n\n') : (typeof v === 'string' ? v : ''))
+        .replace(/<lang\b[^>]*\/>/g, '').replace(/<edit_reference\b[^>]*>[\s\S]*?<\/edit_reference>/g, '').trim();
+      return text ? { role: 'assistant', text } : null;
+    }
+    return null;
   }
-
-  function readableHistory(id) {
-    const history = histories.get(id);
-    if (!history?.verified || !history?.order?.length) throw Error('تاریخچهٔ کامل از سرور نوشن تأیید نشده است.');
-    const missing = history.order.filter(msgID => !history.records.has(msgID));
-    if (missing.length) throw Error(`${missing.length} پیام از ${history.order.length} پیام هنوز دریافت نشده؛ خروجی ناقص ذخیره نشد.`);
-    const turns = [];
-    const seen = new Set();
-    for (const msgID of history.order) {
-      if (seen.has(msgID)) continue;
-      seen.add(msgID);
-      const msg = history.records.get(msgID);
-      if (msg.parent_id && normalizeID(msg.parent_id) !== id) {
-        throw Error('شناسهٔ یکی از پیام‌ها با چت باز مطابقت ندارد.');
+  async function readAPI(id) {
+    const h = history(id);
+    h.order = null; h.records.clear();
+    showStatus('در حال خواندن تاریخچه از سرور…');
+    const sid = await findSpace(id);
+    const candidates = [...new Set([sid, h.spaceId, ...spaces, ''])].filter(x => !x || validID(x)).slice(0, 12);
+    let selectedRoute = '';
+    for (const spaceId of candidates) {
+      for (const route of SYNC_ROUTES) {
+        if (h.order?.length) { selectedRoute ||= route; break; }
+        try {
+          await sync('thread', [id], id, spaceId, route);
+          if (h.order?.length) { selectedRoute = route; if (spaceId) h.spaceId = spaceId; break; }
+        } catch { /* Fallback to other verified read routes. */ }
       }
-      const turn = displayTurn(msg);
-      if (turn) turns.push(turn);
+      if (h.order?.length) break;
     }
-    if (!turns.length) throw Error('پیام متنی با قالب شناخته‌شده پیدا نشد؛ فایل ذخیره نشد.');
-    return { title: history.title, turns, indexed: history.order.length };
+    if (!h.order?.length) throw Error('نوشن فهرست پیام‌های چت را در پاسخ سرور قرار نداد.');
+    if (h.order.length > 20000) throw Error('فهرست پیام‌ها بیش از سقف ایمنی است.');
+    const order = h.order.slice();
+    const missing = () => order.filter(mid => !h.records.has(mid));
+    for (const batchSize of [35, 10]) {
+      const ids = missing();
+      for (let i = 0; i < ids.length; i += batchSize) {
+        checkID(id);
+        showStatus('خواندن پیام از سرور: ' + (order.length - missing().length) + '/' + order.length);
+        try { await sync('thread_message', ids.slice(i, i + batchSize), id, h.spaceId, selectedRoute); }
+        catch { /* Try again in smaller batches. */ }
+      }
+      if (!missing().length) break;
+    }
+    if (missing().length) throw Error('چند رکورد پیام از سرور بازنگشت.');
+    const latest = await sync('thread', [id], id, h.spaceId, selectedRoute);
+    const entry = Object.entries(mapOf(latest).thread || {}).find(([key]) => idOf(key) === id);
+    const finalOrder = orderOf(unwrap(entry?.[1]));
+    if (!finalOrder || finalOrder.join(',') !== order.join(',')) throw Error('فهرست پیام‌ها هنگام استخراج تغییر کرده است.');
+    const turns = order.map(mid => fromStep(h.records.get(mid))).filter(Boolean);
+    if (!turns.some(x => x.role === 'user') || !turns.some(x => x.role === 'assistant'))
+      throw Error('رکوردهای دریافت‌شده شامل هر دو طرف گفتگو نبودند.');
+    return { title: h.title, turns, source: 'server', count: order.length };
   }
 
+  // DOM fallback: crawl the *chat scroller*, not the page's sidebar. It scrolls
+  // up to the stable beginning and then down, merging overlapping windows of
+  // rendered turns (works when Notion virtualizes offscreen messages).
+  const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+  function rectOf(el) { try { return el.getBoundingClientRect(); } catch { return null; } }
+  function visibleBox(el) {
+    const r = rectOf(el);
+    if (!r || r.width < 4 || r.height < 3 || r.bottom < 0 || r.top > innerHeight) return false;
+    const style = getComputedStyle(el);
+    return style.display !== 'none' && style.visibility !== 'hidden';
+  }
+  function scrollerCandidates() {
+    const found = new Map(), all = document.querySelectorAll('body *');
+    const maxScan = Math.min(all.length, 60000);
+    for (let i = 0; i < maxScan; i++) {
+      const el = all[i];
+      if (el === panel || panel?.contains(el)) continue;
+      if (el.scrollHeight - el.clientHeight < 120 || el.clientHeight < 130) continue;
+      const r = rectOf(el);
+      if (!r || r.width < Math.min(innerWidth * .38, 260) || r.height < 130 ||
+          r.bottom < 100 || r.top > innerHeight - 100) continue;
+      const css = getComputedStyle(el), overflow = css.overflowY;
+      if (!/auto|scroll|overlay/i.test(overflow) && el.scrollTop < 2) continue;
+      let score = (el.scrollTop > 40 ? 7 : 0) + Math.min(6, (el.scrollHeight - el.clientHeight) / 350);
+      if (r.left < innerWidth * .75 && r.right > innerWidth * .36) score += 5;
+      if (r.top < innerHeight * .55 && r.bottom > innerHeight * .5) score += 2;
+      if (/scroller|scroll|chat|transcript|messages/i.test((el.className || '').toString())) score += 4;
+      if (el.closest('aside, nav, #notion-dialogue-txt-exporter')) score -= 30;
+      if (el.querySelector('[contenteditable="true"], textarea[placeholder*="Ask"]')) score += 2;
+      found.set(el, score);
+    }
+    const root = document.scrollingElement;
+    if (root?.scrollHeight - root?.clientHeight > 120) found.set(root, (found.get(root) || 0) + 6);
+    for (const x of [.4, .5, .6]) {
+      const from = document.elementFromPoint(innerWidth * x, innerHeight * .47);
+      let parent = from;
+      for (let n = 0; parent && n < 16; n++, parent = parent.parentElement) {
+        if (found.has(parent)) found.set(parent, found.get(parent) + 12 - Math.min(n, 8));
+      }
+    }
+    return [...found].sort((a, b) => b[1] - a[1]).map(([el]) => el);
+  }
+  function eligibleContent(el, root) {
+    if (!root.contains(el) || el.closest('#notion-dialogue-txt-exporter,nav,aside,header,footer')) return false;
+    if (el.closest('form,[contenteditable="true"]')) return false;
+    const r = rectOf(el), base = rectOf(root);
+    if (!r || !base || r.width < 18 || r.height < 10) return false;
+    if (r.right <= base.left + base.width * .04 || r.left >= base.right - base.width * .04) return false;
+    const css = getComputedStyle(el);
+    return css.display !== 'none' && css.visibility !== 'hidden';
+  }
+  function roleOf(el) {
+    const attrs = ['data-message-author-role', 'data-message-role', 'data-role', 'data-turn', 'data-sender', 'data-author', 'data-perf-row'];
+    for (const attr of attrs) {
+      const v = String(el.getAttribute?.(attr) || '').toLowerCase();
+      if (/^(human|user|editor)$/.test(v)) return 'user';
+      if (/^(assistant|ai|agent|model|notion-ai)$/.test(v)) return 'assistant';
+    }
+    const hint = [el.getAttribute?.('data-testid'), el.getAttribute?.('data-test-id'),
+      el.getAttribute?.('data-cy'), el.className?.baseVal || el.className]
+      .filter(x => typeof x === 'string').join(' ').toLowerCase();
+    if (/(^|[\s_-])(user|human|prompt|question)([\s_-]|$)/.test(hint) &&
+        /(message|turn|bubble|chat|query|row)/.test(hint)) return 'user';
+    if (/(^|[\s_-])(assistant|agent|ai|model)([\s_-]|$)/.test(hint) &&
+        /(message|turn|response|chat|answer|row)/.test(hint)) return 'assistant';
+    return '';
+  }
+  function isUIElement(el) {
+    const tag = el.tagName;
+    if (/^(SCRIPT|STYLE|SVG|IMG|CANVAS|VIDEO|AUDIO|INPUT|TEXTAREA|BUTTON|NAV|FOOTER|FORM|TIME|NOSCRIPT)$/.test(tag)) return true;
+    if (el.getAttribute('aria-hidden') === 'true' || el.getAttribute('role') === 'button' ||
+        el.getAttribute('role') === 'toolbar' || el.hasAttribute('contenteditable')) return true;
+    const label = (el.getAttribute('aria-label') || '').toLowerCase();
+    const marker = [el.getAttribute('data-testid'), el.getAttribute('data-test-id'),
+      el.className?.baseVal || el.className].filter(x => typeof x === 'string').join(' ').toLowerCase();
+    if (/thinking|thought|reasoning|tool-result|attachment|file-preview|chat-actions|toolbar|message-actions|feedback|citation-tooltip/.test(marker)) return true;
+    if (/thinking|thought|copy|feedback|share|retry|download|load more|tool calls/i.test(label)) return true;
+    if (tag === 'DETAILS' && /thought|thinking|reason/i.test(el.querySelector('summary')?.textContent || '')) return true;
+    return false;
+  }
+  function cleanTextNode(el) {
+    const out = [];
+    function visit(node) {
+      if (node.nodeType === 3) { out.push(node.nodeValue); return; }
+      if (node.nodeType !== 1 || isUIElement(node)) return;
+      const tag = node.tagName;
+      if (tag === 'BR') { out.push('\n'); return; }
+      if (/^(P|DIV|SECTION|ARTICLE|H[1-6]|LI|BLOCKQUOTE|TR|PRE)$/.test(tag)) out.push('\n');
+      if (tag === 'LI') out.push('• ');
+      for (const child of node.childNodes) visit(child);
+      if (/^(P|DIV|SECTION|ARTICLE|H[1-6]|LI|BLOCKQUOTE|TR|PRE)$/.test(tag)) out.push('\n');
+    }
+    visit(el);
+    return out.join('')
+      .replace(/\u00a0/g, ' ').replace(/[ \t]+\n/g, '\n')
+      .replace(/\n[ \t]+/g, '\n').replace(/\n{3,}/g, '\n\n')
+      .split('\n').map(line => line.trim())
+      .filter(line => !/^(Thought|Thinking|Worked for\s+\d+.*|Copy|Retry|Share|Ask Notion AI|Show more|Liked|Disliked|More actions)$/i.test(line))
+      .join('\n').trim();
+  }
+  function contentText(el, role) {
+    if (role === 'assistant') {
+      const preferred = [...el.querySelectorAll('.markdown,.prose,[data-testid*="message-content"],[data-testid*="response-content"],[class*="markdown-body"]')]
+        .filter(x => !x.parentElement?.closest('.markdown,.prose,[data-testid*="message-content"],[data-testid*="response-content"]'));
+      const chunks = preferred.map(cleanTextNode).filter(Boolean);
+      if (chunks.length) return chunks.join('\n\n').trim();
+    }
+    return cleanTextNode(el);
+  }
+  function semanticTurns(root) {
+    const sel = '[data-message-author-role],[data-message-role],[data-role],[data-turn],[data-sender],[data-author],[data-perf-row],'+
+      '[data-testid*="message"],[data-testid*="turn"],[data-testid*="response"],[data-testid*="query"],'+
+      '[class*="user-message"],[class*="assistant-message"],[class*="agent-message"],[class*="userMessage"],[class*="assistantMessage"]';
+    const candidates = [...root.querySelectorAll(sel)]
+      .filter(el => eligibleContent(el, root)).map(el => ({ el, role: roleOf(el) })).filter(x => x.role);
+    const rows = candidates.filter(x => !candidates.some(y => y !== x && y.role === x.role && y.el.contains(x.el)));
+    const turns = rows.map(({el,role}) => ({role, text:contentText(el,role), el, confidence:'semantic'}))
+      .filter(x => x.text.length > 0);
+    return turns;
+  }
+  function visualTurns(root) {
+    // Fallback when role attributes are absent: identify right-aligned message
+    // bubbles, then read conversation-row siblings in DOM order.
+    const rootRect = rectOf(root);
+    if (!rootRect) return [];
+    const bubbles = [];
+    for (const el of root.querySelectorAll('div,article,section')) {
+      if (!eligibleContent(el, root) || el.querySelector('textarea,[contenteditable="true"]')) continue;
+      const rect = rectOf(el), css = getComputedStyle(el), p = el.parentElement;
+      if (!rect || !p || rect.width < 65 || rect.height < 20 || rect.width > rootRect.width * .88) continue;
+      const radius = parseFloat(css.borderTopLeftRadius || '0');
+      if (radius < 10 || !css.backgroundColor || /transparent|rgba\([^)]*,\s*0\s*\)/.test(css.backgroundColor)) continue;
+      if (rect.right < rootRect.right - rootRect.width * .19 || rect.left < rootRect.left + rootRect.width * .1) continue;
+      const content = cleanTextNode(el);
+      if (content.length < 2 || content.length > 120000) continue;
+      bubbles.push({ el, text: content });
+    }
+    const userBubbles = bubbles.filter(x => !bubbles.some(y => y !== x && x.el.contains(y.el)));
+    if (!userBubbles.length) return [];
+    // Find the closest ancestor whose children are separate chat turn rows.
+    let best = null;
+    for (const bubble of userBubbles.slice(0, 12)) {
+      let row = bubble.el;
+      for (let d = 0; d < 6 && row.parentElement && row.parentElement !== root; d++) {
+        const parent = row.parentElement;
+        if (parent.children.length >= 2 && parent.children.length <= 1000 &&
+            parent.querySelectorAll('button,[role="button"]').length <= 1200) {
+          const containsUser = [...parent.children].filter(child => userBubbles.some(b => child.contains(b.el)));
+          const otherRows = [...parent.children].filter(child => !containsUser.includes(child) && cleanTextNode(child).length > 18);
+          if (containsUser.length && otherRows.length) {
+            const count = containsUser.length + otherRows.length;
+            if (!best || count > best.count) best = { parent, count };
+          }
+        }
+        row = parent;
+      }
+    }
+    if (!best) return [];
+    const rows = [...best.parent.children];
+    return rows.map(el => {
+      if (!eligibleContent(el, root)) return null;
+      const bubble = userBubbles.find(b => el.contains(b.el));
+      const role = bubble ? 'user' : 'assistant';
+      const text = bubble ? bubble.text : contentText(el, role);
+      return text.length > 1 ? { role, text, el, confidence:'visual' } : null;
+    }).filter(Boolean);
+  }
+  function mountedTurns(root, scroller) {
+    let semantic = semanticTurns(root);
+    // If one role isn't represented, visual row grouping can complement it.
+    if (!semantic.some(x => x.role === 'user') || !semantic.some(x => x.role === 'assistant')) {
+      const visual = visualTurns(root);
+      if (visual.length > semantic.length && visual.some(x => x.role === 'user') && visual.some(x => x.role === 'assistant'))
+        semantic = visual;
+    }
+    const unique = [];
+    for (const item of semantic) {
+      if (unique.some(x => x.el.contains(item.el))) continue;
+      unique.push(item);
+    }
+    unique.sort((a,b) => a.el.compareDocumentPosition(b.el) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1);
+    const rootRect = rectOf(scroller);
+    return unique.map(({role,text,confidence,el}) => {
+      const stableID = ['data-message-id','data-turn-id','data-chat-message-id','data-record-id']
+        .map(k => idOf(el.getAttribute(k))).find(validID) || '';
+      const rect = rectOf(el);
+      const anchorY = rect && rootRect ? Math.round(rect.top - rootRect.top + scroller.scrollTop) : null;
+      return {role,text,confidence,stableID,anchorY};
+    });
+  }
+  function sameTurn(a,b) {
+    if (a.role !== b.role || a.text !== b.text) return false;
+    if (a.stableID && b.stableID) return a.stableID === b.stableID;
+    return a.anchorY != null && b.anchorY != null && Math.abs(a.anchorY - b.anchorY) <= 35;
+  }
+  function mergeWindow(collected, windowTurns) {
+    if (!windowTurns.length) return { turns: collected, overlap: 0, empty: true };
+    if (!collected.length) return { turns: windowTurns.slice(), overlap: 0, empty: false };
+    let overlap = 0;
+    for (let n = Math.min(collected.length, windowTurns.length); n > 0; n--) {
+      if (collected.slice(-n).every((v,i) => sameTurn(v,windowTurns[i]))) { overlap = n; break; }
+    }
+    if (!overlap) {
+      for (let i = 0; i + windowTurns.length <= collected.length; i++) {
+        if (windowTurns.every((v,j) => sameTurn(v,collected[i+j])))
+          return { turns: collected, overlap: windowTurns.length, empty: false };
+      }
+      return { turns: collected.concat(windowTurns), overlap: 0, empty: false, gap: true };
+    }
+    return { turns: collected.concat(windowTurns.slice(overlap)), overlap, empty: false };
+  }
+  function positionOf(scroller) { return scroller.scrollTop || 0; }
+  function setPosition(scroller, pos) { scroller.scrollTop = Math.max(0, pos); }
+  async function settle(id, ms = 350) { await sleep(ms); checkID(id); }
+  async function readDOM(id) {
+    showStatus('سرور فهرست پیام‌ها را نداد؛ در حال جستجوی صفحهٔ گفتگو…');
+    const scrollers = scrollerCandidates();
+    let lastError;
+    for (const scroller of scrollers.slice(0, 4)) {
+      const initialTop = positionOf(scroller);
+      const oldOverflowAnchor = scroller.style.overflowAnchor;
+      scroller.style.overflowAnchor = 'none';
+      const root = scroller === document.scrollingElement ? document.body : scroller;
+      let upperReached = false, lowerReached = false, windows = 0, gaps = 0;
+      let collected = [];
+      logDiagnostic({stage:'dom-scroller', documentScroller:scroller===document.scrollingElement,
+        scrollHeight:scroller.scrollHeight, clientHeight:scroller.clientHeight, initialTop:Math.round(initialTop)});
+      try {
+        let oldTop = Infinity, stable = 0, moves = 0;
+        for (; moves < 2000; moves++) {
+          checkID(id);
+          const top = positionOf(scroller);
+          showStatus('پیمایش خودکار به ابتدای چت… ' + moves);
+          const target = Math.max(0, top - Math.max(140, Math.floor(scroller.clientHeight * .72)));
+          setPosition(scroller, target);
+          await settle(id, top <= 2 ? 850 : 280);
+          const now = positionOf(scroller);
+          if (now <= 2 && oldTop <= 2) stable++;
+          else stable = 0;
+          oldTop = now;
+          if (stable >= 3) { upperReached = true; break; }
+          if (now >= top - 1 && top > 2) throw Error('محدودهٔ اسکرول انتخاب‌شده حرکت نکرد.');
+        }
+        if (!upperReached) throw Error('ابتدای چت در سقف پیمایش به دست نیامد.');
+        setPosition(scroller, 0);
+        await settle(id, 600);
+        let atBottom = 0, previousPos = -1;
+        for (let n = 0; n < 2600; n++) {
+          checkID(id);
+          const sample = mountedTurns(root,scroller);
+          const merged = mergeWindow(collected, sample);
+          if (merged.gap) gaps++;
+          collected = merged.turns;
+          windows++;
+          const top = positionOf(scroller), maxTop = Math.max(0, scroller.scrollHeight - scroller.clientHeight);
+          if (n < 12) logDiagnostic({stage:'dom-window',step:n,top:Math.round(top),maxTop:Math.round(maxTop),found:sample.length,merged:collected.length,gap:!!merged.gap});
+          showStatus('جمع‌آوری پیام‌های چت: ' + collected.length + ' مورد، ' + n + ' گام');
+          if (top >= maxTop - 3 && maxTop >= 0) {
+            atBottom++;
+            if (atBottom >= 3) { lowerReached = true; break; }
+            await settle(id, 700);
+          } else {
+            atBottom = 0;
+            const delta = Math.max(80, Math.floor(scroller.clientHeight * .55));
+            setPosition(scroller, Math.min(maxTop, top + delta));
+            await settle(id, 280);
+            if (Math.abs(positionOf(scroller) - top) < 1 && top === previousPos)
+              throw Error('پیمایش به پایان گفتگو متوقف شد.');
+            previousPos = top;
+          }
+        }
+        const result = collected.map(x => ({role:x.role,text:x.text}));
+        const known = result.some(x => x.role === 'user') && result.some(x => x.role === 'assistant');
+        logDiagnostic({stage:'dom-crawl',scrollerCandidates:scrollers.length,topReached:upperReached,
+          bottomReached:lowerReached,windows,turns:result.length,overlapGaps:gaps,
+          roleCoverage:known,semanticCount:collected.filter(x => x.confidence === 'semantic').length,
+          visualCount:collected.filter(x => x.confidence === 'visual').length});
+        if (!lowerReached || !known || gaps > 0 || result.length < 2) {
+          throw Error('تشخیص کامل و پیوستهٔ دیالوگ از صفحه ممکن نشد.');
+        }
+        return { title: history(id).title, turns: result, source: 'dom', count: windows };
+      } catch (err) {
+        lastError = err;
+        logDiagnostic({stage:'dom-failure', reason: err.message?.slice(0,120),
+          windows, turns:collected.length, overlapGaps:gaps, topReached:upperReached, bottomReached:lowerReached});
+      } finally {
+        // Return the owner to the same place in the chat, even on failure.
+        try { setPosition(scroller, initialTop); } catch { /* no effect */ }
+        scroller.style.overflowAnchor = oldOverflowAnchor;
+      }
+    }
+    throw lastError || Error('محدودهٔ پیمایش چت پیدا نشد.');
+  }
+  function saveFile(name, text, mime) {
+    const url = URL.createObjectURL(new Blob([text], {type: mime}));
+    const a = document.createElement('a');
+    a.href = url; a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+  }
   function saveDialogue(id, result) {
-    const title = result.title || document.title.replace(/\s*[-|]\s*Notion.*$/i, '').trim() || 'Notion AI chat';
-    const content = result.turns.map(t =>
-      `${t.role === 'user' ? 'کاربر' : 'دستیار هوش مصنوعی'}:\n\n${t.text}`
-    ).join('\n\n') + '\n';
-    const blob = new Blob(['\uFEFF', content], { type: 'text/plain;charset=utf-8' });
-    const blobURL = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    const safeTitle = title.replace(/[\x00-\x1f\x7f<>:"/\\|?*]/g, '_')
-      .replace(/\s+/g, ' ').trim().slice(0, 75) || 'Notion-chat';
-    link.href = blobURL;
-    link.download = `${safeTitle}-${id.slice(0, 8)}.txt`;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    setTimeout(() => URL.revokeObjectURL(blobURL), 60000);
+    const title = result.title || document.title.replace(/\s*[-|]\s*Notion.*$/i,'').trim() || 'Notion AI chat';
+    const name = title.replace(/[\x00-\x1f\x7f<>:"/\\|?*]/g, '_').replace(/\s+/g,' ').trim().slice(0,74) || 'Notion';
+    const dialogue = result.turns.map(t => (t.role === 'user' ? 'کاربر' : 'دستیار هوش مصنوعی') + ':\n\n' + t.text).join('\n\n') + '\n';
+    saveFile(name + '-' + id.slice(0,8) + '.txt', '\uFEFF' + dialogue, 'text/plain;charset=utf-8');
   }
-
-  let panel, button, diagnosticsButton, info;
-  let busy = false;
-  function downloadDiagnostics() {
-    const report = {
-      scriptVersion: '1.3.0',
-      chatIdIncluded: false,
-      messagesIncluded: false,
-      credentialsIncluded: false,
-      browserHost: location.hostname,
-      events: diagnostics
-    };
-    const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json;charset=utf-8' });
-    const href = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = href;
-    link.download = 'notion-export-diagnostics.json';
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    setTimeout(() => URL.revokeObjectURL(href), 60000);
+  function saveDiagnostics() {
+    // Only structural counts/statuses, no identifiers, message text, cookies or credentials.
+    const report = { version: VERSION, containsMessageText: false, containsCredentials: false,
+      host: location.hostname, events:diagnostics };
+    saveFile('notion-export-diagnostics-v1.4.json', JSON.stringify(report, null, 2), 'application/json');
   }
-
-  function updateStatus() {
-    if (!info || busy) return;
+  async function exportCurrent() {
+    if (busy) return;
     const id = currentID();
-    const history = id && histories.get(id);
-    if (!history?.order) {
-      info.textContent = 'در انتظار دریافت تاریخچه…';
-      return;
-    }
-    const present = history.order.filter(x => history.records.has(x)).length;
-    info.textContent = 'تاریخچه: ' + present + '/' + history.order.length + ' رکورد';
+    if (!id) return;
+    busy = true; button.disabled = true;
+    reportButton.style.display = 'none'; diagnostics.length = 0;
+    try {
+      let result;
+      try { result = await readAPI(id); }
+      catch (err) {
+        logDiagnostic({stage:'api-fallback',reason:String(err.message || 'read failed').slice(0,100)});
+        result = await readDOM(id);
+      }
+      checkID(id);
+      saveDialogue(id, result);
+      showStatus('ذخیره شد: ' + result.turns.length + ' پیام متنی (' +
+        (result.source === 'server' ? 'از سرور' : 'پیمایش خودکار صفحه') + ').');
+    } catch (err) {
+      showStatus('خروجی قابل اعتماد ساخته نشد: ' + (err?.message || 'خطا'));
+      reportButton.style.display = '';
+      console.warn('[Notion chat dialogue export]', err);
+    } finally { busy = false; button.disabled = false; }
   }
-
   function mount() {
     if (!document.body) return;
     if (!panel) {
       panel = document.createElement('div');
       panel.id = 'notion-dialogue-txt-exporter';
-      panel.style.cssText = 'position:fixed;bottom:16px;right:16px;z-index:2147483647;display:flex;align-items:center;gap:8px;background:#262626;color:#fff;border-radius:12px;padding:8px 10px;box-shadow:0 3px 14px #0005;font:13px sans-serif;max-width:440px;direction:rtl;flex-wrap:wrap;';
+      panel.style.cssText = 'position:fixed;z-index:2147483647;bottom:12px;right:12px;max-width:min(94vw,450px);box-sizing:border-box;display:flex;gap:7px;flex-wrap:wrap;align-items:center;direction:rtl;background:#242424;color:#fff;border-radius:12px;padding:8px;box-shadow:0 3px 15px #0006;font:13px sans-serif;';
       button = document.createElement('button');
       button.textContent = 'خروجی گفتگو TXT';
-      button.style.cssText = 'background:#fff;color:#222;border:0;border-radius:7px;padding:7px 9px;cursor:pointer;font:600 13px sans-serif;white-space:nowrap;';
-      diagnosticsButton = document.createElement('button');
-      diagnosticsButton.textContent = 'گزارش خطا';
-      diagnosticsButton.style.cssText = 'background:#444;color:#fff;border:1px solid #aaa;border-radius:7px;padding:6px;cursor:pointer;font:12px sans-serif;display:none;';
-      diagnosticsButton.addEventListener('click', downloadDiagnostics);
-      info = document.createElement('span');
-      info.style.cssText = 'font:12px sans-serif;overflow-wrap:anywhere;flex:1 1 100px;';
-      panel.append(button, diagnosticsButton, info);
-      button.addEventListener('click', async () => {
-        if (busy) return;
-        const id = currentID();
-        if (!id) return;
-        busy = true;
-        button.disabled = true;
-        diagnosticsButton.style.display = 'none';
-        try {
-          await loadFullHistory(id, text => { info.textContent = text; });
-          const result = readableHistory(id);
-          ensureCurrent(id);
-          saveDialogue(id, result);
-          info.textContent = 'ذخیره شد: ' + result.turns.length + ' پیام متنی از ' + result.indexed + ' رکورد.';
-        } catch (err) {
-          info.textContent = err?.message || 'خواندن گفتگو ناموفق بود.';
-          diagnosticsButton.style.display = 'inline-block';
-          console.warn('[Notion dialogue export]', err);
-        } finally {
-          busy = false;
-          button.disabled = false;
-        }
-      });
+      button.style.cssText = 'border:0;border-radius:8px;background:#fff;color:#222;font:600 13px sans-serif;padding:8px;cursor:pointer;';
+      button.addEventListener('click', exportCurrent);
+      reportButton = document.createElement('button');
+      reportButton.textContent = 'گزارش خطا';
+      reportButton.style.cssText = 'display:none;border:1px solid #777;border-radius:7px;background:#444;color:#fff;font:12px sans-serif;padding:8px;cursor:pointer;';
+      reportButton.addEventListener('click', saveDiagnostics);
+      statusText = document.createElement('span');
+      statusText.style.cssText = 'font:12px sans-serif;overflow-wrap:anywhere;flex:1 1 110px;';
+      statusText.textContent = 'آمادهٔ استخراج خودکار بدون اسکرول دستی';
+      panel.append(button, reportButton, statusText);
     }
     if (panel.parentElement !== document.body) document.body.appendChild(panel);
     panel.style.display = currentID() ? 'flex' : 'none';
-    if (info.textContent === '') updateStatus();
   }
-
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mount, { once: true });
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mount, {once:true});
   else mount();
-  setInterval(mount, 1200);
+  setInterval(mount, 1500);
 })();
