@@ -1,148 +1,305 @@
-using System.Net;
-using System.Net.NetworkInformation;
-using System.Net.Sockets;
-using System.Text;
-using System.Text.Json;
+using System.Runtime.InteropServices;
+using Microsoft.Win32.SafeHandles;
 
 internal static class Program
 {
-    private const int Port = 39472;
-    private const string Protocol = "bluke-language-v1";
+    internal const int HostLayoutReportId = 5;
 
-    private static async Task Main(string[] args)
+    private static async Task Main()
     {
-        Console.OutputEncoding = Encoding.UTF8;
-        var manualHost = ReadHost(args);
-        Console.WriteLine("Bluke Language Bridge 1.2.1 - press Ctrl+C to exit.");
-        Console.WriteLine("Only the active keyboard layout is sent; typed text stays on Bluetooth HID.");
+        Console.OutputEncoding = System.Text.Encoding.UTF8;
+        Console.WriteLine("Bluke Bluetooth Language Bridge 1.2.2 - press Ctrl+C to exit.");
+        Console.WriteLine("Uses the existing Bluetooth HID connection; no Wi-Fi or hotspot is used.");
 
         using var stop = new CancellationTokenSource();
         Console.CancelKeyPress += (_, e) => { e.Cancel = true; stop.Cancel(); };
 
+        HidOutputDevice? device = null;
+        string? lastLayout = null;
+        long lastHkl = long.MinValue;
+        var lastSent = DateTime.MinValue;
+        var nextDiscovery = DateTime.MinValue;
+
         while (!stop.IsCancellationRequested)
         {
-            var target = manualHost is null
-                ? FindPhoneGateway()
-                : new GatewayTarget(manualHost, "manual --host");
-
-            if (target is null)
-            {
-                Console.WriteLine("No Wi-Fi hotspot gateway found. Connect this PC to the phone hotspot.");
-                await Pause(stop.Token);
-                continue;
-            }
-
             try
             {
-                Console.WriteLine($"Connecting to phone at {target.Address}:{Port} via {target.InterfaceName}...");
-                using var client = new TcpClient { NoDelay = true };
-                await client.ConnectAsync(target.Address, Port, stop.Token);
-                Console.WriteLine($"Connected to phone at {target.Address}:{Port}.");
+                if (device is null && DateTime.UtcNow >= nextDiscovery)
+                {
+                    device = HidOutputDevice.FindBluke();
+                    nextDiscovery = DateTime.UtcNow.AddSeconds(2);
+                    if (device is not null)
+                    {
+                        Console.WriteLine("Bluke Bluetooth HID channel found.");
+                        lastLayout = null;
+                        lastHkl = long.MinValue;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Waiting for the paired Bluke phone over Bluetooth...");
+                    }
+                }
 
-                using var stream = client.GetStream();
-                using var reader = new StreamReader(stream, new UTF8Encoding(false), false, 1024, true);
-                using var writer = new StreamWriter(stream, new UTF8Encoding(false), 1024, true) { AutoFlush = true };
-
-                string? lastLayout = null;
-                long lastHkl = long.MinValue;
-                var lastSent = DateTime.MinValue;
-
-                while (client.Connected && !stop.IsCancellationRequested)
+                if (device is not null)
                 {
                     var input = ForegroundInputLayout.Read();
-                    var layout = Map(input.LanguageId);
+                    var (layout, code) = Map(input.LanguageId);
                     if (layout != lastLayout || input.Hkl != lastHkl ||
                         DateTime.UtcNow - lastSent > TimeSpan.FromSeconds(5))
                     {
-                        var json = JsonSerializer.Serialize(new
+                        if (device.TrySendLayout(code, out var error))
                         {
-                            protocol = Protocol,
-                            langId = input.LanguageId.ToString("X4"),
-                            hkl = $"0x{input.Hkl:X}",
-                            layout
-                        });
-                        await writer.WriteLineAsync(json);
-                        var acknowledgement = await reader.ReadLineAsync(stop.Token);
-                        if (acknowledgement is null)
-                            throw new IOException("Phone closed the language bridge connection.");
-
-                        lastLayout = layout;
-                        lastHkl = input.Hkl;
-                        lastSent = DateTime.UtcNow;
-                        Console.WriteLine($"{input.LanguageId:X4} -> {layout}");
+                            lastLayout = layout;
+                            lastHkl = input.Hkl;
+                            lastSent = DateTime.UtcNow;
+                            Console.WriteLine($"{input.LanguageId:X4} -> {layout} (Bluetooth HID)");
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Bluetooth HID send failed: {error}. Reconnecting...");
+                            device.Dispose();
+                            device = null;
+                            nextDiscovery = DateTime.MinValue;
+                        }
                     }
-                    await Task.Delay(250, stop.Token);
                 }
             }
             catch (OperationCanceledException) { break; }
             catch (Exception ex)
             {
-                Console.WriteLine($"Connection to {target.Address}:{Port} failed: {ex.Message}");
-                await Pause(stop.Token);
+                Console.WriteLine($"Bridge retry: {ex.Message}");
+                device?.Dispose();
+                device = null;
+                nextDiscovery = DateTime.MinValue;
             }
+
+            try { await Task.Delay(250, stop.Token); }
+            catch (OperationCanceledException) { break; }
         }
+
+        device?.Dispose();
     }
 
-    private static string Map(ushort lang)
+    private static (string Name, byte Code) Map(ushort languageId)
     {
-        return (lang & 0x03FF) switch
+        return (languageId & 0x03FF) switch
         {
-            0x0029 or 0x008C => "fa_persian_standard",
-            0x0007 => "de_qwertz",
-            0x000C => "fr_azerty",
-            0x0019 => "ru_jcuken",
-            _ => "us_qwerty"
+            0x0029 or 0x008C => ("Persian", 4),
+            0x0007 => ("German", 2),
+            0x000C => ("French", 1),
+            0x0019 => ("Russian", 3),
+            _ => ("English (US)", 0)
         };
     }
+}
 
-    private static IPAddress? ReadHost(string[] args)
+internal sealed class HidOutputDevice : IDisposable
+{
+    private const ushort VendorUsagePage = 0xFF00;
+    private const ushort VendorUsage = 0x0001;
+    private const uint GenericRead = 0x80000000;
+    private const uint GenericWrite = 0x40000000;
+    private const uint FileShareRead = 0x00000001;
+    private const uint FileShareWrite = 0x00000002;
+    private const uint OpenExisting = 3;
+    private const uint FileAttributeNormal = 0x00000080;
+    private const uint DigcfPresent = 0x00000002;
+    private const uint DigcfDeviceInterface = 0x00000010;
+    private const int ErrorNoMoreItems = 259;
+    private const int HidpStatusSuccess = 0x00110000;
+
+    private readonly SafeFileHandle handle;
+    private readonly int outputReportLength;
+
+    private HidOutputDevice(SafeFileHandle handle, int outputReportLength)
     {
-        for (var i = 0; i < args.Length - 1; i++)
+        this.handle = handle;
+        this.outputReportLength = outputReportLength;
+    }
+
+    public static HidOutputDevice? FindBluke()
+    {
+        HidD_GetHidGuid(out var hidGuid);
+        var infoSet = SetupDiGetClassDevs(ref hidGuid, null, IntPtr.Zero,
+            DigcfPresent | DigcfDeviceInterface);
+        if (infoSet == new IntPtr(-1)) return null;
+
+        try
         {
-            if (args[i] == "--host" && IPAddress.TryParse(args[i + 1], out var host))
-                return host;
+            for (uint index = 0; index < 512; index++)
+            {
+                var interfaceData = new DeviceInterfaceData
+                {
+                    Size = Marshal.SizeOf<DeviceInterfaceData>()
+                };
+                if (!SetupDiEnumDeviceInterfaces(infoSet, IntPtr.Zero, ref hidGuid, index, ref interfaceData))
+                {
+                    if (Marshal.GetLastWin32Error() == ErrorNoMoreItems) break;
+                    continue;
+                }
+
+                _ = SetupDiGetDeviceInterfaceDetail(infoSet, ref interfaceData,
+                    IntPtr.Zero, 0, out var requiredSize, IntPtr.Zero);
+                if (requiredSize == 0) continue;
+
+                var detail = Marshal.AllocHGlobal((int)requiredSize);
+                try
+                {
+                    Marshal.WriteInt32(detail, IntPtr.Size == 8 ? 8 : 6);
+                    if (!SetupDiGetDeviceInterfaceDetail(infoSet, ref interfaceData,
+                            detail, requiredSize, out _, IntPtr.Zero))
+                        continue;
+
+                    var path = Marshal.PtrToStringUni(IntPtr.Add(detail, 4));
+                    if (string.IsNullOrWhiteSpace(path)) continue;
+
+                    var candidate = CreateFile(path, GenericRead | GenericWrite,
+                        FileShareRead | FileShareWrite, IntPtr.Zero,
+                        OpenExisting, FileAttributeNormal, IntPtr.Zero);
+                    if (candidate.IsInvalid)
+                    {
+                        candidate.Dispose();
+                        continue;
+                    }
+
+                    if (HidD_GetPreparsedData(candidate, out var preparsed))
+                    {
+                        try
+                        {
+                            var status = HidP_GetCaps(preparsed, out var caps);
+                            if (status == HidpStatusSuccess &&
+                                caps.UsagePage == VendorUsagePage &&
+                                caps.Usage == VendorUsage &&
+                                caps.OutputReportByteLength >= 2)
+                            {
+                                return new HidOutputDevice(candidate, caps.OutputReportByteLength);
+                            }
+                        }
+                        finally
+                        {
+                            HidD_FreePreparsedData(preparsed);
+                        }
+                    }
+
+                    candidate.Dispose();
+                }
+                finally
+                {
+                    Marshal.FreeHGlobal(detail);
+                }
+            }
         }
+        finally
+        {
+            SetupDiDestroyDeviceInfoList(infoSet);
+        }
+
         return null;
     }
 
-    private static GatewayTarget? FindPhoneGateway()
+    public bool TrySendLayout(byte layoutCode, out string error)
     {
-        var candidates = NetworkInterface.GetAllNetworkInterfaces()
-            .Where(network => network.OperationalStatus == OperationalStatus.Up)
-            .Where(network => !LooksLikeVpn(network))
-            .SelectMany(network => network.GetIPProperties().GatewayAddresses
-                .Select(gateway => gateway.Address)
-                .Where(IsPrivateLanAddress)
-                .Select(address => new GatewayTarget(address, network.Name)))
-            .OrderBy(target => target.InterfaceName.Contains("wi-fi", StringComparison.OrdinalIgnoreCase) ||
-                               target.InterfaceName.Contains("wlan", StringComparison.OrdinalIgnoreCase) ? 0 : 1)
-            .ThenBy(target => target.InterfaceName, StringComparer.OrdinalIgnoreCase)
-            .FirstOrDefault();
+        var report = new byte[outputReportLength];
+        report[0] = (byte)Program.HostLayoutReportId;
+        report[1] = layoutCode;
 
-        return candidates;
+        if (HidD_SetOutputReport(handle, report, report.Length))
+        {
+            error = "";
+            return true;
+        }
+
+        if (WriteFile(handle, report, report.Length, out var written, IntPtr.Zero) &&
+            written == report.Length)
+        {
+            error = "";
+            return true;
+        }
+
+        error = $"HID output report rejected (Win32 {Marshal.GetLastWin32Error()})";
+        return false;
     }
 
-    private static bool LooksLikeVpn(NetworkInterface network)
+    public void Dispose() => handle.Dispose();
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct DeviceInterfaceData
     {
-        var identity = (network.Name + " " + network.Description).ToLowerInvariant();
-        return new[] { "vpn", "wireguard", "wintun", "tap-", "tunnel", "proton", "firefox", "openvpn", "tailscale", "zerotier" }
-            .Any(identity.Contains);
+        public int Size;
+        public Guid InterfaceClassGuid;
+        public int Flags;
+        public IntPtr Reserved;
     }
 
-    private static bool IsPrivateLanAddress(IPAddress address)
+    [StructLayout(LayoutKind.Sequential)]
+    private struct HidpCaps
     {
-        if (address.AddressFamily != AddressFamily.InterNetwork) return false;
-        var bytes = address.GetAddressBytes();
-        return bytes[0] == 10 ||
-               (bytes[0] == 172 && bytes[1] >= 16 && bytes[1] <= 31) ||
-               (bytes[0] == 192 && bytes[1] == 168) ||
-               (bytes[0] == 100 && bytes[1] >= 64 && bytes[1] <= 127);
+        public ushort Usage;
+        public ushort UsagePage;
+        public ushort InputReportByteLength;
+        public ushort OutputReportByteLength;
+        public ushort FeatureReportByteLength;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 17)]
+        public ushort[] Reserved;
+        public ushort NumberLinkCollectionNodes;
+        public ushort NumberInputButtonCaps;
+        public ushort NumberInputValueCaps;
+        public ushort NumberInputDataIndices;
+        public ushort NumberOutputButtonCaps;
+        public ushort NumberOutputValueCaps;
+        public ushort NumberOutputDataIndices;
+        public ushort NumberFeatureButtonCaps;
+        public ushort NumberFeatureValueCaps;
+        public ushort NumberFeatureDataIndices;
     }
 
-    private static async Task Pause(CancellationToken token)
-    {
-        try { await Task.Delay(2000, token); } catch (OperationCanceledException) { }
-    }
+    [DllImport("hid.dll")]
+    private static extern void HidD_GetHidGuid(out Guid hidGuid);
 
-    private sealed record GatewayTarget(IPAddress Address, string InterfaceName);
+    [DllImport("hid.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.U1)]
+    private static extern bool HidD_GetPreparsedData(SafeFileHandle device, out IntPtr preparsedData);
+
+    [DllImport("hid.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.U1)]
+    private static extern bool HidD_FreePreparsedData(IntPtr preparsedData);
+
+    [DllImport("hid.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.U1)]
+    private static extern bool HidD_SetOutputReport(SafeFileHandle device, byte[] report, int reportLength);
+
+    [DllImport("hid.dll")]
+    private static extern int HidP_GetCaps(IntPtr preparsedData, out HidpCaps capabilities);
+
+    [DllImport("setupapi.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    private static extern IntPtr SetupDiGetClassDevs(ref Guid classGuid, string? enumerator,
+        IntPtr parent, uint flags);
+
+    [DllImport("setupapi.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool SetupDiEnumDeviceInterfaces(IntPtr deviceInfoSet, IntPtr deviceInfoData,
+        ref Guid interfaceClassGuid, uint memberIndex, ref DeviceInterfaceData interfaceData);
+
+    [DllImport("setupapi.dll", CharSet = CharSet.Unicode, EntryPoint = "SetupDiGetDeviceInterfaceDetailW",
+        ExactSpelling = true, SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool SetupDiGetDeviceInterfaceDetail(IntPtr deviceInfoSet,
+        ref DeviceInterfaceData interfaceData, IntPtr detailData, uint detailDataSize,
+        out uint requiredSize, IntPtr deviceInfoData);
+
+    [DllImport("setupapi.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool SetupDiDestroyDeviceInfoList(IntPtr deviceInfoSet);
+
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    private static extern SafeFileHandle CreateFile(string fileName, uint desiredAccess,
+        uint shareMode, IntPtr securityAttributes, uint creationDisposition,
+        uint flagsAndAttributes, IntPtr templateFile);
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool WriteFile(SafeFileHandle file, byte[] buffer, int bytesToWrite,
+        out int bytesWritten, IntPtr overlapped);
 }
+
+[executed on device: ubuntu-16gb-hel1-2 (a1c21909-360a-4044-b63e-263af0ebd786)]
