@@ -1,4 +1,4 @@
-name: Bluke Persian Keyboard Build
+name: Bluke Android Bluetooth Recovery Build
 
 on:
   push:
@@ -52,12 +52,12 @@ jobs:
           git apply --check bluke-keyboard.patch
           git apply bluke-keyboard.patch
           grep -q 'applicationId = "dev.arnv.bluke.persian"' app/build.gradle.kts
-          grep -q 'HOST_LAYOUT_REPORT_ID = 5' app/src/main/java/dev/arnv/bluke/bluetooth/HostLayoutReport.kt
-          grep -q 'Vendor Defined 0xFF00' app/src/main/java/dev/arnv/bluke/bluetooth/GamepadDescriptor.kt
+          grep -q 'CURRENT_HID_DESCRIPTOR_REVISION = 5' app/src/main/java/dev/arnv/bluke/bluetooth/HidDescriptorRevision.kt
+          ! grep -q 'Vendor Defined 0xFF00' app/src/main/java/dev/arnv/bluke/bluetooth/GamepadDescriptor.kt
           grep -q 'PERSIAN_STANDARD' app/src/main/java/dev/arnv/bluke/ui/KeyboardCharacterLayouts.kt
           grep -q '"PrtSc"' app/src/main/java/dev/arnv/bluke/ui/KeyboardLayouts.kt
 
-      - name: Build tests and unsigned release APK
+      - name: Build debug-signed Bluetooth recovery APK
         shell: bash
         run: |
           set -euo pipefail
@@ -74,13 +74,13 @@ jobs:
           mkdir -p out/android
           APK="upstream/app/build/outputs/apk/debug/app-debug.apk"
           test -s "$APK"
-          cp "$APK" out/android/Bluke-Persian-v1.2.2-debug-signed-aligned.apk
-          "$ANDROID_HOME/build-tools/36.0.0/zipalign" -c 4 out/android/Bluke-Persian-v1.2.2-debug-signed-aligned.apk
-          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose out/android/Bluke-Persian-v1.2.2-debug-signed-aligned.apk
-          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging out/android/Bluke-Persian-v1.2.2-debug-signed-aligned.apk | grep "package: name='dev.arnv.bluke.persian' versionCode='13' versionName='1.2.2'"
-          unzip -l out/android/Bluke-Persian-v1.2.2-debug-signed-aligned.apk | grep -q 'classes.dex'
-          sha256sum out/android/Bluke-Persian-v1.2.2-debug-signed-aligned.apk > out/android/SHA256SUMS.txt
-          printf '%s\n' 'upstream=arnav-kr/Bluke' 'upstream_commit=bcf4f1492b51bcbb97fc7b792f73ad6bed75c759' 'application_id=dev.arnv.bluke.persian' 'version_code=13' 'version_name=1.2.2' 'signing=gradle-debug-keystore' > out/android/BUILD-METADATA.txt
+          cp "$APK" out/android/Bluke-Persian-v1.2.3-recovery-debug-signed.apk
+          "$ANDROID_HOME/build-tools/36.0.0/zipalign" -c 4 out/android/Bluke-Persian-v1.2.3-recovery-debug-signed.apk
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose out/android/Bluke-Persian-v1.2.3-recovery-debug-signed.apk
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging out/android/Bluke-Persian-v1.2.3-recovery-debug-signed.apk | grep "package: name='dev.arnv.bluke.persian' versionCode='14' versionName='1.2.3'"
+          unzip -l out/android/Bluke-Persian-v1.2.3-recovery-debug-signed.apk | grep -q 'classes.dex'
+          sha256sum out/android/Bluke-Persian-v1.2.3-recovery-debug-signed.apk > out/android/SHA256SUMS.txt
+          printf '%s\n' 'upstream=arnav-kr/Bluke' 'upstream_commit=bcf4f1492b51bcbb97fc7b792f73ad6bed75c759' 'application_id=dev.arnv.bluke.persian' 'version_code=14' 'version_name=1.2.3' 'signing=gradle-debug-keystore' > out/android/BUILD-METADATA.txt
 
       - name: Publish verified APK as a public release asset
         shell: bash
@@ -88,9 +88,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          TAG='bluke-persian-v1.2.2-debug-signed'
+          TAG='bluke-persian-v1.2.3-recovery'
           ASSETS=(
-            out/android/Bluke-Persian-v1.2.2-debug-signed-aligned.apk
+            out/android/Bluke-Persian-v1.2.3-recovery-debug-signed.apk
             out/android/SHA256SUMS.txt
             out/android/BUILD-METADATA.txt
           )
@@ -99,7 +99,7 @@ jobs:
           else
             gh release create "$TAG" "${ASSETS[@]}" \
               --target "$GITHUB_SHA" \
-              --title 'Bluke Persian Keyboard v1.2.2 (debug-signed)' \
+              --title 'Bluke Persian Keyboard v1.2.3 recovery' \
               --notes 'Verified Android APK and build metadata. APK is signed with the Gradle debug key for owner testing; uninstall any previous differently signed app first.' \
               --prerelease
           fi
@@ -108,53 +108,21 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          APK='out/android/Bluke-Persian-v1.2.2-debug-signed-aligned.apk'
-          EXPORT_DIR='projects/bluke-keyboard/exports/v1.2.2'
+          APK='out/android/Bluke-Persian-v1.2.3-recovery-debug-signed.apk'
+          EXPORT_DIR='projects/bluke-keyboard/exports/v1.2.3'
           rm -rf "$EXPORT_DIR"
           mkdir -p "$EXPORT_DIR"
-          base64 -w0 "$APK" > /tmp/bluke-persian-v1.2.2.apk.b64
-          split -b 240000 -d -a 3 /tmp/bluke-persian-v1.2.2.apk.b64 "$EXPORT_DIR/apk.b64.part-"
+          base64 -w0 "$APK" > /tmp/bluke-persian-v1.2.3.apk.b64
+          split -b 240000 -d -a 3 /tmp/bluke-persian-v1.2.3.apk.b64 "$EXPORT_DIR/apk.b64.part-"
           SHA="$(sha256sum "$APK" | awk '{print $1}')"
           BYTES="$(stat -c %s "$APK")"
           PARTS="$(find "$EXPORT_DIR" -name 'apk.b64.part-*' | wc -l)"
-          printf 'file=Bluke-Persian-v1.2.2-debug-signed-aligned.apk\nbytes=%s\nparts=%s\nsha256=%s\nencoding=base64\nchunk_bytes=240000\n' "$BYTES" "$PARTS" "$SHA" > "$EXPORT_DIR/MANIFEST.txt"
+          printf 'file=Bluke-Persian-v1.2.3-recovery-debug-signed.apk\nbytes=%s\nparts=%s\nsha256=%s\nencoding=base64\nchunk_bytes=240000\n' "$BYTES" "$PARTS" "$SHA" > "$EXPORT_DIR/MANIFEST.txt"
           cp out/android/SHA256SUMS.txt "$EXPORT_DIR/"
           cp out/android/BUILD-METADATA.txt "$EXPORT_DIR/"
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -f "$EXPORT_DIR"
-          git commit -m 'Export Bluke Persian v1.2.2 APK in bounded chunks [skip ci]'
+          git commit -m 'Export Bluke Persian v1.2.3 recovery APK in bounded chunks [skip ci]'
           git push origin "HEAD:$GITHUB_REF_NAME"
-
-  windows:
-    runs-on: windows-latest
-    timeout-minutes: 20
-    steps:
-      - name: Checkout bridge source
-        uses: actions/checkout@v4
-
-      - name: Set up .NET 8
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '8.0.x'
-
-      - name: Publish self-contained Windows bridge
-        shell: pwsh
-        run: |
-          dotnet publish projects/bluke-keyboard/windows/BlukeLanguageBridge.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o out/windows
-          if (!(Test-Path out/windows/BlukeLanguageBridge.exe)) { throw "Windows bridge executable missing" }
-
-      - name: Publish Windows companion as a public release asset
-        shell: pwsh
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          $zip = "out/Bluke-Language-Bridge-Windows-x64.zip"
-          Compress-Archive -Path "out/windows/*" -DestinationPath $zip -Force
-          $tag = "bluke-language-bridge-v1.2.2"
-          if (gh release view $tag 2>$null) {
-            gh release upload $tag $zip --clobber
-          } else {
-            gh release create $tag $zip --target $env:GITHUB_SHA --title "Bluke Windows Language Bridge v1.2.2" --notes "Self-contained Windows x64 companion. No .NET runtime installation required."
-          }
 
