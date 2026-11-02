@@ -62,23 +62,24 @@ jobs:
         run: |
           set -euo pipefail
           cd upstream
-          # Public CI emits an unsigned APK; durable signing remains on the private owner machine.
+          # Gradle's debug keystore gives the owner an installable test APK without the previous signing key.
           sed -i '/signingConfig = signingConfigs.getByName("release")/d' app/build.gradle.kts
           chmod +x gradlew
           ./gradlew --no-daemon assembleDebug
 
-      - name: Align and verify unsigned APK
+      - name: Verify installable debug-signed APK
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p out/android
           APK="upstream/app/build/outputs/apk/debug/app-debug.apk"
           test -s "$APK"
-          "$ANDROID_HOME/build-tools/36.0.0/zipalign" -f 4 "$APK" out/android/Bluke-Persian-v1.2.2-debug-signed-aligned.apk
+          cp "$APK" out/android/Bluke-Persian-v1.2.2-debug-signed-aligned.apk
           "$ANDROID_HOME/build-tools/36.0.0/zipalign" -c 4 out/android/Bluke-Persian-v1.2.2-debug-signed-aligned.apk
-          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging out/android/Bluke-Persian-v1.2.2-unsigned-aligned.apk | grep "package: name='dev.arnv.bluke.persian' versionCode='12' versionName='1.2.2'"
-          unzip -l out/android/Bluke-Persian-v1.2.2-unsigned-aligned.apk | grep -q 'classes.dex'
-          sha256sum out/android/Bluke-Persian-v1.2.2-unsigned-aligned.apk > out/android/SHA256SUMS.txt
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose out/android/Bluke-Persian-v1.2.2-debug-signed-aligned.apk
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging out/android/Bluke-Persian-v1.2.2-debug-signed-aligned.apk | grep "package: name='dev.arnv.bluke.persian' versionCode='13' versionName='1.2.2'"
+          unzip -l out/android/Bluke-Persian-v1.2.2-debug-signed-aligned.apk | grep -q 'classes.dex'
+          sha256sum out/android/Bluke-Persian-v1.2.2-debug-signed-aligned.apk > out/android/SHA256SUMS.txt
           printf '%s\n' 'upstream=arnav-kr/Bluke' 'upstream_commit=bcf4f1492b51bcbb97fc7b792f73ad6bed75c759' 'application_id=dev.arnv.bluke.persian' 'version_code=13' 'version_name=1.2.2' 'signing=gradle-debug-keystore' > out/android/BUILD-METADATA.txt
 
       - name: Publish verified APK as a public release asset
@@ -89,7 +90,7 @@ jobs:
           set -euo pipefail
           TAG='bluke-persian-v1.2.2-debug-signed'
           ASSETS=(
-            out/android/Bluke-Persian-v1.2.2-unsigned-aligned.apk
+            out/android/Bluke-Persian-v1.2.2-debug-signed-aligned.apk
             out/android/SHA256SUMS.txt
             out/android/BUILD-METADATA.txt
           )
@@ -107,7 +108,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          APK='out/android/Bluke-Persian-v1.2.2-unsigned-aligned.apk'
+          APK='out/android/Bluke-Persian-v1.2.2-debug-signed-aligned.apk'
           EXPORT_DIR='projects/bluke-keyboard/exports/v1.2.2'
           rm -rf "$EXPORT_DIR"
           mkdir -p "$EXPORT_DIR"
