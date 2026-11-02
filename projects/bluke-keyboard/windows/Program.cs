@@ -12,8 +12,8 @@ internal static class Program
     private static async Task Main(string[] args)
     {
         Console.OutputEncoding = Encoding.UTF8;
-        var host = ReadHost(args);
-        Console.WriteLine("Bluke Language Bridge - press Ctrl+C to exit.");
+        var manualHost = ReadHost(args);
+        Console.WriteLine("Bluke Language Bridge 1.2.1 - press Ctrl+C to exit.");
         Console.WriteLine("Only the active keyboard layout is sent; typed text stays on Bluetooth HID.");
 
         using var stop = new CancellationTokenSource();
@@ -21,19 +21,23 @@ internal static class Program
 
         while (!stop.IsCancellationRequested)
         {
-            var gateway = host ?? FindGateway();
-            if (gateway is null)
+            var target = manualHost is null
+                ? FindPhoneGateway()
+                : new GatewayTarget(manualHost, "manual --host");
+
+            if (target is null)
             {
-                Console.WriteLine("Waiting for phone hotspot...");
+                Console.WriteLine("No Wi-Fi hotspot gateway found. Connect this PC to the phone hotspot.");
                 await Pause(stop.Token);
                 continue;
             }
 
             try
             {
+                Console.WriteLine($"Connecting to phone at {target.Address}:{Port} via {target.InterfaceName}...");
                 using var client = new TcpClient { NoDelay = true };
-                await client.ConnectAsync(gateway, Port, stop.Token);
-                Console.WriteLine($"Connected to {gateway}:{Port}");
+                await client.ConnectAsync(target.Address, Port, stop.Token);
+                Console.WriteLine($"Connected to phone at {target.Address}:{Port}.");
 
                 using var stream = client.GetStream();
                 using var reader = new StreamReader(stream, new UTF8Encoding(false), false, 1024, true);
@@ -50,15 +54,18 @@ internal static class Program
                     if (layout != lastLayout || input.Hkl != lastHkl ||
                         DateTime.UtcNow - lastSent > TimeSpan.FromSeconds(5))
                     {
-                        var json = JsonSerializer.Serialize(new {
+                        var json = JsonSerializer.Serialize(new
+                        {
                             protocol = Protocol,
                             langId = input.LanguageId.ToString("X4"),
                             hkl = $"0x{input.Hkl:X}",
                             layout
                         });
                         await writer.WriteLineAsync(json);
-                        var ack = await reader.ReadLineAsync(stop.Token);
-                        if (ack is null) throw new IOException("Phone closed the connection.");
+                        var acknowledgement = await reader.ReadLineAsync(stop.Token);
+                        if (acknowledgement is null)
+                            throw new IOException("Phone closed the language bridge connection.");
+
                         lastLayout = layout;
                         lastHkl = input.Hkl;
                         lastSent = DateTime.UtcNow;
@@ -70,7 +77,7 @@ internal static class Program
             catch (OperationCanceledException) { break; }
             catch (Exception ex)
             {
-                Console.WriteLine($"Retrying: {ex.Message}");
+                Console.WriteLine($"Connection to {target.Address}:{Port} failed: {ex.Message}");
                 await Pause(stop.Token);
             }
         }
@@ -92,24 +99,50 @@ internal static class Program
     {
         for (var i = 0; i < args.Length - 1; i++)
         {
-            if (args[i] == "--host")
-                return IPAddress.Parse(args[i + 1]);
+            if (args[i] == "--host" && IPAddress.TryParse(args[i + 1], out var host))
+                return host;
         }
         return null;
     }
 
-    private static IPAddress? FindGateway()
+    private static GatewayTarget? FindPhoneGateway()
     {
-        return NetworkInterface.GetAllNetworkInterfaces()
-            .Where(n => n.OperationalStatus == OperationalStatus.Up)
-            .OrderBy(n => n.NetworkInterfaceType == NetworkInterfaceType.Wireless80211 ? 0 : 1)
-            .SelectMany(n => n.GetIPProperties().GatewayAddresses)
-            .Select(g => g.Address)
-            .FirstOrDefault(a => a.AddressFamily == AddressFamily.InterNetwork && !IPAddress.IsLoopback(a));
+        var candidates = NetworkInterface.GetAllNetworkInterfaces()
+            .Where(network => network.OperationalStatus == OperationalStatus.Up)
+            .Where(network => !LooksLikeVpn(network))
+            .SelectMany(network => network.GetIPProperties().GatewayAddresses
+                .Select(gateway => gateway.Address)
+                .Where(IsPrivateLanAddress)
+                .Select(address => new GatewayTarget(address, network.Name)))
+            .OrderBy(target => target.InterfaceName.Contains("wi-fi", StringComparison.OrdinalIgnoreCase) ||
+                               target.InterfaceName.Contains("wlan", StringComparison.OrdinalIgnoreCase) ? 0 : 1)
+            .ThenBy(target => target.InterfaceName, StringComparer.OrdinalIgnoreCase)
+            .FirstOrDefault();
+
+        return candidates;
+    }
+
+    private static bool LooksLikeVpn(NetworkInterface network)
+    {
+        var identity = (network.Name + " " + network.Description).ToLowerInvariant();
+        return new[] { "vpn", "wireguard", "wintun", "tap-", "tunnel", "proton", "firefox", "openvpn", "tailscale", "zerotier" }
+            .Any(identity.Contains);
+    }
+
+    private static bool IsPrivateLanAddress(IPAddress address)
+    {
+        if (address.AddressFamily != AddressFamily.InterNetwork) return false;
+        var bytes = address.GetAddressBytes();
+        return bytes[0] == 10 ||
+               (bytes[0] == 172 && bytes[1] >= 16 && bytes[1] <= 31) ||
+               (bytes[0] == 192 && bytes[1] == 168) ||
+               (bytes[0] == 100 && bytes[1] >= 64 && bytes[1] <= 127);
     }
 
     private static async Task Pause(CancellationToken token)
     {
-        try { await Task.Delay(1500, token); } catch (OperationCanceledException) { }
+        try { await Task.Delay(2000, token); } catch (OperationCanceledException) { }
     }
+
+    private sealed record GatewayTarget(IPAddress Address, string InterfaceName);
 }
