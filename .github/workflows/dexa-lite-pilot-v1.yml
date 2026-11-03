@@ -29,10 +29,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          req=server-bootstrap/control/dexa-lite-pilot-v1/dexa-lite-pilot-v1-20261103-v1.request
+          req=server-bootstrap/control/dexa-lite-pilot-v1/dexa-lite-pilot-v1-20261104-v2.request
           dir=qualification/dexa-lite-20261103
           [[ "$(git diff --name-status "$GITHUB_SHA^" "$GITHUB_SHA")" == $'A\t'"$req" ]]
-          grep -Fxq "request_id=dexa-lite-pilot-v1-20261103-v1" "$req"
+          grep -Fxq "request_id=dexa-lite-pilot-v1-20261104-v2" "$req"
           grep -Fxq "source_repo=homayounisaghar/capability-fabric" "$req"
           [[ "$(wc -l < "$req")" -eq 3 ]]
           echo 'f672e0ad4e7b109f0b3d03cfc9ba762efc990b5fa55448de42a5d82592fb2e3c  qualification/dexa-lite-20261103/lite-gateway.mjs' | sha256sum -c -
@@ -46,7 +46,7 @@ jobs:
         run: |
           set -euo pipefail
           [[ -n "$VPS_SSH_KEY" && -n "$VPS_HOST" && -n "$VPS_SSH_USER" && -n "$VPS_HOST_KEY" ]]
-          [[ "$VPS_SSH_USER" == cfserver ]]
+          [[ "$VPS_SSH_USER" == cfserver || "$VPS_SSH_USER" == root ]]
           port="${VPS_PORT:-22}"
           [[ "$port" =~ ^[0-9]+$ ]]
           mkdir -m 700 "$RUNNER_TEMP/dexa-lite-ssh"
@@ -68,5 +68,5 @@ jobs:
           for f in lite-gateway.mjs lite.css ensure_lite_route.py deploy.sh; do
             scp "${opts[@]}" -P "$SSH_PORT" "$dir/$f" "$VPS_SSH_USER@$VPS_HOST:$remote/$f"
           done
-          ssh "${opts[@]}" -p "$SSH_PORT" "$VPS_SSH_USER@$VPS_HOST" "bash $remote/deploy.sh" </dev/null
+          ssh "${opts[@]}" -p "$SSH_PORT" "$VPS_SSH_USER@$VPS_HOST" "if [ \$(id -u) -eq 0 ]; then chown -R cfserver:cfserver $remote; runuser -u cfserver -- bash $remote/deploy.sh; else bash $remote/deploy.sh; fi" </dev/null
           echo "VERIFY_LIVE_SERVICE_EXTERNALLY"
