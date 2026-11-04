@@ -200,8 +200,8 @@ internal sealed class HidOutputDevice : IDisposable
                         var isBlukeKeyboard = isKeyboardCollection &&
                             caps.OutputReportByteLength >= 2 &&
                             hasAttributes &&
-                            attributes.VendorID == Program.BlukeVendorId &&
-                            attributes.ProductID == Program.BlukeProductId;
+                            attributes.VendorID == BlukeVendorId &&
+                            attributes.ProductID == BlukeProductId;
                         if (isBlukeKeyboard || IsRelevant(product, path) || isKeyboardCollection)
                         {
                             relevant++;
@@ -216,7 +216,7 @@ internal sealed class HidOutputDevice : IDisposable
                             var writable = OpenForWrite(path);
                             if (writable is not null)
                             {
-                                diagnostics = $"Bluke keyboard output report found (VID:PID {Program.BlukeVendorId:X4}:{Program.BlukeProductId:X4}, report length {caps.OutputReportByteLength}).\n" +
+                                diagnostics = $"Bluke keyboard output report found (VID:PID {BlukeVendorId:X4}:{BlukeProductId:X4}, report length {caps.OutputReportByteLength}).\n" +
                                               string.Join("\n", notes);
                                 return new HidOutputDevice(writable, caps.OutputReportByteLength);
                             }
@@ -241,7 +241,7 @@ internal sealed class HidOutputDevice : IDisposable
         }
 
         diagnostics = $"HID scan: {seen} interfaces enumerated; {relevant} relevant collections shown; " +
-                      $"no Bluke keyboard output collection (VID:PID {BlukeVendorId:X4}:{BlukeProductId:X4}, output length >= 2) was found.";
+                      $"no Bluke keyboard output collection (VID:PID {Program.BlukeVendorId:X4}:{Program.BlukeProductId:X4}, output length >= 2) was found.";
         if (notes.Count > 0) diagnostics += "\n" + string.Join("\n", notes.Take(30));
         else diagnostics += "\nWindows returned no Bluke, Bluetooth, keyboard, or vendor-defined HID collection details.";
         return null;
