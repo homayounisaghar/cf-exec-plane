@@ -1,53 +1,49 @@
-# Dexa Cloudflare bridge with account failover (2026-11-04)
+# Dexa Cloudflare bridge — browser-specific failover readiness indicator
 
-Status: **CODE STAGED / TESTED LOCALLY; NOT YET DEPLOYED TO ANY LIVE WORKER.** No new account B yet. Do not report live failover until two truly distinct Cloudflare accounts and real Iran-phone tests exist.
+## Deployment status (2026-11-04)
 
-## Architecture
+- **LIVE (existing):** primary Worker A at `https://dexa-cf-worker-canary-20261104.mirkazem.workers.dev/`, with a quota-1027-only fallback to independently deployed Worker B `https://dexa-cf-backup-20261104.mirkazem-design.workers.dev/`.
+- **LIVE (existing):** B itself proxies the authenticated original Hetzner Dexa Lite gateway and deliberately has no additional fallback.
+- **STAGED ONLY (this branch):** a visible status badge for **A**. It has **NOT been published to A** as part of this branch. Do not claim it is live until the actual A origin is directly read back and visually checked in an owner's browser.
+- Backup B requires **no change** for this indicator.
+- All authentication, CSRF, cookie scope, streaming and original mission execution stay on the existing Hetzner service. GitHub is not used in the runtime request path.
 
-Phone browser -> Worker on Cloudflare account A, or B after confirmed quota-1027 -> public HTTPS Dexa Lite gateway on existing Hetzner -> original localhost Dexa main engine.
+## User-visible indicator
 
-**GitHub is NOT in the request path.** This repo is only a source backup; Cloudflare dashboard's Edit Code can deploy without GitHub integrations. This does not migrate the original main engine, change app authentication or restart any Hetzner services.
+The worker source `bridge/worker.mjs` is a single file intended for Cloudflare Dashboard's **Edit code**. It includes its own installer and Service Worker source; no external assets or keys are required.
 
-## Current exact facts
+When the **primary A** root or authenticated Lite page loads, an unobtrusive Persian indicator appears:
 
-- Existing live TEST Worker A: `https://dexa-cf-worker-canary-20261104.mirkazem.workers.dev/` is still original public **harmless canary**, not this authenticated bridge.
-- Existing gateway upstream: `https://cf-onshape.duckdns.org/dexa-lite/`; original Basic auth + scoped cookie and mission challenge remain enforced by Hetzner.
-- Real upstream anonymous GET `/dexa-lite/` responds HTTP401 and `/dexa-lite/check` 200; new Worker has independently fetched those outcomes in local workerd.
-- Account B exact Worker hostname: **UNKNOWN / NOT DEPLOYED**. `bridge/worker.mjs` deliberately sets `BACKUP_ORIGIN = null`.
-- Phone VPN-off connectivity of Worker A canary, dynamic ping, SSE and fixed public Hetzner check was verified by owner. Full authenticated Dexa through Cloudflare is not yet owner-proven.
-- Workers Free current limit: 100,000 requests **per Cloudflare account** per UTC day; exhaustion returns Cloudflare **Error 1027**; see https://developers.cloudflare.com/workers/platform/limits/ and https://developers.cloudflare.com/workers/observability/errors/.
+- Green `✓ انتقال خودکار آماده است`: the **currently controlling browser Service Worker** answered a status handshake, verified its bridge version, and confirmed it has a valid **separate B origin** configured.
+- Amber `⏳ ...`: installation/control is still pending, often on a first-ever visit. The indicator updates on `controllerchange` and does **not** claim readiness merely because registration returned.
+- Red `✕ ...` or `⚠ ...`: unsupported, disabled, unreachable/unconfirmed controller or no fallback. A refresh or checking browser permissions may help.
+- This status is specific to the **browser/profile and primary origin**. It does not prove that the backup is reachable at this exact moment, and does not simulate/consume a real quota. The badge is intentionally not a quota counter.
+- The badge is a small fixed non-clickable status overlay and does not capture clicks on any Dexa controls.
 
-## Safe manual installation, no GitHub deployment link
+The primary's live Service Worker also detects only HTTP quota **Error 1027**; ordinary errors do not trigger account failover, and uncertain POST/missions are **never replayed**. The backup may require re-authentication when reached.
 
-1. **Create Cloudflare account B as its own account** (not just another Worker or email user inside account A). Select Workers Free; stop if asked for paid upgrade. User controls provider signup.
-2. In account B create a fresh Hello World Worker via Workers & Pages. In **Edit Code**, replace all code with the exact `bridge/worker.mjs` (with `BACKUP_ORIGIN=null`), Deploy. Do not supply Dexa credentials or secrets to Cloudflare settings or GitHub.
-3. Record the **actual** `https://<worker>.<B-subdomain>.workers.dev` from the B dashboard; do not guess it. Test root, `/bridge-health` (backupReady:false), `/dexa-lite/check` HTTP200, and `/dexa-lite/` challenge HTTP401. Owner must test B URL with VPN OFF. Login prompts require existing owner credentials only on trusted HTTPS page when ready.
-4. Update ONLY primary worker source constant `BACKUP_ORIGIN = null` to the exact verified account B origin (e.g. literal HTTPS URL, no trailing path); check source and regenerate/deploy primary Worker A through dashboard. Its `/bridge-health` must then return backupReady:true. This changes the current test Worker, so warn first and preserve rollback in the Cloudflare Deployments UI.
-5. On phone **while account A is still under quota**, load A `/` once and allow Service Worker registration; open `/dexa-lite/` and authenticate. This is required so the browser can intercept a future A-generated 1027 page even if A cannot execute Worker code.
-6. A quota **1027 only**: Service Worker on the phone redirects navigation to account B; in-app fetches notify the page to navigate to B. Other HTTP errors or ambiguous network failures do NOT trigger switching or duplicate mission requests. The user may need to re-enter Basic auth once on B and select a recent mission from shared original engine history. Browser drafts/cookies do not magically migrate between origins.
-7. Test with a synthetic simulated 1027 in isolated local Chromium (test evidence below); NEVER waste 100,000 real requests to exhaust A for testing. Verify actual B root and authentic phone VPN-off reachability independently before claiming full resilience.
+## Safe publication (owner's authenticated Cloudflare dashboard)
 
-## Security properties
+1. In Cloudflare account **A**, open the existing Worker named `dexa-cf-worker-canary-20261104` under Workers & Pages.
+2. In **Edit code**, replace the entire old source with **this branch's** `bridge/worker.mjs`; click **Deploy**. The update replaces the **existing live A code** and may briefly interrupt that Worker. Preserve rollback using the dashboard Deployments history.
+3. **Do not** modify B's Worker; do not add paid plans or upload Basic credentials.
+4. Verify A `/bridge-health` remains HTTP200 with `backupReady:true`, `/sw.js` has the status query handler, `/dexa-lite/check` HTTP200, unauthenticated Lite HTTP401, and B's health unchanged.
+5. In any desired **browser**, open the **A root** (with VPN off if testing access from Iran) and look at the badge. Green means the current page is controlled by the correct SW. If amber remains, refresh once. Repeat separately in another browser if needed.
 
-- Exact route+method allowlist copied from the existing Lite gateway, not an open proxy. User cannot select an arbitrary target.
-- Basic Authorization sent only to pinned public Hetzner Lite HTTPS origin; not hardcoded or logged.
-- Browser POST must have correct exact current Worker Origin and same-origin Fetch Metadata, then origin header is translated to the pre-existing Lite gateway's CSRF policy. Existing Basic and form nonce / idempotency remain authoritative; no backend privileges added.
-- One-cookie scoped `/dexa-lite/`, `WWW-Authenticate`, content-security-policy and SSE pass through; no caching of sensitive payloads.
-- On 1027, browser navigation is redirected. POST is **never transparently replayed**, avoiding double-executed real missions.
-- No guarantee of first-ever visit if A quota already exhausted before Service Worker installation; that requires a separate independent permanent entrypoint or manually opening B.
-- Failover B requires re-authentication, because Basic credentials and cookies are scoped to different hostnames.
-- Cloudflare sits in TLS termination path, so authenticated data pass through Cloudflare even though there are no stored Cloudflare environment secrets.
-- Multiple accounts must remain consistent with current Cloudflare account/free-use policies. Do not assume their allowances can be freely combined into one billing pool.
+No new Cloudflare worker, domain, account, credential, runtime dependency, or Hetzner service is introduced.
 
-## Verification done
+## Tests
 
-- Actual local Wrangler/workerd GET `/` 200, `/sw.js` 200, public `/dexa-lite/check` 200 from existing upstream, anonymous `/dexa-lite/` and form challenge HTTP401 Basic, unknown paths HTTP404, cross-origin POST 403.
-- `node bridge/test.mjs`: 9 unit cases, quota-only fallback, no duplicate POST, normal 401 and 1102 no switching, no backup safe fallback, network ambiguity.
-- `node bridge/test-proxy.mjs`: 8 synthetic Basic/HTML-cookie/CSRF/POST-idempotency/SSE/allowlist checks.
-- Real Chromium headless test with two **synthetic localhost HTTP origins**, overriding only scheme guard to allow http://localhost and injecting simulated 1027, ended on the B origin: `REAL_CHROMIUM_SERVICE_WORKER_QUOTA_1027_CROSS_ORIGIN_FAILOVER_PASS`. This proves browser control path, not cloud B account connectivity.
-- `wrangler deploy --dry-run` staged bundle under test. (Only mark as pass after tool confirms.)
-- No original Dexa service, backend auth, or public Cloudflare Worker was changed by these local tests.
+From `bridge/` with Node.js 22:
 
-## Rollback and scope
+```sh
+node test.mjs
+node test-proxy.mjs
+node test-browser-status.mjs
+```
 
-Primary A old working test canary source stays in repo branch `dexa-cloudflare-canary-20261104`; if anything fails after future manual deploy, roll back A in the Cloudflare dashboard. Do not change the separate `shared-telemetry` Worker or existing Fly service. Live A and B public URLs must be verified independently after deployments. No payment or card required by code stage.
+- `test.mjs`: synthetic 1027 GET/POST, no mission replay, other errors, unsupported paths and CSRF.
+- `test-proxy.mjs`: Basic auth, HTML installer, cookie and header pass-through, SSE, POST idempotency, allowlist.
+- `test-browser-status.mjs`: real generated SW message response, explicit B present/absent, browser UI green/amber/red, controller-change activation, quota navigation and Lite installer.
+- **All three suites passed on the owner-authorized VPS using immutable GitHub commit sources.**
+- No attempt is made to spend 100,000 Cloudflare requests to force real quota exhaustion.
