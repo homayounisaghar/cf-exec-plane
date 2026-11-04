@@ -1,5 +1,5 @@
 diff --git a/app/build.gradle.kts b/app/build.gradle.kts
-index 377f852..35fa092 100644
+index 377f852..14fea32 100644
 --- a/app/build.gradle.kts
 +++ b/app/build.gradle.kts
 @@ -12,11 +12,11 @@ android {
@@ -12,13 +12,13 @@ index 377f852..35fa092 100644
      targetSdk = 36
 -    versionCode = 10
 -    versionName = "1.1.0"
-+    versionCode = 14
-+    versionName = "1.2.3"
++    versionCode = 15
++    versionName = "1.2.4"
  
      testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
    }
 diff --git a/app/src/main/java/dev/arnv/bluke/bluetooth/BluetoothKeyboardManager.kt b/app/src/main/java/dev/arnv/bluke/bluetooth/BluetoothKeyboardManager.kt
-index 10c16be..f865880 100644
+index 10c16be..8b8cf4e 100644
 --- a/app/src/main/java/dev/arnv/bluke/bluetooth/BluetoothKeyboardManager.kt
 +++ b/app/src/main/java/dev/arnv/bluke/bluetooth/BluetoothKeyboardManager.kt
 @@ -131,6 +131,9 @@ class BluetoothKeyboardManager(private val context: Context) {
@@ -36,9 +36,10 @@ index 10c16be..f865880 100644
              logHidEvent("callback setReport device=${device.address} type=$type id=$id length=${data.size}")
              if (type == BluetoothHidDevice.REPORT_TYPE_OUTPUT) {
 -                if (id == 1.toByte()) {
-+                if ((id.toInt() and 0xff) == HOST_LAYOUT_REPORT_ID) {
-                     parseLedReport(data)
-+                    receiveHostLayoutReport(HOST_LAYOUT_REPORT_ID, data)
+-                    parseLedReport(data)
++                when (id.toInt() and 0xff) {
++                    1 -> parseLedReport(data)
++                    HOST_LAYOUT_REPORT_ID -> receiveHostLayoutReport(HOST_LAYOUT_REPORT_ID, data)
                  }
              }
              try {
@@ -47,9 +48,10 @@ index 10c16be..f865880 100644
              if (activeRegistrationAttempt !== attempt) return
              logHidEvent("callback interruptData device=${device.address} id=$reportId length=${data.size}")
 -            if (reportId == 1.toByte()) {
-+            if ((reportId.toInt() and 0xff) == HOST_LAYOUT_REPORT_ID) {
-                 parseLedReport(data)
-+                receiveHostLayoutReport(HOST_LAYOUT_REPORT_ID, data)
+-                parseLedReport(data)
++            when (reportId.toInt() and 0xff) {
++                1 -> parseLedReport(data)
++                HOST_LAYOUT_REPORT_ID -> receiveHostLayoutReport(HOST_LAYOUT_REPORT_ID, data)
              }
          }
  
@@ -67,29 +69,34 @@ index 10c16be..f865880 100644
              if (data == null || data.isEmpty()) return
              val ledByte = if (data.size > 1 && data[0] == 1.toByte()) {
 diff --git a/app/src/main/java/dev/arnv/bluke/bluetooth/GamepadDescriptor.kt b/app/src/main/java/dev/arnv/bluke/bluetooth/GamepadDescriptor.kt
-index b813898..761d1dd 100644
+index b813898..af493ce 100644
 --- a/app/src/main/java/dev/arnv/bluke/bluetooth/GamepadDescriptor.kt
 +++ b/app/src/main/java/dev/arnv/bluke/bluetooth/GamepadDescriptor.kt
-@@ -22,9 +22,14 @@ internal val SHARED_HID_DESCRIPTOR = byteArrayOf(
-     0x19.toByte(), 0x01.toByte(),         //   USAGE_MINIMUM (Num Lock)
-     0x29.toByte(), 0x05.toByte(),         //   USAGE_MAXIMUM (Kana)
-     0x91.toByte(), 0x02.toByte(),         //   OUTPUT (Data,Var,Abs) - LED report
--    0x95.toByte(), 0x01.toByte(),         //   REPORT_COUNT (1)
--    0x75.toByte(), 0x03.toByte(),         //   REPORT_SIZE (3)
--    0x91.toByte(), 0x03.toByte(),         //   OUTPUT (Cnst,Var,Abs) - LED report padding
-+    // Reuse the three former LED padding bits for the host input-language code.
-+    // Report ID 1 and its one-byte output report remain unchanged.
-+    0x95.toByte(), 0x03.toByte(),         //   REPORT_COUNT (3)
-+    0x75.toByte(), 0x01.toByte(),         //   REPORT_SIZE (1)
+@@ -35,6 +35,22 @@ internal val SHARED_HID_DESCRIPTOR = byteArrayOf(
+     0x81.toByte(), 0x00.toByte(),         //   INPUT (Data,Ary,Abs) - Keycodes (6 bytes)
+     0xc0.toByte(),                        // END_COLLECTION
+ 
++    // Dedicated vendor-defined host-layout channel (Report ID 5).
++    // Keep it as its own top-level collection so Windows exposes a writable HID interface.
 +    0x06.toByte(), 0x00.toByte(), 0xff.toByte(), // USAGE_PAGE (Vendor Defined 0xFF00)
-+    0x19.toByte(), 0x01.toByte(),         //   USAGE_MINIMUM (Bluke layout bit 0)
-+    0x29.toByte(), 0x03.toByte(),         //   USAGE_MAXIMUM (Bluke layout bit 2)
-+    0x91.toByte(), 0x02.toByte(),         //   OUTPUT (Data,Var,Abs) - layout bits
-     0x95.toByte(), 0x06.toByte(),         //   REPORT_COUNT (6)
-     0x75.toByte(), 0x08.toByte(),         //   REPORT_SIZE (8)
-     0x15.toByte(), 0x00.toByte(),         //   LOGICAL_MINIMUM (0)
++    0x09.toByte(), 0x01.toByte(),         // USAGE (Bluke Host Layout)
++    0xa1.toByte(), 0x01.toByte(),         // COLLECTION (Application)
++    0x85.toByte(), 0x05.toByte(),         //   REPORT_ID (5)
++    0x15.toByte(), 0x00.toByte(),         //   LOGICAL_MINIMUM (0)
++    0x26.toByte(), 0xff.toByte(), 0x00.toByte(), // LOGICAL_MAXIMUM (255)
++    0x75.toByte(), 0x08.toByte(),         //   REPORT_SIZE (8)
++    0x95.toByte(), 0x01.toByte(),         //   REPORT_COUNT (1)
++    0x09.toByte(), 0x02.toByte(),         //   USAGE (Host layout input)
++    0x81.toByte(), 0x02.toByte(),         //   INPUT (Data,Var,Abs)
++    0x09.toByte(), 0x01.toByte(),         //   USAGE (Host layout output)
++    0x91.toByte(), 0x02.toByte(),         //   OUTPUT (Data,Var,Abs)
++    0xc0.toByte(),                        // END_COLLECTION
++
+     // Mouse/Trackpad (Report ID 2)
+     0x05.toByte(), 0x01.toByte(),         // USAGE_PAGE (Generic Desktop)
+     0x09.toByte(), 0x02.toByte(),         // USAGE (Mouse)
 diff --git a/app/src/main/java/dev/arnv/bluke/bluetooth/HidDescriptorRevision.kt b/app/src/main/java/dev/arnv/bluke/bluetooth/HidDescriptorRevision.kt
-index 09d7d1d..d2b2533 100644
+index 09d7d1d..14d5a61 100644
 --- a/app/src/main/java/dev/arnv/bluke/bluetooth/HidDescriptorRevision.kt
 +++ b/app/src/main/java/dev/arnv/bluke/bluetooth/HidDescriptorRevision.kt
 @@ -1,7 +1,7 @@
@@ -97,32 +104,31 @@ index 09d7d1d..d2b2533 100644
  
  internal const val HID_DESCRIPTOR_REVISION_PREFERENCE = "hid_descriptor_revision"
 -internal const val CURRENT_HID_DESCRIPTOR_REVISION = 5
-+internal const val CURRENT_HID_DESCRIPTOR_REVISION = 7
++internal const val CURRENT_HID_DESCRIPTOR_REVISION = 8
  
  internal fun requiresHidDescriptorRefresh(
      savedRevision: Int,
 diff --git a/app/src/main/java/dev/arnv/bluke/bluetooth/HostLayoutReport.kt b/app/src/main/java/dev/arnv/bluke/bluetooth/HostLayoutReport.kt
 new file mode 100644
-index 0000000..6574290
+index 0000000..10aa89d
 --- /dev/null
 +++ b/app/src/main/java/dev/arnv/bluke/bluetooth/HostLayoutReport.kt
-@@ -0,0 +1,25 @@
+@@ -0,0 +1,24 @@
 +package dev.arnv.bluke.bluetooth
 +
-+internal const val HOST_LAYOUT_REPORT_ID = 1
++internal const val HOST_LAYOUT_REPORT_ID = 5
 +
 +/**
-+ * Layout code is packed into bits 5..7 of the existing keyboard LED output report.
++ * Maps the one-byte vendor-defined Bluetooth HID output report sent by Windows.
 + * Codes: 0=US, 1=French, 2=German, 3=Russian, 4=Persian.
 + */
 +internal fun hostLayoutPreferenceFromReport(reportId: Int, data: ByteArray): String? {
 +    if (reportId != HOST_LAYOUT_REPORT_ID || data.isEmpty()) return null
-+    val report = if (data.size >= 2 && (data[0].toInt() and 0xFF) == HOST_LAYOUT_REPORT_ID) {
++    val code = if (data.size >= 2 && (data[0].toInt() and 0xFF) == HOST_LAYOUT_REPORT_ID) {
 +        data[1].toInt() and 0xFF
 +    } else {
 +        data[0].toInt() and 0xFF
 +    }
-+    val code = (report ushr 5) and 0x07
 +    return when (code) {
 +        0 -> "us_qwerty"
 +        1 -> "fr_azerty"
