@@ -78,6 +78,23 @@ const app = http.createServer((req, res) => {
     });
     res.end(html); return;
   }
+  if (pathname === "/api/hetzner-public-check") {
+    (async () => {
+      try {
+        const r = await fetch("https://dexa-probe.65-109-215-241.sslip.io/", {
+          signal: AbortSignal.timeout(6000),
+          headers: { Accept: "text/plain" }
+        });
+        const body = (await r.text()).slice(0,200);
+        res.writeHead(200, headers("application/json; charset=utf-8"));
+        res.end(JSON.stringify({ marker: MARKER, reachable: r.status === 200 && body.includes("DEXA_ALT_ORIGIN_TEST_OK"), status: r.status }));
+      } catch {
+        res.writeHead(200, headers("application/json; charset=utf-8"));
+        res.end(JSON.stringify({ marker: MARKER, reachable: false, status: null }));
+      }
+    })();
+    return;
+  }
   if (pathname === "/healthz" || pathname === "/api/ping") {
     res.writeHead(200, headers("application/json; charset=utf-8"));
     res.end(JSON.stringify({ok:true, marker:MARKER, requestId:randomUUID(), utc:new Date().toISOString()})); return;
