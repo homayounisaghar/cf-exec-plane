@@ -7,8 +7,8 @@ internal static class Program
     internal const int HostLayoutReportId = 5;
     internal const ushort BlukeVendorId = 0x2717;
     internal const ushort BlukeProductId = 0x5070;
-    private const ushort VendorUsagePage = 0xFF00;
-    private const ushort VendorUsage = 0x0001;
+    internal const ushort VendorUsagePage = 0xFF00;
+    internal const ushort VendorUsage = 0x0001;
 
     private static async Task Main()
     {
@@ -198,13 +198,13 @@ internal sealed class HidOutputDevice : IDisposable
                             continue;
                         }
 
-                        var isVendorCollection = caps.UsagePage == VendorUsagePage &&
-                                                 caps.Usage == VendorUsage &&
+                        var isVendorCollection = caps.UsagePage == Program.VendorUsagePage &&
+                                                 caps.Usage == Program.VendorUsage &&
                                                  caps.OutputReportByteLength >= 2;
                         var isBlukeVendorCollection = isVendorCollection &&
                             hasAttributes &&
-                            attributes.VendorID == BlukeVendorId &&
-                            attributes.ProductID == BlukeProductId;
+                            attributes.VendorID == Program.BlukeVendorId &&
+                            attributes.ProductID == Program.BlukeProductId;
                         var isKeyboardCollection = caps.UsagePage == 0x0001 && caps.Usage == 0x0006;
                         if (isBlukeVendorCollection || IsRelevant(product, path) || isKeyboardCollection)
                         {
@@ -220,7 +220,7 @@ internal sealed class HidOutputDevice : IDisposable
                             var writable = OpenForWrite(path);
                             if (writable is not null)
                             {
-                                diagnostics = $"Bluke vendor output collection found (VID:PID {BlukeVendorId:X4}:{BlukeProductId:X4}, report length {caps.OutputReportByteLength}).\n" +
+                                diagnostics = $"Bluke vendor output collection found (VID:PID {Program.BlukeVendorId:X4}:{Program.BlukeProductId:X4}, report length {caps.OutputReportByteLength}).\n" +
                                               string.Join("\n", notes);
                                 return new HidOutputDevice(writable, caps.OutputReportByteLength);
                             }
@@ -245,7 +245,7 @@ internal sealed class HidOutputDevice : IDisposable
         }
 
         diagnostics = $"HID scan: {seen} interfaces enumerated; {relevant} relevant collections shown; " +
-                      $"no Bluke vendor output collection (usage page FF00, usage 0001, VID:PID {BlukeVendorId:X4}:{BlukeProductId:X4}) was found.";
+                      $"no Bluke vendor output collection (usage page FF00, usage 0001, VID:PID {Program.BlukeVendorId:X4}:{Program.BlukeProductId:X4}) was found.";
         if (notes.Count > 0) diagnostics += "\n" + string.Join("\n", notes.Take(30));
         else diagnostics += "\nWindows returned no Bluke, Bluetooth, keyboard, or vendor-defined HID collection details.";
         return null;
