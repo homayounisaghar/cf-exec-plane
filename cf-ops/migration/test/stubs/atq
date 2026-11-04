@@ -1,2 +1,0 @@
-#!/bin/bash
-cat "$CF_MIG_ROOT/atq.txt" 2>/dev/null

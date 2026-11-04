@@ -1,9 +1,0 @@
-request_id=dexa-unread-empty-v1-20261101-v1
-source_repo=homayounisaghar/capability-fabric
-source_ref=work/dexa-autonomous-loop-20261020
-source_commit=ccbf490495d061b75da13ef4ffbfcf4cb8868a07
-scope=dexa-main-only
-candidate_count=5
-requested_effect=bounded_empty_unread_list_contract
-no_cf_server_change=true
-no_connector_refresh=true

@@ -1,4 +1,0 @@
-DEXA_BUNNY_NETWORK_TEST_OK
-This is a public, static, secret-free connectivity test file.
-No Dexa API, personal information, authentication, or server connection is involved.
-2026-11-04
