@@ -7,7 +7,7 @@ const fake=(status,body,headers={"content-type":"text/html"})=>new Response(body
 async function makeSw(withBackup=true) {
   const response=await worker.fetch(new Request(PRIMARY+"/sw.js"));
   assert.equal(response.status,200);
-  const source=(await response.text()).replace("const BACKUP_ORIGIN = null;","const BACKUP_ORIGIN = "+JSON.stringify(withBackup?BACKUP:null)+";");
+  const source=(await response.text()).replace(/^const BACKUP_ORIGIN = .*;$/m,"const BACKUP_ORIGIN = "+JSON.stringify(withBackup?BACKUP:null)+";");
   const handlers={};
   const sent=[];
   let nextResponse,requests=0;
@@ -27,6 +27,8 @@ async function makeSw(withBackup=true) {
   return {dispatch,sent,requests:()=>requests};
 }
 const quota=fake(500,"<html><title>Error 1027</title>Worker exceeded free tier daily request limit.</html>");
+const liveConfig=await (await worker.fetch(new Request(PRIMARY+"/bridge-health"))).json();
+assert.equal(liveConfig.backupReady,true); // Primary build must have account B configured.
 const tests=await makeSw(true);
 const a=await tests.dispatch("GET","navigate","/dexa-lite/?status=1",quota);
 assert.equal(a.status,302);
