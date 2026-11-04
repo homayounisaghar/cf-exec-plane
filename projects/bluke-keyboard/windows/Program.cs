@@ -11,6 +11,7 @@ internal static class Program
         Console.OutputEncoding = Encoding.UTF8;
         Console.WriteLine("Bluke Bluetooth Language Bridge 1.2.3 - press Ctrl+C to exit.");
         Console.WriteLine("Uses the existing Bluetooth HID connection; no Wi-Fi or hotspot is used.");
+        Console.WriteLine("Diagnostic mode: HID enumeration only; no pairing or device settings are changed.");
 
         using var stop = new CancellationTokenSource();
         Console.CancelKeyPress += (_, e) => { e.Cancel = true; stop.Cancel(); };
