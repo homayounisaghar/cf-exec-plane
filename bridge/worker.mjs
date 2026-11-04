@@ -59,7 +59,7 @@ async function proxy(request,url) {
         rh.set("location",url.origin+dest.pathname+dest.search+dest.hash);
       }
     }
-    if(reply.status===200&&url.pathname==="/dexa-lite/"&&String(reply.headers.get("content-type")||"").includes("text/html")) {
+    if(reply.status===200&&(url.pathname==="/dexa-lite/"||url.pathname==="/dexa-lite")&&String(reply.headers.get("content-type")||"").includes("text/html")) {
       const html=await reply.text();
       if(html.length>900000||!html.includes("</body>"))return plain(502,"UNEXPECTED_UPSTREAM_HTML");
       const patched=html.replace("</body>","<script>"+INSTALL_SCRIPT+"</script></body>");
