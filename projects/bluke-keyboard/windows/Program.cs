@@ -200,8 +200,8 @@ internal sealed class HidOutputDevice : IDisposable
                         var isBlukeKeyboard = isKeyboardCollection &&
                             caps.OutputReportByteLength >= 2 &&
                             hasAttributes &&
-                            attributes.VendorID == BlukeVendorId &&
-                            attributes.ProductID == BlukeProductId;
+                            attributes.VendorID == Program.BlukeVendorId &&
+                            attributes.ProductID == Program.BlukeProductId;
                         if (isBlukeKeyboard || IsRelevant(product, path) || isKeyboardCollection)
                         {
                             relevant++;
@@ -216,7 +216,7 @@ internal sealed class HidOutputDevice : IDisposable
                             var writable = OpenForWrite(path);
                             if (writable is not null)
                             {
-                                diagnostics = $"Bluke keyboard output report found (VID:PID {BlukeVendorId:X4}:{BlukeProductId:X4}, report length {caps.OutputReportByteLength}).\n" +
+                                diagnostics = $"Bluke keyboard output report found (VID:PID {Program.BlukeVendorId:X4}:{Program.BlukeProductId:X4}, report length {caps.OutputReportByteLength}).\n" +
                                               string.Join("\n", notes);
                                 return new HidOutputDevice(writable, caps.OutputReportByteLength);
                             }
@@ -434,3 +434,4 @@ internal sealed class HidOutputDevice : IDisposable
     private static extern bool WriteFile(SafeFileHandle file, byte[] buffer, int bytesToWrite,
         out int bytesWritten, IntPtr overlapped);
 }
+
