@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using System.Text;
 using Microsoft.Win32.SafeHandles;
 
 internal static class Program
@@ -7,8 +8,8 @@ internal static class Program
 
     private static async Task Main()
     {
-        Console.OutputEncoding = System.Text.Encoding.UTF8;
-        Console.WriteLine("Bluke Bluetooth Language Bridge 1.2.2 - press Ctrl+C to exit.");
+        Console.OutputEncoding = Encoding.UTF8;
+        Console.WriteLine("Bluke Bluetooth Language Bridge 1.2.3 - press Ctrl+C to exit.");
         Console.WriteLine("Uses the existing Bluetooth HID connection; no Wi-Fi or hotspot is used.");
 
         using var stop = new CancellationTokenSource();
@@ -19,6 +20,8 @@ internal static class Program
         long lastHkl = long.MinValue;
         var lastSent = DateTime.MinValue;
         var nextDiscovery = DateTime.MinValue;
+        var lastDiagnostic = DateTime.MinValue;
+        string? lastScan = null;
 
         while (!stop.IsCancellationRequested)
         {
@@ -26,17 +29,19 @@ internal static class Program
             {
                 if (device is null && DateTime.UtcNow >= nextDiscovery)
                 {
-                    device = HidOutputDevice.FindBluke();
+                    device = HidOutputDevice.FindBluke(out var scan);
                     nextDiscovery = DateTime.UtcNow.AddSeconds(2);
                     if (device is not null)
                     {
-                        Console.WriteLine("Bluke Bluetooth HID channel found.");
+                        Console.WriteLine("Bluke Bluetooth HID output collection found.");
                         lastLayout = null;
                         lastHkl = long.MinValue;
                     }
-                    else
+                    else if (scan != lastScan || DateTime.UtcNow - lastDiagnostic > TimeSpan.FromSeconds(10))
                     {
-                        Console.WriteLine("Waiting for the paired Bluke phone over Bluetooth...");
+                        Console.WriteLine(scan);
+                        lastScan = scan;
+                        lastDiagnostic = DateTime.UtcNow;
                     }
                 }
 
@@ -117,12 +122,19 @@ internal sealed class HidOutputDevice : IDisposable
         this.outputReportLength = outputReportLength;
     }
 
-    public static HidOutputDevice? FindBluke()
+    public static HidOutputDevice? FindBluke(out string diagnostics)
     {
+        var notes = new List<string>();
+        var seen = 0;
+        var relevant = 0;
         HidD_GetHidGuid(out var hidGuid);
         var infoSet = SetupDiGetClassDevs(ref hidGuid, null, IntPtr.Zero,
             DigcfPresent | DigcfDeviceInterface);
-        if (infoSet == new IntPtr(-1)) return null;
+        if (infoSet == new IntPtr(-1))
+        {
+            diagnostics = $"HID enumeration failed: SetupDiGetClassDevs Win32={Marshal.GetLastWin32Error()}";
+            return null;
+        }
 
         try
         {
@@ -138,6 +150,7 @@ internal sealed class HidOutputDevice : IDisposable
                     continue;
                 }
 
+                seen++;
                 _ = SetupDiGetDeviceInterfaceDetail(infoSet, ref interfaceData,
                     IntPtr.Zero, 0, out var requiredSize, IntPtr.Zero);
                 if (requiredSize == 0) continue;
@@ -153,35 +166,66 @@ internal sealed class HidOutputDevice : IDisposable
                     var path = Marshal.PtrToStringUni(IntPtr.Add(detail, 4));
                     if (string.IsNullOrWhiteSpace(path)) continue;
 
-                    var candidate = CreateFile(path, GenericRead | GenericWrite,
-                        FileShareRead | FileShareWrite, IntPtr.Zero,
-                        OpenExisting, FileAttributeNormal, IntPtr.Zero);
-                    if (candidate.IsInvalid)
+                    using var inspect = OpenForInspection(path);
+                    if (inspect is null)
                     {
-                        candidate.Dispose();
+                        if (path.Contains("BTH", StringComparison.OrdinalIgnoreCase))
+                            notes.Add($"HID[{index}] Bluetooth path could not be opened (Win32={Marshal.GetLastWin32Error()}).");
                         continue;
                     }
 
-                    if (HidD_GetPreparsedData(candidate, out var preparsed))
+                    var product = ReadHidString(inspect, HidD_GetProductString);
+                    var manufacturer = ReadHidString(inspect, HidD_GetManufacturerString);
+                    var attributes = new HidAttributes { Size = Marshal.SizeOf<HidAttributes>() };
+                    var hasAttributes = HidD_GetAttributes(inspect, ref attributes);
+
+                    if (!HidD_GetPreparsedData(inspect, out var preparsed))
                     {
-                        try
-                        {
-                            var status = HidP_GetCaps(preparsed, out var caps);
-                            if (status == HidpStatusSuccess &&
-                                caps.UsagePage == VendorUsagePage &&
-                                caps.Usage == VendorUsage &&
-                                caps.OutputReportByteLength >= 2)
-                            {
-                                return new HidOutputDevice(candidate, caps.OutputReportByteLength);
-                            }
-                        }
-                        finally
-                        {
-                            HidD_FreePreparsedData(preparsed);
-                        }
+                        if (IsRelevant(product, path))
+                            notes.Add($"HID[{index}] product='{product}' preparsed-data failed Win32={Marshal.GetLastWin32Error()} path={ShortPath(path)}");
+                        continue;
                     }
 
-                    candidate.Dispose();
+                    try
+                    {
+                        var status = HidP_GetCaps(preparsed, out var caps);
+                        if (status != HidpStatusSuccess)
+                        {
+                            if (IsRelevant(product, path))
+                                notes.Add($"HID[{index}] product='{product}' HidP_GetCaps=0x{unchecked((uint)status):X8} path={ShortPath(path)}");
+                            continue;
+                        }
+
+                        var isVendorCollection = caps.UsagePage == VendorUsagePage &&
+                                                 caps.Usage == VendorUsage &&
+                                                 caps.OutputReportByteLength >= 2;
+                        var isKeyboardCollection = caps.UsagePage == 0x0001 && caps.Usage == 0x0006;
+                        if (isVendorCollection || IsRelevant(product, path) || isKeyboardCollection)
+                        {
+                            relevant++;
+                            var ids = hasAttributes
+                                ? $" vid:pid={attributes.VendorID:X4}:{attributes.ProductID:X4}"
+                                : "";
+                            notes.Add($"HID[{index}] page=0x{caps.UsagePage:X4} usage=0x{caps.Usage:X4} in={caps.InputReportByteLength} out={caps.OutputReportByteLength} product='{product}' manufacturer='{manufacturer}'{ids} path={ShortPath(path)}");
+                        }
+
+                        if (isVendorCollection)
+                        {
+                            var writable = OpenForWrite(path);
+                            if (writable is not null)
+                            {
+                                diagnostics = $"HID scan: {seen} interfaces; Bluke output collection found.\n" +
+                                              string.Join("\n", notes);
+                                return new HidOutputDevice(writable, caps.OutputReportByteLength);
+                            }
+
+                            notes.Add($"HID[{index}] Bluke output collection matched, but write-open failed Win32={Marshal.GetLastWin32Error()}.");
+                        }
+                    }
+                    finally
+                    {
+                        HidD_FreePreparsedData(preparsed);
+                    }
                 }
                 finally
                 {
@@ -194,7 +238,55 @@ internal sealed class HidOutputDevice : IDisposable
             SetupDiDestroyDeviceInfoList(infoSet);
         }
 
+        diagnostics = $"HID scan: {seen} interfaces enumerated; {relevant} relevant collections shown; " +
+                      "no Bluke vendor output collection (usage page FF00, usage 0001, output length >= 2) was found.";
+        if (notes.Count > 0) diagnostics += "\n" + string.Join("\n", notes.Take(30));
+        else diagnostics += "\nWindows returned no Bluke, Bluetooth, keyboard, or vendor-defined HID collection details.";
         return null;
+    }
+
+    private static SafeFileHandle? OpenForInspection(string path)
+    {
+        var handle = CreateFile(path, 0, FileShareRead | FileShareWrite, IntPtr.Zero,
+            OpenExisting, FileAttributeNormal, IntPtr.Zero);
+        if (!handle.IsInvalid) return handle;
+        handle.Dispose();
+
+        handle = CreateFile(path, GenericRead | GenericWrite, FileShareRead | FileShareWrite,
+            IntPtr.Zero, OpenExisting, FileAttributeNormal, IntPtr.Zero);
+        if (!handle.IsInvalid) return handle;
+        handle.Dispose();
+        return null;
+    }
+
+    private static SafeFileHandle? OpenForWrite(string path)
+    {
+        var handle = CreateFile(path, GenericWrite, FileShareRead | FileShareWrite, IntPtr.Zero,
+            OpenExisting, FileAttributeNormal, IntPtr.Zero);
+        if (!handle.IsInvalid) return handle;
+        handle.Dispose();
+
+        handle = CreateFile(path, GenericRead | GenericWrite, FileShareRead | FileShareWrite,
+            IntPtr.Zero, OpenExisting, FileAttributeNormal, IntPtr.Zero);
+        if (!handle.IsInvalid) return handle;
+        handle.Dispose();
+        return null;
+    }
+
+    private static bool IsRelevant(string product, string path) =>
+        product.Contains("Bluke", StringComparison.OrdinalIgnoreCase) ||
+        path.Contains("BTH", StringComparison.OrdinalIgnoreCase) ||
+        path.Contains("FF00", StringComparison.OrdinalIgnoreCase);
+
+    private static string ShortPath(string path) =>
+        path.Length <= 100 ? path : "..." + path[^97..];
+
+    private delegate bool HidStringGetter(SafeFileHandle handle, StringBuilder buffer, int bufferLength);
+
+    private static string ReadHidString(SafeFileHandle handle, HidStringGetter getter)
+    {
+        var buffer = new StringBuilder(256);
+        return getter(handle, buffer, buffer.Capacity * 2) ? buffer.ToString().Trim() : "";
     }
 
     public bool TrySendLayout(byte layoutCode, out string error)
@@ -203,12 +295,6 @@ internal sealed class HidOutputDevice : IDisposable
         report[0] = (byte)Program.HostLayoutReportId;
         report[1] = layoutCode;
 
-        if (HidD_SetOutputReport(handle, report, report.Length))
-        {
-            error = "";
-            return true;
-        }
-
         if (WriteFile(handle, report, report.Length, out var written, IntPtr.Zero) &&
             written == report.Length)
         {
@@ -216,7 +302,14 @@ internal sealed class HidOutputDevice : IDisposable
             return true;
         }
 
-        error = $"HID output report rejected (Win32 {Marshal.GetLastWin32Error()})";
+        var writeError = Marshal.GetLastWin32Error();
+        if (HidD_SetOutputReport(handle, report, report.Length))
+        {
+            error = "";
+            return true;
+        }
+
+        error = $"HID report ID 5 rejected (WriteFile Win32 {writeError}; HidD_SetOutputReport Win32 {Marshal.GetLastWin32Error()})";
         return false;
     }
 
@@ -229,6 +322,15 @@ internal sealed class HidOutputDevice : IDisposable
         public Guid InterfaceClassGuid;
         public int Flags;
         public IntPtr Reserved;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct HidAttributes
+    {
+        public int Size;
+        public ushort VendorID;
+        public ushort ProductID;
+        public ushort VersionNumber;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -263,6 +365,18 @@ internal sealed class HidOutputDevice : IDisposable
     [DllImport("hid.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.U1)]
     private static extern bool HidD_FreePreparsedData(IntPtr preparsedData);
+
+    [DllImport("hid.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.U1)]
+    private static extern bool HidD_GetProductString(SafeFileHandle device, StringBuilder buffer, int bufferLength);
+
+    [DllImport("hid.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.U1)]
+    private static extern bool HidD_GetManufacturerString(SafeFileHandle device, StringBuilder buffer, int bufferLength);
+
+    [DllImport("hid.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.U1)]
+    private static extern bool HidD_GetAttributes(SafeFileHandle device, ref HidAttributes attributes);
 
     [DllImport("hid.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.U1)]
@@ -301,3 +415,5 @@ internal sealed class HidOutputDevice : IDisposable
     private static extern bool WriteFile(SafeFileHandle file, byte[] buffer, int bytesToWrite,
         out int bytesWritten, IntPtr overlapped);
 }
+
+[executed on device: ubuntu-16gb-hel1-2 (a1c21909-360a-4044-b63e-263af0ebd786)]
