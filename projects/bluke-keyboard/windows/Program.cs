@@ -4,14 +4,15 @@ using Microsoft.Win32.SafeHandles;
 
 internal static class Program
 {
-    internal const int HostLayoutReportId = 5;
+    internal const int HostLayoutReportId = 1;
+    private const ushort BlukeVendorId = 0x2717;
+    private const ushort BlukeProductId = 0x5070;
 
     private static async Task Main()
     {
         Console.OutputEncoding = Encoding.UTF8;
-        Console.WriteLine("Bluke Bluetooth Language Bridge 1.2.3 - press Ctrl+C to exit.");
+        Console.WriteLine("Bluke Bluetooth Language Bridge 1.2.4 - press Ctrl+C to exit.");
         Console.WriteLine("Uses the existing Bluetooth HID connection; no Wi-Fi or hotspot is used.");
-        Console.WriteLine("Diagnostic mode: HID enumeration only; no pairing or device settings are changed.");
 
         using var stop = new CancellationTokenSource();
         Console.CancelKeyPress += (_, e) => { e.Cancel = true; stop.Cancel(); };
@@ -101,8 +102,6 @@ internal static class Program
 
 internal sealed class HidOutputDevice : IDisposable
 {
-    private const ushort VendorUsagePage = 0xFF00;
-    private const ushort VendorUsage = 0x0001;
     private const uint GenericRead = 0x80000000;
     private const uint GenericWrite = 0x40000000;
     private const uint FileShareRead = 0x00000001;
@@ -197,14 +196,13 @@ internal sealed class HidOutputDevice : IDisposable
                             continue;
                         }
 
-                        var isVendorCollection = caps.UsagePage == VendorUsagePage &&
-                                                 caps.Usage == VendorUsage &&
-                                                 caps.OutputReportByteLength >= 2;
-                        var isBlukeVendorCollection = isVendorCollection &&
-                            (product.Contains("Bluke", StringComparison.OrdinalIgnoreCase) ||
-                             path.Contains("BTH", StringComparison.OrdinalIgnoreCase));
                         var isKeyboardCollection = caps.UsagePage == 0x0001 && caps.Usage == 0x0006;
-                        if (isBlukeVendorCollection || IsRelevant(product, path) || isKeyboardCollection)
+                        var isBlukeKeyboard = isKeyboardCollection &&
+                            caps.OutputReportByteLength >= 2 &&
+                            hasAttributes &&
+                            attributes.VendorID == BlukeVendorId &&
+                            attributes.ProductID == BlukeProductId;
+                        if (isBlukeKeyboard || IsRelevant(product, path) || isKeyboardCollection)
                         {
                             relevant++;
                             var ids = hasAttributes
@@ -213,17 +211,17 @@ internal sealed class HidOutputDevice : IDisposable
                             notes.Add($"HID[{index}] page=0x{caps.UsagePage:X4} usage=0x{caps.Usage:X4} in={caps.InputReportByteLength} out={caps.OutputReportByteLength} product='{product}' manufacturer='{manufacturer}'{ids} path={ShortPath(path)}");
                         }
 
-                        if (isBlukeVendorCollection)
+                        if (isBlukeKeyboard)
                         {
                             var writable = OpenForWrite(path);
                             if (writable is not null)
                             {
-                                diagnostics = $"HID scan: {seen} interfaces; Bluke output collection found.\n" +
+                                diagnostics = $"Bluke keyboard output report found (VID:PID {BlukeVendorId:X4}:{BlukeProductId:X4}, report length {caps.OutputReportByteLength}).\n" +
                                               string.Join("\n", notes);
                                 return new HidOutputDevice(writable, caps.OutputReportByteLength);
                             }
 
-                            notes.Add($"HID[{index}] Bluke output collection matched, but write-open failed Win32={Marshal.GetLastWin32Error()}.");
+                            notes.Add($"HID[{index}] Bluke keyboard matched, but write-open failed Win32={Marshal.GetLastWin32Error()}.");
                         }
                     }
                     finally
@@ -243,7 +241,7 @@ internal sealed class HidOutputDevice : IDisposable
         }
 
         diagnostics = $"HID scan: {seen} interfaces enumerated; {relevant} relevant collections shown; " +
-                      "no Bluke vendor output collection (usage page FF00, usage 0001, output length >= 2) was found.";
+                      $"no Bluke keyboard output collection (VID:PID {BlukeVendorId:X4}:{BlukeProductId:X4}, output length >= 2) was found.";
         if (notes.Count > 0) diagnostics += "\n" + string.Join("\n", notes.Take(30));
         else diagnostics += "\nWindows returned no Bluke, Bluetooth, keyboard, or vendor-defined HID collection details.";
         return null;
@@ -306,8 +304,12 @@ internal sealed class HidOutputDevice : IDisposable
     public bool TrySendLayout(byte layoutCode, out string error)
     {
         var report = new byte[outputReportLength];
+        var ledBits = 0;
+        if ((GetKeyState(0x90) & 1) != 0) ledBits |= 0x01; // Num Lock
+        if ((GetKeyState(0x14) & 1) != 0) ledBits |= 0x02; // Caps Lock
+        if ((GetKeyState(0x91) & 1) != 0) ledBits |= 0x04; // Scroll Lock
         report[0] = (byte)Program.HostLayoutReportId;
-        report[1] = layoutCode;
+        report[1] = (byte)(ledBits | ((layoutCode & 0x07) << 5));
 
         if (WriteFile(handle, report, report.Length, out var written, IntPtr.Zero) &&
             written == report.Length)
@@ -323,7 +325,7 @@ internal sealed class HidOutputDevice : IDisposable
             return true;
         }
 
-        error = $"HID report ID 5 rejected (WriteFile Win32 {writeError}; HidD_SetOutputReport Win32 {Marshal.GetLastWin32Error()})";
+        error = $"HID keyboard output report ID 1 rejected (WriteFile Win32 {writeError}; HidD_SetOutputReport Win32 {Marshal.GetLastWin32Error()})";
         return false;
     }
 
@@ -424,8 +426,13 @@ internal sealed class HidOutputDevice : IDisposable
         uint shareMode, IntPtr securityAttributes, uint creationDisposition,
         uint flagsAndAttributes, IntPtr templateFile);
 
+    [DllImport("user32.dll")]
+    private static extern short GetKeyState(int virtualKey);
+
     [DllImport("kernel32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool WriteFile(SafeFileHandle file, byte[] buffer, int bytesToWrite,
         out int bytesWritten, IntPtr overlapped);
 }
+
+[executed on device: ubuntu-16gb-hel1-2 (a1c21909-360a-4044-b63e-263af0ebd786)]
