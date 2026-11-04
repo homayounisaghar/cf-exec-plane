@@ -1,0 +1,9 @@
+{
+  "name": "dexa-cf-worker-canary-20261104",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "deploy": "wrangler deploy"
+  }
+}
