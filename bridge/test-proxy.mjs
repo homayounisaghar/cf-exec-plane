@@ -27,7 +27,9 @@ try{
   assert.equal(r.status,200);
   const html=await r.text();
   assert.ok(html.includes("MOCK_PRIVATE_DEXA_UI"));
-  assert.ok(html.includes("navigator.serviceWorker.register"));
+  assert.ok(html.includes("sw.register(\"/sw.js\""));
+  assert.ok(html.includes("dexa-failover-browser-status"));
+  assert.ok(html.includes("DEXA_FAILOVER_STATUS_QUERY"));
   assert.match(r.headers.get("set-cookie"),/Path=\/dexa-lite\//);
   assert.match(calls.at(-1).options.headers.get("authorization"),/^Basic /);
   const cross=await worker.fetch(req("/dexa-lite/api/missions",{"origin":"https://evil.example"},"POST","x"));
@@ -57,6 +59,6 @@ try{
   const noOpenProxy=await worker.fetch(req("/dexa-lite/api/secrets"));
   assert.equal(noOpenProxy.status,404);
   const root=await worker.fetch(req("/"));
-  assert.ok((await root.text()).includes('navigator.serviceWorker.register'));
+  assert.ok((await root.text()).includes("dexa-failover-browser-status"));
   console.log("PASS 8 PRIVATE BRIDGE CONTRACT TESTS: REALM_401, HTML_SW_INJECTION, COOKIE, CSRF, AUTH_HEADER, POST_IDEMPOTENCY, STREAMING, EXACT_ALLOWLIST");
 }finally{globalThis.fetch=originalFetch}
