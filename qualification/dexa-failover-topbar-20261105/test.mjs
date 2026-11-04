@@ -10,7 +10,7 @@ const script=badgeHTML.replace(/^<script>/,"").replace(/<\/script>$/,"");
 assert.ok(!script.includes("position:fixed"));
 assert.ok(!script.includes("document.body.appendChild"));
 const segment=source.slice(source.indexOf("function rewriteHTML(html){"),source.indexOf("function rewriteCookie"));
-const sandbox={PREFIX:"/dexa-lite",CSS:""};
+const sandbox={PREFIX:"/dexa-lite",CSS:"",FAILOVER_UI_SCRIPT:badgeHTML};
 vm.createContext(sandbox);
 vm.runInContext(segment+";globalThis.rewrite=rewriteHTML;",sandbox);
 const sample='<html><head><title>دکسا | اجرای مأموریت</title></head><body><header><div class="row dexa-status-header"><h1>دکسا</h1><span class="status" id="serviceStatus">سرویس آماده</span><span class="status waiting" id="instantReadyFlag">Cerebras آماده</span></div></header>'+
