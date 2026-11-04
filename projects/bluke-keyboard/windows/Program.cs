@@ -5,8 +5,8 @@ using Microsoft.Win32.SafeHandles;
 internal static class Program
 {
     internal const int HostLayoutReportId = 1;
-    private const ushort BlukeVendorId = 0x2717;
-    private const ushort BlukeProductId = 0x5070;
+    internal const ushort BlukeVendorId = 0x2717;
+    internal const ushort BlukeProductId = 0x5070;
 
     private static async Task Main()
     {
@@ -200,8 +200,8 @@ internal sealed class HidOutputDevice : IDisposable
                         var isBlukeKeyboard = isKeyboardCollection &&
                             caps.OutputReportByteLength >= 2 &&
                             hasAttributes &&
-                            attributes.VendorID == BlukeVendorId &&
-                            attributes.ProductID == BlukeProductId;
+                            attributes.VendorID == Program.BlukeVendorId &&
+                            attributes.ProductID == Program.BlukeProductId;
                         if (isBlukeKeyboard || IsRelevant(product, path) || isKeyboardCollection)
                         {
                             relevant++;
@@ -216,7 +216,7 @@ internal sealed class HidOutputDevice : IDisposable
                             var writable = OpenForWrite(path);
                             if (writable is not null)
                             {
-                                diagnostics = $"Bluke keyboard output report found (VID:PID {BlukeVendorId:X4}:{BlukeProductId:X4}, report length {caps.OutputReportByteLength}).\n" +
+                                diagnostics = $"Bluke keyboard output report found (VID:PID {Program.BlukeVendorId:X4}:{Program.BlukeProductId:X4}, report length {caps.OutputReportByteLength}).\n" +
                                               string.Join("\n", notes);
                                 return new HidOutputDevice(writable, caps.OutputReportByteLength);
                             }
