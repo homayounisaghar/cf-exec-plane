@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>بررسی مسیر ارتباط دکسا با رندر</title>
+<style>
+:root{font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+body{margin:0;min-height:100svh;background:#f4f7fb;color:#1b293b;display:grid;place-items:center;padding:18px;box-sizing:border-box}
+main{background:white;border:1px solid #e3e8f0;border-radius:22px;width:min(450px,100%);box-sizing:border-box;padding:24px;box-shadow:0 5px 20px #11293d0b}
+h1{font-size:1.35rem;margin:0 0 9px;line-height:1.8}
+p{line-height:1.9;margin:8px 0 12px}
+section{margin:12px 0;background:#f1f5fa;padding:14px;border-radius:12px;line-height:1.9}
+label{font-weight:700;display:block}
+output{display:block;overflow-wrap:anywhere;white-space:pre-wrap;font-size:.95rem}
+button{width:100%;background:#1c68c8;color:white;border:0;border-radius:12px;font-weight:bold;font-size:1rem;padding:14px;margin:14px 0}
+small{color:#66778a;line-height:2;display:block}
+a{color:#145bb5}
+</style>
+</head>
+<body>
+<main>
+<h1>آزمایش مسیر رندر از صفحهٔ قابل‌دسترسی</h1>
+<p>این صفحه روی گیت‌هاب قرار دارد و از داخل مرورگرت مستقیماً به سرویس رندر درخواست می‌فرستد. هیچ رمزی ارسال نمی‌کند.</p>
+<section><label>۱. پاسخ جدید سرور رندر</label><output id="ping">هنوز آزمایش نشده</output></section>
+<section><label>۲. پیام‌های زندهٔ سرور رندر</label><output id="sse">هنوز آزمایش نشده</output></section>
+<button type="button" id="run">شروع یا تکرار آزمایش</button>
+<small>فیلترشکن را خاموش بگذار. اگر هر دو بخش ناموفق شدند، ممکن است مسیر رندر از شبکهٔ تو مسدود باشد؛ این نتیجه به‌تنهایی علت دقیق را مشخص نمی‌کند. برای بررسی خطا، از نتیجهٔ همین صفحه تصویر بفرست.</small>
+</main>
+<script>
+const target="https://dexa-render-canary-20261104.onrender.com";
+const marker="DEXA_RENDER_DYNAMIC_OK";
+const ping=document.getElementById("ping");
+const sse=document.getElementById("sse");
+const run=document.getElementById("run");
+async function test(){
+run.disabled=true;
+ping.textContent="در حال درخواست از رندر (ممکن است سرویس خواب باشد)...";
+sse.textContent="پس از بررسی مرحلهٔ اول شروع می‌شود.";
+const start=performance.now();
+const ctrl=new AbortController();
+const timer=setTimeout(()=>ctrl.abort(),70000);
+let ok=false;
+try{
+const r=await fetch(target+"/api/ping?probe="+Date.now(),{cache:"no-store",signal:ctrl.signal,mode:"cors",credentials:"omit"});
+const data=await r.json();
+if(r.ok&&data.marker===marker&&data.requestId){
+ ping.textContent="موفق: پاسخ تازه از رندر رسید.\nزمان: "+((performance.now()-start)/1000).toFixed(1)+" ثانیه";
+ ok=true;
+}else{
+ ping.textContent="پاسخ دریافت شد ولی غیرمنتظره بود. کد: "+r.status;
+}
+}catch(e){
+ping.textContent=e.name==="AbortError"?"درخواست پس از ۷۰ ثانیه پاسخی نگرفت.":"درخواست به رندر ناموفق بود. نوع خطا: "+(e.name||"نامشخص");
+}finally{clearTimeout(timer);}
+if(!ok){sse.textContent="اجرا نشد؛ ابتدا دریافت پاسخ عادی باید موفق شود.";run.disabled=false;return;}
+sse.textContent="در حال دریافت پیام‌های زنده...";
+let n=0,done=false,events;
+await new Promise(resolve=>{
+const finish=(text)=>{
+if(done)return;done=true;
+clearTimeout(deadline);
+events.close();
+sse.textContent=text;resolve();
+};
+const deadline=setTimeout(()=>finish("ناموفق: پیام زنده تا پایان مهلت تکمیل نشد. پیام‌های دریافتی: "+n),20000);
+events=new EventSource(target+"/api/events?probe="+Date.now());
+events.addEventListener("tick",e=>{
+try{
+ const j=JSON.parse(e.data);
+ if(j.marker!==marker)return;
+ n++;
+ sse.textContent="تا اینجا "+n+" پیام زنده دریافت شد.";
+ if(n===3)finish("موفق: هر سه پیام زنده از رندر دریافت شدند.");
+}catch(err){finish("پیام دریافتی قابل خواندن نبود.");}
+});
+events.onerror=()=>finish("ارتباط زنده ناموفق یا قطع شد. پیام‌های دریافتی: "+n);
+});
+run.disabled=false;
+}
+run.addEventListener("click",test);
+test();
+</script>
+</body>
+</html>
