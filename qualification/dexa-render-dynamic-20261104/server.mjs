@@ -2,11 +2,11 @@ import http from "node:http";
 import { randomUUID } from "node:crypto";
 
 const PORT = Number.parseInt(process.env.PORT || "10000", 10);
-const HOST = "0.0.0.0";
+const HOST = process.env.HOST || "0.0.0.0";
 const ALLOWED_ORIGIN = "https://homayounisaghar.github.io";
 const MARKER = "DEXA_RENDER_DYNAMIC_OK";
 
-const html = String.raw\`<!DOCTYPE html>
+const html = String.raw`<!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
@@ -48,7 +48,7 @@ document.getElementById("stream").onclick=()=>{
  }catch(err){out.textContent+="\nپاسخ نامعتبر.";es.close();clearTimeout(timeout);}});
  es.onerror=()=>{clearTimeout(timeout);es.close();if(count<3)out.textContent+="\nارتباط زنده قطع شد.";};
 };
-</script></body></html>\`;
+</script></body></html>`;
 
 function headers(type) {
   return {
