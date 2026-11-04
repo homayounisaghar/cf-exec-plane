@@ -434,5 +434,3 @@ internal sealed class HidOutputDevice : IDisposable
     private static extern bool WriteFile(SafeFileHandle file, byte[] buffer, int bytesToWrite,
         out int bytesWritten, IntPtr overlapped);
 }
-
-[executed on device: ubuntu-16gb-hel1-2 (a1c21909-360a-4044-b63e-263af0ebd786)]

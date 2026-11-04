@@ -379,5 +379,3 @@ index 0000000..4c08b7f
 +        assertEquals(printScreen.x + printScreen.widthRatio, delete.x)
 +    }
 +}
-
-[executed on device: ubuntu-16gb-hel1-2 (a1c21909-360a-4044-b63e-263af0ebd786)]
