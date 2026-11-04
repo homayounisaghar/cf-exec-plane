@@ -1,0 +1,15 @@
+# Secret-free Dexa dynamic connectivity test only.
+# Never connect this test service to live Dexa or supply any credential.
+services:
+  - type: web
+    name: dexa-render-canary-20261104
+    runtime: node
+    plan: free
+    region: frankfurt
+    repo: https://github.com/homayounisaghar/cf-exec-plane
+    branch: dexa-render-canary-20261104
+    rootDir: qualification/dexa-render-dynamic-20261104
+    buildCommand: npm install --ignore-scripts --no-audit --no-fund
+    startCommand: npm start
+    healthCheckPath: /healthz
+    autoDeployTrigger: off
