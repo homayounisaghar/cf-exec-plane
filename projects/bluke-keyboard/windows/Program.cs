@@ -199,8 +199,11 @@ internal sealed class HidOutputDevice : IDisposable
                         var isVendorCollection = caps.UsagePage == VendorUsagePage &&
                                                  caps.Usage == VendorUsage &&
                                                  caps.OutputReportByteLength >= 2;
+                        var isBlukeVendorCollection = isVendorCollection &&
+                            (product.Contains("Bluke", StringComparison.OrdinalIgnoreCase) ||
+                             path.Contains("BTH", StringComparison.OrdinalIgnoreCase));
                         var isKeyboardCollection = caps.UsagePage == 0x0001 && caps.Usage == 0x0006;
-                        if (isVendorCollection || IsRelevant(product, path) || isKeyboardCollection)
+                        if (isBlukeVendorCollection || IsRelevant(product, path) || isKeyboardCollection)
                         {
                             relevant++;
                             var ids = hasAttributes
@@ -209,7 +212,7 @@ internal sealed class HidOutputDevice : IDisposable
                             notes.Add($"HID[{index}] page=0x{caps.UsagePage:X4} usage=0x{caps.Usage:X4} in={caps.InputReportByteLength} out={caps.OutputReportByteLength} product='{product}' manufacturer='{manufacturer}'{ids} path={ShortPath(path)}");
                         }
 
-                        if (isVendorCollection)
+                        if (isBlukeVendorCollection)
                         {
                             var writable = OpenForWrite(path);
                             if (writable is not null)
@@ -247,13 +250,23 @@ internal sealed class HidOutputDevice : IDisposable
 
     private static SafeFileHandle? OpenForInspection(string path)
     {
-        var handle = CreateFile(path, 0, FileShareRead | FileShareWrite, IntPtr.Zero,
-            OpenExisting, FileAttributeNormal, IntPtr.Zero);
+        var handle = CreateFile(path, GenericRead | GenericWrite, FileShareRead | FileShareWrite,
+            IntPtr.Zero, OpenExisting, FileAttributeNormal, IntPtr.Zero);
         if (!handle.IsInvalid) return handle;
         handle.Dispose();
 
-        handle = CreateFile(path, GenericRead | GenericWrite, FileShareRead | FileShareWrite,
+        handle = CreateFile(path, GenericWrite, FileShareRead | FileShareWrite,
             IntPtr.Zero, OpenExisting, FileAttributeNormal, IntPtr.Zero);
+        if (!handle.IsInvalid) return handle;
+        handle.Dispose();
+
+        handle = CreateFile(path, GenericRead, FileShareRead | FileShareWrite,
+            IntPtr.Zero, OpenExisting, FileAttributeNormal, IntPtr.Zero);
+        if (!handle.IsInvalid) return handle;
+        handle.Dispose();
+
+        handle = CreateFile(path, 0, FileShareRead | FileShareWrite, IntPtr.Zero,
+            OpenExisting, FileAttributeNormal, IntPtr.Zero);
         if (!handle.IsInvalid) return handle;
         handle.Dispose();
         return null;
