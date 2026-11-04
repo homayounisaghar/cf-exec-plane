@@ -47,9 +47,9 @@ jobs:
           git apply --check bluke-keyboard.patch
           git apply bluke-keyboard.patch
           grep -q 'applicationId = "dev.arnv.bluke.persian"' app/build.gradle.kts
-          grep -q 'versionCode = 15' app/build.gradle.kts
-          grep -q 'versionName = "1.2.4"' app/build.gradle.kts
-          grep -q 'CURRENT_HID_DESCRIPTOR_REVISION = 8' app/src/main/java/dev/arnv/bluke/bluetooth/HidDescriptorRevision.kt
+          grep -q 'versionCode = 16' app/build.gradle.kts
+          grep -q 'versionName = "1.2.5"' app/build.gradle.kts
+          grep -q 'CURRENT_HID_DESCRIPTOR_REVISION = 9' app/src/main/java/dev/arnv/bluke/bluetooth/HidDescriptorRevision.kt
           grep -q 'HOST_LAYOUT_REPORT_ID = 5' app/src/main/java/dev/arnv/bluke/bluetooth/HostLayoutReport.kt
           grep -q 'Dedicated vendor-defined host-layout channel' app/src/main/java/dev/arnv/bluke/bluetooth/GamepadDescriptor.kt
 
@@ -71,15 +71,15 @@ jobs:
           APK="upstream/app/build/outputs/apk/debug/app-debug.apk"
           test -s "$APK"
           mkdir -p out/android
-          cp "$APK" out/android/Bluke-Persian-v1.2.4.apk
-          "$ANDROID_HOME/build-tools/36.0.0/zipalign" -c 4 out/android/Bluke-Persian-v1.2.4.apk
-          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose out/android/Bluke-Persian-v1.2.4.apk
-          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging out/android/Bluke-Persian-v1.2.4.apk | grep "package: name='dev.arnv.bluke.persian' versionCode='15' versionName='1.2.4'"
-          TAG="bluke-persian-v1.2.4-vendor-hid"
+          cp "$APK" out/android/Bluke-Persian-v1.2.5.apk
+          "$ANDROID_HOME/build-tools/36.0.0/zipalign" -c 4 out/android/Bluke-Persian-v1.2.5.apk
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose out/android/Bluke-Persian-v1.2.5.apk
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging out/android/Bluke-Persian-v1.2.5.apk | grep "package: name='dev.arnv.bluke.persian' versionCode='16' versionName='1.2.5'"
+          TAG="bluke-persian-v1.2.5-hid-reregister"
           if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release upload "$TAG" out/android/Bluke-Persian-v1.2.4.apk --clobber
+            gh release upload "$TAG" out/android/Bluke-Persian-v1.2.5.apk --clobber
           else
-            gh release create "$TAG" out/android/Bluke-Persian-v1.2.4.apk --target "$GITHUB_SHA" --title "Bluke Android v1.2.4" --notes "Bluetooth language feedback is a dedicated vendor-defined HID top-level collection (usage page FF00, usage 0001, report ID 5). Debug-signed test APK."
+            gh release create "$TAG" out/android/Bluke-Persian-v1.2.5.apk --target "$GITHUB_SHA" --title "Bluke Android v1.2.5" --notes "Adds a real unregister/register cycle when the HID descriptor revision changes, so Android advertises the vendor-defined language collection (FF00/0001, report ID 5). Debug-signed test APK."
           fi
 
   windows:
@@ -98,13 +98,13 @@ jobs:
         shell: pwsh
         run: |
           if (Test-Path out) { Remove-Item out -Recurse -Force }
-          dotnet publish projects/bluke-keyboard/windows/BlukeLanguageBridge.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None -p:DebugSymbols=false -p:Version=1.2.6 -p:AssemblyVersion=1.2.6.0 -p:FileVersion=1.2.6.0 -p:InformationalVersion=1.2.6 -o out
+          dotnet publish projects/bluke-keyboard/windows/BlukeLanguageBridge.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None -p:DebugSymbols=false -p:Version=1.2.7 -p:AssemblyVersion=1.2.7.0 -p:FileVersion=1.2.7.0 -p:InformationalVersion=1.2.7 -o out
           $exe = "out/BlukeLanguageBridge.exe"
           if (!(Test-Path $exe)) { throw "Windows bridge EXE missing" }
           if ((Get-ChildItem out -File).Count -ne 1) { throw "Expected exactly one published file in output" }
           if ((Get-ChildItem out -Filter *.pdb -File).Count -ne 0) { throw "PDB must not be published" }
           $version = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($exe).FileVersion
-          if ($version -ne "1.2.6.0") { throw "Unexpected executable version: $version" }
+          if ($version -ne "1.2.7.0") { throw "Unexpected executable version: $version" }
           Get-FileHash $exe -Algorithm SHA256
 
       - name: Publish only the Windows executable
@@ -113,9 +113,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           $exe = "out/BlukeLanguageBridge.exe"
-          $tag = "bluke-language-bridge-v1.2.6-vendor-hid"
+          $tag = "bluke-language-bridge-v1.2.7-vendor-hid"
           if (gh release view $tag 2>$null) {
             gh release upload $tag $exe --clobber
           } else {
-            gh release create $tag $exe --target $env:GITHUB_SHA --title "Bluke Windows v1.2.6" --notes "One self-contained Windows x64 EXE only. No ZIP and no PDB. Uses the dedicated Bluke vendor HID output collection, usage page FF00 / usage 0001 / report ID 5."
+            gh release create $tag $exe --target $env:GITHUB_SHA --title "Bluke Windows v1.2.7" --notes "One self-contained Windows x64 EXE only. No ZIP and no PDB. Uses the dedicated Bluke vendor HID output collection, usage page FF00 / usage 0001 / report ID 5."
           }

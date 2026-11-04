@@ -1,5 +1,5 @@
 diff --git a/app/build.gradle.kts b/app/build.gradle.kts
-index 377f852..14fea32 100644
+index 377f852..f1263be 100644
 --- a/app/build.gradle.kts
 +++ b/app/build.gradle.kts
 @@ -12,11 +12,11 @@ android {
@@ -12,8 +12,8 @@ index 377f852..14fea32 100644
      targetSdk = 36
 -    versionCode = 10
 -    versionName = "1.1.0"
-+    versionCode = 15
-+    versionName = "1.2.4"
++    versionCode = 16
++    versionName = "1.2.5"
  
      testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
    }
@@ -96,7 +96,7 @@ index b813898..af493ce 100644
      0x05.toByte(), 0x01.toByte(),         // USAGE_PAGE (Generic Desktop)
      0x09.toByte(), 0x02.toByte(),         // USAGE (Mouse)
 diff --git a/app/src/main/java/dev/arnv/bluke/bluetooth/HidDescriptorRevision.kt b/app/src/main/java/dev/arnv/bluke/bluetooth/HidDescriptorRevision.kt
-index 09d7d1d..14d5a61 100644
+index 09d7d1d..2fdf920 100644
 --- a/app/src/main/java/dev/arnv/bluke/bluetooth/HidDescriptorRevision.kt
 +++ b/app/src/main/java/dev/arnv/bluke/bluetooth/HidDescriptorRevision.kt
 @@ -1,7 +1,7 @@
@@ -104,7 +104,7 @@ index 09d7d1d..14d5a61 100644
  
  internal const val HID_DESCRIPTOR_REVISION_PREFERENCE = "hid_descriptor_revision"
 -internal const val CURRENT_HID_DESCRIPTOR_REVISION = 5
-+internal const val CURRENT_HID_DESCRIPTOR_REVISION = 8
++internal const val CURRENT_HID_DESCRIPTOR_REVISION = 9
  
  internal fun requiresHidDescriptorRefresh(
      savedRevision: Int,
@@ -139,7 +139,7 @@ index 0000000..10aa89d
 +    }
 +}
 diff --git a/app/src/main/java/dev/arnv/bluke/ui/HomeScreen.kt b/app/src/main/java/dev/arnv/bluke/ui/HomeScreen.kt
-index 6d09d21..bca934c 100644
+index 6d09d21..f638b42 100644
 --- a/app/src/main/java/dev/arnv/bluke/ui/HomeScreen.kt
 +++ b/app/src/main/java/dev/arnv/bluke/ui/HomeScreen.kt
 @@ -105,6 +105,16 @@ fun HomeScreen(
@@ -159,7 +159,42 @@ index 6d09d21..bca934c 100644
      var isKeyboardActive by rememberSaveable { mutableStateOf(false) }
      BackHandler(enabled = isKeyboardActive) {
          isKeyboardActive = false
-@@ -785,7 +795,19 @@ fun HomeScreen(
+@@ -274,10 +284,9 @@ fun HomeScreen(
+             text = {
+                 Text(
+                     if (descriptorRefreshRequired) {
+-                        "Bluke now uses one shared HID descriptor for Native, Android and Web, " +
+-                            "but Bluetooth hosts cache the old layout. To use the new controls, forget the host on this phone, " +
+-                            "remove Bluke on the host, then pair again once. Reinstalling the app alone is not enough. " +
+-                            "After this one-time refresh, all controller modes switch live without reconnecting or re-pairing."
++                        "Bluke needs to refresh its Bluetooth HID registration for the new language channel. " +
++                            "Tap Got it to restart the HID service with the updated descriptor. " +
++                            "If the computer still shows the old keyboard layout, remove and pair Bluke once after this restart."
+                     } else {
+                         "We've added new features and made significant underlying changes to the controller!\n" +
+                             "For detailed information, see the changelog."
+@@ -287,12 +296,19 @@ fun HomeScreen(
+             confirmButton = {
+                 Button(onClick = { 
+                     showUpdateDialog = false 
++                    val refreshBluetoothDescriptor = descriptorRefreshRequired
+                     sharedPrefs.edit {
+                         putBoolean("mock_update_popup", false)
+-                        if (descriptorRefreshRequired) {
++                        if (refreshBluetoothDescriptor) {
+                             putInt(HID_DESCRIPTOR_REVISION_PREFERENCE, CURRENT_HID_DESCRIPTOR_REVISION)
+                         }
+                     }
++                    if (refreshBluetoothDescriptor) {
++                        // Updating the saved revision alone leaves Android's previously
++                        // registered HID SDP descriptor active. Force a real unregister/register
++                        // cycle so Windows can discover the new vendor-defined collection.
++                        btManager.retryBluetoothCapabilities()
++                    }
+                     descriptorRefreshRequired = false
+                 }) {
+                     Text("Got it")
+@@ -785,7 +801,19 @@ fun HomeScreen(
                                      fontWeight = FontWeight.Bold,
                                      fontFamily = FontFamily.SansSerif
                                  )

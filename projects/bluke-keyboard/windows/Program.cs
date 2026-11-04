@@ -13,7 +13,7 @@ internal static class Program
     private static async Task Main()
     {
         Console.OutputEncoding = Encoding.UTF8;
-        Console.WriteLine("Bluke Bluetooth Language Bridge 1.2.6 - press Ctrl+C to exit.");
+        Console.WriteLine("Bluke Bluetooth Language Bridge 1.2.7 - press Ctrl+C to exit.");
         Console.WriteLine("Uses the existing Bluetooth HID connection; no Wi-Fi or hotspot is used.");
 
         using var stop = new CancellationTokenSource();
