@@ -40,10 +40,12 @@ From `bridge/` with Node.js 22:
 node test.mjs
 node test-proxy.mjs
 node test-browser-status.mjs
+node test-real-browser.mjs  # requires isolated Chromium on PATH
 ```
 
 - `test.mjs`: synthetic 1027 GET/POST, no mission replay, other errors, unsupported paths and CSRF.
 - `test-proxy.mjs`: Basic auth, HTML installer, cookie and header pass-through, SSE, POST idempotency, allowlist.
 - `test-browser-status.mjs`: real generated SW message response, explicit B present/absent, browser UI green/amber/red, controller-change activation, quota navigation and Lite installer.
-- **All three suites passed on the owner-authorized VPS using immutable GitHub commit sources.**
+- **All three Node suites passed on the owner-authorized VPS using immutable GitHub commit sources.**
+- **The isolated real Chromium test passed on a fresh browser profile:** the actual generated Worker page registered the service worker, received its readiness handshake, and displayed the green `data-state="ready"` badge on the first page load, without refresh.
 - No attempt is made to spend 100,000 Cloudflare requests to force real quota exhaustion.
