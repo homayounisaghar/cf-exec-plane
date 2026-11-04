@@ -27,7 +27,7 @@ async function makeSw(withBackup=true) {
   return {dispatch,sent,requests:()=>requests};
 }
 const quota=fake(500,"<html><title>Error 1027</title>Worker exceeded free tier daily request limit.</html>");
-const tests=makeSw(true);
+const tests=await makeSw(true);
 const a=await tests.dispatch("GET","navigate","/dexa-lite/?status=1",quota);
 assert.equal(a.status,302);
 assert.equal(a.headers.get("location"),BACKUP+"/dexa-lite/?status=1");
