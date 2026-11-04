@@ -1,0 +1,2 @@
+DEXA_GITHUB_PAGES_ASSET_OK
+Static public no-secret connectivity-only test. No authentication, API or Dexa system access.
