@@ -3,7 +3,7 @@ name: Bluke Paired Bluetooth Layout Release
 on:
   push:
     branches:
-      - release/bluke-20261104-v124
+      - release/bluke-20261104-v125
     paths:
       - 'projects/bluke-keyboard/android/bluke-keyboard.patch'
       - 'projects/bluke-keyboard/windows/Program.cs'
