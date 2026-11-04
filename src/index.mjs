@@ -92,7 +92,7 @@ export default {
    }
    if(path==="/api/hetzner-public-check") {
       try {
-        const r=await fetch(EGRESS_URL,{method:"GET",signal:AbortSignal.timeout(7000),redirect:"error",headers:{"Accept":"text/plain"}});
+        const r=await fetch(EGRESS_URL,{method:"GET",signal:AbortSignal.timeout(7000),redirect:"manual",headers:{"Accept":"text/plain"}});
         const body=(await r.text()).slice(0,256);
         return Response.json({marker:MARKER,reachable:r.status===200&&body.includes("DEXA_ALT_ORIGIN_TEST_OK"),status:r.status},{headers:hdr("application/json; charset=utf-8")});
       } catch(e) {
