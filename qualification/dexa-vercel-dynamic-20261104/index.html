@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>آزمایش ارتباط زندهٔ دکسا در ورسل</title>
+<style>
+:root{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color-scheme:light}
+body{margin:0;min-height:100svh;display:grid;place-items:center;padding:20px;background:#f5f8fc;color:#162637;box-sizing:border-box}
+main{background:white;width:min(430px,100%);border:1px solid #dde7f0;border-radius:23px;padding:24px;box-sizing:border-box;box-shadow:0 5px 20px #26364e11}
+h1{margin:0;font-size:1.4rem;line-height:1.8}
+p,small{line-height:1.9}
+code{display:block;background:#ecf5f1;border-radius:12px;text-align:center;padding:14px;margin:12px 0;direction:ltr;overflow-wrap:anywhere;font-size:.88rem;font-weight:bold}
+button{display:block;width:100%;padding:14px;font-weight:bold;font-size:1rem;color:#fff;background:#2365ca;border:0;border-radius:12px;margin:12px 0}
+button:nth-of-type(2){background:#14765e}
+output{display:block;background:#f2f6fb;white-space:pre-wrap;min-height:48px;padding:13px;line-height:1.85;border-radius:12px;margin-top:13px}
+small{color:#647284;display:block;margin-top:14px}
+</style>
+</head>
+<body><main>
+<h1>آزمایش ارتباط پویای دکسا</h1>
+<p>این صفحه از سرور ورسل پاسخ می‌گیرد. هنوز به موتور اصلی دکسا متصل نیست.</p>
+<code>DEXA_VERCEL_DYNAMIC_OK</code>
+<button id="ping">آزمایش پاسخ تازهٔ سرور</button>
+<button id="stream">آزمایش دریافت سه پیام زنده</button>
+<output id="out" aria-live="polite">آمادهٔ آزمایش.</output>
+<small>بدون رمز، اطلاعات شخصی و دسترسی به دکسای اصلی. فقط آزمایش ارتباط اینترنت است.</small>
+</main>
+<script>
+const out=document.getElementById("out");
+document.getElementById("ping").onclick=async()=>{
+ out.textContent="در حال دریافت پاسخ تازه...";
+ try{
+  const r=await fetch("/api/ping?t="+Date.now(),{cache:"no-store"});
+  const j=await r.json();
+  out.textContent=r.ok&&j.marker==="DEXA_VERCEL_DYNAMIC_OK"?
+  "موفق: سرور پاسخ تازه داد.\nشناسه: "+j.requestId:
+  "پاسخ غیرمنتظره: "+r.status;
+ }catch(e){out.textContent="دریافت پاسخ ممکن نشد.";}
+};
+document.getElementById("stream").onclick=()=>{
+ out.textContent="در حال دریافت پیام‌های زنده...";
+ let count=0;
+ const es=new EventSource("/api/events?t="+Date.now());
+ const timeout=setTimeout(()=>{es.close();if(count<3)out.textContent+="\nارتباط زنده کامل نشد.";},12000);
+ es.addEventListener("tick",e=>{
+  try{
+   const data=JSON.parse(e.data);
+   if(data.marker!=="DEXA_VERCEL_DYNAMIC_OK")return;
+   count++;
+   out.textContent+="\nپیام شمارهٔ "+count+" رسید.";
+   if(count===3){clearTimeout(timeout);es.close();out.textContent+="\nموفق: هر سه پیام زنده دریافت شدند.";}
+  }catch{clearTimeout(timeout);es.close();out.textContent+="\nپیام نامعتبر بود.";}
+ });
+ es.onerror=()=>{clearTimeout(timeout);es.close();if(count<3)out.textContent+="\nارتباط قطع شد.";};
+};
+</script>
+</body>
+</html>
