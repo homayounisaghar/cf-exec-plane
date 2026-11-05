@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>داشبورد دکسا</title>
-<link rel="stylesheet" href="/theme.css">
+<link rel="stylesheet" href="/theme.css"><script src="/theme-client.js"></script>
 <style>
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Vazirmatn,Tahoma,Arial,sans-serif;font-size:14px}
 header{padding:18px 16px 16px;background:linear-gradient(125deg,var(--hero-from),var(--hero-to));color:white}
@@ -23,24 +23,27 @@ input,select{width:100%;border:1px solid var(--field-border);border-radius:10px;
 .tabs .active{background:var(--primary);color:white}
 .notice{background:var(--notice);padding:12px;border-radius:12px;border:1px solid var(--notice-border);line-height:1.8;color:var(--notice-ink)}
 pre{direction:ltr;text-align:left;background:var(--debug);color:var(--debug-ink);overflow:auto;font:11px monospace;border-radius:12px;padding:13px;white-space:pre-wrap;word-break:break-word;min-height:70px}
-.perm-group{margin:14px 0 8px;font-weight:bold;font-size:13px}.perm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px}.perm-item{border:1px solid var(--line);background:var(--field-bg);border-radius:12px;padding:10px;display:flex;justify-content:space-between;align-items:center;gap:8px}.perm-item button{flex-shrink:0}.perm-status{display:block;font-size:10px;color:var(--muted);margin-top:3px}.kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.kpi{text-align:center;background:white;border:1px solid var(--line);border-radius:12px;padding:12px 6px}.kpi b{display:block;font-size:18px;color:var(--primary-active)}.kpi span{font-size:10px;color:var(--muted)}
+.perm-group{margin:14px 0 8px;font-weight:bold;font-size:13px}.perm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px}.perm-item{border:1px solid var(--line);background:var(--field-bg);border-radius:12px;padding:10px;display:flex;justify-content:space-between;align-items:center;gap:8px}.perm-item button{flex-shrink:0}.perm-status{display:block;font-size:10px;color:var(--muted);margin-top:3px}.kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.kpi{text-align:center;background:var(--field-bg);border:1px solid var(--line);border-radius:12px;padding:12px 6px}.kpi b{display:block;font-size:18px;color:var(--primary-active)}.kpi span{font-size:10px;color:var(--muted)}
+.theme-swatches{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.theme-swatches button{border:2px solid transparent;min-width:76px;min-height:56px;background:var(--field-bg);color:var(--ink)}.theme-swatches button[aria-pressed=true]{border-color:var(--primary)}.theme-dot{display:inline-block;width:18px;height:18px;border-radius:50%;vertical-align:middle;margin:4px}.theme-picker{min-width:100px;flex:1}
 footer{text-align:center;font-size:11px;color:var(--muted);margin:20px auto}
 </style></head>
 <body>
-<header><div class="eyebrow">DEXA · SUPER DASHBOARD · V1</div><h1>داشبورد دکسا</h1><p>میزبان چندمرورگری — کنترل از راه وب، اجرا روی گوشی</p></header>
+<header><div class="eyebrow">DEXA · SUPER DASHBOARD · WEB 1.2</div><h1>داشبورد دکسا</h1><p>میزبان چندمرورگری — کنترل از راه وب، اجرا روی گوشی</p></header>
 <main>
 <div class="kpis"><div class="kpi"><b id="browserCount">—</b><span>مرورگر فعال</span></div><div class="kpi"><b id="sessionStatus">—</b><span>ارتباط با اندروید</span></div><div class="kpi"><b id="telemetry">—</b><span>رخدادهای در صف</span></div></div>
-<section><div class="section"><h2>مرورگرها</h2><div class="row"><span class="tag">نشست مشترک</span><button id="addBrowser" class="primary">+ مرورگر</button></div></div><div id="browserCards" class="cards"></div></section>
-<section><div class="section"><h2>داشبوردها</h2><button id="addBoard">+ داشبورد</button></div><div id="boardTabs" class="tabs"></div><div id="boardContent" class="card"></div></section>
+<section><div class="section"><h2>مرورگرها</h2><span class="tag">نشست مشترک · تنظیم از بیرون برنامه</span></div><div id="browserCards" class="cards"></div></section>
+<section><div class="section"><h2>داشبوردها</h2><span class="tag">تعریف از بیرون برنامه</span></div><div id="boardTabs" class="tabs"></div><div id="boardContent" class="card"></div></section>
 <section><div class="section"><h2>عیب‌یابی</h2><button id="refreshStatus">تازه‌سازی وضعیت</button></div><div class="notice">رخدادهای فنی برنامه به سرور ارسال می‌شوند؛ محتوای چت و رمزها در تله‌متری ثبت نمی‌شوند.</div><pre id="diagnostics">در حال اتصال به میزبان اندروید ...</pre></section>
 <footer>نسخهٔ وب با رفرش به‌روز می‌شود · کلیدهای امضا خارج از سورس نگهداری می‌شوند</footer>
 </main>
 <script>
 'use strict';
 const $=id=>document.getElementById(id);
-const defaults={browserHome:'https://chatgpt.com/',maxBrowsers:8,maxDashboards:8,actions:{},permissions:[]};
-let config=defaults,hostState=null,requestSeq=0,requests=new Map(),selectedBoard=0,permissionSnapshot={},permissionFetching=false;
-let boards=JSON.parse(localStorage.getItem('dexa-boards-v1')||'[{"title":"کنترل دکسا","description":"مدیریت مرورگرها و مسیر آزمایش‌های دکسا"}]');
+const defaults={browserHome:'https://chatgpt.com/',maxBrowsers:8,maxDashboards:8,actions:{},permissions:[],desiredBrowserCount:null,dashboards:[{id:'control',title:'کنترل دکسا',description:'مدیریت مرورگرها'},{id:'theme',title:'تم رنگی'},{id:'permissions',title:'دسترسی‌های اندروید'}]};
+let config=defaults,hostState=null,requestSeq=0,requests=new Map(),selectedBoard='control',permissionSnapshot={},permissionFetching=false;
+let configReady=false,countDirectiveAttempted=false;
+function configuredBoards(){const a=Array.isArray(config.dashboards)&&config.dashboards.length?config.dashboards:defaults.dashboards;return a.slice(0,8).filter(x=>x&&typeof x.id==='string'&&typeof x.title==='string')}
+function applyBrowserCountDirective(){if(!configReady||!hostState||countDirectiveAttempted)return;const n=config.desiredBrowserCount;if(!Number.isInteger(n)||n<1||n>8||n===hostState.count)return;countDirectiveAttempted=true;command('set-count',{count:n})}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function log(s){$('diagnostics').textContent=(new Date().toLocaleTimeString('fa-IR')+' | '+s+'\n'+$('diagnostics').textContent).slice(0,3000)}
 function nativeCall(op,args={}){
@@ -55,8 +58,8 @@ window.DexaResolve=(id,response)=>{
  const r=requests.get(id);if(!r)return;clearTimeout(r.handle);requests.delete(id);
  if(response&&response.ok)r.resolve(response);else r.reject(new Error(response?.reason||'HOST_ERROR'));
 };
-window.onDexaHostUpdate=state=>{hostState=state;render()};
-window.onDexaPermissionsUpdated=()=>{if(selectedBoard===-1)refreshPermissions()};
+window.onDexaHostUpdate=state=>{hostState=state;render();applyBrowserCountDirective()};
+window.onDexaPermissionsUpdated=()=>{if(selectedBoard==='permissions')refreshPermissions()};
 async function command(op,args={}){
  try{const r=await nativeCall(op,args);if(r.state)hostState=r.state;log(op+' ✓ '+JSON.stringify(r.result??{}).slice(0,350));render();return r}
  catch(e){log(op+' ✕ '+e.message);render();return null}
@@ -65,7 +68,6 @@ function render(){
  $('sessionStatus').textContent=hostState?'وصل':'قطع';
  $('browserCount').textContent=hostState?.count??'—';
  $('telemetry').textContent=hostState?.pending??'—';
- $('addBrowser').disabled=!hostState||hostState.count>=config.maxBrowsers;
  $('browserCards').innerHTML='';
  const arr=hostState?.browsers||[];
  for(const s of arr){
@@ -91,7 +93,7 @@ function render(){
  if(!hostState)$('browserCards').innerHTML='<div class="notice">این صفحه خارج از اپلیکیشن اندروید هم باز می‌شود؛ برای کنترل مرورگرها آن را داخل اپلیکیشن باز کن.</div>';
  renderBoards();
 }
-function saveBoards(){localStorage.setItem('dexa-boards-v1',JSON.stringify(boards))}
+
 async function refreshPermissions(){
  if(permissionFetching||!hostState||!config.permissions||config.permissions.length===0)return;
  permissionFetching=true;
@@ -101,7 +103,7 @@ async function refreshPermissions(){
   permissionSnapshot={};
   for(const p of (r.result||[]))permissionSnapshot[p.id]=p;
  }catch(e){log('PERMISSION_STATUS_ERROR '+e.message)}
- finally{permissionFetching=false;if(selectedBoard===-1)renderPermissionItems()}
+ finally{permissionFetching=false;if(selectedBoard==='permissions')renderPermissionItems()}
 }
 function renderPermissionItems(){
  const el=$('permissionItems');if(!el)return;
@@ -131,39 +133,29 @@ function renderPermissionItems(){
   }
  }
 }
+function renderThemeTab(){
+ const theme=window.DexaTheme,value=theme?.read()||'#d65d0e';
+ $('boardContent').innerHTML='<div class="card-head"><h3>تنظیم تم رنگی</h3><span class="tag">ذخیره روی گوشی</span></div><p class="sub">رنگ‌ها را تغییر بده؛ داشبورد و نوار بالای برنامه هماهنگ می‌شوند.</p><div class="theme-swatches" id="swatches"></div><div class="row"><label class="theme-picker">رنگ دلخواه<input id="colorPicker" type="color" value="'+value+'"></label><button id="themeReset">بازگشت به پیش‌فرض</button></div><p class="sub" id="themeInfo">رنگ فعلی: '+(theme?.read()||'پیش‌فرض سرور')+'</p><div class="notice">پیش‌نمایش <button class="primary" disabled>نمونه دکمه</button></div>';
+ for(const p of (theme?.presets||[])){const b=document.createElement('button');b.type='button';b.setAttribute('aria-pressed',String(value===p.hex));b.innerHTML='<span class="theme-dot" style="background:'+p.hex+'"></span>'+esc(p.label);b.onclick=()=>{if(theme.set(p.hex))renderThemeTab()};$('swatches').appendChild(b)}
+ $('colorPicker').oninput=e=>{if(theme?.set(e.target.value))$('themeInfo').textContent='رنگ فعلی: '+e.target.value};
+ $('colorPicker').onchange=()=>renderThemeTab();
+ $('themeReset').onclick=()=>{if(theme?.reset())renderThemeTab()};
+}
 function renderBoards(){
- $('addBoard').disabled=boards.length>=config.maxDashboards;
+ const boards=configuredBoards();if(!boards.some(b=>b.id===selectedBoard))selectedBoard=boards[0]?.id||'control';
  $('boardTabs').innerHTML='';
- const permTab=document.createElement('button');
- permTab.textContent='دسترسی‌های اندروید';
- permTab.className=selectedBoard===-1?'active':'';
- permTab.onclick=()=>{selectedBoard=-1;renderBoards();refreshPermissions()};
- $('boardTabs').appendChild(permTab);
- boards.forEach((b,i)=>{
-  const btn=document.createElement('button');btn.textContent=b.title;btn.className=i===selectedBoard?'active':'';
-  btn.onclick=()=>{selectedBoard=i;renderBoards()};$('boardTabs').appendChild(btn);
- });
- if(selectedBoard===-1){
-  $('boardContent').innerHTML='<div class="card-head"><h3>دسترسی‌های اندروید</h3><span class="tag">فقط با تأیید شما</span></div>'
-  +'<p class="sub">این دکمه‌ها درخواست مجوز را از خود اندروید باز می‌کنند؛ هیچ اجازه‌ای خودکار اعطا نمی‌شود. فقط مجوزهایی که در APK تعریف شده‌اند، قابل درخواست‌اند. برخی دسترسی‌های ویژه باید در تنظیمات فعال شوند و ممکن است به نقش سیستمی نیاز داشته باشند. فعال‌شدن اجازه به معنای پیاده‌سازی همهٔ قابلیت‌های اجرایی آن نیست.</p>'
-  +'<div class="row"><button id="refreshPermissions" class="primary">بررسی دوبارهٔ وضعیت‌ها</button><span class="sub">مجموع: '+(config.permissions||[]).length+' دسترسی و نقش</span></div>'
-  +'<div id="permissionItems"></div>';
-  $('refreshPermissions').onclick=refreshPermissions;
-  renderPermissionItems();return;
- }
- const b=boards[selectedBoard]||boards[0];
- $('boardContent').innerHTML='<div class="card-head"><h3>'+esc(b.title)+'</h3><span class="tag">داشبورد '+(selectedBoard+1)+'</span></div>'
-   +'<p class="sub">'+esc(b.description)+'</p><div class="row"><button id="renameBoard">تغییر نام</button><button id="refreshDashboard">رفرش وب</button><button id="removeBoard" class="danger">حذف داشبورد</button></div>';
- $('renameBoard').onclick=()=>{const t=prompt('نام داشبورد',b.title);if(t){b.title=t.slice(0,35);saveBoards();renderBoards()}};
+ for(const b of boards){const btn=document.createElement('button');btn.textContent=b.title;btn.className=b.id===selectedBoard?'active':'';btn.onclick=()=>{selectedBoard=b.id;renderBoards();if(selectedBoard==='permissions')refreshPermissions()};$('boardTabs').appendChild(btn)}
+ const b=boards.find(x=>x.id===selectedBoard)||defaults.dashboards[0];
+ if(b.id==='theme'){renderThemeTab();return}
+ if(b.id==='permissions'){
+ $('boardContent').innerHTML='<div class="card-head"><h3>دسترسی‌های اندروید</h3><span class="tag">فقط با تأیید شما</span></div><p class="sub">درخواست مجوز از خود اندروید انجام می‌شود و نیازمند تأیید شماست. گرفتن مجوز به معنای وجود موتور اجرای آن قابلیت نیست.</p><div class="row"><button id="refreshPermissions" class="primary">بررسی دوبارهٔ وضعیت‌ها</button><span class="sub">مجموع: '+(config.permissions||[]).length+'</span></div><div id="permissionItems"></div>';
+ $('refreshPermissions').onclick=refreshPermissions;renderPermissionItems();return}
+ $('boardContent').innerHTML='<div class="card-head"><h3>'+esc(b.title)+'</h3><span class="tag">داشبورد</span></div><p class="sub">'+esc(b.description||'تعریف‌شده از سرور')+'</p><button id="refreshDashboard">رفرش وب</button>';
  $('refreshDashboard').onclick=()=>location.reload();
- $('removeBoard').disabled=boards.length<=1;
- $('removeBoard').onclick=()=>{if(boards.length<=1)return;boards.splice(selectedBoard,1);selectedBoard=0;saveBoards();renderBoards()};
 }
 
-$('addBrowser').onclick=()=>command('set-count',{count:Math.min(8,(hostState?.count||2)+1)});
 $('refreshStatus').onclick=()=>command('status');
-$('addBoard').onclick=()=>{if(boards.length>=8)return;boards.push({title:'داشبورد '+(boards.length+1),description:'قابل تغییر با انتشار نسخهٔ جدید وب'});selectedBoard=boards.length-1;saveBoards();renderBoards()};
-fetch('/api/config',{cache:'no-store'}).then(r=>r.json()).then(c=>{config={...defaults,...c};render();if(selectedBoard===-1)refreshPermissions()}).catch(e=>log('CONFIG_ERROR '+e.message));
+fetch('/api/config',{cache:'no-store'}).then(r=>r.json()).then(c=>{config={...defaults,...c};configReady=true;render();applyBrowserCountDirective();if(selectedBoard==='permissions')refreshPermissions()}).catch(e=>log('CONFIG_ERROR '+e.message));
 command('status');
 render();
 </script></body></html>

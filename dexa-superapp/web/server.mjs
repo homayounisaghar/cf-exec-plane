@@ -6,6 +6,7 @@ const dir=path.dirname(fileURLToPath(import.meta.url));
 const html=fs.readFileSync(path.join(dir,'index.html'));
 const toolbar=fs.readFileSync(path.join(dir,'toolbar.html'));
 const theme=fs.readFileSync(path.join(dir,'theme.css'));
+const themeClient=fs.readFileSync(path.join(dir,'theme-client.js'));
 const port=Number(process.env.PORT||4000);
 const recent=[];
 const counts=new Map();
@@ -16,8 +17,10 @@ function response(res,status,body,type='application/json; charset=utf-8'){
 }
 function json(res,status,obj){response(res,status,JSON.stringify(obj));}
 const config={
-  schema:'dexa-super-dashboard.v1',name:'داشبورد دکسا',build:'web-v1.1.0',
+  schema:'dexa-super-dashboard.v1',name:'داشبورد دکسا',build:'web-v1.2.0',
   browserHome:'https://chatgpt.com/',defaultBrowsers:2,maxBrowsers:8,maxDashboards:8,
+  desiredBrowserCount:null,
+  dashboards:[{id:'control',title:'کنترل دکسا',description:'مدیریت مرورگرها'},{id:'theme',title:'تم رنگی'},{id:'permissions',title:'دسترسی‌های اندروید'}],
   permissions: [
     {id:'android.permission.READ_SMS',label:'خواندن پیامک',group:'پیامک و تماس'},
     {id:'android.permission.RECEIVE_SMS',label:'دریافت پیامک',group:'پیامک و تماس'},
@@ -86,6 +89,7 @@ const srv=http.createServer(async(req,res)=>{
   if(req.method==='GET' && url.pathname==='/api/config')return json(res,200,config);
   if(req.method==='GET' && url.pathname==='/api/telemetry/summary')return json(res,200,{ok:true,total:recent.length,byEvent:Object.fromEntries(counts)});
   if(req.method==='GET' && url.pathname==='/theme.css')return response(res,200,theme,'text/css; charset=utf-8');
+  if(req.method==='GET' && url.pathname==='/theme-client.js')return response(res,200,themeClient,'application/javascript; charset=utf-8');
   if(req.method==='GET' && url.pathname==='/toolbar')return response(res,200,toolbar,'text/html; charset=utf-8');
   if(req.method==='GET' && (url.pathname==='/'||url.pathname==='/dashboard'))return response(res,200,html,'text/html; charset=utf-8');
   if(req.method==='POST' && url.pathname==='/api/telemetry'){
