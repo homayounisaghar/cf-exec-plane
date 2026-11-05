@@ -47,7 +47,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          gradle --no-daemon -p dexa-superapp/android :app:assembleRelease
+          mkdir -p dist
+          if ! gradle --no-daemon -p dexa-superapp/android :app:assembleRelease > dist/gradle-build.log 2>&1; then
+            tail -n 120 dist/gradle-build.log > dist/v2-build-failure.txt
+            cat dist/v2-build-failure.txt
+            exit 1
+          fi
           output="dexa-superapp/android/app/build/outputs/apk/release/app-release-unsigned.apk"
           test -s "$output"
           mkdir -p dist
@@ -83,3 +88,20 @@ jobs:
             --target "$GITHUB_SHA" \
             --title "Dexa Super Dashboard v2 - unsigned build input" \
             --notes "Unsigned CI artifact. Not installable. Signed separately by the owner-held durable signer."
+
+      - name: Publish bounded secret-free compile failure evidence
+        if: failure()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          mkdir -p dist
+          if [ ! -s dist/v2-build-failure.txt ]; then
+            printf '%s\n' 'CI did not reach Java/Gradle compile or failure log was unavailable. Inspect source/build bootstrap independently.' > dist/v2-build-failure.txt
+          fi
+          gh release create "dexa-super-dashboard-v2-build-diagnostic-c-20261105" dist/v2-build-failure.txt \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "Dexa Super Dashboard v2 diagnostic (not installable)" \
+            --notes "Secret-free bounded Android compile failure evidence. No APK produced by this diagnostic."
