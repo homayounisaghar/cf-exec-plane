@@ -1,4 +1,5 @@
 import http from 'node:http';
+import {createRemoteGateway} from './remote-gateway.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
@@ -11,13 +12,14 @@ const port=Number(process.env.PORT||4000);
 const recent=[];
 const counts=new Map();
 const started=Date.now();
+const remoteGateway=createRemoteGateway();
 function response(res,status,body,type='application/json; charset=utf-8'){
   res.writeHead(status,{'content-type':type,'cache-control':'no-store','x-content-type-options':'nosniff','x-frame-options':'DENY','access-control-allow-origin':'*'});
   res.end(body);
 }
 function json(res,status,obj){response(res,status,JSON.stringify(obj));}
 const config={
-  schema:'dexa-super-dashboard.v1',name:'داشبورد دکسا',build:'web-v1.4.0',
+  schema:'dexa-super-dashboard.v1',name:'داشبورد دکسا',build:'web-v1.5.0',
   browserHome:'https://chatgpt.com/',defaultBrowsers:2,maxBrowsers:8,maxDashboards:8,
   desiredBrowserCount:null,
   dashboards:[{id:'control',title:'کنترل دکسا',description:'مدیریت مرورگرها'},{id:'theme',title:'تم رنگی'},{id:'permissions',title:'دسترسی‌های اندروید'}],
@@ -85,10 +87,12 @@ function cleanEvent(a){
 }
 const srv=http.createServer(async(req,res)=>{
   const url=new URL(req.url||'/', 'http://local');
+  if(url.pathname.startsWith('/api/remote/'))return remoteGateway(req,res,url);
   if(req.method==='GET' && url.pathname==='/api/health')return json(res,200,{ok:true,service:'dexa-super-dashboard',uptimeSeconds:Math.floor((Date.now()-started)/1000),eventsSeen:[...counts.values()].reduce((a,b)=>a+b,0),webVersion:config.build});
   if(req.method==='GET' && url.pathname==='/api/config')return json(res,200,config);
   if(req.method==='GET' && url.pathname==='/api/telemetry/summary')return json(res,200,{ok:true,total:recent.length,byEvent:Object.fromEntries(counts)});
   if(req.method==='GET' && url.pathname==='/theme.css')return response(res,200,theme,'text/css; charset=utf-8');
+  if(req.method==='GET' && url.pathname==='/remote-client.js')return response(res,200,fs.readFileSync(path.join(dir,'remote-client.js')),'application/javascript; charset=utf-8');
   if(req.method==='GET' && url.pathname==='/theme-client.js')return response(res,200,themeClient,'application/javascript; charset=utf-8');
   if(req.method==='GET' && url.pathname==='/toolbar')return response(res,200,toolbar,'text/html; charset=utf-8');
   if(req.method==='GET' && (url.pathname==='/'||url.pathname==='/dashboard'))return response(res,200,html,'text/html; charset=utf-8');
