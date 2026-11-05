@@ -1,0 +1,7 @@
+action=build-dexa-super-dashboard-v3
+snapshot_sha=e0c89ad752c2b126622bebcee6b6ef6f609bec38
+package=com.homayounisaghar.dexasuperdashboard
+versionCode=3
+versionName=1.1.1
+patch=MODIFY_AUDIO_SETTINGS_only
+source_authority=f3b7ad55cd103f2f394af2a27422a7fbd3428b07
