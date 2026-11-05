@@ -56,6 +56,124 @@ function guide(origin) {
     "Reusing a CASE with a different VALUE is rejected; ask for a fresh CASE."
   ].join("\n");
 }
+
+// Browser-only THREE-STAGE probe. This is a separate namespace from v1.
+// The only effects are ephemeral receipt counters and a short dummy value.
+const probeRuns = new Map();
+const PROBE_TTL_MS = 60 * 60 * 1000;
+const PROBE_CAP = 128;
+function proof() { return randomBytes(12).toString("hex").toUpperCase(); }
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({
+    "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"
+  }[c]));
+}
+function probeHtml(res, code, title, lines, url="", label="Open the next page") {
+  const body = "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\">"
+    + "<meta name=\"robots\" content=\"noindex,noarchive\"><title>"+escapeHtml(title)+"</title></head>"
+    + "<body><h1>"+escapeHtml(title)+"</h1><pre>"+escapeHtml(lines.join("\n"))+"</pre>"
+    + (url?"<p><a href=\""+escapeHtml(url)+"\">"+escapeHtml(label)+"</a></p>":"")
+    + "</body></html>";
+  res.writeHead(code, {
+    "content-type":"text/html; charset=utf-8",
+    "cache-control":"private, no-store, no-cache, must-revalidate, max-age=0",
+    "pragma":"no-cache",
+    "x-content-type-options":"nosniff",
+    "x-robots-tag":"noindex, noarchive",
+    "referrer-policy":"no-referrer"
+  });
+  res.end(body);
+}
+function handleProbe(req, res, url, path, origin) {
+  const id = url.searchParams.get("case") || "";
+  if(path==="/probe" || path==="/probe/guide")
+    return probeHtml(res,200,"Three-stage web GET probe",[
+      "PROTOCOL=THREE_STAGE_WEB_GET_V2",
+      "TEST_ONLY=YES",
+      "PURPOSE=Read a public HTML page, open its existing clickable link, then construct and open a new URL carrying a harmless value.",
+      "OPEN_FIRST="+origin+"/probe/start?case=YOUR_UNIQUE_CASE",
+      "CASE must be 16-64 ASCII letters/digits/_/-; VALUE 1-64 ASCII letters/digits/_/-.",
+      "On the start page, genuinely open the existing HTML anchor to stage 2.",
+      "On the stage 2 page, append VALUE to SUBMIT_PREFIX and open that generated URL.",
+      "After accepted submission, follow the result-page link and copy the three server-only proofs.",
+      "If the web tool fails, report exactly which stage failed; never invent a proof.",
+      "This public experiment MUST NOT be used for secrets, private data, recipes, or any user records."
+    ]);
+  if(!casePattern.test(id))
+    return probeHtml(res,400,"INVALID_CASE",["ERROR=INVALID_CASE"]);
+  const now=Date.now();
+  for(const [k,r] of probeRuns) if(now-r.created>PROBE_TTL_MS) probeRuns.delete(k);
+  let r=probeRuns.get(id);
+  if(path==="/probe/start") {
+    if(!r) {
+      if(probeRuns.size>=PROBE_CAP) return probeHtml(res,503,"LIMIT",["ERROR=PROBE_CAPACITY"]);
+      r={created:now,readProof:proof(),ticket:proof(),linkProof:proof(),
+        submitProof:proof(),value:null,startHits:0,linkHits:0,submitHits:0,resultHits:0};
+      probeRuns.set(id,r);
+    }
+    r.startHits++;
+    const link=origin+"/probe/link?case="+id+"&ticket="+r.ticket;
+    return probeHtml(res,200,"Stage 1: Read",[
+      "STATE=READ_OK","CASE="+id,"READ_PROOF="+r.readProof,
+      "STAGE_2=FOLLOW_THE_ACTUAL_HTML_LINK_BELOW",
+      "IMPORTANT=The next URL is a server-authored hyperlink; do not invent a replacement.",
+      "STAGE_2_URL="+link
+    ],link,"OPEN STAGE 2: EXISTING LINK");
+  }
+  if(!r) return probeHtml(res,404,"NO_SESSION",["STATE=NOT_FOUND","CASE="+id]);
+  if(path==="/probe/link") {
+    const ticket=url.searchParams.get("ticket")||"";
+    if(ticket!==r.ticket) return probeHtml(res,403,"WRONG_LINK",["ERROR=LINK_TICKET_MISMATCH"]);
+    r.linkHits++;
+    return probeHtml(res,200,"Stage 2: Link Opened",[
+      "STATE=LINK_OPENED","CASE="+id,"LINK_PROOF="+r.linkProof,
+      "STAGE_3=BUILD_A_NEW_URL_WITH_THE_USER_VALUE",
+      "SUBMIT_PREFIX="+origin+"/probe/send?case="+id+"&ticket="+r.ticket+"&value=",
+      "ACTION=Append VALUE immediately after the equals sign and actually browse the resulting URL.",
+      "VALUE_MUST_BE_SHORT_PUBLIC_TEST_DATA=YES"
+    ]);
+  }
+  if(path==="/probe/send") {
+    const ticket=url.searchParams.get("ticket")||"";
+    const value=url.searchParams.get("value")||"";
+    if(ticket!==r.ticket) return probeHtml(res,403,"WRONG_TICKET",["ERROR=LINK_TICKET_MISMATCH"]);
+    if(r.linkHits<1) return probeHtml(res,409,"NEED_LINK",["ERROR=VISIT_STAGE_2_FIRST"]);
+    if(!valuePattern.test(value)) return probeHtml(res,400,"INVALID_VALUE",["ERROR=INVALID_VALUE"]);
+    if(r.value!==null && r.value!==value)
+      return probeHtml(res,409,"VALUE_CONFLICT",["ERROR=CASE_VALUE_ALREADY_SET"]);
+    r.value=value;
+    r.submitHits++;
+    const result=origin+"/probe/result?case="+id+"&fetch="+r.submitHits;
+    return probeHtml(res,200,"Stage 3: Delivered",[
+      "STATE=VALUE_DELIVERED_TO_SERVER","CASE="+id,
+      "SERVER_RECEIPT=HIDDEN_UNTIL_RESULT_PAGE",
+      "FINAL_STEP=OPEN_THE_RESULT_PAGE_LINK_BELOW_AND_COPY_ALL_THREE_PROOFS"
+    ],result,"OPEN RESULT PAGE: GET SERVER RECEIPTS");
+  }
+  if(path==="/probe/result") {
+    if(r.value===null) return probeHtml(res,409,"NOT_DELIVERED",["STATE=NOT_DELIVERED"]);
+    r.resultHits++;
+    return probeHtml(res,200,"Closed Loop Confirmed",[
+      "STATE=CLOSED_LOOP_COMPLETE","CASE="+id,
+      "READ_PROOF="+r.readProof,
+      "LINK_PROOF="+r.linkProof,
+      "DELIVERY_RECEIPT="+r.submitProof,
+      "SERVER_RESULT="+r.value.split("").reverse().join("").toUpperCase(),
+      "VERIFIED_ON_SERVER=STAGES_1_2_3"
+    ]);
+  }
+  if(path==="/probe/audit")
+    return probeHtml(res,200,"Read-only server-side audit",[
+      "CASE="+id,"STAGE_1_READ_HITS="+r.startHits,
+      "STAGE_2_LINK_HITS="+r.linkHits,
+      "STAGE_3_SUBMIT_HITS="+r.submitHits,
+      "FINAL_RESULT_HITS="+r.resultHits,
+      "VALUE_RECEIVED="+(r.value!==null?"YES":"NO"),
+      "RECEIPT_DISCLOSED_BY_AUDIT=NO"
+    ]);
+  return probeHtml(res,404,"UNKNOWN_PROBE_ROUTE",["ERROR=NOT_FOUND"]);
+}
+
 function createServer() {
   return http.createServer((req,res)=>{
     try {
@@ -67,7 +185,8 @@ function createServer() {
       const rawHost=String(req.headers.host||"").toLowerCase();
       const host=/^[a-z0-9.-]+(?::[0-9]{1,5})?$/.test(rawHost)?rawHost:"invalid-host";
       if(path==="/" || path==="/guide") return text(res, 200, guide("https://"+host));
-      if(path==="/robots.txt") return text(res, 200, "User-agent: *\nDisallow: /");
+      if(path==="/robots.txt") return text(res, 200, "User-agent: *\nAllow: /probe/\nDisallow: /submit\nDisallow: /status\nDisallow: /result\nDisallow: /audit");
+      if(path==="/probe" || path.startsWith("/probe/")) return handleProbe(req,res,url,path,"https://"+host);
       if(!["/submit","/status","/result","/audit"].includes(path))
         return text(res, 404, "ERROR=UNKNOWN_ROUTE");
       compact();
