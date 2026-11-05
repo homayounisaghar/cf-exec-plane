@@ -17,7 +17,7 @@ function response(res,status,body,type='application/json; charset=utf-8'){
 }
 function json(res,status,obj){response(res,status,JSON.stringify(obj));}
 const config={
-  schema:'dexa-super-dashboard.v1',name:'داشبورد دکسا',build:'web-v1.3.0',
+  schema:'dexa-super-dashboard.v1',name:'داشبورد دکسا',build:'web-v1.4.0',
   browserHome:'https://chatgpt.com/',defaultBrowsers:2,maxBrowsers:8,maxDashboards:8,
   desiredBrowserCount:null,
   dashboards:[{id:'control',title:'کنترل دکسا',description:'مدیریت مرورگرها'},{id:'theme',title:'تم رنگی'},{id:'permissions',title:'دسترسی‌های اندروید'}],

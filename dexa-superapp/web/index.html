@@ -32,7 +32,7 @@ pre.script-output{min-height:48px;max-height:180px;margin:8px 0 0;padding:9px;wh
 footer{text-align:center;font-size:11px;color:var(--muted);margin:20px auto}
 </style></head>
 <body>
-<header><div class="eyebrow">DEXA · SUPER DASHBOARD · WEB 1.3</div><h1>داشبورد دکسا</h1><p>میزبان چندمرورگری — کنترل از راه وب، اجرا روی گوشی</p></header>
+<header><div class="eyebrow">DEXA · SUPER DASHBOARD · WEB 1.4</div><h1>داشبورد دکسا</h1><p>میزبان چندمرورگری — کنترل از راه وب، اجرا روی گوشی</p></header>
 <main>
 <div class="kpis"><div class="kpi"><b id="browserCount">—</b><span>مرورگر فعال</span></div><div class="kpi"><b id="sessionStatus">—</b><span>ارتباط با اندروید</span></div><div class="kpi"><b id="telemetry">—</b><span>رخدادهای در صف</span></div></div>
 <section><div class="section"><h2>مرورگرها</h2><span class="tag">نشست مشترک · تنظیم از بیرون برنامه</span></div><div id="browserCards" class="cards"></div></section>
@@ -58,27 +58,100 @@ function unpackScriptAnswer(answer){
  return {ok:true,code:'SUCCESS',text:String(text??'null').slice(0,5000),data:body};
 }
 function postScriptReceipt(slot,ok,code,phase,count){
- const event={event:'WEB_SCRIPT_RECEIPT',slot,ok,code,phase,time:Date.now(),build:'web-v1.3.0'};
+ const event={event:'WEB_SCRIPT_RECEIPT',slot,ok,code,phase,time:Date.now(),build:'web-v1.4.0'};
  if(Number.isInteger(count)&&count>=0&&count<=5000)event.count=count;
  fetch('/api/telemetry',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(event)}).catch(()=>{});
+}
+async function evalBatchedLegacy(slot,source,onStep=()=>{}){
+ const bytes=new TextEncoder().encode(source);
+ let encoded='';
+ for(let i=0;i<bytes.length;i+=5400)
+   encoded+=btoa(String.fromCharCode(...bytes.subarray(i,i+5400)));
+ const key='dx'+crypto.randomUUID().replaceAll('-','');
+ const call=async expression=>{
+   const r=unpackScriptAnswer(await nativeCall('eval',{slot,script:expression}));
+   if(!r.ok)throw Error(r.code+':'+r.text);
+   if(r.data && r.data.ok===false)throw Error(String(r.data.error||'PAGE_ERROR'));
+   return r.data;
+ };
+ await call("(()=>{window.__dexaLong=window.__dexaLong||{};window.__dexaLong['"+key+"']='';return true})()");
+ for(let i=0;i<encoded.length;i+=7000){
+   await call("(()=>{window.__dexaLong['"+key+"']+='"+encoded.slice(i,i+7000)+"';return true})()");
+   if(i===0||i+7000>=encoded.length||Math.floor(i/7000)%10===0)
+     onStep('TRANSFER',Math.ceil((i+7000)/7000));
+ }
+ const execute="(()=>{const k='"+key+"',b=window.__dexaLong?.[k];if(!b)return {ok:false,error:'BUFFER_LOST'};delete window.__dexaLong[k];const code=new TextDecoder().decode(Uint8Array.from(atob(b),c=>c.charCodeAt(0)));return (0,eval)(code)})()";
+ return await call(execute);
+}
+let nativeV4Available=null;
+async function evalBatched(slot,source,onStep=()=>{}){
+ if(nativeV4Available!==false){
+  const runId='dx'+crypto.randomUUID().replaceAll('-','');
+  try{
+   await nativeCall('eval-begin',{slot,runId});
+   nativeV4Available=true;
+   for(let i=0;i<source.length;i+=6500){
+    await nativeCall('eval-part',{runId,part:source.slice(i,i+6500)});
+    if(i===0||i+6500>=source.length||Math.floor(i/6500)%10===0)
+      onStep('TRANSFER',Math.floor(i/6500)+1);
+   }
+   const r=unpackScriptAnswer(await nativeCall('eval-finish',{runId}));
+   if(!r.ok)throw Error(r.code+':'+r.text);
+   if(r.data && r.data.ok===false)throw Error(String(r.data.error||'PAGE_ERROR'));
+   return r.data;
+  }catch(e){
+   if(nativeV4Available===null&&String(e.message)==='UNKNOWN_COMMAND'){
+    nativeV4Available=false;
+   }else{throw e}
+  }
+ }
+ return evalBatchedLegacy(slot,source,onStep);
+}
+function scriptStage(slot,phase,error='',count,runId){
+ const event={event:'WEB_SCRIPT_STAGE',slot,id:runId||undefined,phase:String(phase).slice(0,100),
+   code:String(error||'OK').slice(0,100),ok:!error,time:Date.now(),build:'web-v1.4.0'};
+ if(Number.isInteger(count))event.count=Math.max(0,Math.min(5000,count));
+ fetch('/api/telemetry',{method:'POST',headers:{'content-type':'application/json'},
+   body:JSON.stringify(event)}).catch(()=>{});
+}
+function observeScriptStatus(slot,statusKey,runId){
+ if(!/^[A-Za-z_$][\w$]{0,90}$/.test(statusKey))return;
+ let previous='',attempts=0;
+ const timer=setInterval(async()=>{
+   if(++attempts>180){clearInterval(timer);scriptStage(slot,'MONITOR_TIMEOUT','',undefined,runId);return;}
+   try{
+     const state=await evalBatched(slot,
+       "(()=>{const x=window["+JSON.stringify(statusKey)+"];return x?{stage:x.stage,error:x.error,sent:x.sent,deleted:x.deleted,running:x.running}:{stage:'STATE_LOST'}})()");
+     const stage=String(state?.stage||'UNKNOWN'),error=String(state?.error||'');
+     const marker=stage+'|'+error;
+     if(marker!==previous){
+       previous=marker;scriptStage(slot,stage,error,Number(!!state?.sent)+2*Number(!!state?.deleted),runId);
+     }
+     if(/^(DONE|FAILED|ERROR|STATE_LOST)/.test(stage))clearInterval(timer);
+   }catch(e){clearInterval(timer);scriptStage(slot,'MONITOR_ERROR',e.message,undefined,runId);}
+ },1000);
 }
 async function runScript(slot){
  if(runningScripts.has(slot))return;
  const source=(scriptDrafts.get(slot)||'').trim();
- if(!source){scriptResults.set(slot,'ابتدا دستور را وارد کن.');render();return}
- if(source.length>8000){scriptResults.set(slot,'دستور بیش از ۸۰۰۰ نویسه است.');render();return}
- runningScripts.add(slot);scriptResults.set(slot,'در حال اجرا در مرورگر '+(slot+1)+'...');render();
+ if(!source){scriptResults.set(slot,'ابتدا دستور را وارد کن.');render();return;}
+ runningScripts.add(slot);scriptResults.set(slot,'در حال انتقال چندبخشی و اجرا ...');render();
  const inspection=source===safeInspection;
+ const runId=crypto.randomUUID();
+ scriptStage(slot,'STARTED','',undefined,runId);
  try{
-  const answer=await nativeCall('eval',{slot,script:source});
-  const value=unpackScriptAnswer(answer);
-  scriptResults.set(slot,(value.ok?'✓ ':'✕ ')+value.text);
-  postScriptReceipt(slot,value.ok,value.code,inspection?'voice-inspection':'manual-code',
-    inspection&&value.data&&typeof value.data.voiceButtons==='number'?value.data.voiceButtons:undefined);
+  const result=await evalBatched(slot,source,(step,n)=>scriptStage(slot,step,'',n,runId));
+  const text=typeof result==='string'?result:JSON.stringify(result,null,2);
+  scriptResults.set(slot,'✓ '+String(text??'undefined').slice(0,5000));
+  scriptStage(slot,'RETURNED',String(result?.error||''),undefined,runId);
+  if(result?.stage)scriptStage(slot,result.stage,String(result.error||''),undefined,runId);
+  if(result?.statusKey)observeScriptStatus(slot,result.statusKey,runId);
+  postScriptReceipt(slot,true,'SUCCESS',inspection?'voice-inspection':'manual-code');
  }catch(e){
-  scriptResults.set(slot,'✕ '+String(e.message||'HOST_ERROR'));
-  postScriptReceipt(slot,false,'BRIDGE_ERROR',inspection?'voice-inspection':'manual-code');
- }finally{runningScripts.delete(slot);render()}
+  scriptResults.set(slot,'✕ '+String(e.message||'SCRIPT_ERROR'));
+  scriptStage(slot,'FAILED',e.message,undefined,runId);
+  postScriptReceipt(slot,false,'SCRIPT_EXCEPTION',inspection?'voice-inspection':'manual-code');
+ }finally{runningScripts.delete(slot);render();}
 }
 
 function configuredBoards(){const a=Array.isArray(config.dashboards)&&config.dashboards.length?config.dashboards:defaults.dashboards;return a.slice(0,8).filter(x=>x&&typeof x.id==='string'&&typeof x.title==='string')}
