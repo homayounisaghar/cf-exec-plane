@@ -44,6 +44,33 @@ module.exports = async function handler(req,res) {
       return res.status(502).send("ERROR=UPSTREAM_HEALTH_FAILED\n");
     }
   }
+  // Alternate public host for the HTML-anchor three-stage experiment.
+  // Rewrite actual HTML anchor URLs so subsequent GET requests stay on Vercel;
+  // Render stores the short-lived proof records, not this stateless proxy.
+  if(["probe_guide","probe_start","probe_link","probe_send","probe_result","probe_audit"].includes(op)){
+    const stage=op.slice(6);
+    if(stage!=="guide"&&!caseOk)return res.status(400).send("ERROR=INVALID_CASE\n");
+    if(stage==="send"&&!valueOk)return res.status(400).send("ERROR=INVALID_VALUE\n");
+    const host=v(req.headers.host).toLowerCase();
+    if(!/^[a-z0-9.-]+$/.test(host))return res.status(400).send("ERROR=INVALID_HOST\n");
+    const upstream=new URL("https://instant-get-loop-20261105.onrender.com/probe/"+stage);
+    if(stage!=="guide")upstream.searchParams.set("case",id);
+    if(stage==="link"||stage==="send")upstream.searchParams.set("ticket",v(req.query.ticket));
+    if(stage==="send")upstream.searchParams.set("value",value);
+    if(stage==="result")upstream.searchParams.set("fetch",/^[0-9]{1,2}$/.test(fetchId)?fetchId:"1");
+    try{
+      const r=await fetch(upstream,{signal:AbortSignal.timeout(12000),redirect:"error"});
+      const body=(await r.text()).replace(
+        /https:\/\/instant-get-loop-20261105\.onrender\.com\/probe\/(start|link|send|result|audit)\?/g,
+        (_,name)=>"https://"+host+"/api/relay?op=probe_"+name+"&amp;"
+      );
+      res.setHeader("content-type","text/html; charset=utf-8");
+      res.setHeader("x-robots-tag","noindex, noarchive");
+      return res.status(r.status).send(body);
+    }catch{
+      return res.status(502).send("ERROR=UPSTREAM_TEMPORARY_FAILURE\n");
+    }
+  }
   if(!["submit","status","result","audit"].includes(op))return res.status(404).send("ERROR=UNKNOWN_OP\n");
   if(!caseOk)return res.status(400).send("ERROR=INVALID_CASE\n");
   if(op==="submit"&&!valueOk)return res.status(400).send("ERROR=INVALID_VALUE\n");
