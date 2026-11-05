@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>داشبورد دکسا</title>
+<style>
+:root{color-scheme:light;--ink:#182a39;--muted:#5c707d;--teal:#087b85;--bg:#edf3f6;--card:#fff;--line:#d9e3ea}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Vazirmatn,Tahoma,Arial,sans-serif;font-size:14px}
+header{padding:18px 16px 16px;background:linear-gradient(125deg,#073d4a,#086f79);color:white}
+header .eyebrow{font-size:11px;opacity:.8;letter-spacing:.08em}h1{font-size:22px;margin:5px 0 4px}header p{font-size:12px;opacity:.85;margin:0}
+main{max-width:800px;margin:0 auto;padding:14px 12px 35px}.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.section{display:flex;justify-content:space-between;align-items:center;margin:20px 1px 10px;gap:8px}
+h2{font-size:15px;margin:0}.tag{border-radius:99px;padding:4px 9px;background:#d9edf0;color:#075c65;font-size:11px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}
+.card{background:var(--card);padding:14px;border-radius:16px;border:1px solid var(--line);box-shadow:0 4px 14px #0b29350a}
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:8px}.card h3{margin:0;font-size:15px}
+small,.sub{color:var(--muted);font-size:12px}.url{direction:ltr;text-align:left;background:#f5f8fa;border-radius:8px;padding:8px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font:12px monospace;margin:10px 0}
+button{border:0;background:#dce8ec;color:#123540;border-radius:10px;padding:10px 13px;cursor:pointer;font:inherit;font-size:12px;font-weight:bold}
+button.primary{background:#087d86;color:#fff}button.danger{background:#ffeded;color:#b53b39}
+button:disabled{opacity:.35}button:active{transform:scale(.98)}
+input,select{width:100%;border:1px solid #cbdbe3;border-radius:10px;padding:10px;background:white;color:var(--ink);font:inherit;font-size:12px}
+.actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.actions button{flex:1}
+.card .sub{line-height:1.8}.tabs{display:flex;gap:6px;overflow:auto;padding-bottom:5px;scrollbar-width:none}.tabs button{white-space:nowrap}
+.tabs .active{background:#087d86;color:white}
+.notice{background:#fff9e8;padding:12px;border-radius:12px;border:1px solid #f1e2b2;line-height:1.8;color:#675321}
+pre{direction:ltr;text-align:left;background:#162936;color:#cce8ee;overflow:auto;font:11px monospace;border-radius:12px;padding:13px;white-space:pre-wrap;word-break:break-word;min-height:70px}
+.kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.kpi{text-align:center;background:white;border:1px solid var(--line);border-radius:12px;padding:12px 6px}.kpi b{display:block;font-size:18px;color:#087b85}.kpi span{font-size:10px;color:var(--muted)}
+footer{text-align:center;font-size:11px;color:var(--muted);margin:20px auto}
+</style></head>
+<body>
+<header><div class="eyebrow">DEXA · SUPER DASHBOARD · V1</div><h1>داشبورد دکسا</h1><p>میزبان چندمرورگری — کنترل از راه وب، اجرا روی گوشی</p></header>
+<main>
+<div class="kpis"><div class="kpi"><b id="browserCount">—</b><span>مرورگر فعال</span></div><div class="kpi"><b id="sessionStatus">—</b><span>ارتباط با اندروید</span></div><div class="kpi"><b id="telemetry">—</b><span>رخدادهای در صف</span></div></div>
+<section><div class="section"><h2>مرورگرها</h2><div class="row"><span class="tag">نشست مشترک</span><button id="addBrowser" class="primary">+ مرورگر</button></div></div><div id="browserCards" class="cards"></div></section>
+<section><div class="section"><h2>داشبوردها</h2><button id="addBoard">+ داشبورد</button></div><div id="boardTabs" class="tabs"></div><div id="boardContent" class="card"></div></section>
+<section><div class="section"><h2>عیب‌یابی</h2><button id="refreshStatus">تازه‌سازی وضعیت</button></div><div class="notice">رخدادهای فنی برنامه به سرور ارسال می‌شوند؛ محتوای چت و رمزها در تله‌متری ثبت نمی‌شوند.</div><pre id="diagnostics">در حال اتصال به میزبان اندروید ...</pre></section>
+<footer>نسخهٔ وب با رفرش به‌روز می‌شود · کلیدهای امضا خارج از سورس نگهداری می‌شوند</footer>
+</main>
+<script>
+'use strict';
+const $=id=>document.getElementById(id);
+const defaults={browserHome:'https://chatgpt.com/',maxBrowsers:8,maxDashboards:8,actions:{}};
+let config=defaults,hostState=null,requestSeq=0,requests=new Map(),selectedBoard=0;
+let boards=JSON.parse(localStorage.getItem('dexa-boards-v1')||'[{"title":"کنترل دکسا","description":"مدیریت مرورگرها و مسیر آزمایش‌های دکسا"}]');
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function log(s){$('diagnostics').textContent=(new Date().toLocaleTimeString('fa-IR')+' | '+s+'\n'+$('diagnostics').textContent).slice(0,3000)}
+function nativeCall(op,args={}){
+  return new Promise((resolve,reject)=>{
+    if(!window.DexaHost||typeof window.DexaHost.send!=='function'){reject(new Error('ANDROID_HOST_NOT_AVAILABLE'));return;}
+    const id='w'+(++requestSeq),handle=setTimeout(()=>{requests.delete(id);reject(new Error('HOST_REPLY_TIMEOUT'))},15000);
+    requests.set(id,{resolve,reject,handle});
+    window.DexaHost.send(JSON.stringify({id,op,...args}));
+  });
+}
+window.DexaResolve=(id,response)=>{
+ const r=requests.get(id);if(!r)return;clearTimeout(r.handle);requests.delete(id);
+ if(response&&response.ok)r.resolve(response);else r.reject(new Error(response?.reason||'HOST_ERROR'));
+};
+window.onDexaHostUpdate=state=>{hostState=state;render()};
+async function command(op,args={}){
+ try{const r=await nativeCall(op,args);if(r.state)hostState=r.state;log(op+' ✓ '+JSON.stringify(r.result??{}).slice(0,350));render();return r}
+ catch(e){log(op+' ✕ '+e.message);render();return null}
+}
+function render(){
+ $('sessionStatus').textContent=hostState?'وصل':'قطع';
+ $('browserCount').textContent=hostState?.count??'—';
+ $('telemetry').textContent=hostState?.pending??'—';
+ $('addBrowser').disabled=!hostState||hostState.count>=config.maxBrowsers;
+ $('browserCards').innerHTML='';
+ const arr=hostState?.browsers||[];
+ for(const s of arr){
+  const card=document.createElement('div');card.className='card';
+  card.innerHTML='<div class="card-head"><h3>مرورگر '+(s.slot+1)+'</h3><span class="tag">'+(s.visible?'نمایان':'مخفی')+'</span></div>'
+    +'<div class="url">'+esc(s.url||config.browserHome)+'</div><div class="sub">همهٔ مرورگرها از نشست مشترک استفاده می‌کنند.</div>'
+    +'<div class="actions"><button class="primary" data-action="show">نمایش</button><button data-action="hide">مخفی</button><button data-action="reload">رفرش</button><button data-action="inspect">آزمایش</button></div>'
+    +'<div class="row" style="margin-top:9px"><select aria-label="فرمان آزمایشی" style="flex:1">'
+    +'<option value="">فرمان آزمایشی...</option>'
+    +Object.keys(config.actions||{}).map(k=>'<option value="'+esc(k)+'">'+esc(config.actions[k].label)+'</option>').join('')+'</select><button data-action="run">اجرا</button></div>'
+    +'<div class="row" style="margin-top:8px"><input aria-label="آدرس مرورگر" value="'+esc(s.url||config.browserHome)+'" style="flex:1;min-width:130px"><button data-action="go">برو</button></div>';
+  card.querySelectorAll('[data-action]').forEach(el=>el.addEventListener('click',async()=>{
+   const a=el.dataset.action;
+   if(a==='show')await command('show',{slot:s.slot});
+   if(a==='hide')await command('hide');
+   if(a==='reload')await command('reload',{slot:s.slot});
+   if(a==='go')await command('navigate',{slot:s.slot,url:card.querySelector('input').value.trim()});
+   if(a==='inspect')await command('eval',{slot:s.slot,script:config.actions.observe.code});
+   if(a==='run'){const key=card.querySelector('select').value;if(key&&config.actions[key])await command('eval',{slot:s.slot,script:config.actions[key].code})}
+  }));
+  $('browserCards').appendChild(card);
+ }
+ if(!hostState)$('browserCards').innerHTML='<div class="notice">این صفحه خارج از اپلیکیشن اندروید هم باز می‌شود؛ برای کنترل مرورگرها آن را داخل اپلیکیشن باز کن.</div>';
+ renderBoards();
+}
+function saveBoards(){localStorage.setItem('dexa-boards-v1',JSON.stringify(boards))}
+function renderBoards(){
+ $('addBoard').disabled=boards.length>=config.maxDashboards;
+ $('boardTabs').innerHTML='';
+ boards.forEach((b,i)=>{
+  const btn=document.createElement('button');btn.textContent=b.title;btn.className=i===selectedBoard?'active':'';
+  btn.onclick=()=>{selectedBoard=i;renderBoards()};$('boardTabs').appendChild(btn);
+ });
+ const b=boards[selectedBoard]||boards[0];
+ $('boardContent').innerHTML='<div class="card-head"><h3>'+esc(b.title)+'</h3><span class="tag">داشبورد '+(selectedBoard+1)+'</span></div>'
+   +'<p class="sub">'+esc(b.description)+'</p><div class="row"><button id="renameBoard">تغییر نام</button><button id="refreshDashboard">رفرش وب</button><button id="removeBoard" class="danger">حذف داشبورد</button></div>';
+ $('renameBoard').onclick=()=>{const t=prompt('نام داشبورد',b.title);if(t){b.title=t.slice(0,35);saveBoards();renderBoards()}};
+ $('refreshDashboard').onclick=()=>location.reload();
+ $('removeBoard').disabled=boards.length<=1;
+ $('removeBoard').onclick=()=>{if(boards.length<=1)return;boards.splice(selectedBoard,1);selectedBoard=0;saveBoards();renderBoards()};
+}
+$('addBrowser').onclick=()=>command('set-count',{count:Math.min(8,(hostState?.count||2)+1)});
+$('refreshStatus').onclick=()=>command('status');
+$('addBoard').onclick=()=>{if(boards.length>=8)return;boards.push({title:'داشبورد '+(boards.length+1),description:'قابل تغییر با انتشار نسخهٔ جدید وب'});selectedBoard=boards.length-1;saveBoards();renderBoards()};
+fetch('/api/config',{cache:'no-store'}).then(r=>r.json()).then(c=>{config={...defaults,...c};render()}).catch(e=>log('CONFIG_ERROR '+e.message));
+command('status');
+render();
+</script></body></html>
