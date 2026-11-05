@@ -52,11 +52,14 @@ public final class MainActivity extends Activity {
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private SharedPreferences state;
     private Telemetry telemetry;
+    private PermissionGateway permissionGateway;
     private FrameLayout surfaces;
     private LinearLayout root;
     private WebView dashboard;
-    private TextView title;
-    private Button backToDashboard;
+    private WebView chrome;
+    private FrameLayout chromeHolder;
+    private Button emergencyPanel;
+    private boolean chromeFailed = false;
     private boolean showingDashboard = true;
     private int activeSlot = -1;
     private PermissionRequest pendingAudioRequest;
@@ -72,6 +75,7 @@ public final class MainActivity extends Activity {
         super.onCreate(savedInstance);
         state = getSharedPreferences("dexa_super_state_v1", Context.MODE_PRIVATE);
         telemetry = new Telemetry(this);
+        permissionGateway = new PermissionGateway(this,telemetry);
         Thread.UncaughtExceptionHandler old = Thread.getDefaultUncaughtExceptionHandler();
         Thread.setDefaultUncaughtExceptionHandler((thread, error) -> {
             try {
@@ -111,26 +115,20 @@ public final class MainActivity extends Activity {
             return insets;
         });
 
-        LinearLayout chrome = new LinearLayout(this);
-        chrome.setOrientation(LinearLayout.HORIZONTAL);
-        chrome.setGravity(Gravity.CENTER_VERTICAL);
-        chrome.setPadding(dp(9),dp(5),dp(9),dp(5));
-        chrome.setBackgroundColor(Color.WHITE);
-        backToDashboard = makeButton("پنل دکسا", () -> showDashboard(true));
-        chrome.addView(backToDashboard, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,dp(45)));
-        title = new TextView(this);
-        title.setText("داشبورد دکسا");
-        title.setGravity(Gravity.CENTER);
-        title.setTextColor(Color.rgb(16,59,70));
-        title.setTypeface(Typeface.DEFAULT,Typeface.BOLD);
-        title.setTextSize(14);
-        chrome.addView(title,new LinearLayout.LayoutParams(0,dp(45),1));
-        Button reload = makeButton("↻", () -> {
-            if (showingDashboard) { dashboard.reload(); telemetry.record("DASHBOARD_REFRESH",-1,null); }
-            else if (activeSlot>=0 && activeSlot<browsers.size()) {browsers.get(activeSlot).reload();telemetry.record("BROWSER_REFRESH",activeSlot,null);}
-        });
-        chrome.addView(reload,new LinearLayout.LayoutParams(dp(44),dp(45)));
-        root.addView(chrome, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.WRAP_CONTENT));
+        // The entire upper chrome is an independently loaded remote web document.
+        // Native code only retains the host, a bounded bridge and an offline rescue path.
+        chromeHolder = new FrameLayout(this);
+        chromeHolder.setBackgroundColor(Color.rgb(255,242,231));
+        chrome = makeWebView(-2,true);
+        chrome.addJavascriptInterface(new ChromeBridge(),"DexaChrome");
+        chromeHolder.addView(chrome, new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT));
+        emergencyPanel = makeButton("پنل دکسا — بازگشت اضطراری", () -> showDashboard(true));
+        emergencyPanel.setVisibility(View.GONE);
+        chromeHolder.addView(emergencyPanel,new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT));
+        root.addView(chromeHolder,new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,dp(64)));
 
         surfaces = new FrameLayout(this);
         surfaces.setBackgroundColor(Color.WHITE);
@@ -145,7 +143,9 @@ public final class MainActivity extends Activity {
         for (int i=0;i<count;i++) createBrowser(i);
         showDashboard(false);
         dashboard.loadUrl(DASHBOARD);
+        chrome.loadUrl(DASHBOARD+"toolbar");
         telemetry.record("APP_BOOT",-1,Telemetry.meta("count",count));
+        telemetry.record("CHROME_BOOT",-2,null);
         mainHandler.postDelayed(heartbeat,1500);
     }
 
@@ -223,7 +223,6 @@ public final class MainActivity extends Activity {
         chosen.requestFocus();
         activeSlot=slot;
         showingDashboard=false;
-        title.setText("مرورگر "+(slot+1));
         telemetry.record("BROWSER_SHOWN",slot,Telemetry.meta("visible",true));
         postStatus();
     }
@@ -235,7 +234,6 @@ public final class MainActivity extends Activity {
         dashboard.bringToFront();
         showingDashboard=true;
         activeSlot=-1;
-        title.setText("داشبورد دکسا");
         if(manual && telemetry!=null)telemetry.record("DASHBOARD_SHOWN",-1,Telemetry.meta("visible",true));
         postStatus();
     }
@@ -249,7 +247,21 @@ public final class MainActivity extends Activity {
         catch(Exception e){return "UNKNOWN";}
     }
     private boolean dashboardOrigin() {
-        return dashboard!=null && DASH_HOST.equalsIgnoreCase(hostOf(dashboard.getUrl()));
+        return dashboard!=null && isHttpsUrl(dashboard.getUrl()) && DASH_HOST.equalsIgnoreCase(hostOf(dashboard.getUrl()));
+    }
+    private boolean isChromeUrl(String url) {
+        if (!isHttpsUrl(url) || !DASH_HOST.equalsIgnoreCase(hostOf(url))) return false;
+        try {return "/toolbar".equals(Uri.parse(url).getPath());}
+        catch(Exception ignored) {return false;}
+    }
+    private boolean chromeOrigin() {return chrome!=null && isChromeUrl(chrome.getUrl());}
+    private void showChromeFallback(boolean show) {
+        if (emergencyPanel!=null) emergencyPanel.setVisibility(show ? View.VISIBLE : View.GONE);
+    }
+    private void setChromeHeight(int heightDp) {
+        if (heightDp<48 || heightDp>240) {telemetry.record("CHROME_HEIGHT_REJECT",-2,Telemetry.meta("code","OUT_OF_RANGE"));return;}
+        ViewGroup.LayoutParams p=chromeHolder.getLayoutParams();
+        if(p!=null && p.height!=dp(heightDp)) {p.height=dp(heightDp);chromeHolder.setLayoutParams(p);}
     }
     private JSONObject status() {
         JSONObject r = new JSONObject();
@@ -279,9 +291,58 @@ public final class MainActivity extends Activity {
     }
 
     private void postStatus() {
+        JSONObject current=status();
         if(dashboard!=null && dashboardOrigin()) {
-            JSONObject current=status();
             dashboard.evaluateJavascript("window.onDexaHostUpdate&&window.onDexaHostUpdate("+current.toString()+")",null);
+        }
+        if(chrome!=null && chromeOrigin()) {
+            chrome.evaluateJavascript("window.onDexaChromeState&&window.onDexaChromeState("+current.toString()+")",null);
+        }
+    }
+    private void chromeReply(String id, boolean ok, String reason) {
+        if(!chromeOrigin())return;
+        JSONObject data=new JSONObject();
+        try {data.put("ok",ok);if(!ok)data.put("reason",reason);data.put("state",status());}
+        catch(Exception ignored){}
+        chrome.evaluateJavascript("window.DexaChromeResponse&&window.DexaChromeResponse("+JSONObject.quote(id)+","+data.toString()+")",null);
+    }
+    private final class ChromeBridge {
+        @JavascriptInterface public void send(String raw) {
+            if(raw==null||raw.length()>2000)return;
+            runOnUiThread(()->{
+                if(!chromeOrigin()){telemetry.record("CHROME_ORIGIN_REJECT",-2,null);return;}
+                try {
+                    JSONObject m=new JSONObject(raw);
+                    String id=m.optString("id",""),op=m.optString("op","");
+                    if(id.length()<1||id.length()>64)return;
+                    telemetry.record("CHROME_COMMAND",-2,Telemetry.meta("phase",op.substring(0,Math.min(op.length(),45))));
+                    switch(op) {
+                        case "status":chromeReply(id,true,null);break;
+                        case "dashboard":showDashboard(true);chromeReply(id,true,null);break;
+                        case "show-slot":
+                            int slot=m.optInt("slot",-1);
+                            if(slot<0||slot>=browsers.size()){chromeReply(id,false,"SLOT_NOT_FOUND");break;}
+                            showBrowser(slot);chromeReply(id,true,null);break;
+                        case "reload-active":
+                            if(showingDashboard){dashboard.reload();telemetry.record("DASHBOARD_REFRESH",-1,null);}
+                            else if(activeSlot>=0&&activeSlot<browsers.size()){
+                                browsers.get(activeSlot).reload();telemetry.record("BROWSER_REFRESH",activeSlot,null);
+                            }
+                            chromeReply(id,true,null);break;
+                        case "update-web":
+                            dashboard.reload();
+                            chromeReply(id,true,null);
+                            telemetry.record("WEB_BUNDLE_RELOAD",-2,null);
+                            chrome.reload();
+                            break;
+                        case "set-height":
+                            int h=m.optInt("height",0);
+                            if(h<48||h>240){chromeReply(id,false,"HEIGHT_OUT_OF_RANGE");break;}
+                            setChromeHeight(h);chromeReply(id,true,null);break;
+                        default:chromeReply(id,false,"UNKNOWN_CHROME_COMMAND");
+                    }
+                }catch(Exception e){telemetry.record("CHROME_ERROR",-2,Telemetry.meta("code",e.getClass().getSimpleName()));}
+            });
         }
     }
     private void reply(String id, boolean ok, String reason, Object result) {
@@ -310,6 +371,23 @@ public final class MainActivity extends Activity {
                     switch(op) {
                         case "status":
                             reply(id,true,null,status());break;
+                        case "permissions-status":
+                            JSONArray keys=o.optJSONArray("keys");
+                            if(keys==null || keys.length()>70){reply(id,false,"INVALID_PERMISSION_LIST",null);break;}
+                            JSONArray statuses=new JSONArray();
+                            for(int k=0;k<keys.length();k++){
+                                String key=keys.optString(k,"");
+                                if(key.length()>120){reply(id,false,"INVALID_PERMISSION_ID",null);statuses=null;break;}
+                                statuses.put(permissionGateway.status(key));
+                            }
+                            if(statuses!=null)reply(id,true,null,statuses);
+                            break;
+                        case "permission-request":
+                            String key=o.optString("key","");
+                            if(key.length()<1 || key.length()>120){reply(id,false,"INVALID_PERMISSION_ID",null);break;}
+                            JSONObject outcome=permissionGateway.request(key);
+                            reply(id,outcome.optBoolean("ok"),outcome.optString("code","FAILED"),outcome);
+                            break;
                         case "set-count":
                             int count=o.optInt("count",-1);
                             if(count<1||count>MAX_BROWSER){reply(id,false,"COUNT_OUT_OF_RANGE",null);break;}
@@ -359,7 +437,11 @@ public final class MainActivity extends Activity {
         private final int slot;
         private final boolean isDashboard;
         BrowserClient(int slot,boolean dashboard){this.slot=slot;isDashboard=dashboard;}
+        @Override public boolean shouldOverrideUrlLoading(WebView view,WebResourceRequest request) {
+            return slot==-2 && request.isForMainFrame() && !isChromeUrl(request.getUrl().toString());
+        }
         @Override public void onPageStarted(WebView view,String url,android.graphics.Bitmap favicon) {
+            if(slot==-2){chromeFailed=false;showChromeFallback(false);}
             telemetry.record("PAGE_START",slot,Telemetry.meta("host",hostOf(url)));
         }
         @Override public void onPageFinished(WebView view,String url) {
@@ -367,17 +449,25 @@ public final class MainActivity extends Activity {
             if(!isDashboard && slot>=0 && slot<browsers.size() && browsers.get(slot)==view && isHttpsUrl(url)) {
                 state.edit().putString("browser_url_"+slot,url).apply();
             }
+            if(slot==-2){showChromeFallback(chromeFailed);if(!chromeFailed)telemetry.record("CHROME_READY",-2,null);}
             postStatus();
         }
         @Override public void onReceivedError(WebView view,WebResourceRequest request,WebResourceError error) {
-            if(request.isForMainFrame())telemetry.record("WEBVIEW_ERROR",slot,Telemetry.meta("host",hostOf(request.getUrl().toString()),"code",error.getErrorCode()));
+            if(request.isForMainFrame()){
+                telemetry.record("WEBVIEW_ERROR",slot,Telemetry.meta("host",hostOf(request.getUrl().toString()),"code",error.getErrorCode()));
+                if(slot==-2){chromeFailed=true;showChromeFallback(true);}
+            }
         }
         @Override public void onReceivedHttpError(WebView view,WebResourceRequest request,WebResourceResponse response) {
-            if(request.isForMainFrame())telemetry.record("HTTP_ERROR",slot,Telemetry.meta("host",hostOf(request.getUrl().toString()),"code",response.getStatusCode()));
+            if(request.isForMainFrame()){
+                telemetry.record("HTTP_ERROR",slot,Telemetry.meta("host",hostOf(request.getUrl().toString()),"code",response.getStatusCode()));
+                if(slot==-2 && response.getStatusCode()>=400){chromeFailed=true;showChromeFallback(true);}
+            }
         }
         @Override public void onReceivedSslError(WebView view,SslErrorHandler handler,SslError error) {
             handler.cancel();
             telemetry.record("TLS_ERROR",slot,Telemetry.meta("code",error.getPrimaryError()));
+            if(slot==-2){chromeFailed=true;showChromeFallback(true);}
         }
     }
 
@@ -433,8 +523,19 @@ public final class MainActivity extends Activity {
         telemetry.record("POPUP_CLOSED",activeSlot,null);
     }
 
+    private void postPermissionsUpdated() {
+        if(dashboard!=null && dashboardOrigin()){
+            dashboard.evaluateJavascript("window.onDexaPermissionsUpdated&&window.onDexaPermissionsUpdated()",null);
+        }
+        postStatus();
+    }
+
     @Override public void onRequestPermissionsResult(int code,String[] permissions,int[] results) {
         super.onRequestPermissionsResult(code,permissions,results);
+        if(permissionGateway!=null && permissionGateway.onPermissionResult(code,permissions,results)){
+            postPermissionsUpdated();
+            return;
+        }
         if(code!=AUDIO_REQUEST||pendingAudioRequest==null)return;
         PermissionRequest request=pendingAudioRequest;
         pendingAudioRequest=null;
@@ -446,9 +547,16 @@ public final class MainActivity extends Activity {
         }
     }
 
+    @Override protected void onActivityResult(int code,int resultCode,android.content.Intent data) {
+        super.onActivityResult(code,resultCode,data);
+        if(permissionGateway!=null && permissionGateway.onActivityResult(code,resultCode,data)){
+            postPermissionsUpdated();
+        }
+    }
     @Override protected void onResume() {
         super.onResume();
         if(telemetry!=null)telemetry.record("ACTIVITY_RESUME",activeSlot,null);
+        if(dashboard!=null)postPermissionsUpdated();
     }
     @Override protected void onPause() {
         if(telemetry!=null)telemetry.record("ACTIVITY_PAUSE",activeSlot,null);
