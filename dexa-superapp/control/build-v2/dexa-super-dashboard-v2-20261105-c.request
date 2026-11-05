@@ -1,0 +1,7 @@
+action=build-dexa-super-dashboard-v2
+snapshot_sha=9bcf08ea7e3be3c3e4c1be88dc334c73afe71bd5
+package=com.homayounisaghar.dexasuperdashboard
+versionCode=2
+versionName=1.1.0
+java_sdk35_preflight=PASS
+publish_failure_evidence=true
