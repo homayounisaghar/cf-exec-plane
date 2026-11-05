@@ -49,6 +49,16 @@ public final class MainActivity extends Activity {
     private static final int AUDIO_REQUEST = 4017;
     private final ArrayList<WebView> browsers = new ArrayList<>();
     private final Map<WebView,WebView> popupParents = new HashMap<>();
+    private static final int MAX_SCRIPT_BYTES_IN_MEMORY = 4 * 1024 * 1024;
+    private final Map<String, ScriptTransfer> pendingScripts = new HashMap<>();
+    private static final class ScriptTransfer {
+        final int slot;
+        final String startUrl;
+        final StringBuilder content = new StringBuilder();
+        final long created = System.currentTimeMillis();
+        ScriptTransfer(int slot,String startUrl) { this.slot = slot; this.startUrl=startUrl; }
+    }
+
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private SharedPreferences state;
     private Telemetry telemetry;
@@ -410,6 +420,76 @@ public final class MainActivity extends Activity {
                             browsers.get(n).loadUrl(url);
                             telemetry.record("BROWSER_NAVIGATE",n,Telemetry.meta("host",hostOf(url)));
                             reply(id,true,null,null);break;
+                        case "eval-begin": {
+                            int slotValue=o.optInt("slot",-1);
+                            String run=o.optString("runId","");
+                            if(slotValue<0||slotValue>=browsers.size() || !run.matches("[a-zA-Z0-9_-]{8,80}")){
+                                reply(id,false,"INVALID_SCRIPT_RUN",null);break;
+                            }
+                            pendingScripts.entrySet().removeIf(e ->
+                                    System.currentTimeMillis()-e.getValue().created>180000);
+                            if(pendingScripts.containsKey(run) || pendingScripts.size()>=8){
+                                reply(id,false,"TRANSFER_BUSY",null);break;
+                            }
+                            pendingScripts.put(run,new ScriptTransfer(slotValue,browsers.get(slotValue).getUrl()));
+                            telemetry.record("SCRIPT_BEGIN",slotValue,Telemetry.meta("id",run));
+                            reply(id,true,null,0);break;
+                        }
+                        case "eval-part": {
+                            String run=o.optString("runId","");
+                            String chunk=o.optString("part","");
+                            ScriptTransfer transfer=pendingScripts.get(run);
+                            if(transfer==null){reply(id,false,"TRANSFER_NOT_FOUND",null);break;}
+                            if(chunk.isEmpty()||chunk.length()>8000){
+                                reply(id,false,"INVALID_PART",null);break;
+                            }
+                            if(transfer.content.length()+chunk.length()>MAX_SCRIPT_BYTES_IN_MEMORY){
+                                pendingScripts.remove(run);
+                                reply(id,false,"SCRIPT_RESOURCE_LIMIT",null);break;
+                            }
+                            transfer.content.append(chunk);
+                            reply(id,true,null,transfer.content.length());break;
+                        }
+                        case "eval-finish": {
+                            String run=o.optString("runId","");
+                            ScriptTransfer transfer=pendingScripts.remove(run);
+                            if(transfer==null || transfer.content.length()==0){
+                                reply(id,false,"TRANSFER_NOT_FOUND",null);break;
+                            }
+                            final int scriptSlot=transfer.slot;
+                            String currentUrl=browsers.get(scriptSlot).getUrl();
+                            if(currentUrl==null || !currentUrl.equals(transfer.startUrl)){
+                                reply(id,false,"SCRIPT_PAGE_CHANGED",null);break;
+                            }
+                            final String requestId=id, runId=run;
+                            String source=transfer.content.toString();
+                            telemetry.record("SCRIPT_ACCEPTED",scriptSlot,
+                                    Telemetry.meta("id",run,"count",source.length()));
+                            WebView view=browsers.get(scriptSlot);
+                            String wrapped="(function(){try{return JSON.stringify({ok:true,result:("+source+")});}catch(e){return JSON.stringify({ok:false,reason:String(e&&e.message||e&&e.name||'ERROR')})}})()";
+                            view.evaluateJavascript(wrapped, value -> {
+                                boolean valid=value!=null && !"null".equals(value);
+                                telemetry.record("SCRIPT_RESULT",scriptSlot,
+                                        Telemetry.meta("id",runId,"ok",valid));
+                                reply(requestId,valid,valid?null:"EVAL_NO_RESULT",
+                                        valid?value:null);
+                            });
+                            break;
+                        }
+                        case "eval-stage": {
+                            String run=o.optString("runId","");
+                            String stage=o.optString("stage","");
+                            String code=o.optString("code","");
+                            int stageSlot=o.optInt("slot",-1);
+                            if(!run.matches("[a-zA-Z0-9_-]{8,80}") ||
+                                    !stage.matches("[A-Z][A-Z0-9_]{1,60}") ||
+                                    code.length()>100 || stageSlot<0 || stageSlot>=browsers.size()){
+                                reply(id,false,"INVALID_SCRIPT_STAGE",null);break;
+                            }
+                            telemetry.record("SCRIPT_STAGE",stageSlot,
+                                    Telemetry.meta("id",run,"phase",stage,"code",code));
+                            reply(id,true,null,null);break;
+                        }
                         case "eval":
                             int target=o.optInt("slot",-1);
                             String script=o.optString("script","");
