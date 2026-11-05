@@ -101,7 +101,9 @@ final class PermissionGateway {
                     granted=ops!=null && ops.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS,Process.myUid(),host.getPackageName())==AppOpsManager.MODE_ALLOWED;
                     break;
                 case "notification_listener":
-                    granted=NotificationManager.getEnabledListenerPackages(host).contains(host.getPackageName());break;
+                    String listeners=Settings.Secure.getString(host.getContentResolver(),"enabled_notification_listeners");
+                    ComponentName listener=new ComponentName(host, NotificationAgentService.class);
+                    granted=listeners!=null && (listeners.contains(listener.flattenToString()) || listeners.contains(listener.flattenToShortString()));break;
                 case "accessibility":
                     String enabled=Settings.Secure.getString(host.getContentResolver(),Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
                     ComponentName svc=new ComponentName(host, AccessibilityAgentService.class);
