@@ -1,0 +1,65 @@
+name: CF Audio Structured File Schema Parity r274 Guarded Release
+on:
+  push:
+    branches: [main]
+    paths: [server-bootstrap/control/cf-audio-schema-r274/*.request]
+permissions: {contents: read}
+concurrency: {group: cf-audio-schema-r274, cancel-in-progress: false}
+jobs:
+  deploy:
+    if: github.actor == 'homayounisaghar'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      SNAP: qualification/cf-audio-schema-r274/20261105
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 2, persist-credentials: false}
+      - name: Admit exact immutable request
+        shell: bash
+        run: |
+          set -euo pipefail
+          req=server-bootstrap/control/cf-audio-schema-r274/cf-audio-schema-r274-20261105-v1.request
+          [[ "$(git diff --name-status HEAD^ HEAD)" == "$(printf 'A\t%s' "$req")" ]] || exit 10
+          [[ "$(wc -l < "$req")" == 4 ]] || exit 11
+          grep -Fxq 'request_id=cf-audio-schema-r274-20261105-v1' "$req"
+          grep -Fxq 'source_commit=ccd929a4f98e14e6fff09c9bcf225d85923d85c5' "$req"
+          grep -Fxq 'expected_sequence=274' "$req"
+          grep -Fxq 'expected_release=onshape-vps-fast-r100-direct-orbit1-paa-storage-r274-audio-schema-20261105' "$req"
+      - name: Verify exact source snapshot and syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$SNAP"
+          [[ "$(git hash-object patch_audio_schema.py)" == '05151aaf09712ff0f3bede47db3a79722d81270d' ]]
+          [[ "$(git hash-object test_audio_schema_r274.mjs)" == '32f8a46294e295b2f0dd87de293be3d01849d453' ]]
+          [[ "$(git hash-object activate-r274.sh)" == '2d11674f9c5c64bbfcb4c33387bd40c7e434163c' ]]
+          bash -n activate-r274.sh
+          node --check test_audio_schema_r274.mjs
+          python3 -m py_compile patch_audio_schema.py
+      - name: Deploy scoped CF backend with rollback guards
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -n "$VPS_SSH_KEY" && -n "$VPS_HOST" && -n "$VPS_SSH_USER" && -n "$VPS_HOST_KEY" ]] || exit 20
+          port="${VPS_PORT:-22}"
+          [[ "$port" =~ ^[0-9]+$ ]] || exit 21
+          dir="$RUNNER_TEMP/r274-ssh"; install -d -m 0700 "$dir"
+          printf '%s\n' "$VPS_SSH_KEY" > "$dir/key"; chmod 0600 "$dir/key"
+          read -r kt kd extra < <(printf '%s\n' "$VPS_HOST_KEY" | tr -d '\r')
+          [[ "$kt" == ssh-ed25519 && -n "$kd" && -z "${extra:-}" ]] || exit 22
+          printf '%s %s %s\n' "$VPS_HOST" "$kt" "$kd" > "$dir/known_hosts"
+          printf '[%s]:%s %s %s\n' "$VPS_HOST" "$port" "$kt" "$kd" >> "$dir/known_hosts"
+          chmod 0600 "$dir/known_hosts"
+          transport=(-i "$dir/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$dir/known_hosts")
+          ssh "${transport[@]}" -p "$port" "$VPS_SSH_USER@$VPS_HOST" 'mkdir -p -m 755 /tmp/cf-audio-schema-r274-payload'
+          for f in patch_audio_schema.py test_audio_schema_r274.mjs activate-r274.sh; do
+            scp "${transport[@]}" -P "$port" "$SNAP/$f" "$VPS_SSH_USER@$VPS_HOST:/tmp/cf-audio-schema-r274-payload/$f"
+          done
+          ssh "${transport[@]}" -p "$port" "$VPS_SSH_USER@$VPS_HOST" 'set +e; bash /tmp/cf-audio-schema-r274-payload/activate-r274.sh > /tmp/cf-audio-schema-r274-diagnostic.log 2>&1; rc=$?; set -e; chgrp 1000 /tmp/cf-audio-schema-r274-diagnostic.log; chmod 0640 /tmp/cf-audio-schema-r274-diagnostic.log; exit "$rc"' </dev/null
+          echo CF_AUDIO_SCHEMA_R274_REQUEST_EXECUTED_VERIFY_LIVE_SERVER
