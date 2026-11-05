@@ -1,0 +1,6 @@
+action=build-dexa-super-dashboard-v2
+snapshot_sha=0e59483899be65a92c525ea1a5485d932f610ca5
+package=com.homayounisaghar.dexasuperdashboard
+versionCode=2
+versionName=1.1.0
+signer_sha256=b4e4afbd4450b710544359a01ca397f25b72c8e75ca827344292863509782c81
