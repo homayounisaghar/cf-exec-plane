@@ -2,28 +2,28 @@
 <html lang="fa" dir="rtl">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>داشبورد دکسا</title>
+<link rel="stylesheet" href="/theme.css">
 <style>
-:root{color-scheme:light;--ink:#4b2412;--muted:#7c6254;--teal:#c65a0b;--bg:#fff2e7;--card:#fffaf5;--line:#edceb8}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Vazirmatn,Tahoma,Arial,sans-serif;font-size:14px}
-header{padding:18px 16px 16px;background:linear-gradient(125deg,#a2360c,#ee811e);color:white}
+header{padding:18px 16px 16px;background:linear-gradient(125deg,var(--hero-from),var(--hero-to));color:white}
 header .eyebrow{font-size:11px;opacity:.8;letter-spacing:.08em}h1{font-size:22px;margin:5px 0 4px}header p{font-size:12px;opacity:.85;margin:0}
 main{max-width:800px;margin:0 auto;padding:14px 12px 35px}.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .section{display:flex;justify-content:space-between;align-items:center;margin:20px 1px 10px;gap:8px}
-h2{font-size:15px;margin:0}.tag{border-radius:99px;padding:4px 9px;background:#ffe0c0;color:#8f3b0c;font-size:11px}
+h2{font-size:15px;margin:0}.tag{border-radius:99px;padding:4px 9px;background:var(--tag);color:var(--tag-ink);font-size:11px}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}
-.card{background:var(--card);padding:14px;border-radius:16px;border:1px solid var(--line);box-shadow:0 4px 14px #5f270c0e}
+.card{background:var(--card);padding:14px;border-radius:16px;border:1px solid var(--line);box-shadow:0 4px 14px var(--shadow)}
 .card-head{display:flex;align-items:center;justify-content:space-between;gap:8px}.card h3{margin:0;font-size:15px}
-small,.sub{color:var(--muted);font-size:12px}.url{direction:ltr;text-align:left;background:#fff0e4;border-radius:8px;padding:8px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font:12px monospace;margin:10px 0}
-button{border:0;background:#ffe0c4;color:#69310e;border-radius:10px;padding:10px 13px;cursor:pointer;font:inherit;font-size:12px;font-weight:bold}
-button.primary{background:#db6415;color:#fff}button.danger{background:#ffeded;color:#b53b39}
+small,.sub{color:var(--muted);font-size:12px}.url{direction:ltr;text-align:left;background:var(--url-bg);border-radius:8px;padding:8px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font:12px monospace;margin:10px 0}
+button{border:0;background:var(--button);color:var(--button-ink);border-radius:10px;padding:10px 13px;cursor:pointer;font:inherit;font-size:12px;font-weight:bold}
+button.primary{background:var(--primary);color:var(--primary-contrast)}button.danger{background:var(--danger-bg);color:var(--danger)}
 button:disabled{opacity:.35}button:active{transform:scale(.98)}
-input,select{width:100%;border:1px solid #e5bfa5;border-radius:10px;padding:10px;background:white;color:var(--ink);font:inherit;font-size:12px}
+input,select{width:100%;border:1px solid var(--field-border);border-radius:10px;padding:10px;background:var(--field-bg);color:var(--ink);font:inherit;font-size:12px}
 .actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.actions button{flex:1}
 .card .sub{line-height:1.8}.tabs{display:flex;gap:6px;overflow:auto;padding-bottom:5px;scrollbar-width:none}.tabs button{white-space:nowrap}
-.tabs .active{background:#087d86;color:white}
-.notice{background:#fff1dc;padding:12px;border-radius:12px;border:1px solid #edcbaa;line-height:1.8;color:#805022}
-pre{direction:ltr;text-align:left;background:#512b18;color:#ffe4d1;overflow:auto;font:11px monospace;border-radius:12px;padding:13px;white-space:pre-wrap;word-break:break-word;min-height:70px}
-.kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.kpi{text-align:center;background:white;border:1px solid var(--line);border-radius:12px;padding:12px 6px}.kpi b{display:block;font-size:18px;color:#b94a07}.kpi span{font-size:10px;color:var(--muted)}
+.tabs .active{background:var(--primary);color:white}
+.notice{background:var(--notice);padding:12px;border-radius:12px;border:1px solid var(--notice-border);line-height:1.8;color:var(--notice-ink)}
+pre{direction:ltr;text-align:left;background:var(--debug);color:var(--debug-ink);overflow:auto;font:11px monospace;border-radius:12px;padding:13px;white-space:pre-wrap;word-break:break-word;min-height:70px}
+.perm-group{margin:14px 0 8px;font-weight:bold;font-size:13px}.perm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px}.perm-item{border:1px solid var(--line);background:var(--field-bg);border-radius:12px;padding:10px;display:flex;justify-content:space-between;align-items:center;gap:8px}.perm-item button{flex-shrink:0}.perm-status{display:block;font-size:10px;color:var(--muted);margin-top:3px}.kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.kpi{text-align:center;background:white;border:1px solid var(--line);border-radius:12px;padding:12px 6px}.kpi b{display:block;font-size:18px;color:var(--primary-active)}.kpi span{font-size:10px;color:var(--muted)}
 footer{text-align:center;font-size:11px;color:var(--muted);margin:20px auto}
 </style></head>
 <body>
@@ -38,8 +38,8 @@ footer{text-align:center;font-size:11px;color:var(--muted);margin:20px auto}
 <script>
 'use strict';
 const $=id=>document.getElementById(id);
-const defaults={browserHome:'https://chatgpt.com/',maxBrowsers:8,maxDashboards:8,actions:{}};
-let config=defaults,hostState=null,requestSeq=0,requests=new Map(),selectedBoard=0;
+const defaults={browserHome:'https://chatgpt.com/',maxBrowsers:8,maxDashboards:8,actions:{},permissions:[]};
+let config=defaults,hostState=null,requestSeq=0,requests=new Map(),selectedBoard=0,permissionSnapshot={},permissionFetching=false;
 let boards=JSON.parse(localStorage.getItem('dexa-boards-v1')||'[{"title":"کنترل دکسا","description":"مدیریت مرورگرها و مسیر آزمایش‌های دکسا"}]');
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function log(s){$('diagnostics').textContent=(new Date().toLocaleTimeString('fa-IR')+' | '+s+'\n'+$('diagnostics').textContent).slice(0,3000)}
@@ -56,6 +56,7 @@ window.DexaResolve=(id,response)=>{
  if(response&&response.ok)r.resolve(response);else r.reject(new Error(response?.reason||'HOST_ERROR'));
 };
 window.onDexaHostUpdate=state=>{hostState=state;render()};
+window.onDexaPermissionsUpdated=()=>{if(selectedBoard===-1)refreshPermissions()};
 async function command(op,args={}){
  try{const r=await nativeCall(op,args);if(r.state)hostState=r.state;log(op+' ✓ '+JSON.stringify(r.result??{}).slice(0,350));render();return r}
  catch(e){log(op+' ✕ '+e.message);render();return null}
@@ -91,13 +92,65 @@ function render(){
  renderBoards();
 }
 function saveBoards(){localStorage.setItem('dexa-boards-v1',JSON.stringify(boards))}
+async function refreshPermissions(){
+ if(permissionFetching||!hostState||!config.permissions||config.permissions.length===0)return;
+ permissionFetching=true;
+ try {
+  const ids=config.permissions.map(x=>x.id);
+  const r=await nativeCall('permissions-status',{keys:ids});
+  permissionSnapshot={};
+  for(const p of (r.result||[]))permissionSnapshot[p.id]=p;
+ }catch(e){log('PERMISSION_STATUS_ERROR '+e.message)}
+ finally{permissionFetching=false;if(selectedBoard===-1)renderPermissionItems()}
+}
+function renderPermissionItems(){
+ const el=$('permissionItems');if(!el)return;
+ el.innerHTML='';
+ const groups=[...new Set((config.permissions||[]).map(x=>x.group||'سایر'))];
+ for(const group of groups){
+  const h=document.createElement('div');h.className='perm-group';h.textContent=group;el.appendChild(h);
+  const grid=document.createElement('div');grid.className='perm-grid';el.appendChild(grid);
+  for(const p of config.permissions.filter(x=>(x.group||'سایر')===group)){
+   const status=permissionSnapshot[p.id];
+   const row=document.createElement('div');row.className='perm-item';
+   const info=document.createElement('div');
+   const caption=document.createElement('strong');caption.textContent=p.label;info.appendChild(caption);
+   const st=document.createElement('span');st.className='perm-status';
+   st.textContent=!status?'وضعیت بررسی نشده':status.granted?'فعال':status.state==='NOT_GRANTED'?'غیرفعال':status.state==='NOT_DECLARED'?'در APK تعریف نشده':status.state==='UNAVAILABLE'?'روی این نسخهٔ اندروید موجود نیست':status.state==='NOT_REQUESTABLE_RUNTIME'?'دسترسی سیستمی':status.state;
+   info.appendChild(st);row.appendChild(info);
+   const btn=document.createElement('button');
+   btn.textContent=status?.granted?'فعال ✓':'درخواست';
+   btn.disabled=permissionFetching || !hostState || !!status?.granted || status?.declared===false && status?.kind==='runtime';
+   btn.onclick=async()=>{
+    btn.disabled=true;btn.textContent='در حال درخواست...';
+    const r=await command('permission-request',{key:p.id});
+    if(r)log('ANDROID_PERMISSION '+p.id+' '+(r.result?.code||''));
+    await refreshPermissions();
+   };
+   row.appendChild(btn);grid.appendChild(row);
+  }
+ }
+}
 function renderBoards(){
  $('addBoard').disabled=boards.length>=config.maxDashboards;
  $('boardTabs').innerHTML='';
+ const permTab=document.createElement('button');
+ permTab.textContent='دسترسی‌های اندروید';
+ permTab.className=selectedBoard===-1?'active':'';
+ permTab.onclick=()=>{selectedBoard=-1;renderBoards();refreshPermissions()};
+ $('boardTabs').appendChild(permTab);
  boards.forEach((b,i)=>{
   const btn=document.createElement('button');btn.textContent=b.title;btn.className=i===selectedBoard?'active':'';
   btn.onclick=()=>{selectedBoard=i;renderBoards()};$('boardTabs').appendChild(btn);
  });
+ if(selectedBoard===-1){
+  $('boardContent').innerHTML='<div class="card-head"><h3>دسترسی‌های اندروید</h3><span class="tag">فقط با تأیید شما</span></div>'
+  +'<p class="sub">این دکمه‌ها درخواست مجوز را از خود اندروید باز می‌کنند؛ هیچ اجازه‌ای خودکار اعطا نمی‌شود. فقط مجوزهایی که در APK تعریف شده‌اند، قابل درخواست‌اند. برخی دسترسی‌های ویژه باید در تنظیمات فعال شوند و ممکن است به نقش سیستمی نیاز داشته باشند. فعال‌شدن اجازه به معنای پیاده‌سازی همهٔ قابلیت‌های اجرایی آن نیست.</p>'
+  +'<div class="row"><button id="refreshPermissions" class="primary">بررسی دوبارهٔ وضعیت‌ها</button><span class="sub">مجموع: '+(config.permissions||[]).length+' دسترسی و نقش</span></div>'
+  +'<div id="permissionItems"></div>';
+  $('refreshPermissions').onclick=refreshPermissions;
+  renderPermissionItems();return;
+ }
  const b=boards[selectedBoard]||boards[0];
  $('boardContent').innerHTML='<div class="card-head"><h3>'+esc(b.title)+'</h3><span class="tag">داشبورد '+(selectedBoard+1)+'</span></div>'
    +'<p class="sub">'+esc(b.description)+'</p><div class="row"><button id="renameBoard">تغییر نام</button><button id="refreshDashboard">رفرش وب</button><button id="removeBoard" class="danger">حذف داشبورد</button></div>';
@@ -106,10 +159,11 @@ function renderBoards(){
  $('removeBoard').disabled=boards.length<=1;
  $('removeBoard').onclick=()=>{if(boards.length<=1)return;boards.splice(selectedBoard,1);selectedBoard=0;saveBoards();renderBoards()};
 }
+
 $('addBrowser').onclick=()=>command('set-count',{count:Math.min(8,(hostState?.count||2)+1)});
 $('refreshStatus').onclick=()=>command('status');
 $('addBoard').onclick=()=>{if(boards.length>=8)return;boards.push({title:'داشبورد '+(boards.length+1),description:'قابل تغییر با انتشار نسخهٔ جدید وب'});selectedBoard=boards.length-1;saveBoards();renderBoards()};
-fetch('/api/config',{cache:'no-store'}).then(r=>r.json()).then(c=>{config={...defaults,...c};render()}).catch(e=>log('CONFIG_ERROR '+e.message));
+fetch('/api/config',{cache:'no-store'}).then(r=>r.json()).then(c=>{config={...defaults,...c};render();if(selectedBoard===-1)refreshPermissions()}).catch(e=>log('CONFIG_ERROR '+e.message));
 command('status');
 render();
 </script></body></html>

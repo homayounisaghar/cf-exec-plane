@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="stylesheet" href="/theme.css">
+<title>نوار کنترل دکسا</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:auto;background:var(--card);color:var(--ink);font-family:Vazirmatn,Tahoma,Arial,sans-serif}
+.toolbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:5px;padding:6px 8px;min-height:64px;background:var(--card);border-bottom:1px solid var(--line)}
+.toolbar .title{font-weight:750;text-align:center;min-width:90px;max-width:34%;flex:1;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.buttons{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+button{font:inherit;font-weight:700;font-size:12px;border:1px solid var(--line);background:var(--button);color:var(--button-ink);border-radius:9px;min-height:39px;padding:8px 10px;cursor:pointer}
+button.primary{background:var(--primary);color:var(--primary-contrast);border-color:var(--primary-active)}
+button:active{transform:scale(.98)}
+@media(max-width:350px){.toolbar .title{min-width:64px;font-size:12px}.buttons{gap:3px}button{padding:8px 6px;font-size:11px}}
+</style>
+</head>
+<body>
+<nav class="toolbar" id="toolbar" aria-label="کنترل مرورگرها">
+  <div class="buttons">
+    <button class="primary" data-cmd="dashboard" title="بازگشت به داشبورد">پنل دکسا</button>
+  </div>
+  <div class="title" id="pageTitle">داشبورد دکسا</div>
+  <div class="buttons">
+    <button data-cmd="reload-active" title="رفرش همین صفحه">↻ صفحه</button>
+    <button data-cmd="update-web" title="آخرین نسخهٔ داشبورد و نوار؛ بدون رفرش مرورگرهای ChatGPT">↻ وب</button>
+  </div>
+</nav>
+<script>
+'use strict';
+let seq=0,lastHeight=0;
+const title=document.getElementById('pageTitle');
+function run(op,args={}){
+ if(!window.DexaChrome||typeof window.DexaChrome.send!=='function')return;
+ window.DexaChrome.send(JSON.stringify({id:'chrome-'+(++seq),op,...args}));
+}
+function apply(s){
+ title.textContent=s.showingDashboard?'داشبورد دکسا':('مرورگر '+(s.activeSlot+1));
+}
+window.onDexaChromeState=apply;
+window.DexaChromeResponse=(_id,r)=>{if(r&&r.state)apply(r.state);if(r&&!r.ok)title.title=r.reason||'COMMAND_FAILED'};
+document.addEventListener('click',e=>{
+ const b=e.target.closest('[data-cmd]');if(!b)return;
+ const args={};if(b.dataset.slot!==undefined)args.slot=Number(b.dataset.slot);
+ run(b.dataset.cmd,args);
+});
+function resize(){
+ const height=Math.ceil(document.getElementById('toolbar').getBoundingClientRect().height);
+ const next=Math.min(240,Math.max(48,height));
+ if(next!==lastHeight){lastHeight=next;run('set-height',{height:next})}
+}
+if('ResizeObserver' in window)new ResizeObserver(resize).observe(document.getElementById('toolbar'));
+window.addEventListener('load',()=>{run('status');resize()});
+</script>
+</body>
+</html>

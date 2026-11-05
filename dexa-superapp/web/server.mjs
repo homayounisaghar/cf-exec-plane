@@ -4,6 +4,8 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 const dir=path.dirname(fileURLToPath(import.meta.url));
 const html=fs.readFileSync(path.join(dir,'index.html'));
+const toolbar=fs.readFileSync(path.join(dir,'toolbar.html'));
+const theme=fs.readFileSync(path.join(dir,'theme.css'));
 const port=Number(process.env.PORT||4000);
 const recent=[];
 const counts=new Map();
@@ -14,8 +16,52 @@ function response(res,status,body,type='application/json; charset=utf-8'){
 }
 function json(res,status,obj){response(res,status,JSON.stringify(obj));}
 const config={
-  schema:'dexa-super-dashboard.v1',name:'داشبورد دکسا',build:'web-v1.0.0',
+  schema:'dexa-super-dashboard.v1',name:'داشبورد دکسا',build:'web-v1.1.0',
   browserHome:'https://chatgpt.com/',defaultBrowsers:2,maxBrowsers:8,maxDashboards:8,
+  permissions: [
+    {id:'android.permission.READ_SMS',label:'خواندن پیامک',group:'پیامک و تماس'},
+    {id:'android.permission.RECEIVE_SMS',label:'دریافت پیامک',group:'پیامک و تماس'},
+    {id:'android.permission.SEND_SMS',label:'ارسال پیامک',group:'پیامک و تماس'},
+    {id:'android.permission.READ_CONTACTS',label:'خواندن مخاطبان',group:'پیامک و تماس'},
+    {id:'android.permission.WRITE_CONTACTS',label:'ویرایش مخاطبان',group:'پیامک و تماس'},
+    {id:'android.permission.READ_PHONE_STATE',label:'وضعیت تلفن',group:'پیامک و تماس'},
+    {id:'android.permission.READ_PHONE_NUMBERS',label:'شمارهٔ تلفن',group:'پیامک و تماس'},
+    {id:'android.permission.CALL_PHONE',label:'برقراری تماس',group:'پیامک و تماس'},
+    {id:'android.permission.READ_CALL_LOG',label:'خواندن تاریخچهٔ تماس',group:'پیامک و تماس'},
+    {id:'android.permission.WRITE_CALL_LOG',label:'ویرایش تاریخچهٔ تماس',group:'پیامک و تماس'},
+    {id:'default_sms',label:'نقش برنامهٔ پیش‌فرض پیامک',group:'پیامک و تماس'},
+    {id:'android.permission.CAMERA',label:'دوربین',group:'رسانه و صدا'},
+    {id:'android.permission.RECORD_AUDIO',label:'میکروفون',group:'رسانه و صدا'},
+    {id:'android.permission.READ_MEDIA_IMAGES',label:'خواندن تصاویر',group:'رسانه و صدا'},
+    {id:'android.permission.READ_MEDIA_VIDEO',label:'خواندن ویدیوها',group:'رسانه و صدا'},
+    {id:'android.permission.READ_MEDIA_AUDIO',label:'خواندن فایل‌های صوتی',group:'رسانه و صدا'},
+    {id:'android.permission.READ_MEDIA_VISUAL_USER_SELECTED',label:'تصاویر انتخاب‌شده',group:'رسانه و صدا'},
+    {id:'android.permission.ACCESS_MEDIA_LOCATION',label:'اطلاعات مکانی عکس‌ها',group:'رسانه و صدا'},
+    {id:'android.permission.ACCESS_COARSE_LOCATION',label:'موقعیت تقریبی',group:'مکان و حسگر'},
+    {id:'android.permission.ACCESS_FINE_LOCATION',label:'موقعیت دقیق',group:'مکان و حسگر'},
+    {id:'background_location',label:'موقعیت در پس‌زمینه',group:'مکان و حسگر'},
+    {id:'android.permission.ACTIVITY_RECOGNITION',label:'فعالیت حرکتی',group:'مکان و حسگر'},
+    {id:'android.permission.BODY_SENSORS',label:'حسگرهای بدن',group:'مکان و حسگر'},
+    {id:'android.permission.BLUETOOTH_CONNECT',label:'اتصال بلوتوث',group:'ارتباطات نزدیک'},
+    {id:'android.permission.BLUETOOTH_SCAN',label:'اسکن بلوتوث',group:'ارتباطات نزدیک'},
+    {id:'android.permission.BLUETOOTH_ADVERTISE',label:'انتشار بلوتوث',group:'ارتباطات نزدیک'},
+    {id:'android.permission.NEARBY_WIFI_DEVICES',label:'دستگاه‌های وای‌فای نزدیک',group:'ارتباطات نزدیک'},
+    {id:'android.permission.READ_CALENDAR',label:'خواندن تقویم',group:'اطلاعات و تقویم'},
+    {id:'android.permission.WRITE_CALENDAR',label:'ویرایش تقویم',group:'اطلاعات و تقویم'},
+    {id:'android.permission.POST_NOTIFICATIONS',label:'ارسال اعلان‌های خود برنامه',group:'اعلان‌ها'},
+    {id:'notification_listener',label:'دسترسی به اعلان‌های گوشی',group:'اعلان‌ها'},
+    {id:'dnd',label:'مدیریت مزاحم نشوید',group:'اعلان‌ها'},
+    {id:'all_files',label:'مدیریت فایل‌های مشترک',group:'سیستم و فایل‌ها'},
+    {id:'saf_tree',label:'دسترسی به پوشهٔ انتخابی',group:'سیستم و فایل‌ها'},
+    {id:'overlay',label:'نمایش روی سایر برنامه‌ها',group:'سیستم و فایل‌ها'},
+    {id:'usage_access',label:'آمار استفاده از برنامه‌ها',group:'سیستم و فایل‌ها'},
+    {id:'write_settings',label:'تغییر تنظیمات سیستم',group:'سیستم و فایل‌ها'},
+    {id:'accessibility',label:'سرویس دسترس‌پذیری',group:'سیستم و فایل‌ها'},
+    {id:'exact_alarm',label:'زمان‌بندی دقیق',group:'سیستم و فایل‌ها'},
+    {id:'install_packages',label:'مجوز نصب APK',group:'سیستم و فایل‌ها'},
+    {id:'battery_exempt',label:'استثنا از بهینه‌سازی باتری',group:'سیستم و فایل‌ها'}
+  ],
+
   actions:{
     observe:{label:'وضعیت صفحه',code:"(()=>({host:location.host,turnCount:document.querySelectorAll('[data-message-author-role]').length,voiceButtons:document.querySelectorAll('button[aria-label*=Voice],button[aria-label*=voice]').length}))()"},
     new_chat:{label:'گفت‌وگوی جدید',code:"(()=>{const a=[...document.querySelectorAll('a,button')].find(e=>{let t=((e.getAttribute('aria-label')||'')+' '+(e.textContent||'')).trim();return /new chat|چت جدید|گفتگوی جدید/i.test(t)});if(!a)return {ok:false,reason:'CONTROL_NOT_FOUND'};a.click();return {ok:true,action:'new_chat'}})()"},
@@ -39,6 +85,8 @@ const srv=http.createServer(async(req,res)=>{
   if(req.method==='GET' && url.pathname==='/api/health')return json(res,200,{ok:true,service:'dexa-super-dashboard',uptimeSeconds:Math.floor((Date.now()-started)/1000),eventsSeen:[...counts.values()].reduce((a,b)=>a+b,0),webVersion:config.build});
   if(req.method==='GET' && url.pathname==='/api/config')return json(res,200,config);
   if(req.method==='GET' && url.pathname==='/api/telemetry/summary')return json(res,200,{ok:true,total:recent.length,byEvent:Object.fromEntries(counts)});
+  if(req.method==='GET' && url.pathname==='/theme.css')return response(res,200,theme,'text/css; charset=utf-8');
+  if(req.method==='GET' && url.pathname==='/toolbar')return response(res,200,toolbar,'text/html; charset=utf-8');
   if(req.method==='GET' && (url.pathname==='/'||url.pathname==='/dashboard'))return response(res,200,html,'text/html; charset=utf-8');
   if(req.method==='POST' && url.pathname==='/api/telemetry'){
     let size=0,body='';

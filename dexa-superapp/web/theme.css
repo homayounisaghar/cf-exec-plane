@@ -1,0 +1,13 @@
+/* Dexa Super Dashboard: shared theme for dashboard and remote Android toolbar. */
+:root{
+ color-scheme:light;
+ --ink:#4b2412;--muted:#7c6254;
+ --primary:#d65d0e;--primary-active:#bf4b07;--primary-contrast:#ffffff;
+ --hero-from:#a2360c;--hero-to:#ee811e;
+ --bg:#fff2e7;--card:#fffaf5;--line:#edceb8;
+ --button:#ffe0c4;--button-ink:#69310e;
+ --tag:#ffe0c0;--tag-ink:#8f3b0c;
+ --field-bg:#ffffff;--field-border:#e5bfa5;--url-bg:#fff0e4;
+ --shadow:#5f270c0e;--notice:#fff1dc;--notice-border:#edcbaa;--notice-ink:#805022;
+ --debug:#512b18;--debug-ink:#ffe4d1;--danger:#b53b39;--danger-bg:#ffeded;
+}
