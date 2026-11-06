@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const STORAGE = 'dexa-auto-handoff-once-v1';
+  const STORAGE = 'dexa-auto-handoff-once-v2';
   const POLL_MS = 2200;
   const STABLE_MS = 2800;
   const MAX_ANSWER = 50000;
@@ -98,6 +98,20 @@
       .split('ChatGPT can make mistakes.')[0]
       .split('Response complete')[0].trim();
     const fresh = count > last.baseAssistantCount && startAnswer > endUser;
+    // A browser-1 submission is not allowed to leave its old draft behind.
+    // Never touch a newer draft which differs from the submitted message.
+    if (fresh && completed && last.text) {
+      const editor = document.querySelector('[contenteditable="true"][role="textbox"][aria-label="Ask ChatGPT"]');
+      const norm = x => String(x || '').replace(/\s+/g, ' ').trim();
+      if (editor && norm(editor.innerText) === norm(last.text)) {
+        editor.focus();
+        const selection = window.getSelection(), range = document.createRange();
+        range.selectNodeContents(editor);
+        selection.removeAllRanges();
+        selection.addRange(range);
+        document.execCommand('delete', false, null);
+      }
+    }
     return {...common, hasSubmission: true, baseCount: last.baseAssistantCount,
       assistantCount: count, answer: fresh ? answer.slice(0, 50001) : '',
       completed: fresh && completed, promptLength: last.text.length};
@@ -110,6 +124,31 @@
       editorReady: !!editor,
       audibleMedia: [...document.querySelectorAll('audio,video')].some(x => !x.paused),
       voiceActive: !!document.querySelector('[aria-label="End Voice"],[aria-label="Exit Voice"],[aria-label="Leave Voice"]')};
+  }
+
+  // Called only on a new-chat page or after a confirmed send. Unlike
+  // editor.innerHTML='', execCommand participates in ProseMirror editing.
+  function clearComposer(expected) {
+    const norm = x => String(x || '').replace(/\s+/g, ' ').trim();
+    if (location.hostname !== 'chatgpt.com' ||
+        !(/^\/c\//.test(location.pathname) || location.pathname === '/'))
+      return {ok: false, error: 'NOT_CHATGPT_COMPOSER'};
+    if ([...document.querySelectorAll('audio,video')].some(x => !x.paused))
+      return {ok: false, error: 'AUDIO_PLAYING'};
+    const editor = document.querySelector('[contenteditable="true"][role="textbox"][aria-label="Ask ChatGPT"]');
+    if (!editor) return {ok: false, error: 'EDITOR_MISSING'};
+    const draft = norm(editor.innerText);
+    if (!draft) return {ok: true, empty: true, changed: false};
+    if (expected !== null && draft !== norm(expected))
+      return {ok: false, error: 'DIFFERENT_UNSENT_DRAFT', draftLength: draft.length};
+    editor.focus();
+    const selection = window.getSelection(), range = document.createRange();
+    range.selectNodeContents(editor);
+    selection.removeAllRanges();
+    selection.addRange(range);
+    document.execCommand('delete', false, null);
+    return {ok: !norm(editor.innerText), changed: true,
+      error: norm(editor.innerText) ? 'DRAFT_STILL_PRESENT' : null};
   }
 
   function secondCompose(prompt) {
@@ -143,6 +182,31 @@
     return {ok: true, sent: true};
   }
 
+  // After Send was clicked, only clear the editor when the new chat
+  // actually contains the forwarded message, not merely because click returned.
+  function secondPostSend(expected) {
+    const page = document.body.innerText || '';
+    const sent = location.hostname === 'chatgpt.com' &&
+      location.pathname.startsWith('/c/') &&
+      page.includes('You said:') && page.includes('این مسئله رو حل کن:');
+    if (!sent) return {ok: false, awaitingSend: true};
+    const norm = x => String(x || '').replace(/\s+/g, ' ').trim();
+    const editor = document.querySelector('[contenteditable="true"][role="textbox"][aria-label="Ask ChatGPT"]');
+    if (!editor) return {ok: false, error: 'EDITOR_MISSING'};
+    const draft = norm(editor.innerText);
+    if (!draft) return {ok: true, sendConfirmed: true, draftEmpty: true};
+    if (draft !== norm(expected)) return {
+      ok: false, sendConfirmed: true, error: 'NEW_UNSENT_DRAFT_PRESERVED'};
+    editor.focus();
+    const selection = window.getSelection(), range = document.createRange();
+    range.selectNodeContents(editor);
+    selection.removeAllRanges();
+    selection.addRange(range);
+    document.execCommand('delete', false, null);
+    return {ok: !norm(editor.innerText), sendConfirmed: true,
+      draftEmpty: !norm(editor.innerText)};
+  }
+
   function secondAnswer() {
     const page = document.body.innerText || '';
     const pos = page.lastIndexOf('ChatGPT said:');
@@ -174,23 +238,43 @@
       let check = await execOn(1, secondReady);
       if (!check?.ok || check.voiceActive || check.audibleMedia)
         throw Error('SECOND_BROWSER_UNSAFE');
-      if (check.draftLength) throw Error('SECOND_BROWSER_HAS_UNSENT_DRAFT');
       if (check.path !== '/') {
         await nativeCall('navigate', {slot: 1, url: 'https://chatgpt.com/'});
         for (let i = 0; i < 30; i++) {
           await sleep(450);
           check = await execOn(1, secondReady);
-          if (check?.ok && check.editorReady && check.path === '/' && !check.draftLength) break;
+          if (check?.ok && check.editorReady && check.path === '/') break;
         }
       }
-      if (!check?.ok || !check.editorReady || check.path !== '/' || check.draftLength)
+      if (!check?.ok || !check.editorReady || check.path !== '/')
         throw Error('SECOND_NEW_CHAT_NOT_READY');
       if (check.voiceActive || check.audibleMedia) throw Error('VOICE_OR_AUDIO_ACTIVE');
+      // The new-chat editor can resurrect a stale draft from a previous send.
+      // Clear only this new-chat composer, verify read-back, then compose.
+      for (let i = 0; i < 4 && check.draftLength; i++) {
+        const result = await execOn(1, clearComposer, null);
+        if (!result?.ok) throw Error('SECOND_DRAFT_CLEAR_FAILED:' + String(result?.error || ''));
+        await sleep(350);
+        check = await execOn(1, secondReady);
+      }
+      if (check.draftLength) throw Error('SECOND_DRAFT_NOT_EMPTY');
       const prepared = await execOn(1, secondCompose, targetPrompt);
       if (!prepared?.ok) throw Error('SECOND_COMPOSE_FAILED:' + String(prepared?.error || ''));
       await sleep(500);
       const sent = await execOn(1, secondSend, targetPrompt);
       if (!sent?.ok || !sent.sent) throw Error('SECOND_SEND_FAILED:' + String(sent?.error || ''));
+      // Do not declare success until the sent message appears in the new chat
+      // and the composer is empty. Never erase a different, newly typed draft.
+      let postSend = null;
+      for (let i = 0; i < 24; i++) {
+        await sleep(400);
+        postSend = await execOn(1, secondPostSend, targetPrompt);
+        if (postSend?.ok && postSend.sendConfirmed && postSend.draftEmpty) break;
+        if (postSend?.error && !postSend.awaitingSend)
+          throw Error('SECOND_POST_SEND:' + postSend.error);
+      }
+      if (!postSend?.ok || !postSend.sendConfirmed || !postSend.draftEmpty)
+        throw Error('SECOND_DRAFT_NOT_CLEARED_AFTER_SEND');
       localStorage.setItem(STORAGE, 'done');
       state.transferCount++;
       status('SENT', 'پاسخ مرورگر اول خودکار به چت دوم فرستاده شد؛ منتظر پاسخ چت دوم...');
@@ -198,6 +282,9 @@
         await sleep(1700);
         const result = await execOn(1, secondAnswer);
         if (result?.completed && result.hasUser && result.path.startsWith('/c/') && result.answer) {
+          const finalDraft = await execOn(1, secondPostSend, targetPrompt);
+          if (!finalDraft?.ok || !finalDraft.draftEmpty)
+            throw Error('SECOND_DRAFT_REAPPEARED');
           state.secondReply = result.answer;
           status('SECOND_REPLY', 'حلقهٔ متنی کامل شد؛ پاسخ مرورگر دوم: ' + result.answer.slice(0, 120));
           return;
