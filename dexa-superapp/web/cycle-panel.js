@@ -100,7 +100,7 @@
   function installBrowserAgent() {
     const NAME = '__dexaCycleAgent160';
     if (location.hostname !== 'chatgpt.com') return {ok: false, error: 'NOT_CHATGPT'};
-    if (window[NAME]) return {ok: true, reused: true};
+    if (window[NAME]?.revision === 'power-slider-v161') return {ok: true, reused: true};
     const norm = s => String(s || '').replace(/\s+/g, ' ').trim();
     const vis = e => !!e && e.getClientRects().length > 0 &&
       getComputedStyle(e).visibility !== 'hidden';
@@ -141,65 +141,76 @@
         audibleMedia: all('audio,video').some(m => !m.paused)};
     };
 
-    // Model and effort menus differ between consumer ChatGPT versions. Use
-    // exact visible options, never assumed screen coordinates or blind clicks.
+    // Verified on the owner's real hidden ChatGPT WebViews on 2026-11-06:
+    // button[aria-label="Select ChatGPT model"] opens a five-position
+    // [role="menuitem"][aria-label="Power"] keyboard slider, index 0..4.
+    // We accept 0..3 only (Instant/Medium/High/Extra High); 4 is Pro.
+    const POWER_LEVELS = ['Instant', 'Medium', 'High', 'Extra High', 'Pro'];
     const modelTrigger = () => {
-      let a = all('[data-testid="model-switcher-dropdown-button"],[data-testid="model-picker-button"],[data-testid="model-selector-button"]');
-      if (a.length === 1) return a[0];
-      a = ctrl().filter(e => /select model|choose model|model picker|model switcher|change model/i.test(
-        (e.getAttribute('aria-label') || '') + ' ' + (e.getAttribute('title') || '')));
-      if (a.length === 1) return a[0];
-      a = all('header button,nav button').filter(e =>
-        /(GPT[- ]?6|GPT[- ]?5|Thinking|Instant|ChatGPT)/i.test(label(e)) &&
-        !/new chat|share|upgrade|search|project|menu/i.test(label(e)));
+      const a = all('button[aria-label="Select ChatGPT model"],' +
+        '[data-testid="model-switcher-dropdown-button"],' +
+        '[data-testid="model-picker-button"],[data-testid="model-selector-button"]');
       return a.length === 1 ? a[0] : null;
     };
-    const parseOption = e => {
-      const short = (e.getAttribute('aria-label') || e.innerText || e.textContent || '')
-        .trim().split('\n').map(x => x.trim()).filter(Boolean)[0] || '';
-      const line = short.replace(/^GPT[- ]?\d+(?:\.\d+)?\s*/i, '').trim();
-      const m = line.match(/^(extra[\s-]*high|instant|medium|high|thinking)(?:$|[\s:—–-])/i);
-      if (!m) return null;
-      const key = m[1].replace(/[\s-]+/g, ' ').toLowerCase();
-      return key === 'extra high' ? 'Extra High' :
-        key === 'instant' ? 'Instant' : key === 'medium' ? 'Medium' :
-        key === 'high' ? 'High' : 'Thinking';
-    };
-    const modelOptions = () => {
-      const groups = all('[role="menu"],[role="listbox"],[role="dialog"],[data-radix-menu-content],[data-radix-popper-content-wrapper]');
-      const options = [];
-      for (const e of all('button,[role="menuitem"],[role="menuitemradio"],[role="option"],[role="radio"]')) {
-        const value = parseOption(e);
-        if (!value) continue;
-        if (!groups.some(g => g.contains(e)) &&
-            !e.closest('[data-state="open"],[role="menu"],[role="listbox"]')) continue;
-        const checked = e.getAttribute('aria-checked') === 'true' ||
-          e.getAttribute('aria-selected') === 'true' ||
-          e.getAttribute('data-state') === 'checked' ||
-          !!e.closest('[aria-checked="true"],[aria-selected="true"]') ||
-          !!e.querySelector('svg[data-lucide="check"],svg[class*="check"]');
-        options.push({value, checked, element: e});
-      }
-      return options;
+    const powerPosition = () => {
+      const controls = all('[role="menuitem"][aria-label="Power"][data-reasoning-slider]');
+      if (controls.length !== 1)
+        return {ok: false, error: 'POWER_CONTROL_COUNT_' + controls.length};
+      const p = controls[0];
+      const slider = p.querySelector('[role="slider"][aria-valuenow]');
+      const label = p.closest('[role="group"]')?.querySelector('[role="status"]');
+      if (!slider || !label) return {ok: false, error: 'POWER_STATUS_NOT_FOUND'};
+      const index = Number(slider.getAttribute('aria-valuenow'));
+      const min = Number(slider.getAttribute('aria-valuemin'));
+      const max = Number(slider.getAttribute('aria-valuemax'));
+      const level = POWER_LEVELS[index];
+      const announced = (label.textContent || '').replace(/\s+/g, ' ').trim();
+      if (!Number.isInteger(index) || min !== 0 || max !== 4 || !level ||
+          announced !== level + ', ' + (index + 1) + ' of 5.')
+        return {ok: false, error: 'POWER_POSITION_UNVERIFIED',
+          index, announced, min, max};
+      return {ok: true, index, level, announced};
     };
     const model = (action, target) => {
       const t = modelTrigger();
+      if (!t) return {ok: false, error: 'MODEL_SELECTOR_NOT_FOUND'};
+      const header = () => (t.innerText || t.textContent || '')
+        .split('\n').map(x => x.trim()).filter(Boolean).at(-1) || '';
       if (action === 'open') {
-        if (!modelOptions().length) {
-          if (!t) return {ok: false, error: 'MODEL_SELECTOR_NOT_FOUND'};
-          t.click();
-        }
-      } else if (action === 'choose') {
-        const candidates = modelOptions().filter(e => e.value === target);
-        if (candidates.length !== 1) return {ok: false,
-          error: 'MODEL_OPTION_COUNT_' + target.replace(/\s/g, '_') + '_' + candidates.length};
-        if (!candidates[0].checked) candidates[0].element.click();
-        return {ok: true, clicked: !candidates[0].checked, checked: candidates[0].checked};
-      } else if (action === 'dismiss') {
-        if (modelOptions().length && t) t.click();
+        if (t.getAttribute('aria-expanded') !== 'true') t.click();
+        return {ok: true, opened: true};
       }
-      return {ok: true, trigger: t ? label(t).slice(0,120) : '',
-        options: modelOptions().map(x => ({value: x.value, checked: x.checked})).slice(0,12)};
+      if (action === 'inspect') {
+        if (t.getAttribute('aria-expanded') !== 'true')
+          return {ok: false, error: 'MODEL_MENU_CLOSED'};
+        const position = powerPosition();
+        if (!position.ok) return position;
+        return {...position, triggerLevel: header()};
+      }
+      if (action === 'step') {
+        const position = powerPosition();
+        if (!position.ok) return position;
+        if (target !== 'right' && target !== 'left')
+          return {ok: false, error: 'INVALID_POWER_DIRECTION'};
+        const next = position.index + (target === 'right' ? 1 : -1);
+        if (next < 0 || next > 4)
+          return {ok: false, error: 'POWER_OUT_OF_RANGE'};
+        const p = all('[role="menuitem"][aria-label="Power"][data-reasoning-slider]')[0];
+        p.focus();
+        const code = target === 'right' ? 39 : 37;
+        const key = target === 'right' ? 'ArrowRight' : 'ArrowLeft';
+        p.dispatchEvent(new KeyboardEvent('keydown', {
+          key,code:key,keyCode:code,which:code,bubbles:true,cancelable:true
+        }));
+        return {ok: true, from: position.index, intended: next};
+      }
+      if (action === 'dismiss') {
+        if (t.getAttribute('aria-expanded') === 'true') t.click();
+        return {ok: true};
+      }
+      if (action === 'selected') return {ok: true, level: header(),
+        expanded: t.getAttribute('aria-expanded') === 'true'};
+      return {ok: false, error: 'INVALID_MODEL_ACTION'};
     };
 
     const voice = mode => {
@@ -304,7 +315,7 @@
       return {ok: true};
     };
 
-    window[NAME] = {snapshot, model, voice, compose, send, receipt, answer, clearRoot, guard};
+    window[NAME] = {revision: 'power-slider-v161', snapshot, model, voice, compose, send, receipt, answer, clearRoot, guard};
     return {ok: true, installed: true};
   }
 
@@ -364,33 +375,32 @@
 
   async function setEffort(slot, target) {
     if (!levels.includes(target)) throw Error('INVALID_EFFORT');
-    const open = async () => {
-      assertOk(await invoke(slot, 'model', 'open'), 'MODEL_MENU');
-      await sleep(400);
-      return assertOk(await invoke(slot, 'model', 'inspect'), 'MODEL_OPTIONS');
-    };
-    let view = await open();
-    const contains = value => view.options?.some(x => x.value === value);
-    if (!contains(target) && target !== 'Instant' && contains('Thinking')) {
-      assertOk(await invoke(slot, 'model', 'choose', 'Thinking'), 'SELECT_THINKING');
-      await sleep(650);
-      view = await open();
+    const positions = {Instant: 0, Medium: 1, High: 2, 'Extra High': 3};
+    const expected = positions[target];
+    assertOk(await invoke(slot, 'model', 'open'), 'MODEL_MENU');
+    await sleep(420);
+    let view = assertOk(await invoke(slot, 'model', 'inspect'), 'MODEL_POWER');
+    if (view.index < 0 || view.index > 4 || view.level !==
+        ['Instant','Medium','High','Extra High','Pro'][view.index])
+      throw Error('MODEL_POWER_UNVERIFIED');
+    for (let count = 0; count < 5 && view.index !== expected; count++) {
+      active();
+      const direction = view.index < expected ? 'right' : 'left';
+      const prior = view.index;
+      assertOk(await invoke(slot, 'model', 'step', direction), 'POWER_STEP');
+      await sleep(350);
+      view = assertOk(await invoke(slot, 'model', 'inspect'), 'POWER_READBACK');
+      if (view.index !== prior + (direction === 'right' ? 1 : -1))
+        throw Error('POWER_DID_NOT_CHANGE');
     }
-    if (!contains(target)) throw Error('EFFORT_OPTION_NOT_FOUND_' +
-      target.replace(/\s/g, '_') + '_' + (view.options || []).map(x => x.value).join('_'));
-    if (!view.options.some(x => x.value === target && x.checked)) {
-      assertOk(await invoke(slot, 'model', 'choose', target), 'SELECT_EFFORT');
-      await sleep(650);
-      view = await open();
-    }
-    // Confirm an explicit selected marker, or the exact level in the picker label.
-    const selected = view.options?.some(x => x.value === target && x.checked);
-    const trigger = String(view.trigger || '');
-    const shownOnTrigger = new RegExp('(?:^|\\b)' +
-      target.replace(' ', '\\s+') + '(?:\\b|$)', 'i').test(trigger);
-    if (!selected && !shownOnTrigger) throw Error('EFFORT_NOT_VERIFIED_' +
-      target.replace(/\s/g, '_'));
-    await invoke(slot, 'model', 'dismiss');
+    if (view.index !== expected || view.level !== target ||
+        view.triggerLevel !== target)
+      throw Error('EFFORT_NOT_VERIFIED_' + target.replace(/\s/g, '_'));
+    assertOk(await invoke(slot, 'model', 'dismiss'), 'MODEL_DISMISS');
+    await sleep(250);
+    const selected = assertOk(await invoke(slot, 'model', 'selected'), 'MODEL_SELECTED');
+    if (selected.level !== target || selected.expanded)
+      throw Error('EFFORT_NOT_PERSISTED_' + target.replace(/\s/g, '_'));
   }
 
   async function setVoice(slot, voice) {
