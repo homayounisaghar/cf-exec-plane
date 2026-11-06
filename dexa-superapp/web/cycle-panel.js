@@ -43,7 +43,7 @@
     root.querySelector('[data-cycle-cancel]').disabled = !state.running;
     root.querySelector('[data-cycle-output]').value = state.output;
     const answerLabel = root.querySelector('[data-cycle-answer-label]');
-    answerLabel.textContent = state.voice ? 'وضعیت پاسخ صوتی مرورگر دوم' : 'پاسخ متنی مرورگر دوم';
+    answerLabel.textContent = state.voice ? 'متن پاسخ مرورگر دوم (همراه پخش صوتی)' : 'پاسخ متنی مرورگر دوم';
   }
 
   function mount() {
@@ -61,7 +61,7 @@
       '<label class="cycle-label">ایفورت مرورگر دوم<select id="cycleSecond"></select></label>' +
       '</div>' +
       '<label class="cycle-switch"><input id="cycleVoice" type="checkbox" role="switch">' +
-      '<span>پاسخ مرورگر دوم صوتی باشد</span></label>' +
+      '<span>پاسخ مرورگر دوم با صدا خوانده شود</span></label>' +
       '<label class="cycle-label" for="cycleWrapper">رپرِ پاسخ مرورگر اول</label>' +
       '<textarea id="cycleWrapper" class="cycle-field" rows="3" placeholder="متن دلخواه پیش از پاسخ مرورگر اول"></textarea>' +
       '<div class="row cycle-actions"><button class="primary" data-cycle-run>ارسال و اجرای چرخه</button>' +
@@ -69,7 +69,7 @@
       '<div class="notice" data-cycle-stage aria-live="polite"></div>' +
       '<label class="cycle-label" data-cycle-answer-label for="cycleOutput">پاسخ متنی مرورگر دوم</label>' +
       '<textarea id="cycleOutput" data-cycle-output class="cycle-field cycle-output" rows="7" readonly placeholder="پاسخ نهایی اینجا ظاهر می‌شود."></textarea>' +
-      '<p class="sub">حالت صوتی از صدای خود مرورگر دوم استفاده می‌کند. اگر کنترل مدل یا صدا با اطمینان پیدا نشود، ارسال متوقف می‌شود. گفتگوها حذف نمی‌شوند.</p>' +
+      '<p class="sub">در حالت صوتی، پاسخ پس از دریافت با دکمهٔ «خواندن با صدا» در مرورگر دوم پخش می‌شود. اگر کنترل مدل یا پخش صوتی با اطمینان پیدا نشود، چرخه متوقف می‌شود. گفتگوها حذف نمی‌شوند.</p>' +
       '</div>';
     const q = sel => host.querySelector(sel);
     for (const id of ['#cycleFirst', '#cycleSecond'])
@@ -100,7 +100,7 @@
   function installBrowserAgent() {
     const NAME = '__dexaCycleAgent160';
     if (location.hostname !== 'chatgpt.com') return {ok: false, error: 'NOT_CHATGPT'};
-    if (window[NAME]?.revision === 'power-slider-v162') return {ok: true, reused: true};
+    if (window[NAME]?.revision === 'power-slider-voiceout-v163') return {ok: true, reused: true};
     const norm = s => String(s || '').replace(/\s+/g, ' ').trim();
     const vis = e => !!e && e.getClientRects().length > 0 &&
       getComputedStyle(e).visibility !== 'hidden';
@@ -135,7 +135,8 @@
     const snapshot = () => {
       const e = editor();
       return {ok: true, path: location.pathname, editorReady: !!e,
-        draftLength: e ? norm(value(e)).length : -1, voiceActive: isVoice(),
+        draftLength: e ? norm(value(e)).length : -1,
+        modelReady: !!modelTrigger(), voiceActive: isVoice(),
         voiceExitCount: voiceExits().length,
         connecting: /\bconnecting(\.{0,3})?\b/i.test((document.body.innerText || '').slice(-1500)),
         audibleMedia: all('audio,video').some(m => !m.paused)};
@@ -205,7 +206,18 @@
         return {ok: true, from: position.index, intended: next};
       }
       if (action === 'dismiss') {
-        if (t.getAttribute('aria-expanded') === 'true') t.click();
+        if (t.getAttribute('aria-expanded') === 'true') {
+          // Owner device: clicking the model trigger again does NOT close the
+          // Radix Power menu. Escape on its focused menuitem does (verified).
+          const p = all('[role="menuitem"][aria-label="Power"][data-reasoning-slider]');
+          if (p.length !== 1 || !p[0].closest('[role="menu"]'))
+            return {ok: false, error: 'MODEL_MENU_ESCAPE_TARGET_NOT_UNIQUE'};
+          p[0].focus();
+          p[0].dispatchEvent(new KeyboardEvent('keydown', {
+            key: 'Escape', code: 'Escape', keyCode: 27, which: 27,
+            bubbles: true, cancelable: true
+          }));
+        }
         return {ok: true};
       }
       if (action === 'selected') return {ok: true, level: header(),
@@ -290,6 +302,22 @@
         hasUser: all('[data-message-author-role="user"]').length > 0 || page.includes('You said:'),
         answer: String(text).slice(0, 120000)};
     };
+    const readAloud = action => {
+      // A fresh second-browser chat contains one assistant turn. Its actual
+      // per-message Read aloud button was verified on owner Android WebView.
+      const buttons = all('button[aria-label="Read aloud"]')
+        .filter(b => !b.disabled && b.getAttribute('aria-disabled') !== 'true');
+      if (action === 'inspect')
+        return {ok: true, ready: buttons.length === 1, count: buttons.length};
+      if (action === 'start') {
+        if (buttons.length !== 1)
+          return {ok: false, error: 'READ_ALOUD_BUTTON_COUNT_' + buttons.length};
+        buttons[0].click();
+        return {ok: true, clicked: true};
+      }
+      return {ok: false, error: 'READ_ALOUD_ACTION_INVALID'};
+    };
+
     const clearRoot = expected => {
       if (location.pathname !== '/') return {ok: true, checked: false};
       if ((document.body.innerText || '').includes('You said:'))
@@ -315,7 +343,7 @@
       return {ok: true};
     };
 
-    window[NAME] = {revision: 'power-slider-v162', snapshot, model, voice, compose, send, receipt, answer, clearRoot, guard};
+    window[NAME] = {revision: 'power-slider-voiceout-v163', snapshot, model, voice, compose, send, receipt, answer, readAloud, clearRoot, guard};
     return {ok: true, installed: true};
   }
 
@@ -324,7 +352,7 @@
   // Retry only when the helper was absent BEFORE the requested action.
   const invokeOnce = (slot, method, ...args) => evalBatched(slot,
     '(()=>{const a=window[' + JSON.stringify(AGENT) + '];' +
-    'if(!a || a.revision!=="power-slider-v162")' +
+    'if(!a || a.revision!=="power-slider-voiceout-v163")' +
     'return {ok:false,error:"AGENT_MISSING",path:location.pathname};' +
     'const f=a[' + JSON.stringify(method) + '];' +
     'if(typeof f!=="function")return {ok:false,error:"AGENT_METHOD_MISSING"};' +
@@ -333,7 +361,7 @@
   const install = slot => evalBatched(slot,
     '(()=>{const r=(' + installBrowserAgent.toString() + ')();' +
     'const a=window[' + JSON.stringify(AGENT) + '];' +
-    'return {ok:r?.ok===true && a?.revision==="power-slider-v162" && ' +
+    'return {ok:r?.ok===true && a?.revision==="power-slider-voiceout-v163" && ' +
     'typeof a.snapshot==="function",error:r?.error||"AGENT_INSTALL_UNVERIFIED",' +
     'revision:a?.revision||null,path:location.pathname};})()', () => {}, false);
   async function invoke(slot, method, ...args) {
@@ -392,12 +420,15 @@
     await until(async () => {
       try {
         const s = await invoke(slot, 'snapshot');
-        return s.ok && s.path === '/' && s.editorReady ? s : null;
+        return s.ok && s.path === '/' && s.editorReady && s.modelReady ? s : null;
       } catch { return null; }
-    }, 25000, 'NEW_CHAT_NOT_READY');
-    await sleep(900); // wait for restored drafts and model-picker hydration
+    }, 35000, 'NEW_CHAT_MODEL_NOT_READY');
+    // The composer appears earlier than the model selector on real phone.
+    // Recheck after hydration instead of assuming a fixed delay is sufficient.
+    await sleep(650);
     const s = assertOk(await invoke(slot, 'snapshot'), 'NEW_CHAT_SNAPSHOT');
-    if (s.path !== '/' || !s.editorReady) throw Error('NEW_CHAT_CHANGED');
+    if (s.path !== '/' || !s.editorReady || !s.modelReady)
+      throw Error('NEW_CHAT_MODEL_DISAPPEARED');
     if (s.draftLength) {
       if (!priorSent[slot]) throw Error('UNSENT_DRAFT_PRESERVED_SLOT_' + (slot + 1));
       assertOk(await invoke(slot, 'clearRoot', priorSent[slot]), 'ROOT_DRAFT_CLEANUP');
@@ -410,9 +441,25 @@
     if (!levels.includes(target)) throw Error('INVALID_EFFORT');
     const positions = {Instant: 0, Medium: 1, High: 2, 'Extra High': 3};
     const expected = positions[target];
-    assertOk(await invoke(slot, 'model', 'open'), 'MODEL_MENU');
-    await sleep(420);
-    let view = assertOk(await invoke(slot, 'model', 'inspect'), 'MODEL_POWER');
+    // Real phone: React can rehydrate after reporting that Open succeeded,
+    // and close the menu before the next inspect. Retry only before any
+    // slider step; never repeat an ambiguous changed setting or Send.
+    let view = await until(async () => {
+      const s = assertOk(await invoke(slot, 'snapshot'), 'MODEL_READY_SNAPSHOT');
+      if (s.path !== '/' || !s.editorReady || !s.modelReady) return null;
+      try { assertOk(await invoke(slot, 'model', 'open'), 'MODEL_MENU'); }
+      catch (error) {
+        if (String(error?.message || error) === 'MODEL_SELECTOR_NOT_FOUND') return null;
+        throw error;
+      }
+      await sleep(450);
+      try { return assertOk(await invoke(slot, 'model', 'inspect'), 'MODEL_POWER'); }
+      catch (error) {
+        if (/^(MODEL_MENU_CLOSED|POWER_CONTROL_COUNT_0|POWER_STATUS_NOT_FOUND)$/.test(
+            String(error?.message || error))) return null;
+        throw error;
+      }
+    }, 30000, 'MODEL_POWER_NOT_STABLE', 500);
     if (view.index < 0 || view.index > 4 || view.level !==
         ['Instant','Medium','High','Extra High','Pro'][view.index])
       throw Error('MODEL_POWER_UNVERIFIED');
@@ -430,10 +477,12 @@
         view.triggerLevel !== target)
       throw Error('EFFORT_NOT_VERIFIED_' + target.replace(/\s/g, '_'));
     assertOk(await invoke(slot, 'model', 'dismiss'), 'MODEL_DISMISS');
-    await sleep(250);
-    const selected = assertOk(await invoke(slot, 'model', 'selected'), 'MODEL_SELECTED');
-    if (selected.level !== target || selected.expanded)
-      throw Error('EFFORT_NOT_PERSISTED_' + target.replace(/\s/g, '_'));
+    await until(async () => {
+      const selected = assertOk(await invoke(slot, 'model', 'selected'), 'MODEL_SELECTED');
+      if (selected.level !== target)
+        throw Error('EFFORT_NOT_PERSISTED_' + target.replace(/\s/g, '_'));
+      return !selected.expanded ? selected : null;
+    }, 9000, 'MODEL_MENU_NOT_DISMISSED', 450);
   }
 
   async function setVoice(slot, voice) {
@@ -514,19 +563,27 @@
       stage('SECOND_EFFORT', 'مرورگر دوم: تنظیم و تأیید ایفورت «' + settings.second + '»...', 1);
       await setEffort(1, settings.second);
       stage('SECOND_MODE', settings.voice ?
-        'مرورگر دوم: فعال‌کردن ویس مخفی...' : 'مرورگر دوم: تأیید حالت متنی...', 1);
-      await setVoice(1, settings.voice);
+        'مرورگر دوم: آماده‌سازی پاسخ صوتی پس از تولید متن...' : 'مرورگر دوم: تأیید حالت متنی...', 1);
+      // ChatGPT Voice opens /c/local-chatgpt:... and cannot use the fresh
+      // text-chat send contract. Submit as text first; play the exact reply.
+      await setVoice(1, false);
       stage('SECOND_SEND', 'مرورگر دوم: ارسال رپر و پاسخ واقعی مرورگر اول...', 1);
       await submit(1, wrapped);
-      stage('SECOND_REPLY', settings.voice ?
-        'منتظر پاسخ صوتی؛ صدای گوشی را روشن بگذار...' :
-        'مرورگر دوم: منتظر پاسخ متنی کامل...', 1);
-      const answer = await waitAnswer(1, settings.voice ? 180000 : 180000);
-      state.output = settings.voice ?
-        'پاسخ مرورگر دوم تولید شد. پخش صدا از مرورگر مخفی انجام می‌شود؛ شنیدن صدا را روی گوشی بررسی کن.' :
-        answer;
+      stage('SECOND_REPLY', 'مرورگر دوم: منتظر پاسخ کامل...', 1);
+      const answer = await waitAnswer(1, 180000);
+      state.output = answer;
+      if (settings.voice) {
+        stage('VOICE_PLAYBACK', 'مرورگر دوم: پیدا کردن کنترل خواندن پاسخ با صدا...', 1);
+        await until(async () => {
+          const r = assertOk(await invoke(1, 'readAloud', 'inspect'), 'VOICE_PLAYBACK_INSPECT');
+          if (r.count > 1) throw Error('VOICE_PLAYBACK_AMBIGUOUS');
+          return r.ready ? true : null;
+        }, 22000, 'VOICE_PLAYBACK_CONTROL_NOT_READY', 750);
+        const playback = assertOk(await invoke(1, 'readAloud', 'start'), 'VOICE_PLAYBACK_START');
+        if (!playback.clicked) throw Error('VOICE_PLAYBACK_NOT_REQUESTED');
+      }
       stage('DONE', settings.voice ?
-        'چرخه انجام شد؛ ویس برای پخش کامل پاسخ باز می‌ماند.' :
+        'چرخه کامل شد؛ فرمان خواندن پاسخ با صدا در مرورگر دوم اجرا شد. شنیدن صدا روی گوشی نیاز به تأیید دارد.' :
         'چرخهٔ کامل دو مرورگر با پاسخ متنی انجام شد.', 1);
     } catch (e) {
       const error = String(e?.message || e);
