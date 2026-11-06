@@ -30,9 +30,10 @@ pre{direction:ltr;text-align:left;background:var(--debug);color:var(--debug-ink)
 textarea.script-input{display:block;box-sizing:border-box;width:100%;min-height:90px;max-height:260px;resize:vertical;background:var(--field-bg);color:var(--ink);border:1px solid var(--field-border);border-radius:9px;padding:9px;font:12px/1.55 ui-monospace,Consolas,monospace;direction:ltr;text-align:left}
 pre.script-output{min-height:48px;max-height:180px;margin:8px 0 0;padding:9px;white-space:pre-wrap;overflow:auto}
 footer{text-align:center;font-size:11px;color:var(--muted);margin:20px auto}
+.cycle-panel{display:grid;gap:10px}.cycle-label{display:block;font-weight:600;font-size:12px;line-height:1.8}.cycle-field{width:100%;resize:vertical;min-height:80px;direction:rtl;text-align:right;border:1px solid var(--field-border);border-radius:10px;background:var(--field-bg);color:var(--ink);font:inherit;line-height:1.8;padding:11px}.cycle-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.cycle-grid select{margin-top:5px}.cycle-switch{display:flex;align-items:center;gap:10px;padding:10px 0;line-height:1.8}.cycle-switch input{width:auto;width:22px;height:22px;accent-color:var(--primary);flex:none}.cycle-actions{margin:5px 0}.cycle-output{min-height:140px}@media(max-width:350px){.cycle-grid{grid-template-columns:1fr}}
 </style></head>
 <body>
-<header><div class="eyebrow">DEXA · SUPER DASHBOARD · WEB 1.5.3</div><h1>داشبورد دکسا</h1><p>میزبان چندمرورگری — کنترل از راه وب، اجرا روی گوشی</p></header>
+<header><div class="eyebrow">DEXA · SUPER DASHBOARD · WEB 1.6.0</div><h1>داشبورد دکسا</h1><p>میزبان چندمرورگری — کنترل از راه وب، اجرا روی گوشی</p></header>
 <main>
 <div class="kpis"><div class="kpi"><b id="browserCount">—</b><span>مرورگر فعال</span></div><div class="kpi"><b id="sessionStatus">—</b><span>ارتباط با اندروید</span></div><div class="kpi"><b id="telemetry">—</b><span>رخدادهای در صف</span></div></div>
 <section><div class="section"><h2>مرورگرها</h2><span class="tag">نشست مشترک · تنظیم از بیرون برنامه</span></div><div id="browserCards" class="cards"></div></section>
@@ -43,7 +44,7 @@ footer{text-align:center;font-size:11px;color:var(--muted);margin:20px auto}
 <script>
 'use strict';
 const $=id=>document.getElementById(id);
-const defaults={browserHome:'https://chatgpt.com/',maxBrowsers:8,maxDashboards:8,actions:{},permissions:[],desiredBrowserCount:null,dashboards:[{id:'control',title:'کنترل دکسا',description:'مدیریت مرورگرها'},{id:'theme',title:'تم رنگی'},{id:'permissions',title:'دسترسی‌های اندروید'}]};
+const defaults={browserHome:'https://chatgpt.com/',maxBrowsers:8,maxDashboards:8,actions:{},permissions:[],desiredBrowserCount:null,dashboards:[{id:'control',title:'کنترل دکسا',description:'مدیریت مرورگرها'},{id:'cycle',title:'ورودی و خروجی',description:'چرخهٔ دو مرورگر'},{id:'theme',title:'تم رنگی'},{id:'permissions',title:'دسترسی‌های اندروید'}]};
 let config=defaults,hostState=null,requestSeq=0,requests=new Map(),selectedBoard='control',permissionSnapshot={},permissionFetching=false;
 let configReady=false,countDirectiveAttempted=false;
 const scriptDrafts=new Map(),scriptResults=new Map(),runningScripts=new Set();
@@ -58,7 +59,7 @@ function unpackScriptAnswer(answer){
  return {ok:true,code:'SUCCESS',text:String(text??'null').slice(0,5000),data:body};
 }
 function postScriptReceipt(slot,ok,code,phase,count){
- const event={event:'WEB_SCRIPT_RECEIPT',slot,ok,code,phase,time:Date.now(),build:'web-v1.5.3'};
+ const event={event:'WEB_SCRIPT_RECEIPT',slot,ok,code,phase,time:Date.now(),build:'web-v1.6.0'};
  if(Number.isInteger(count)&&count>=0&&count<=5000)event.count=count;
  fetch('/api/telemetry',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(event)}).catch(()=>{});
 }
@@ -109,7 +110,7 @@ async function evalBatched(slot,source,onStep=()=>{},remote=false){
 }
 function scriptStage(slot,phase,error='',count,runId){
  const event={event:'WEB_SCRIPT_STAGE',slot,id:runId||undefined,phase:String(phase).slice(0,100),
-   code:String(error||'OK').slice(0,100),ok:!error,time:Date.now(),build:'web-v1.5.3'};
+   code:String(error||'OK').slice(0,100),ok:!error,time:Date.now(),build:'web-v1.6.0'};
  if(Number.isInteger(count))event.count=Math.max(0,Math.min(5000,count));
  fetch('/api/telemetry',{method:'POST',headers:{'content-type':'application/json'},
    body:JSON.stringify(event)}).catch(()=>{});
@@ -271,6 +272,7 @@ function renderBoards(){
  $('boardTabs').innerHTML='';
  for(const b of boards){const btn=document.createElement('button');btn.textContent=b.title;btn.className=b.id===selectedBoard?'active':'';btn.onclick=()=>{selectedBoard=b.id;renderBoards();if(selectedBoard==='permissions')refreshPermissions()};$('boardTabs').appendChild(btn)}
  const b=boards.find(x=>x.id===selectedBoard)||defaults.dashboards[0];
+ if(b.id==='cycle'){if(window.DexaCycle)window.DexaCycle.mount();else $('boardContent').textContent='در حال بارگذاری تب چرخه...';return}
  if(b.id==='theme'){renderThemeTab();return}
  if(b.id==='permissions'){
  $('boardContent').innerHTML='<div class="card-head"><h3>دسترسی‌های اندروید</h3><span class="tag">فقط با تأیید شما</span></div><p class="sub">درخواست مجوز از خود اندروید انجام می‌شود و نیازمند تأیید شماست. گرفتن مجوز به معنای وجود موتور اجرای آن قابلیت نیست.</p><div class="row"><button id="refreshPermissions" class="primary">بررسی دوبارهٔ وضعیت‌ها</button><span class="sub">مجموع: '+(config.permissions||[]).length+'</span></div><div id="permissionItems"></div>';
@@ -283,4 +285,4 @@ $('refreshStatus').onclick=()=>command('status');
 fetch('/api/config',{cache:'no-store'}).then(r=>r.json()).then(c=>{config={...defaults,...c};configReady=true;render();applyBrowserCountDirective();if(selectedBoard==='permissions')refreshPermissions()}).catch(e=>log('CONFIG_ERROR '+e.message));
 command('status');
 render();
-</script><script src="/remote-client.js" defer></script><script src="/auto-handoff.js" defer></script></body></html>
+</script><script src="/remote-client.js" defer></script><script src="/auto-handoff.js" defer></script><script src="/cycle-panel.js" defer></script></body></html>

@@ -457,7 +457,7 @@
     status('STOPPED', 'انتقال خودکار خاموش است.');
   };
   window.DexaAutoHandoff = {
-    read: () => ({...state, pending: !!candidate,
+    read: () => ({...state, busy, pending: !!candidate,
       sourceAnswerLength: transferredAnswer?.length || 0}),
     rearm: () => rearm.click(),
     stop: () => stop.click()
