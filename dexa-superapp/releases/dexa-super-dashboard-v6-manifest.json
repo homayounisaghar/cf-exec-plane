@@ -1,0 +1,13 @@
+{
+  "package": "com.homayounisaghar.dexasuperdashboard",
+  "versionCode": 6,
+  "versionName": "1.4.0",
+  "previousSignerSha256": "b4e4afbd4450b710544359a01ca397f25b72c8e75ca827344292863509782c81",
+  "verifiedSignerSha256": "b4e4afbd4450b710544359a01ca397f25b72c8e75ca827344292863509782c81",
+  "signedSha256": "82829b41fdc0095ce6ebe7d0a8fcdf70bd21353935d0d06d17de8468ebdf5f4d",
+  "alignedUnsignedSha256": "f5ae4321803a00570fff15ecda779c946b54327b4204314c9f285f071995dda1",
+  "bytes": 41607,
+  "all62PermissionsDeclared": true,
+  "physicalLockScreenAcceptance": false,
+  "cloudflareWorkerRouteActivated": false
+}
