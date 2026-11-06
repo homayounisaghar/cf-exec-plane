@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const STORAGE = 'dexa-auto-handoff-once-v2';
+  const STORAGE = 'dexa-auto-handoff-once-v3';
   const POLL_MS = 2200;
   const STABLE_MS = 2800;
   const MAX_ANSWER = 50000;
@@ -207,6 +207,52 @@
       draftEmpty: !norm(editor.innerText)};
   }
 
+  // Keep one short-lived, exact-match guard in WebView 2. The ChatGPT app
+  // can rehydrate the previous new-chat draft when a sent chat is deleted.
+  // Clearing the composer in /c/... alone does not clear this separate draft.
+  function armNewChatDraftGuard(expected) {
+    const norm = x => String(x || '').replace(/\s+/g, ' ').trim();
+    if (location.hostname !== 'chatgpt.com' || !location.pathname.startsWith('/c/'))
+      return {ok: false, error: 'NOT_SENT_CHAT'};
+    const text = norm(expected);
+    if (!text) return {ok: false, error: 'EMPTY_EXPECTED'};
+    const key = '__dexaNewChatDraftGuardV3';
+    const previous = window[key];
+    if (previous && previous.timer) clearInterval(previous.timer);
+    const guard = {startedAt: Date.now(), clearCount: 0, failedCount: 0,
+      expectedLength: text.length, last: 'ARMED', timer: null};
+    window[key] = guard;
+    const inspect = () => {
+      if (Date.now() - guard.startedAt > 30 * 60 * 1000) {
+        clearInterval(guard.timer);
+        guard.timer = null;
+        guard.last = 'EXPIRED';
+        return;
+      }
+      if (location.hostname !== 'chatgpt.com' || location.pathname !== '/') return;
+      const editor = document.querySelector(
+        '[contenteditable="true"][role="textbox"][aria-label="Ask ChatGPT"]');
+      if (!editor || norm(editor.innerText) !== text) return;
+      // Only the empty/new-chat route is allowed; preserve unrelated drafts.
+      if ((document.body.innerText || '').includes('You said:')) return;
+      editor.focus();
+      const selection = window.getSelection(), range = document.createRange();
+      range.selectNodeContents(editor);
+      selection.removeAllRanges();
+      selection.addRange(range);
+      document.execCommand('delete', false, null);
+      if (!norm(editor.innerText)) {
+        guard.clearCount++;
+        guard.last = 'CLEARED';
+      } else {
+        guard.failedCount++;
+        guard.last = 'CLEAR_FAILED';
+      }
+    };
+    guard.timer = setInterval(inspect, 1000);
+    return {ok: true, installed: true};
+  }
+
   function secondAnswer() {
     const page = document.body.innerText || '';
     const pos = page.lastIndexOf('ChatGPT said:');
@@ -280,6 +326,10 @@
       }
       if (!postSend?.ok || !postSend.sendConfirmed || !postSend.draftEmpty)
         throw Error('SECOND_DRAFT_NOT_CLEARED_AFTER_SEND');
+      // The root (/) composer has separate draft persistence from the sent
+      // /c/... composer. Guard root when the owner later deletes this chat.
+      const guarded = await execOn(1, armNewChatDraftGuard, targetPrompt);
+      if (!guarded?.ok) throw Error('SECOND_NEW_CHAT_GUARD_FAILED');
       localStorage.setItem(STORAGE, 'done');
       state.transferCount++;
       status('SENT', 'پاسخ مرورگر اول خودکار به چت دوم فرستاده شد؛ منتظر پاسخ چت دوم...');
