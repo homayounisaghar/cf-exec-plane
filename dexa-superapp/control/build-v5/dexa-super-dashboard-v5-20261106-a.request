@@ -1,0 +1,4 @@
+action=build-dexa-super-dashboard-v5
+snapshot_sha=bc18830a946c702623c91f436cca2c03b93576f1
+owner_authorization=2026-11-06
+scope=unsigned_android_build_only
