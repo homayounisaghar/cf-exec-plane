@@ -88,7 +88,7 @@
       const setup="(()=>{const id="+JSON.stringify(run)+";const j=(window.__dexaRemoteEvents=window.__dexaRemoteEvents||{})[id]={events:[]};window.__dexaReport=(stage,detail)=>{j.events.push({time:Date.now(),stage:String(stage),detail});if(j.events.length>500)j.events.shift()};return true})()";
       await evalBatched(slot,setup,()=>{},true);
       await report(run,'TRANSFER_START',{size:source.length});
-      const expression="(()=>{try{const result=(0,eval)("+JSON.stringify(source)+");if(result&&typeof result.then==='function'){result.then(v=>window.__dexaReport('ASYNC_RESOLVED',v),e=>window.__dexaReport('ASYNC_FAILED',{error:String(e)}));return {ok:true,async:true};}return {ok:true,async:false,value:result};}catch(e){return {ok:false,error:String(e&&e.stack||e)}}})()";
+      const expression="(()=>{try{const result=("+source+");if(result&&typeof result.then==='function'){result.then(v=>window.__dexaReport('ASYNC_RESOLVED',v),e=>window.__dexaReport('ASYNC_FAILED',{error:String(e)}));return {ok:true,async:true};}return {ok:true,async:false,value:result};}catch(e){return {ok:false,error:String(e&&e.stack||e)}}})()";
       const result=await evalBatched(slot,expression,()=>{},true);
       if(result?.ok===false)throw Error(result.error||'SCRIPT_ERROR');
       await report(run,'EVAL_RETURNED',result);
