@@ -100,7 +100,7 @@
   function installBrowserAgent() {
     const NAME = '__dexaCycleAgent160';
     if (location.hostname !== 'chatgpt.com') return {ok: false, error: 'NOT_CHATGPT'};
-    if (window[NAME]?.revision === 'power-slider-voiceout-v163') return {ok: true, reused: true};
+    if (window[NAME]?.revision === 'power-slider-voiceout-v164') return {ok: true, reused: true};
     const norm = s => String(s || '').replace(/\s+/g, ' ').trim();
     const vis = e => !!e && e.getClientRects().length > 0 &&
       getComputedStyle(e).visibility !== 'hidden';
@@ -343,7 +343,7 @@
       return {ok: true};
     };
 
-    window[NAME] = {revision: 'power-slider-voiceout-v163', snapshot, model, voice, compose, send, receipt, answer, readAloud, clearRoot, guard};
+    window[NAME] = {revision: 'power-slider-voiceout-v164', snapshot, model, voice, compose, send, receipt, answer, readAloud, clearRoot, guard};
     return {ok: true, installed: true};
   }
 
@@ -352,7 +352,7 @@
   // Retry only when the helper was absent BEFORE the requested action.
   const invokeOnce = (slot, method, ...args) => evalBatched(slot,
     '(()=>{const a=window[' + JSON.stringify(AGENT) + '];' +
-    'if(!a || a.revision!=="power-slider-voiceout-v163")' +
+    'if(!a || a.revision!=="power-slider-voiceout-v164")' +
     'return {ok:false,error:"AGENT_MISSING",path:location.pathname};' +
     'const f=a[' + JSON.stringify(method) + '];' +
     'if(typeof f!=="function")return {ok:false,error:"AGENT_METHOD_MISSING"};' +
@@ -361,7 +361,7 @@
   const install = slot => evalBatched(slot,
     '(()=>{const r=(' + installBrowserAgent.toString() + ')();' +
     'const a=window[' + JSON.stringify(AGENT) + '];' +
-    'return {ok:r?.ok===true && a?.revision==="power-slider-voiceout-v163" && ' +
+    'return {ok:r?.ok===true && a?.revision==="power-slider-voiceout-v164" && ' +
     'typeof a.snapshot==="function",error:r?.error||"AGENT_INSTALL_UNVERIFIED",' +
     'revision:a?.revision||null,path:location.pathname};})()', () => {}, false);
   async function invoke(slot, method, ...args) {
@@ -449,13 +449,18 @@
       if (s.path !== '/' || !s.editorReady || !s.modelReady) return null;
       try { assertOk(await invoke(slot, 'model', 'open'), 'MODEL_MENU'); }
       catch (error) {
-        if (String(error?.message || error) === 'MODEL_SELECTOR_NOT_FOUND') return null;
+        if (/^(?:MODEL_MENU:)?MODEL_SELECTOR_NOT_FOUND$/.test(
+            String(error?.message || error))) return null;
         throw error;
       }
       await sleep(450);
       try { return assertOk(await invoke(slot, 'model', 'inspect'), 'MODEL_POWER'); }
       catch (error) {
-        if (/^(MODEL_MENU_CLOSED|POWER_CONTROL_COUNT_0|POWER_STATUS_NOT_FOUND)$/.test(
+        // The model trigger can disappear AFTER the safe Open operation,
+        // while the WebView replaces the model header. The pre-change
+        // inspection can then report MODEL_SELECTOR_NOT_FOUND. It is safe to
+        // retry this whole preflight, but never any slider step or Send.
+        if (/^(?:MODEL_POWER:)?(?:MODEL_SELECTOR_NOT_FOUND|MODEL_MENU_CLOSED|POWER_CONTROL_COUNT_0|POWER_STATUS_NOT_FOUND)$/.test(
             String(error?.message || error))) return null;
         throw error;
       }
