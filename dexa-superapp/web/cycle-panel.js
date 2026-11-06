@@ -1,7 +1,7 @@
 (() => {
   'use strict';
   // Dexa owner-requested send-only cycle: no model, Voice or draft inspection.
-  const AGENT = '__dexaCycleSendOnly166';
+  const AGENT = '__dexaCycleAgent160';
   const STORAGE = 'dexa-cycle-panel-settings-v1';
   const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
   let saved = {};
@@ -72,14 +72,23 @@
   // Reinstalls in the current page for EACH instruction, so navigation and
   // WebView rehydration cannot leave a stale agent behind.
   function installBrowserAgent() {
-    const NAME = '__dexaCycleSendOnly166';
-    if (location.hostname !== 'chatgpt.com')
-      return {ok:false,error:'NOT_CHATGPT'};
-    if (window[NAME]?.revision === 'send-only-v166') return {ok:true};
+    const NAME = '__dexaCycleAgent160';
+    if (location.hostname !== 'chatgpt.com') return {ok: false, error: 'NOT_CHATGPT'};
+    if (window[NAME]?.revision === 'power-slider-sendon-v167') return {ok: true, reused: true};
     const norm = s => String(s || '').replace(/\s+/g, ' ').trim();
-    const visible = e => !!e && e.getClientRects().length > 0 &&
+    const vis = e => !!e && e.getClientRects().length > 0 &&
       getComputedStyle(e).visibility !== 'hidden';
-    const all = selector => [...document.querySelectorAll(selector)].filter(visible);
+    const all = selector => [...document.querySelectorAll(selector)].filter(vis);
+    const label = e => [
+      e.getAttribute('aria-label'), e.getAttribute('data-testid'),
+      e.getAttribute('title'), e.textContent
+    ].filter(Boolean).join(' ').trim();
+    const ctrl = () => all('button,[role="button"]');
+    const voiceExits = () => ctrl().filter(e =>
+      /(exit|end|close|leave).{0,25}(voice|conversation|call)|(voice|conversation|call).{0,25}(exit|end|close|leave)|پایان مکالمه|خروج از مکالمه/i.test(label(e)));
+    const isVoice = () => voiceExits().length === 1 || (
+      ctrl().some(e => /mute|unmute|microphone|میکروفون/i.test(label(e))) &&
+      ctrl().some(e => /voice|مکالمه/i.test(label(e))));
     const editor = () => {
       const a = all('textarea,[contenteditable="true"],[role="textbox"]')
         .filter(e => !e.closest('[aria-hidden="true"]') && !e.disabled);
@@ -88,14 +97,129 @@
         (e.getAttribute('aria-label') || e.getAttribute('placeholder') || '').trim()));
       return preferred.length === 1 ? preferred[0] : null;
     };
+    const ready = () => ({ok: true, path: location.pathname,
+      editorReady: !!editor()});
     const value = e => e ? (e.isContentEditable ?
       (e.innerText || e.textContent || '') : (e.value || '')) : '';
-    const ctrl = () => all('button,[role="button"]');
-    const ready = () => {
-      const e = editor();
-      return {ok: true, ready: location.pathname === '/' && !!e,
-        path: location.pathname, editorReady: !!e};
+    const erase = e => {
+      e.focus();
+      const sel = window.getSelection(), range = document.createRange();
+      range.selectNodeContents(e); sel.removeAllRanges(); sel.addRange(range);
+      document.execCommand('delete', false, null);
+      return !norm(value(e));
     };
+    const snapshot = () => {
+      const e = editor();
+      return {ok: true, path: location.pathname, editorReady: !!e,
+        draftLength: e ? norm(value(e)).length : -1,
+        modelReady: !!modelTrigger(), voiceActive: isVoice(),
+        voiceExitCount: voiceExits().length,
+        connecting: /\bconnecting(\.{0,3})?\b/i.test((document.body.innerText || '').slice(-1500)),
+        audibleMedia: all('audio,video').some(m => !m.paused)};
+    };
+
+    // Verified on the owner's real hidden ChatGPT WebViews on 2026-11-06:
+    // button[aria-label="Select ChatGPT model"] opens a five-position
+    // [role="menuitem"][aria-label="Power"] keyboard slider, index 0..4.
+    // We accept 0..3 only (Instant/Medium/High/Extra High); 4 is Pro.
+    const POWER_LEVELS = ['Instant', 'Medium', 'High', 'Extra High', 'Pro'];
+    const modelTrigger = () => {
+      const a = all('button[aria-label="Select ChatGPT model"],' +
+        '[data-testid="model-switcher-dropdown-button"],' +
+        '[data-testid="model-picker-button"],[data-testid="model-selector-button"]');
+      return a.length === 1 ? a[0] : null;
+    };
+    const powerPosition = () => {
+      const controls = all('[role="menuitem"][aria-label="Power"][data-reasoning-slider]');
+      if (controls.length !== 1)
+        return {ok: false, error: 'POWER_CONTROL_COUNT_' + controls.length};
+      const p = controls[0];
+      const slider = p.querySelector('[role="slider"][aria-valuenow]');
+      const label = p.closest('[role="group"]')?.querySelector('[role="status"]');
+      if (!slider || !label) return {ok: false, error: 'POWER_STATUS_NOT_FOUND'};
+      const index = Number(slider.getAttribute('aria-valuenow'));
+      const min = Number(slider.getAttribute('aria-valuemin'));
+      const max = Number(slider.getAttribute('aria-valuemax'));
+      const level = POWER_LEVELS[index];
+      const announced = (label.textContent || '').replace(/\s+/g, ' ').trim();
+      if (!Number.isInteger(index) || min !== 0 || max !== 4 || !level ||
+          announced !== level + ', ' + (index + 1) + ' of 5.')
+        return {ok: false, error: 'POWER_POSITION_UNVERIFIED',
+          index, announced, min, max};
+      return {ok: true, index, level, announced};
+    };
+    const model = (action, target) => {
+      const t = modelTrigger();
+      if (!t) return {ok: false, error: 'MODEL_SELECTOR_NOT_FOUND'};
+      const header = () => (t.innerText || t.textContent || '')
+        .split('\n').map(x => x.trim()).filter(Boolean).at(-1) || '';
+      if (action === 'open') {
+        if (t.getAttribute('aria-expanded') !== 'true') t.click();
+        return {ok: true, opened: true};
+      }
+      if (action === 'inspect') {
+        if (t.getAttribute('aria-expanded') !== 'true')
+          return {ok: false, error: 'MODEL_MENU_CLOSED'};
+        const position = powerPosition();
+        if (!position.ok) return position;
+        return {...position, triggerLevel: header()};
+      }
+      if (action === 'step') {
+        const position = powerPosition();
+        if (!position.ok) return position;
+        if (target !== 'right' && target !== 'left')
+          return {ok: false, error: 'INVALID_POWER_DIRECTION'};
+        const next = position.index + (target === 'right' ? 1 : -1);
+        if (next < 0 || next > 4)
+          return {ok: false, error: 'POWER_OUT_OF_RANGE'};
+        const p = all('[role="menuitem"][aria-label="Power"][data-reasoning-slider]')[0];
+        p.focus();
+        const code = target === 'right' ? 39 : 37;
+        const key = target === 'right' ? 'ArrowRight' : 'ArrowLeft';
+        p.dispatchEvent(new KeyboardEvent('keydown', {
+          key,code:key,keyCode:code,which:code,bubbles:true,cancelable:true
+        }));
+        return {ok: true, from: position.index, intended: next};
+      }
+      if (action === 'dismiss') {
+        if (t.getAttribute('aria-expanded') === 'true') {
+          // Owner device: clicking the model trigger again does NOT close the
+          // Radix Power menu. Escape on its focused menuitem does (verified).
+          const p = all('[role="menuitem"][aria-label="Power"][data-reasoning-slider]');
+          if (p.length !== 1 || !p[0].closest('[role="menu"]'))
+            return {ok: false, error: 'MODEL_MENU_ESCAPE_TARGET_NOT_UNIQUE'};
+          p[0].focus();
+          p[0].dispatchEvent(new KeyboardEvent('keydown', {
+            key: 'Escape', code: 'Escape', keyCode: 27, which: 27,
+            bubbles: true, cancelable: true
+          }));
+        }
+        return {ok: true};
+      }
+      if (action === 'selected') return {ok: true, level: header(),
+        expanded: t.getAttribute('aria-expanded') === 'true'};
+      return {ok: false, error: 'INVALID_MODEL_ACTION'};
+    };
+
+    const voice = mode => {
+      if (mode === 'text') {
+        if (!isVoice()) return {ok: true, active: false};
+        const exits = voiceExits();
+        if (exits.length !== 1) return {ok: false, error: 'VOICE_EXIT_NOT_UNIQUE_' + exits.length};
+        exits[0].click();
+        return {ok: true, clicked: true};
+      }
+      if (mode === 'voice') {
+        if (isVoice()) return {ok: true, active: true};
+        const entries = ctrl().filter(e => /voice|گفتگوی صوتی|گفت‌وگوی صوتی/i.test(label(e)) &&
+          !/read.aloud|voice-play|dictat|microphone|mute|stop|end|close|exit/i.test(label(e)));
+        if (entries.length !== 1) return {ok: false, error: 'VOICE_ENTRY_NOT_UNIQUE_' + entries.length};
+        entries[0].click();
+        return {ok: true, clicked: true};
+      }
+      return {ok: false, error: 'INVALID_MODE'};
+    };
+
     const compose = text => {
       if (location.pathname !== '/') return {ok: false, error: 'NOT_NEW_CHAT'};
       const e = editor();
@@ -109,6 +233,9 @@
         error: inserted ? 'COMPOSE_NOT_CONFIRMED' : 'COMPOSE_INSERT_FAILED'};
     };
     const send = expected => {
+      const e = editor();
+      if (location.pathname !== '/' || !e || norm(value(e)) !== norm(expected))
+        return {ok: false, error: 'SEND_DRAFT_MISMATCH'};
       const btns = ctrl().filter(b => (
         /^(send-button|voice-send-button)$/i.test(b.getAttribute('data-testid') || '') ||
         /^(send|send message|send prompt|ارسال|ارسال پیام)$/i.test((b.getAttribute('aria-label') ||
@@ -119,7 +246,7 @@
       return {ok: true, clicked: true};
     };
     const receipt = expected => {
-      const e = editor(), path = location.pathname;
+      const path = location.pathname;
       const users = all('[data-message-author-role="user"]');
       const target = norm(expected);
       const sent = path.startsWith('/c/') && (users.some(u => norm(u.innerText || u.textContent) === target) ||
@@ -144,13 +271,57 @@
         hasUser: all('[data-message-author-role="user"]').length > 0 || page.includes('You said:'),
         answer: String(text).slice(0, 120000)};
     };
-    window[NAME] = {revision:'send-only-v166',ready,compose,send,receipt,answer};
-    return {ok:true};
+    const readAloud = action => {
+      // A fresh second-browser chat contains one assistant turn. Its actual
+      // per-message Read aloud button was verified on owner Android WebView.
+      const buttons = all('button[aria-label="Read aloud"]')
+        .filter(b => !b.disabled && b.getAttribute('aria-disabled') !== 'true');
+      if (action === 'inspect')
+        return {ok: true, ready: buttons.length === 1, count: buttons.length};
+      if (action === 'start') {
+        if (buttons.length !== 1)
+          return {ok: false, error: 'READ_ALOUD_BUTTON_COUNT_' + buttons.length};
+        buttons[0].click();
+        return {ok: true, clicked: true};
+      }
+      return {ok: false, error: 'READ_ALOUD_ACTION_INVALID'};
+    };
+
+    const clearRoot = expected => {
+      if (location.pathname !== '/') return {ok: true, checked: false};
+      if ((document.body.innerText || '').includes('You said:'))
+        return {ok: true, checked: false};
+      const e = editor();
+      if (!e || norm(value(e)) !== norm(expected)) return {ok: true, checked: true};
+      return {ok: erase(e), cleared: !norm(value(e))};
+    };
+    const guard = expected => {
+      if (!location.pathname.startsWith('/c/') || !norm(expected))
+        return {ok: false, error: 'GUARD_NOT_SENT_CHAT'};
+      const key = '__dexaCycleRootDraftGuard160';
+      const old = window[key];
+      if (old?.timer) clearInterval(old.timer);
+      const item = window[key] = {at: Date.now(), expected, cleared: 0};
+      item.timer = setInterval(() => {
+        if (Date.now() - item.at > 30 * 60 * 1000) {
+          clearInterval(item.timer); item.timer = null; return;
+        }
+        const r = clearRoot(item.expected);
+        if (r?.cleared) item.cleared++;
+      }, 1000);
+      return {ok: true};
+    };
+
+    window[NAME] = {revision: 'power-slider-sendon-v167', snapshot, ready, model, voice, compose, send, receipt, answer, readAloud, clearRoot, guard};
+    return {ok: true, installed: true};
   }
 
+  // Page loads can replace a ChatGPT document between native eval calls.
+  // A missing helper must be a structured receipt, never a JS TypeError.
+  // Retry only when the helper was absent BEFORE the requested action.
   const invokeOnce = (slot, method, ...args) => evalBatched(slot,
     '(()=>{const a=window[' + JSON.stringify(AGENT) + '];' +
-    'if(!a || a.revision!=="send-only-v166")' +
+    'if(!a || a.revision!=="power-slider-sendon-v167")' +
     'return {ok:false,error:"AGENT_MISSING",path:location.pathname};' +
     'const f=a[' + JSON.stringify(method) + '];' +
     'if(typeof f!=="function")return {ok:false,error:"AGENT_METHOD_MISSING"};' +
@@ -159,7 +330,7 @@
   const install = slot => evalBatched(slot,
     '(()=>{const r=(' + installBrowserAgent.toString() + ')();' +
     'const a=window[' + JSON.stringify(AGENT) + '];' +
-    'return {ok:r?.ok===true && a?.revision==="send-only-v166" && ' +
+    'return {ok:r?.ok===true && a?.revision==="power-slider-sendon-v167" && ' +
     'typeof a.ready==="function",error:r?.error||"AGENT_INSTALL_UNVERIFIED",' +
     'revision:a?.revision||null,path:location.pathname};})()', () => {}, false);
   async function invoke(slot, method, ...args) {
@@ -221,12 +392,14 @@
     assertOk(await invoke(slot, 'compose', text), 'COMPOSE_SLOT_' + (slot + 1));
     await sleep(350);
     assertOk(await invoke(slot, 'send', text), 'SEND_SLOT_' + (slot + 1));
-    return await until(async () => {
+    const receipt = await until(async () => {
       const r = await invoke(slot, 'receipt', text);
       if (r?.ok === false) throw Error('SEND_RECEIPT:' + r.error);
       return r?.sent ? r : null;
     }, 30000, 'SEND_NOT_CONFIRMED_SLOT_' + (slot + 1), 450);
+    return receipt;
   }
+
   async function waitAnswer(slot, timeout) {
     let prior = '', stableSince = 0;
     return until(async () => {
