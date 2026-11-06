@@ -1,7 +1,7 @@
 (() => {
   'use strict';
   // Dexa owner-requested send-only cycle: no model, Voice or draft inspection.
-  const AGENT = '__dexaCycleSendOnly165';
+  const AGENT = '__dexaCycleSendOnly166';
   const STORAGE = 'dexa-cycle-panel-settings-v1';
   const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
   let saved = {};
@@ -72,58 +72,65 @@
   // Reinstalls in the current page for EACH instruction, so navigation and
   // WebView rehydration cannot leave a stale agent behind.
   function installBrowserAgent() {
-    const NAME = '__dexaCycleSendOnly165';
+    const NAME = '__dexaCycleSendOnly166';
     if (location.hostname !== 'chatgpt.com')
       return {ok:false,error:'NOT_CHATGPT'};
-    if (window[NAME]?.revision === 'send-only-165') return {ok:true};
+    if (window[NAME]?.revision === 'send-only-v166') return {ok:true};
+    const norm = s => String(s || '').replace(/\s+/g, ' ').trim();
     const visible = e => !!e && e.getClientRects().length > 0 &&
       getComputedStyle(e).visibility !== 'hidden';
     const all = selector => [...document.querySelectorAll(selector)].filter(visible);
     const editor = () => {
-      const items = all('textarea,[contenteditable="true"],[role="textbox"]')
+      const a = all('textarea,[contenteditable="true"],[role="textbox"]')
         .filter(e => !e.closest('[aria-hidden="true"]') && !e.disabled);
-      if (items.length === 1) return items[0];
-      const preferred = items.filter(e => /^(ask chatgpt|type|message)$/i.test(
+      if (a.length === 1) return a[0];
+      const preferred = a.filter(e => /^(type|ask chatgpt|message)$/i.test(
         (e.getAttribute('aria-label') || e.getAttribute('placeholder') || '').trim()));
       return preferred.length === 1 ? preferred[0] : null;
     };
-    const ready = () => ({ok:true,ready:location.pathname === '/' && !!editor()});
-    const compose = text => {
-      if (location.pathname !== '/') return {ok:false,error:'NOT_NEW_CHAT'};
+    const value = e => e ? (e.isContentEditable ?
+      (e.innerText || e.textContent || '') : (e.value || '')) : '';
+    const ctrl = () => all('button,[role="button"]');
+    const ready = () => {
       const e = editor();
-      if (!e) return {ok:false,error:'EDITOR_NOT_FOUND'};
-      e.focus();
-      if (e.isContentEditable) {
-        const selection = window.getSelection();
-        const range = document.createRange();
-        range.selectNodeContents(e);
-        range.collapse(false);
-        selection.removeAllRanges();
-        selection.addRange(range);
-        const inserted = document.execCommand('insertText',false,text);
-        return {ok:!!inserted,error:'TYPE_FAILED'};
-      }
-      const start = e.value.length;
-      e.setRangeText(text,start,start,'end');
-      e.dispatchEvent(new Event('input',{bubbles:true}));
-      return {ok:true};
+      return {ok: true, ready: location.pathname === '/' && !!e,
+        path: location.pathname, editorReady: !!e};
     };
-    const send = () => {
-      if (location.pathname !== '/') return {ok:false,error:'NOT_NEW_CHAT'};
-      const buttons = all('button,[role="button"]').filter(e =>
-        !e.disabled && e.getAttribute('aria-disabled') !== 'true' &&
-        (/^(send-button|voice-send-button)$/i.test(e.getAttribute('data-testid') || '') ||
-         /^(send|send message|send prompt|ارسال|ارسال پیام)$/i.test(
-           (e.getAttribute('aria-label') || e.getAttribute('title') || '').trim())));
-      if (buttons.length !== 1)
-        return {ok:false,error:'SEND_BUTTON_COUNT_' + buttons.length};
-      buttons[0].click();
-      return {ok:true,clicked:true};
+    const compose = text => {
+      if (location.pathname !== '/') return {ok: false, error: 'NOT_NEW_CHAT'};
+      const e = editor();
+      if (!e) return {ok: false, error: 'EDITOR_NOT_UNIQUE'};
+      e.focus();
+      const sel = window.getSelection(), range = document.createRange();
+      range.selectNodeContents(e); range.collapse(false);
+      sel.removeAllRanges(); sel.addRange(range);
+      const inserted = document.execCommand('insertText', false, text);
+      return {ok: !!inserted && norm(value(e)) === norm(text),
+        error: inserted ? 'COMPOSE_NOT_CONFIRMED' : 'COMPOSE_INSERT_FAILED'};
+    };
+    const send = expected => {
+      const btns = ctrl().filter(b => (
+        /^(send-button|voice-send-button)$/i.test(b.getAttribute('data-testid') || '') ||
+        /^(send|send message|send prompt|ارسال|ارسال پیام)$/i.test((b.getAttribute('aria-label') ||
+          b.getAttribute('title') || '').trim())
+      ) && !b.disabled && b.getAttribute('aria-disabled') !== 'true');
+      if (btns.length !== 1) return {ok: false, error: 'SEND_BUTTON_COUNT_' + btns.length};
+      btns[0].click();
+      return {ok: true, clicked: true};
+    };
+    const receipt = expected => {
+      const e = editor(), path = location.pathname;
+      const users = all('[data-message-author-role="user"]');
+      const target = norm(expected);
+      const sent = path.startsWith('/c/') && (users.some(u => norm(u.innerText || u.textContent) === target) ||
+        (document.body.innerText || '').includes('You said:') &&
+        norm(document.body.innerText || '').includes(target.slice(0, 120)));
+      return {ok: true, sent, path};
     };
     const answer = () => {
       const page = document.body.innerText || '';
-      const answers = all('[data-message-author-role="assistant"]');
-      const last = answers.at(-1);
+      const roleAnswers = all('[data-message-author-role="assistant"]');
+      const last = roleAnswers.at(-1);
       const pos = page.lastIndexOf('ChatGPT said:');
       const suffix = pos >= 0 ? page.slice(pos + 'ChatGPT said:'.length) : '';
       const roleText = last ? (last.innerText || last.textContent || '').trim() : '';
@@ -132,71 +139,106 @@
         .split('ChatGPT can make mistakes.')[0].trim();
       const busy = !!document.querySelector(
         '[data-testid="stop-button"],button[aria-label*="Stop generating"],button[aria-label*="Stop response"]');
-      const complete = suffix.includes('Response complete') || (answers.length > 0 && !busy);
-      return {ok:true,path:location.pathname,completed:complete,busy,
-        hasUser:all('[data-message-author-role="user"]').length > 0 ||
-          page.includes('You said:'),
-        answer:String(text).slice(0,120000)};
+      const completed = suffix.includes('Response complete') || (roleAnswers.length > 0 && !busy);
+      return {ok: true, path: location.pathname, completed, busy,
+        hasUser: all('[data-message-author-role="user"]').length > 0 || page.includes('You said:'),
+        answer: String(text).slice(0, 120000)};
     };
-    window[NAME] = {revision:'send-only-165',ready,compose,send,answer};
+    window[NAME] = {revision:'send-only-v166',ready,compose,send,receipt,answer};
     return {ok:true};
   }
 
-  async function invoke(slot,method,...args) {
-    const source = '(()=>{const installed=(' + installBrowserAgent.toString() +
-      ')();if(!installed.ok)return installed;const agent=window[' +
-      JSON.stringify(AGENT) + '];return agent[' + JSON.stringify(method) +
-      '](' + args.map(x=>JSON.stringify(x)).join(',') + ');})()';
-    return evalBatched(slot,source,()=>{},false);
+  const invokeOnce = (slot, method, ...args) => evalBatched(slot,
+    '(()=>{const a=window[' + JSON.stringify(AGENT) + '];' +
+    'if(!a || a.revision!=="send-only-v166")' +
+    'return {ok:false,error:"AGENT_MISSING",path:location.pathname};' +
+    'const f=a[' + JSON.stringify(method) + '];' +
+    'if(typeof f!=="function")return {ok:false,error:"AGENT_METHOD_MISSING"};' +
+    'return f(' + args.map(x => JSON.stringify(x)).join(',') + ');})()',
+    () => {}, false);
+  const install = slot => evalBatched(slot,
+    '(()=>{const r=(' + installBrowserAgent.toString() + ')();' +
+    'const a=window[' + JSON.stringify(AGENT) + '];' +
+    'return {ok:r?.ok===true && a?.revision==="send-only-v166" && ' +
+    'typeof a.ready==="function",error:r?.error||"AGENT_INSTALL_UNVERIFIED",' +
+    'revision:a?.revision||null,path:location.pathname};})()', () => {}, false);
+  async function invoke(slot, method, ...args) {
+    // evalBatched throws when the page receipt has ok:false, so catch the
+    // exact pre-action missing-agent code, never unrelated/ambiguous errors.
+    try { return await invokeOnce(slot, method, ...args); }
+    catch (error) {
+      if (String(error?.message || error) !== 'AGENT_MISSING') throw error;
+    }
+    const installed = await install(slot);
+    if (installed?.ok !== true)
+      throw Error('AGENT_RECOVERY_FAILED:' + String(installed?.error || 'UNKNOWN'));
+    try { return await invokeOnce(slot, method, ...args); }
+    catch (error) {
+      if (String(error?.message || error) === 'AGENT_MISSING')
+        throw Error('AGENT_CONTEXT_CHANGED_AGAIN');
+      throw error;
+    }
+  }
+
+  function assertOk(result, code) {
+    if (!result || result.ok !== true)
+      throw Error(code + ':' + String(result?.error || 'NO_RECEIPT'));
+    return result;
   }
   function active() {
     if (state.cancelled) throw Error('CYCLE_CANCELLED');
     if (!window.DexaHost || !hostState || hostState.count < 2)
       throw Error('TWO_BROWSERS_NOT_CONNECTED');
   }
-  async function until(fn,timeout,code,interval=850) {
-    const end=Date.now()+timeout;
-    while (Date.now()<end) {
+  async function until(fn, timeout, code, delay = 600) {
+    const deadline = Date.now() + timeout;
+    while (Date.now() < deadline) {
       active();
-      const value=await fn();
-      if (value) return value;
-      await sleep(interval);
+      const result = await fn();
+      if (result) return result;
+      await sleep(delay);
     }
     throw Error(code);
   }
+
   async function prepare(slot) {
     active();
-    await nativeCall('navigate',{slot,url:'https://chatgpt.com/'});
-    await until(async()=>{
-      try {return (await invoke(slot,'ready'))?.ready;}
-      catch {return false;}
-    },35000,'CHAT_EDITOR_NOT_READY_SLOT_' + (slot+1),700);
+    await nativeCall('navigate', {slot, url: 'https://chatgpt.com/'});
+    await until(async () => {
+      try {
+        const s = await invoke(slot, 'ready');
+        return s.ok && s.path === '/' && s.editorReady ? s : null;
+      } catch { return null; }
+    }, 35000, 'NEW_CHAT_EDITOR_NOT_READY');
+    await sleep(650);
+    const s = assertOk(await invoke(slot, 'ready'), 'NEW_CHAT_SNAPSHOT');
+    if (s.path !== '/' || !s.editorReady)
+      throw Error('NEW_CHAT_EDITOR_DISAPPEARED');
   }
-  async function submit(slot,text) {
+
+  async function submit(slot, text) {
     active();
-    const result=await invoke(slot,'compose',text);
-    if (!result?.ok) throw Error(result?.error || 'TYPE_FAILED');
-    await sleep(500);
-    active();
-    // Intentionally one click, no send retry and no draft inspection.
-    const sent=await invoke(slot,'send');
-    if (!sent?.ok || !sent.clicked)
-      throw Error(sent?.error || 'SEND_NOT_EXECUTED');
+    assertOk(await invoke(slot, 'compose', text), 'COMPOSE_SLOT_' + (slot + 1));
+    await sleep(350);
+    assertOk(await invoke(slot, 'send', text), 'SEND_SLOT_' + (slot + 1));
+    return await until(async () => {
+      const r = await invoke(slot, 'receipt', text);
+      if (r?.ok === false) throw Error('SEND_RECEIPT:' + r.error);
+      return r?.sent ? r : null;
+    }, 30000, 'SEND_NOT_CONFIRMED_SLOT_' + (slot + 1), 450);
   }
-  async function waitAnswer(slot) {
-    let previous='',since=0;
-    return until(async()=>{
-      const value=await invoke(slot,'answer');
-      if (!value?.ok || !value.hasUser || !value.path?.startsWith('/c/') ||
-          !value.answer || value.busy || !value.completed) {
-        previous='';since=0;return null;
+  async function waitAnswer(slot, timeout) {
+    let prior = '', stableSince = 0;
+    return until(async () => {
+      const v = assertOk(await invoke(slot, 'answer'), 'READ_ANSWER');
+      if (!v.hasUser || !v.path.startsWith('/c/') || !v.answer || v.busy || !v.completed) {
+        prior = ''; stableSince = 0; return null;
       }
-      if (value.answer!==previous) {
-        previous=value.answer;since=Date.now();return null;
-      }
-      return Date.now()-since>=1800?value.answer:null;
-    },180000,'ANSWER_NOT_READY_SLOT_'+(slot+1),1000);
+      if (v.answer !== prior) { prior = v.answer; stableSince = Date.now(); return null; }
+      return Date.now() - stableSince >= 2500 ? v.answer : null;
+    }, timeout, 'REPLY_NOT_CONFIRMED_SLOT_' + (slot + 1), 850);
   }
+
   async function run() {
     if (state.running) return;
     const prompt=state.prompt.trim(),wrapper=state.wrapper.trim();
@@ -219,14 +261,14 @@
       stage('FIRST_SEND','مرورگر اول: ارسال پیام...');
       await submit(0,prompt);
       stage('FIRST_REPLY','مرورگر اول: دریافت پاسخ...');
-      const first=await waitAnswer(0);
+      const first=await waitAnswer(0, 180000);
       const secondPrompt=(wrapper?wrapper+'\n\n':'')+first;
       stage('SECOND_CHAT','مرورگر دوم: بازکردن چت تازه...',1);
       await prepare(1);
       stage('SECOND_SEND','مرورگر دوم: ارسال پاسخ مرورگر اول...',1);
       await submit(1,secondPrompt);
       stage('SECOND_REPLY','مرورگر دوم: دریافت پاسخ نهایی...',1);
-      state.output=await waitAnswer(1);
+      state.output=await waitAnswer(1, 180000);
       stage('DONE','چرخهٔ متنی دو مرورگر انجام شد.',1);
     } catch(error) {
       stage('FAILED','چرخه متوقف شد؛ ارسال تکراری انجام نمی‌شود.',0,
