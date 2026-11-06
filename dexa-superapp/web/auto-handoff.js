@@ -15,6 +15,8 @@
   let candidate = null;
   let lastStage = '';
   let transferredAnswer = null;
+  // Dashboard-side fallback survives a full reload of ChatGPT WebView 2.
+  let sentDraft = null, sentDraftAt = 0, cleaningDraft = false;
   const state = {stage: 'BOOT', enabled, transferCount: 0, error: null, secondReply: null};
 
   const container = document.createElement('div');
@@ -271,6 +273,44 @@
     return evalBatched(slot, expression, () => {}, false);
   }
 
+  function clearExactRootDraft(expected) {
+    const norm = x => String(x || '').replace(/\s+/g, ' ').trim();
+    if (location.hostname !== 'chatgpt.com' || location.pathname !== '/')
+      return {ok: true, matched: false};
+    const editor = document.querySelector(
+      '[contenteditable="true"][role="textbox"][aria-label="Ask ChatGPT"]');
+    if (!editor) return {ok: false, error: 'EDITOR_MISSING'};
+    if (norm(editor.innerText) !== norm(expected)) return {ok: true, matched: false};
+    if ((document.body.innerText || '').includes('You said:'))
+      return {ok: false, error: 'NOT_EMPTY_CHAT'};
+    editor.focus();
+    const selection = window.getSelection(), range = document.createRange();
+    range.selectNodeContents(editor);
+    selection.removeAllRanges();
+    selection.addRange(range);
+    document.execCommand('delete', false, null);
+    return {ok: !norm(editor.innerText), matched: true,
+      cleared: !norm(editor.innerText)};
+  }
+
+  async function pollStaleDraft() {
+    if (!sentDraft || busy || cleaningDraft || !hostState || hostState.count < 2) return;
+    if (Date.now() - sentDraftAt > 30 * 60 * 1000) {
+      sentDraft = null;
+      return;
+    }
+    cleaningDraft = true;
+    try {
+      const result = await execOn(1, clearExactRootDraft, sentDraft);
+      if (result?.cleared && typeof scriptStage === 'function')
+        scriptStage(1, 'AUTO_ROOT_DRAFT_CLEARED', '', undefined, 'dexa-auto-handoff');
+    } catch {
+      // The host may be unavailable while a WebView page is loading.
+    } finally {
+      cleaningDraft = false;
+    }
+  }
+
   async function forward(answer) {
     localStorage.setItem(STORAGE, 'inflight');
     enabled = false;
@@ -330,6 +370,8 @@
       // /c/... composer. Guard root when the owner later deletes this chat.
       const guarded = await execOn(1, armNewChatDraftGuard, targetPrompt);
       if (!guarded?.ok) throw Error('SECOND_NEW_CHAT_GUARD_FAILED');
+      sentDraft = targetPrompt;
+      sentDraftAt = Date.now();
       localStorage.setItem(STORAGE, 'done');
       state.transferCount++;
       status('SENT', 'پاسخ مرورگر اول خودکار به چت دوم فرستاده شد؛ منتظر پاسخ چت دوم...');
@@ -422,6 +464,9 @@
   };
   status(enabled ? 'INITIALIZING' : 'STOPPED',
     enabled ? 'در حال اتصال به مرورگر اول...' : 'تست یک‌باره مصرف شده؛ برای تکرار دکمهٔ آماده‌کردن را بزن.');
-  setInterval(() => tick().catch(() => {}), POLL_MS);
+  setInterval(() => {
+    tick().catch(() => {});
+    pollStaleDraft().catch(() => {});
+  }, POLL_MS);
   tick().catch(() => {});
 })();
