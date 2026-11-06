@@ -32,7 +32,7 @@ pre.script-output{min-height:48px;max-height:180px;margin:8px 0 0;padding:9px;wh
 footer{text-align:center;font-size:11px;color:var(--muted);margin:20px auto}
 </style></head>
 <body>
-<header><div class="eyebrow">DEXA · SUPER DASHBOARD · WEB 1.5</div><h1>داشبورد دکسا</h1><p>میزبان چندمرورگری — کنترل از راه وب، اجرا روی گوشی</p></header>
+<header><div class="eyebrow">DEXA · SUPER DASHBOARD · WEB 1.5.1</div><h1>داشبورد دکسا</h1><p>میزبان چندمرورگری — کنترل از راه وب، اجرا روی گوشی</p></header>
 <main>
 <div class="kpis"><div class="kpi"><b id="browserCount">—</b><span>مرورگر فعال</span></div><div class="kpi"><b id="sessionStatus">—</b><span>ارتباط با اندروید</span></div><div class="kpi"><b id="telemetry">—</b><span>رخدادهای در صف</span></div></div>
 <section><div class="section"><h2>مرورگرها</h2><span class="tag">نشست مشترک · تنظیم از بیرون برنامه</span></div><div id="browserCards" class="cards"></div></section>
@@ -58,7 +58,7 @@ function unpackScriptAnswer(answer){
  return {ok:true,code:'SUCCESS',text:String(text??'null').slice(0,5000),data:body};
 }
 function postScriptReceipt(slot,ok,code,phase,count){
- const event={event:'WEB_SCRIPT_RECEIPT',slot,ok,code,phase,time:Date.now(),build:'web-v1.5.0'};
+ const event={event:'WEB_SCRIPT_RECEIPT',slot,ok,code,phase,time:Date.now(),build:'web-v1.5.1'};
  if(Number.isInteger(count)&&count>=0&&count<=5000)event.count=count;
  fetch('/api/telemetry',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(event)}).catch(()=>{});
 }
@@ -109,7 +109,7 @@ async function evalBatched(slot,source,onStep=()=>{},remote=false){
 }
 function scriptStage(slot,phase,error='',count,runId){
  const event={event:'WEB_SCRIPT_STAGE',slot,id:runId||undefined,phase:String(phase).slice(0,100),
-   code:String(error||'OK').slice(0,100),ok:!error,time:Date.now(),build:'web-v1.5.0'};
+   code:String(error||'OK').slice(0,100),ok:!error,time:Date.now(),build:'web-v1.5.1'};
  if(Number.isInteger(count))event.count=Math.max(0,Math.min(5000,count));
  fetch('/api/telemetry',{method:'POST',headers:{'content-type':'application/json'},
    body:JSON.stringify(event)}).catch(()=>{});
@@ -283,4 +283,4 @@ $('refreshStatus').onclick=()=>command('status');
 fetch('/api/config',{cache:'no-store'}).then(r=>r.json()).then(c=>{config={...defaults,...c};configReady=true;render();applyBrowserCountDirective();if(selectedBoard==='permissions')refreshPermissions()}).catch(e=>log('CONFIG_ERROR '+e.message));
 command('status');
 render();
-</script><script src="/remote-client.js" defer></script></body></html>
+</script><script src="/remote-client.js" defer></script><script src="/auto-handoff.js" defer></script></body></html>
