@@ -100,7 +100,7 @@
   function installBrowserAgent() {
     const NAME = '__dexaCycleAgent160';
     if (location.hostname !== 'chatgpt.com') return {ok: false, error: 'NOT_CHATGPT'};
-    if (window[NAME]?.revision === 'power-slider-v161') return {ok: true, reused: true};
+    if (window[NAME]?.revision === 'power-slider-v162') return {ok: true, reused: true};
     const norm = s => String(s || '').replace(/\s+/g, ' ').trim();
     const vis = e => !!e && e.getClientRects().length > 0 &&
       getComputedStyle(e).visibility !== 'hidden';
@@ -315,14 +315,44 @@
       return {ok: true};
     };
 
-    window[NAME] = {revision: 'power-slider-v161', snapshot, model, voice, compose, send, receipt, answer, clearRoot, guard};
+    window[NAME] = {revision: 'power-slider-v162', snapshot, model, voice, compose, send, receipt, answer, clearRoot, guard};
     return {ok: true, installed: true};
   }
 
-  const invoke = (slot, method, ...args) => evalBatched(slot,
-    'window[' + JSON.stringify(AGENT) + '].' + method +
-    '(' + args.map(a => JSON.stringify(a)).join(',') + ')', () => {}, false);
-  const install = slot => evalBatched(slot, '(' + installBrowserAgent.toString() + ')()');
+  // Page loads can replace a ChatGPT document between native eval calls.
+  // A missing helper must be a structured receipt, never a JS TypeError.
+  // Retry only when the helper was absent BEFORE the requested action.
+  const invokeOnce = (slot, method, ...args) => evalBatched(slot,
+    '(()=>{const a=window[' + JSON.stringify(AGENT) + '];' +
+    'if(!a || a.revision!=="power-slider-v162")' +
+    'return {ok:false,error:"AGENT_MISSING",path:location.pathname};' +
+    'const f=a[' + JSON.stringify(method) + '];' +
+    'if(typeof f!=="function")return {ok:false,error:"AGENT_METHOD_MISSING"};' +
+    'return f(' + args.map(x => JSON.stringify(x)).join(',') + ');})()',
+    () => {}, false);
+  const install = slot => evalBatched(slot,
+    '(()=>{const r=(' + installBrowserAgent.toString() + ')();' +
+    'const a=window[' + JSON.stringify(AGENT) + '];' +
+    'return {ok:r?.ok===true && a?.revision==="power-slider-v162" && ' +
+    'typeof a.snapshot==="function",error:r?.error||"AGENT_INSTALL_UNVERIFIED",' +
+    'revision:a?.revision||null,path:location.pathname};})()', () => {}, false);
+  async function invoke(slot, method, ...args) {
+    // evalBatched throws when the page receipt has ok:false, so catch the
+    // exact pre-action missing-agent code, never unrelated/ambiguous errors.
+    try { return await invokeOnce(slot, method, ...args); }
+    catch (error) {
+      if (String(error?.message || error) !== 'AGENT_MISSING') throw error;
+    }
+    const installed = await install(slot);
+    if (installed?.ok !== true)
+      throw Error('AGENT_RECOVERY_FAILED:' + String(installed?.error || 'UNKNOWN'));
+    try { return await invokeOnce(slot, method, ...args); }
+    catch (error) {
+      if (String(error?.message || error) === 'AGENT_MISSING')
+        throw Error('AGENT_CONTEXT_CHANGED_AGAIN');
+      throw error;
+    }
+  }
 
   function assertOk(result, code) {
     if (!result || result.ok !== true)
@@ -347,8 +377,12 @@
 
   async function prepare(slot) {
     active();
-    assertOk(await install(slot), 'INSTALL_AGENT');
-    const before = await invoke(slot, 'snapshot');
+    // Initial ChatGPT hydration may replace the document just after loading.
+    // Wait for a real readback; invoke will reinstall if that happened.
+    const before = await until(async () => {
+      try { return assertOk(await invoke(slot, 'snapshot'), 'FIRST_SNAPSHOT'); }
+      catch { return null; }
+    }, 20000, 'FIRST_CHAT_NOT_STABLE');
     if (before?.voiceActive) {
       assertOk(await invoke(slot, 'voice', 'text'), 'END_PREVIOUS_VOICE');
       await until(async () => !(await invoke(slot, 'snapshot')).voiceActive,
@@ -357,7 +391,6 @@
     await nativeCall('navigate', {slot, url: 'https://chatgpt.com/'});
     await until(async () => {
       try {
-        await install(slot);
         const s = await invoke(slot, 'snapshot');
         return s.ok && s.path === '/' && s.editorReady ? s : null;
       } catch { return null; }

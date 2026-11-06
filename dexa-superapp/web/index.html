@@ -33,7 +33,7 @@ footer{text-align:center;font-size:11px;color:var(--muted);margin:20px auto}
 .cycle-panel{display:grid;gap:10px}.cycle-label{display:block;font-weight:600;font-size:12px;line-height:1.8}.cycle-field{width:100%;resize:vertical;min-height:80px;direction:rtl;text-align:right;border:1px solid var(--field-border);border-radius:10px;background:var(--field-bg);color:var(--ink);font:inherit;line-height:1.8;padding:11px}.cycle-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.cycle-grid select{margin-top:5px}.cycle-switch{display:flex;align-items:center;gap:10px;padding:10px 0;line-height:1.8}.cycle-switch input{width:auto;width:22px;height:22px;accent-color:var(--primary);flex:none}.cycle-actions{margin:5px 0}.cycle-output{min-height:140px}@media(max-width:350px){.cycle-grid{grid-template-columns:1fr}}
 </style></head>
 <body>
-<header><div class="eyebrow">DEXA · SUPER DASHBOARD · WEB 1.6.1</div><h1>داشبورد دکسا</h1><p>میزبان چندمرورگری — کنترل از راه وب، اجرا روی گوشی</p></header>
+<header><div class="eyebrow">DEXA · SUPER DASHBOARD · WEB 1.6.2</div><h1>داشبورد دکسا</h1><p>میزبان چندمرورگری — کنترل از راه وب، اجرا روی گوشی</p></header>
 <main>
 <div class="kpis"><div class="kpi"><b id="browserCount">—</b><span>مرورگر فعال</span></div><div class="kpi"><b id="sessionStatus">—</b><span>ارتباط با اندروید</span></div><div class="kpi"><b id="telemetry">—</b><span>رخدادهای در صف</span></div></div>
 <section><div class="section"><h2>مرورگرها</h2><span class="tag">نشست مشترک · تنظیم از بیرون برنامه</span></div><div id="browserCards" class="cards"></div></section>
@@ -59,7 +59,7 @@ function unpackScriptAnswer(answer){
  return {ok:true,code:'SUCCESS',text:String(text??'null').slice(0,5000),data:body};
 }
 function postScriptReceipt(slot,ok,code,phase,count){
- const event={event:'WEB_SCRIPT_RECEIPT',slot,ok,code,phase,time:Date.now(),build:'web-v1.6.1'};
+ const event={event:'WEB_SCRIPT_RECEIPT',slot,ok,code,phase,time:Date.now(),build:'web-v1.6.2'};
  if(Number.isInteger(count)&&count>=0&&count<=5000)event.count=count;
  fetch('/api/telemetry',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(event)}).catch(()=>{});
 }
@@ -110,7 +110,7 @@ async function evalBatched(slot,source,onStep=()=>{},remote=false){
 }
 function scriptStage(slot,phase,error='',count,runId){
  const event={event:'WEB_SCRIPT_STAGE',slot,id:runId||undefined,phase:String(phase).slice(0,100),
-   code:String(error||'OK').slice(0,100),ok:!error,time:Date.now(),build:'web-v1.6.1'};
+   code:String(error||'OK').slice(0,100),ok:!error,time:Date.now(),build:'web-v1.6.2'};
  if(Number.isInteger(count))event.count=Math.max(0,Math.min(5000,count));
  fetch('/api/telemetry',{method:'POST',headers:{'content-type':'application/json'},
    body:JSON.stringify(event)}).catch(()=>{});
