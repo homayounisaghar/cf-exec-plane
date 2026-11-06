@@ -54,9 +54,10 @@ public final class MainActivity extends Activity {
     private static final class ScriptTransfer {
         final int slot;
         final String startUrl;
+        final boolean remote;
         final StringBuilder content = new StringBuilder();
         final long created = System.currentTimeMillis();
-        ScriptTransfer(int slot,String startUrl) { this.slot = slot; this.startUrl=startUrl; }
+        ScriptTransfer(int slot,String startUrl,boolean remote) { this.slot = slot; this.startUrl=startUrl; this.remote=remote; }
     }
 
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
@@ -70,6 +71,7 @@ public final class MainActivity extends Activity {
     private FrameLayout chromeHolder;
     private Button emergencyPanel;
     private boolean chromeFailed = false;
+    private boolean remoteArmed = false;
     private boolean showingDashboard = true;
     private int activeSlot = -1;
     private PermissionRequest pendingAudioRequest;
@@ -84,6 +86,7 @@ public final class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstance) {
         super.onCreate(savedInstance);
         state = getSharedPreferences("dexa_super_state_v1", Context.MODE_PRIVATE);
+        remoteArmed = state.getBoolean("remote_armed_v15",false);
         telemetry = new Telemetry(this);
         permissionGateway = new PermissionGateway(this,telemetry);
         Thread.UncaughtExceptionHandler old = Thread.getDefaultUncaughtExceptionHandler();
@@ -277,6 +280,8 @@ public final class MainActivity extends Activity {
         JSONObject r = new JSONObject();
         try {
             r.put("schema","dexa-host.v1");
+            r.put("appVersionCode",5);
+            r.put("remoteArmed",remoteArmed);
             r.put("count",browsers.size());
             r.put("max",MAX_BROWSER);
             r.put("showingDashboard",showingDashboard);
@@ -381,6 +386,16 @@ public final class MainActivity extends Activity {
                     switch(op) {
                         case "status":
                             reply(id,true,null,status());break;
+                        case "remote-arm": {
+                            boolean wanted=o.optBoolean("enabled",false);
+                            remoteArmed=wanted;
+                            state.edit().putBoolean("remote_armed_v15",wanted).apply();
+                            telemetry.record("REMOTE_ARM",-1,Telemetry.meta("ok",wanted));
+                            reply(id,true,null,status());
+                            postStatus();
+                            break;
+                        }
+
                         case "permissions-status":
                             JSONArray keys=o.optJSONArray("keys");
                             if(keys==null || keys.length()>70){reply(id,false,"INVALID_PERMISSION_LIST",null);break;}
@@ -431,7 +446,9 @@ public final class MainActivity extends Activity {
                             if(pendingScripts.containsKey(run) || pendingScripts.size()>=8){
                                 reply(id,false,"TRANSFER_BUSY",null);break;
                             }
-                            pendingScripts.put(run,new ScriptTransfer(slotValue,browsers.get(slotValue).getUrl()));
+                            boolean remote=o.optBoolean("remote",false);
+                            if(remote&&!remoteArmed){reply(id,false,"REMOTE_DISABLED",null);break;}
+                            pendingScripts.put(run,new ScriptTransfer(slotValue,browsers.get(slotValue).getUrl(),remote));
                             telemetry.record("SCRIPT_BEGIN",slotValue,Telemetry.meta("id",run));
                             reply(id,true,null,0);break;
                         }
@@ -457,6 +474,9 @@ public final class MainActivity extends Activity {
                                 reply(id,false,"TRANSFER_NOT_FOUND",null);break;
                             }
                             final int scriptSlot=transfer.slot;
+                            if(transfer.remote&&!remoteArmed){
+                                reply(id,false,"REMOTE_DISABLED",null);break;
+                            }
                             String currentUrl=browsers.get(scriptSlot).getUrl();
                             if(currentUrl==null || !currentUrl.equals(transfer.startUrl)){
                                 reply(id,false,"SCRIPT_PAGE_CHANGED",null);break;
