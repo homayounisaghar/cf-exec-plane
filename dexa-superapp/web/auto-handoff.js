@@ -25,7 +25,7 @@
   const statusLine = document.createElement('div');
   statusLine.style.margin = '6px 0';
   const help = document.createElement('small');
-  help.textContent = 'فقط یک پاسخ تازه را منتقل می‌کند؛ بدون فعال‌کردن صدا. پیام‌های قبلی نادیده گرفته می‌شوند.';
+  help.textContent = 'فقط یک پاسخ تازه را منتقل می‌کند؛ پس از ارسال، پیش‌نویس هر مرورگر بررسی و پاک می‌شود. بدون صدا.';
   const controls = document.createElement('div');
   controls.className = 'row';
   controls.style.marginTop = '9px';
@@ -246,6 +246,11 @@
           if (check?.ok && check.editorReady && check.path === '/') break;
         }
       }
+      if (!check?.ok || !check.editorReady || check.path !== '/')
+        throw Error('SECOND_NEW_CHAT_NOT_READY');
+      // Wait through ChatGPT's initial draft hydration before editing the new chat.
+      await sleep(550);
+      check = await execOn(1, secondReady);
       if (!check?.ok || !check.editorReady || check.path !== '/')
         throw Error('SECOND_NEW_CHAT_NOT_READY');
       if (check.voiceActive || check.audibleMedia) throw Error('VOICE_OR_AUDIO_ACTIVE');
