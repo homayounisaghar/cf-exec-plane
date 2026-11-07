@@ -1,0 +1,19 @@
+{
+  "package": "com.homayounisaghar.dexasuperdashboard",
+  "versionCode": 7,
+  "versionName": "1.4.1",
+  "previousSignerSha256": "b4e4afbd4450b710544359a01ca397f25b72c8e75ca827344292863509782c81",
+  "verifiedSignerSha256": "b4e4afbd4450b710544359a01ca397f25b72c8e75ca827344292863509782c81",
+  "signedSha256": "97b3e0b8930e1f2f51207f0b290d2097ae439db7b44826e066107878ce504a87",
+  "alignedUnsignedSha256": "e9bf5ce0d4976035d9f43634d6caef45a770a2d76380df8cf052849a00064fc1",
+  "bytes": 45703,
+  "all62PermissionsDeclared": true,
+  "physicalLockScreenAcceptance": false,
+  "cloudflareWorkerRouteActivated": true,
+  "dashboardAccessItems": 74,
+  "specialAccessEntries": 12,
+  "publicReleaseStatus": "signed APK candidate; no physical version 7 acceptance",
+  "webVersion": "1.6.10",
+  "nativeCommandTransport": "Java foreground-service polling; WebView operation requires usable Android WebView",
+  "ownerInstallNeeded": true
+}
