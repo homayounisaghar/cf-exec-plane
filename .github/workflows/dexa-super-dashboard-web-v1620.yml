@@ -117,7 +117,7 @@ jobs:
           node --check "$release/web/server.mjs"
           old=$(curl -fsS --max-time 6 http://127.0.0.1:4495/api/health | node -e 'let s="";process.stdin.on("data",x=>s+=x).on("end",()=>process.stdout.write(JSON.parse(s).webVersion))')
           [[ "$old" == web-v1.6.19 ]] || { echo EXPECTED_V1619_NOT_RUNNING >&2; exit 45; }
-          override=/home/cfserver/.config/systemd/user/dexa-super-dashboard-v6.service.d/100-web-v1620.conf
+          override=/home/cfserver/.config/systemd/user/dexa-super-dashboard-v6.service.d/95-web-v1620.conf
           [[ ! -e "$override" ]] || exit 46
           mkdir -p "$(dirname "$override")"
           printf '[Service]\nWorkingDirectory=%s/web\n' "$release" > "$override"
