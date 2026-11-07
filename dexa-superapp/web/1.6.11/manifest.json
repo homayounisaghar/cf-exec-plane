@@ -1,0 +1,32 @@
+{
+  "id": "DEXA-CYCLE-MATH-WEB-1.6.11",
+  "kind": "web-only",
+  "status": "synthetic-browser-3-of-3; real-owner-phone-chatgpt-cycle-NOT-YET-VERIFIED",
+  "sourceRepo": "homayounisaghar/capability-fabric",
+  "stagingRoot": "cycle-math-v1611-candidate/web",
+  "sourceSha256": "67527e90266bb5e2f3077943fd22a8fe8d0adb715e4f9d6cc5a9ed280946dc1d",
+  "sourceBytes": 42983,
+  "files": [
+    "test-browser-cycle.log",
+    "test_browser_cycle.mjs",
+    "web/auto-handoff.js",
+    "web/cycle-panel.js",
+    "web/index.html",
+    "web/package.json",
+    "web/remote-client.js",
+    "web/remote-gateway.mjs",
+    "web/server.mjs",
+    "web/theme-client.js",
+    "web/theme.css",
+    "web/toolbar.html"
+  ],
+  "cycleJsSha256": "0865dc42cf40eaa8248a5903dd06366b8643a3cb45a9d21b4dffe3ba313147bc",
+  "baselineWebVersion": "web-v1.6.10",
+  "candidateWebVersion": "web-v1.6.11",
+  "apiChanges": 0,
+  "extraPermissionItems": 0,
+  "accessItems": 74,
+  "apkChanged": false,
+  "realModelSendVerification": "PENDING_OWNER_PHYSICAL_UI",
+  "ownerTest": "Open Dexa > Input/Output > Load multiplication example > Run > observe actual first question + verified final answer"
+}
