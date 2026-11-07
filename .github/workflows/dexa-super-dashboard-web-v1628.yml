@@ -233,7 +233,7 @@ jobs:
            const task4=h.slice(voiceEnd,h.indexOf('function renderDevelopmentTab(){',voiceEnd));
            if(!task4.includes('function devSendUi(message){') ||
               !task4.includes('function devRemoveFileUi(filename){') ||
-              !task4.includes("enabled[0].click();") ||
+              !task4.includes("enabled[0].click()") ||
               !task4.includes("new MutationObserver(attempt)") ||
               !task4.includes("deadline=setTimeout(()=>finish('FAILED',job.lastIssue),5000)") ||
               !task4.includes("voice-send-button") ||
