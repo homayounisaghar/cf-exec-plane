@@ -1,0 +1,12 @@
+{
+  "package": "com.homayounisaghar.dexasuperdashboard",
+  "versionCode": 11,
+  "versionName": "1.5.2-stable",
+  "sha256": "7377b0a402376b0c5fbb9537cf0d9c67ebea25f3d2f7758df826ff805b557b7c",
+  "bytes": 49799,
+  "signerSha256": "b4e4afbd4450b710544359a01ca397f25b72c8e75ca827344292863509782c81",
+  "nativePatchCommit": "501d2d1b67b6fffdb76176824c3f8af2c7b617f2",
+  "hardwareAcceptance": "NOT_TESTED",
+  "strictDexaAcceptance": "NOT_PASSED",
+  "note": "Signed APK candidate requires physical installation by owner. Does not operate or test the live phone until installed."
+}
