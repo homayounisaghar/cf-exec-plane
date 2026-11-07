@@ -36,23 +36,23 @@ jobs:
           [[ "$request_id" =~ ^dexa-web1613-20261107-[0-9a-f]{8}$ ]] || exit 23
           grep -Fxq "request_id=$request_id" "$req"
           grep -Fxq "source_commit=337468805b98c1d15591fbf2471da2b2018c258f" "$req"
-          grep -Fxq "archive_sha256=c5873db2317d805a02747e19100e654d5af3a00e72ef7bcb877befd496c1c397" "$req"
+          grep -Fxq "archive_sha256=659f8d6f2c9b083830fe4cd5d6b844efa474497cd0d7fb64df82960513342206" "$req"
           grep -Fxq "expected_old_web_version=web-v1.6.12" "$req"
           grep -Fxq "release=web-v1.6.13" "$req"
           [[ "$(wc -l < "$req")" -eq 5 ]] || exit 24
           echo "RELEASE_REQUEST_ID=$request_id" >> "$GITHUB_ENV"
-          archive=dexa-superapp/web/1.6.13/dexa-super-dashboard-web-v1613-source-only.tar.gz
-          manifest=dexa-superapp/web/1.6.13/manifest.json
+          archive=dexa-superapp/web/1.6.13-r2/dexa-super-dashboard-web-v1613-source-only.tar.gz
+          manifest=dexa-superapp/web/1.6.13-r2/manifest.json
           test -f "$archive" && test -f "$manifest"
-          printf '%s  %s\n' c5873db2317d805a02747e19100e654d5af3a00e72ef7bcb877befd496c1c397 "$archive" | sha256sum -c -
+          printf '%s  %s\n' 659f8d6f2c9b083830fe4cd5d6b844efa474497cd0d7fb64df82960513342206 "$archive" | sha256sum -c -
           python3 - <<'PY'
           import json,hashlib,tarfile
           from pathlib import Path
-          root=Path('dexa-superapp/web/1.6.13')
+          root=Path('dexa-superapp/web/1.6.13-r2')
           m=json.loads((root/'manifest.json').read_text())
           assert m['canonical_private_commit']=='337468805b98c1d15591fbf2471da2b2018c258f'
           assert m['version']=='web-v1.6.13'
-          assert m['archive_sha256']=='c5873db2317d805a02747e19100e654d5af3a00e72ef7bcb877befd496c1c397'
+          assert m['archive_sha256']=='659f8d6f2c9b083830fe4cd5d6b844efa474497cd0d7fb64df82960513342206'
           assert m['permissions_items']==74
           names={'auto-handoff.js','cycle-panel.js','index.html','package.json',
                  'remote-client.js','remote-gateway.mjs','server.mjs',
@@ -95,7 +95,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          archive=dexa-superapp/web/1.6.13/dexa-super-dashboard-web-v1613-source-only.tar.gz
+          archive=dexa-superapp/web/1.6.13-r2/dexa-super-dashboard-web-v1613-source-only.tar.gz
           sshopt=(-i "$DEXA_SSH_DIR/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$DEXA_SSH_DIR/known_hosts")
           scp "${sshopt[@]}" -P "$DEXA_SSH_PORT" "$archive" "${VPS_SSH_USER}@${VPS_HOST}:/tmp/${RELEASE_REQUEST_ID}.tgz"
           ssh "${sshopt[@]}" -p "$DEXA_SSH_PORT" "${VPS_SSH_USER}@${VPS_HOST}" "bash -s -- '$RELEASE_REQUEST_ID'" <<'REMOTE'
@@ -103,7 +103,7 @@ jobs:
           req="$1"
           [[ "$req" =~ ^dexa-web1613-20261107-[0-9a-f]{8}$ ]] || exit 41
           archive="/tmp/$req.tgz"
-          sha=c5873db2317d805a02747e19100e654d5af3a00e72ef7bcb877befd496c1c397
+          sha=659f8d6f2c9b083830fe4cd5d6b844efa474497cd0d7fb64df82960513342206
           [[ "$(sha256sum "$archive" | cut -d' ' -f1)" == "$sha" ]] || exit 42
           [[ -d /home/cfserver/dexa-superapp-build/v7-source/web ]] || exit 43
           release="/home/cfserver/dexa-superapp-build/releases/dexa-dashboard-web-1613-$req"
@@ -159,7 +159,7 @@ jobs:
           [[ "$result" == web-v1.6.13 ]] || exit 61
           curl -fsS --max-time 10 "$base/cycle-panel.js" -o "$RUNNER_TEMP/live-cycle-panel.js"
           node --check "$RUNNER_TEMP/live-cycle-panel.js"
-          expected=$(node -e 'const fs=require("fs");const m=JSON.parse(fs.readFileSync("dexa-superapp/web/1.6.13/manifest.json"));console.log(m.files["cycle-panel.js"])')
+          expected=$(node -e 'const fs=require("fs");const m=JSON.parse(fs.readFileSync("dexa-superapp/web/1.6.13-r2/manifest.json"));console.log(m.files["cycle-panel.js"])')
           actual=$(sha256sum "$RUNNER_TEMP/live-cycle-panel.js" | cut -d' ' -f1)
           [[ "$actual" == "$expected" ]] || exit 62
           curl -fsS --max-time 10 "$base/api/config" | node -e 'let s="";process.stdin.on("data",x=>s+=x).on("end",()=>{const j=JSON.parse(s);if(j.build!=="web-v1.6.13"||j.permissions?.length!==74)process.exit(6);console.log("DEXA_V1613_LIVE_PUBLIC_VERIFIED_ACCESS_74")})'
