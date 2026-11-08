@@ -257,9 +257,9 @@ jobs:
              "devTrackerInvoke('arm',id)"
            ])if(!task6.includes(required))process.exit(73);
            for(const exact of [
-             'devAppend0','devAppend1','devSend0','devSend1',
-             'devClear0','devClear1','devSendText','devFilePick',
-             'devAttachedFiles','data-dev-file-remove'
+             "devAppend'+slot", "devSend'+slot", "devClear'+slot",
+             'devSendText','devFilePick','devAttachedFiles',
+             'data-dev-file-remove'
            ])if(!dev.includes(exact))process.exit(74);
            const onlySend=h.slice(h.indexOf('function devTask6SendUi(){'),
              h.indexOf('let devSendText='));
