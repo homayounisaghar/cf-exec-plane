@@ -1,4 +1,4 @@
-name: Dexa Super Dashboard Web 1637 Controlled Release
+name: Dexa Super Dashboard Web 1638 Controlled Release
 'on':
   push:
     branches: [main]
@@ -33,32 +33,32 @@ jobs:
           IFS=$'\t' read -r change req <<< "${changes[0]}"
           [[ "$change" == "A" && "$req" == server-bootstrap/control/dexa-super-dashboard-web/*.request ]] || exit 22
           request_id="$(basename "$req" .request)"
-          [[ "$request_id" =~ ^dexa-web1637-20261108-[0-9a-f]{8}$ ]] || exit 23
+          [[ "$request_id" =~ ^dexa-web1638-20261108-[0-9a-f]{8}$ ]] || exit 23
           grep -Fxq "request_id=$request_id" "$req"
-          grep -Fxq "source_commit=ebff5ba5f27eb794eea79b29635db59f59ea28b4" "$req"
-          grep -Fxq "archive_sha256=e312b293fb23c548f3633ed9235a56776f0959eeb07a43e3f833f6660978d904" "$req"
-          grep -Fxq "expected_old_web_version=web-v1.6.36" "$req"
-          grep -Fxq "release=web-v1.6.37" "$req"
+          grep -Fxq "source_commit=70b6876a7e1f5ed7aff22d701c67a6ab33f1f15f" "$req"
+          grep -Fxq "archive_sha256=cc49c78edf9ac6b000c89f0ceaa7257e148ac56beed76d930ab9279e13305622" "$req"
+          grep -Fxq "expected_old_web_version=web-v1.6.37" "$req"
+          grep -Fxq "release=web-v1.6.38" "$req"
           [[ "$(wc -l < "$req")" -eq 5 ]] || exit 24
           echo "RELEASE_REQUEST_ID=$request_id" >> "$GITHUB_ENV"
-          archive=dexa-superapp/web/1.6.37/dexa-super-dashboard-web-v1637-source-only.tar.gz
-          manifest=dexa-superapp/web/1.6.37/manifest.json
+          archive=dexa-superapp/web/1.6.38/dexa-super-dashboard-web-v1638-source-only.tar.gz
+          manifest=dexa-superapp/web/1.6.38/manifest.json
           test -f "$archive" && test -f "$manifest"
-          printf '%s  %s\n' e312b293fb23c548f3633ed9235a56776f0959eeb07a43e3f833f6660978d904 "$archive" | sha256sum -c -
+          printf '%s  %s\n' cc49c78edf9ac6b000c89f0ceaa7257e148ac56beed76d930ab9279e13305622 "$archive" | sha256sum -c -
           python3 - <<'PY'
           import json,hashlib,tarfile
           from pathlib import Path
-          root=Path('dexa-superapp/web/1.6.37')
+          root=Path('dexa-superapp/web/1.6.38')
           m=json.loads((root/'manifest.json').read_text())
-          assert m['canonical_private_commit']=='ebff5ba5f27eb794eea79b29635db59f59ea28b4'
-          assert m['version']=='web-v1.6.37'
-          assert m['archive_sha256']=='e312b293fb23c548f3633ed9235a56776f0959eeb07a43e3f833f6660978d904'
+          assert m['canonical_private_commit']=='70b6876a7e1f5ed7aff22d701c67a6ab33f1f15f'
+          assert m['version']=='web-v1.6.38'
+          assert m['archive_sha256']=='cc49c78edf9ac6b000c89f0ceaa7257e148ac56beed76d930ab9279e13305622'
           assert m['permissions_items']==74
           names={'auto-handoff.js','cycle-panel.js','index.html','package.json',
                  'remote-client.js','remote-gateway.mjs','server.mjs',
                  'theme-client.js','theme.css','toolbar.html'}
           assert set(m['files'])==names
-          with tarfile.open(root/'dexa-super-dashboard-web-v1637-source-only.tar.gz') as t:
+          with tarfile.open(root/'dexa-super-dashboard-web-v1638-source-only.tar.gz') as t:
            members=t.getmembers()
            assert len(members)==len(names)
            assert all(x.isfile() and not x.issym() and x.name.startswith('web/') for x in members)
@@ -95,18 +95,18 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          archive=dexa-superapp/web/1.6.37/dexa-super-dashboard-web-v1637-source-only.tar.gz
+          archive=dexa-superapp/web/1.6.38/dexa-super-dashboard-web-v1638-source-only.tar.gz
           sshopt=(-i "$DEXA_SSH_DIR/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$DEXA_SSH_DIR/known_hosts")
           scp "${sshopt[@]}" -P "$DEXA_SSH_PORT" "$archive" "${VPS_SSH_USER}@${VPS_HOST}:/tmp/${RELEASE_REQUEST_ID}.tgz"
           ssh "${sshopt[@]}" -p "$DEXA_SSH_PORT" "${VPS_SSH_USER}@${VPS_HOST}" "bash -s -- '$RELEASE_REQUEST_ID'" <<'REMOTE'
           set -euo pipefail
           req="$1"
-          [[ "$req" =~ ^dexa-web1637-20261108-[0-9a-f]{8}$ ]] || exit 41
+          [[ "$req" =~ ^dexa-web1638-20261108-[0-9a-f]{8}$ ]] || exit 41
           archive="/tmp/$req.tgz"
-          sha=e312b293fb23c548f3633ed9235a56776f0959eeb07a43e3f833f6660978d904
+          sha=cc49c78edf9ac6b000c89f0ceaa7257e148ac56beed76d930ab9279e13305622
           [[ "$(sha256sum "$archive" | cut -d' ' -f1)" == "$sha" ]] || exit 42
           [[ -d /home/cfserver/dexa-superapp-build/v7-source/web ]] || exit 43
-          release="/home/cfserver/dexa-superapp-build/releases/dexa-dashboard-web-1637-$req"
+          release="/home/cfserver/dexa-superapp-build/releases/dexa-dashboard-web-1638-$req"
           [[ ! -e "$release" ]] || exit 44
           mkdir -p "$release"
           tar -xzf "$archive" -C "$release"
@@ -116,8 +116,8 @@ jobs:
           node --check "$release/web/cycle-panel.js"
           node --check "$release/web/server.mjs"
           old=$(curl -fsS --max-time 6 http://127.0.0.1:4495/api/health | node -e 'let s="";process.stdin.on("data",x=>s+=x).on("end",()=>process.stdout.write(JSON.parse(s).webVersion))')
-          [[ "$old" == web-v1.6.36 ]] || { echo EXPECTED_V1630_NOT_RUNNING >&2; exit 45; }
-          override=/home/cfserver/.config/systemd/user/dexa-super-dashboard-v6.service.d/99-web-v1637.conf
+          [[ "$old" == web-v1.6.37 ]] || { echo EXPECTED_V1630_NOT_RUNNING >&2; exit 45; }
+          override=/home/cfserver/.config/systemd/user/dexa-super-dashboard-v6.service.d/99-web-v1638.conf
           [[ ! -e "$override" ]] || exit 46
           mkdir -p "$(dirname "$override")"
           printf '[Service]\nWorkingDirectory=%s/web\n' "$release" > "$override"
@@ -137,14 +137,14 @@ jobs:
           success=0
           for n in 1 2 3 4 5 6 7 8 9 10; do
             version=$(curl -fsS --max-time 5 http://127.0.0.1:4495/api/health | node -e 'let s="";process.stdin.on("data",x=>s+=x).on("end",()=>process.stdout.write(JSON.parse(s).webVersion))' 2>/dev/null || true)
-            if [[ "$version" == web-v1.6.37 ]]; then success=1; break; fi
+            if [[ "$version" == web-v1.6.38 ]]; then success=1; break; fi
             sleep 1
           done
           if [[ "$success" != 1 ]]; then
             rm -f "$override"; svc daemon-reload; svc restart dexa-super-dashboard-v6.service || true
             echo ROLLBACK_ON_FAILED_NEW_HEALTH >&2; exit 48
           fi
-          echo DEXA_DASHBOARD_WEB_V1637_LOCAL_HEALTH_CONFIRMED
+          echo DEXA_DASHBOARD_WEB_V1638_LOCAL_HEALTH_CONFIRMED
           REMOTE
       - name: Verify actual public service and 74-item access list
         shell: bash
@@ -153,22 +153,22 @@ jobs:
           base=https://dexa-cf-worker-canary-20261104.mirkazem.workers.dev/dexa-superapp
           for n in 1 2 3 4 5 6 7 8 9 10; do
             result=$(curl -fsS --max-time 7 "$base/api/health" | node -e 'let s="";process.stdin.on("data",x=>s+=x).on("end",()=>process.stdout.write(JSON.parse(s).webVersion))' 2>/dev/null || true)
-            [[ "$result" == web-v1.6.37 ]] && break
+            [[ "$result" == web-v1.6.38 ]] && break
             sleep 2
           done
-          [[ "$result" == web-v1.6.37 ]] || exit 61
+          [[ "$result" == web-v1.6.38 ]] || exit 61
           curl -fsS --max-time 10 "$base/cycle-panel.js" -o "$RUNNER_TEMP/live-cycle-panel.js"
           node --check "$RUNNER_TEMP/live-cycle-panel.js"
-          expected=$(node -e 'const fs=require("fs");const m=JSON.parse(fs.readFileSync("dexa-superapp/web/1.6.37/manifest.json"));console.log(m.files["cycle-panel.js"])')
+          expected=$(node -e 'const fs=require("fs");const m=JSON.parse(fs.readFileSync("dexa-superapp/web/1.6.38/manifest.json"));console.log(m.files["cycle-panel.js"])')
           actual=$(sha256sum "$RUNNER_TEMP/live-cycle-panel.js" | cut -d' ' -f1)
           [[ "$actual" == "$expected" ]] || exit 62
           curl -fsS --max-time 10 "$base/remote-client.js" -o "$RUNNER_TEMP/live-remote-client.js"
           node --check "$RUNNER_TEMP/live-remote-client.js"
-          expectedRemote=$(node -e 'const fs=require("fs");const m=JSON.parse(fs.readFileSync("dexa-superapp/web/1.6.37/manifest.json"));console.log(m.files["remote-client.js"])')
+          expectedRemote=$(node -e 'const fs=require("fs");const m=JSON.parse(fs.readFileSync("dexa-superapp/web/1.6.38/manifest.json"));console.log(m.files["remote-client.js"])')
           actualRemote=$(sha256sum "$RUNNER_TEMP/live-remote-client.js" | cut -d' ' -f1)
           [[ "$actualRemote" == "$expectedRemote" ]] || exit 63
           curl -fsS --max-time 10 "$base/" -o "$RUNNER_TEMP/live-dashboard-index.html"
-          expectedIndex=$(node -e 'const fs=require("fs");const m=JSON.parse(fs.readFileSync("dexa-superapp/web/1.6.37/manifest.json"));console.log(m.files["index.html"])')
+          expectedIndex=$(node -e 'const fs=require("fs");const m=JSON.parse(fs.readFileSync("dexa-superapp/web/1.6.38/manifest.json"));console.log(m.files["index.html"])')
           actualIndex=$(sha256sum "$RUNNER_TEMP/live-dashboard-index.html" | cut -d' ' -f1)
           [[ "$actualIndex" == "$expectedIndex" ]] || exit 64
 
@@ -338,8 +338,33 @@ jobs:
             'devDeleteCurrentChat(slot)','devDeleteChatBusy.has(slot)'
           ])if(!h.includes(required))process.exit(85);
           console.log('DEXA_CURRENT_CHAT_DELETE_TWO_BUTTONS_NATIVE_WRAPPER_STATIC_VERIFIED');
-          console.log('DEXA_WEB1637_PICKER_ID_RECOVERY_STATIC_VERIFIED');
+          // The new observer must be the exact embedded JS source shipped
+          // to Android's direct eval, not a standalone or demo script.
+          const responseStart=h.indexOf('function dexaResponseObserverInstall(slot,beep){');
+          const responseEnd=h.indexOf('\n// Event-driven dashboard delivery only',responseStart);
+          if(responseStart<0||responseEnd<=responseStart)process.exit(86);
+          const source=h.slice(responseStart,responseEnd).trim();
+          if(source.length>11980||!source.includes('new MutationObserver(scanMutations)')||
+             !source.includes('RESPONSE_COMPLETE_DETECTED')||
+             !source.includes("previous!==false")||
+             /setInterval\(|setTimeout\(/.test(source))process.exit(86);
+          for(const slot of [0,1]){
+            const expr='('+source+')('+slot+',false)';
+            if(expr.length>12000)process.exit(86);
+            try{
+              new vm.Script('(function(){try{return JSON.stringify({ok:true,result:('+
+                expr+')});}catch(e){return JSON.stringify({ok:false,reason:String(e&&e.name)})}})()');
+            }catch(_){process.exit(87)}
+          }
+          for(const ui of ['devResponseLight','devResponseDetail',
+            'id="devResponseBeep"','Beep when response completes',
+            'Browser ',' — Response Status','devResponseWake()',
+            'RESPONSE_EVENT_DELIVERED','observedAt','receivedAt','updatedAt'])
+            if(!h.includes(ui))process.exit(88);
+          console.log('DEXA_RESPONSE_OBSERVER_EXACT_NATIVE_WRAPPER_AND_EVENT_DELIVERY_VERIFIED');
+
+          console.log('DEXA_WEB1638_PICKER_ID_RECOVERY_STATIC_VERIFIED');
           console.log('DEXA_DEVELOPMENT_TASK6_INDEPENDENT_AND_TRACKER_STATIC_VERIFIED');
            console.log('DEXA_DEVELOPMENT_TASK5_WEB_V13_COMPAT_INPUT_SCOPE_VERIFIED');
           NODE
-          curl -fsS --max-time 10 "$base/api/config" | node -e 'let s="";process.stdin.on("data",x=>s+=x).on("end",()=>{const j=JSON.parse(s);if(j.build!=="web-v1.6.37"||j.permissions?.length!==74||j.dashboards?.filter(x=>x.id==="development"&&x.title==="توسعه").length!==1)process.exit(6);console.log("DEXA_V1637_LIVE_PUBLIC_VERIFIED_ACCESS_74")})'
+          curl -fsS --max-time 10 "$base/api/config" | node -e 'let s="";process.stdin.on("data",x=>s+=x).on("end",()=>{const j=JSON.parse(s);if(j.build!=="web-v1.6.38"||j.permissions?.length!==74||j.dashboards?.filter(x=>x.id==="development"&&x.title==="توسعه").length!==1)process.exit(6);console.log("DEXA_V1638_LIVE_PUBLIC_VERIFIED_ACCESS_74")})'
