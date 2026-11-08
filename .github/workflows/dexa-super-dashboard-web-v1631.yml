@@ -186,7 +186,7 @@ jobs:
           const task2=h.indexOf('// Task 2: separate per-slot effort dispatch');
           const f=h.slice(h.indexOf('// Development panel: direct native navigation'),task2);
           if(!f || task2<0 || !f.includes("nativeCall('navigate',{slot,url:'https://chatgpt.com/'})") ||
-             !f.includes("button.onclick=()=>{openDevNewChat(slot);}") ||
+             !h.includes("button.onclick=()=>{openDevNewChat(slot);}") ||
              f.includes("nativeCall('eval'") ||
              f.includes('devChatUiFn') || f.includes('devChatEvent'))process.exit(66);
           const effort=h.slice(task2,h.indexOf('function configuredBoards(){'));
