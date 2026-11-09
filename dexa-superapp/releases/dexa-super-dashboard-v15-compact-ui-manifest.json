@@ -1,0 +1,16 @@
+{
+  "alignedUnsignedSha256": "953d87aaab15b9b9bf684e6f9b3b28be92aca6ffe7ec708b2bbd5ab9fe77426c",
+  "canonicalPrivateCommit": "8a506af15f8274154e5e3f5fc41d5a523bdce68f",
+  "package": "com.homayounisaghar.dexasuperdashboard",
+  "permissionsByteIdentical": true,
+  "previousSignedSha256": "58a9760d0cc056196fc8a3456b3bab6742e92aeea4642ce524d66711702b5241",
+  "realPhoneInstalled": false,
+  "signatureV2": true,
+  "signatureV3": true,
+  "signedBytes": 62164,
+  "signedSha256": "d6f2af117c9ed3c9fc128e9516b9ce341b269e639b9a91a3f6d40fd9818374c9",
+  "signerSha256": "b4e4afbd4450b710544359a01ca397f25b72c8e75ca827344292863509782c81",
+  "unsignedSha256": "953d87aaab15b9b9bf684e6f9b3b28be92aca6ffe7ec708b2bbd5ab9fe77426c",
+  "versionCode": 15,
+  "versionName": "1.5.6-compact-ui"
+}
