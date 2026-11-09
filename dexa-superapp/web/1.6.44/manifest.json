@@ -1,0 +1,29 @@
+{
+  "android_version_unchanged": 15,
+  "archive_sha256": "d99df963656fa48ab021f2b77207ea39f71ba88c46a761b2830a5f02a10cf1ad",
+  "canonical_private_commit": "afe6b61bc901572bc7604cd132fee06241c1f586",
+  "dashboard_tabs": 4,
+  "files": {
+    "auto-handoff.js": "c27e6e9562e22e652d1a0a354f7fc7134c8c1f35642d2447f7011e0f2a5b80b8",
+    "cycle-panel.js": "e4ac63affc2824de2098d3a7da499ee5fe29db60a203851275417a9b09d6ee08",
+    "index.html": "42115b21db959d3ce79f74153a4a4fc6e731f439d0b90c5f2efa4e06d4804fd8",
+    "package.json": "8b15bfdb18eb36af2dddcacb5af04f1c9e23466ccbbfe495f1399e022d670c08",
+    "remote-client.js": "255006a079a0794d7b558b61fb83c928f95de45e9220406fce853cadce237551",
+    "remote-gateway.mjs": "22a961bd7a719aba1baac3d4c41b418ac7434b71f62677ec33260cc7c07dc245",
+    "server.mjs": "711215c5d0e98d6ec0c2ea286d0edfeea01ec78e96a5e86e5e3c180283ce0c85",
+    "theme-client.js": "c1294b9e71aa4882ba4e7f11561c7c7298560701b8a1477110310469069c2a8c",
+    "theme.css": "515e037cedac885733a25eaff96bd1963242aa92b34c073fbdb1b626d7e04c72",
+    "toolbar.html": "b85fae2d0ace26f11622e7cba26b04eee7c23bd4e467c147bf08787c99759475"
+  },
+  "limitations": "No owner-phone live ChatGPT cycle verified. Voice text composer and per-turn audio-ended events may be unavailable; no speculative deletion or fake Read Aloud fallback.",
+  "permissions_items": 74,
+  "scope": "text, text+read-aloud, genuine Voice with mic mute verify; exact owned chat cleanup after proven completion",
+  "source_phone_telemetry": "13 privacy-scrubbed trusted clicks, slot0 7, slot1 6; UI labels unavailable",
+  "tests": {
+    "mock_audio_end_gate": 7,
+    "mock_cycle_modes": 39,
+    "mock_dashboard_regression": 24,
+    "mock_mic_media": 18
+  },
+  "version": "web-v1.6.44"
+}
