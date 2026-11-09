@@ -1,0 +1,28 @@
+{
+  "android_version_unchanged": 15,
+  "archive_sha256": "da6f22eeb0ce7e421fe51dacb67aee5032cb6af2b312b31199c195a8cdd78ee6",
+  "canonical_private_commit": "e17758616defc4cf2a193779f395210b4baa96e7",
+  "dashboard_tabs": 4,
+  "files": {
+    "auto-handoff.js": "c27e6e9562e22e652d1a0a354f7fc7134c8c1f35642d2447f7011e0f2a5b80b8",
+    "cycle-panel.js": "ffd4b8b2767f0588e3a0270b9327f4e383ad8f77b4792c398cf5107822289690",
+    "index.html": "8a501c835eaf7e4c51aaab898f8c3934994e75408a05742e4e3cf5925d4c8f0f",
+    "package.json": "8b15bfdb18eb36af2dddcacb5af04f1c9e23466ccbbfe495f1399e022d670c08",
+    "remote-client.js": "255006a079a0794d7b558b61fb83c928f95de45e9220406fce853cadce237551",
+    "remote-gateway.mjs": "22a961bd7a719aba1baac3d4c41b418ac7434b71f62677ec33260cc7c07dc245",
+    "server.mjs": "2ea2a50673274f957c6f0bada7b9155d558800e9b1ab6b6f95d3c805d89e10fa",
+    "theme-client.js": "c1294b9e71aa4882ba4e7f11561c7c7298560701b8a1477110310469069c2a8c",
+    "theme.css": "515e037cedac885733a25eaff96bd1963242aa92b34c073fbdb1b626d7e04c72",
+    "toolbar.html": "b85fae2d0ace26f11622e7cba26b04eee7c23bd4e467c147bf08787c99759475"
+  },
+  "limitation": "ChatGPT live Voice pre-entry interrupts plain text send; checkmarked audio remains read-aloud after second answer.",
+  "permissions_items": 74,
+  "real_owner_cycle_test": false,
+  "scope": "cycle first delete two active chats, clear two drafts, set both efforts, then send first and second; teal first, orange second",
+  "tests": {
+    "browser_card_regression": 24,
+    "completion_signal": 2,
+    "mock_cycle_order": 22
+  },
+  "version": "web-v1.6.43"
+}
