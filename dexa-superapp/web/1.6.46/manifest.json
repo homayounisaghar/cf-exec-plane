@@ -1,0 +1,32 @@
+{
+  "android_version_unchanged": 15,
+  "archive_sha256": "8e386d8e5e054c9f1263415aeef338186f37081d3dceb0232dad0cbc3ba8f27f",
+  "canonical_private_commit": "53abb3f1fb4efddda5b55b3f68bcd0ec39b0f899",
+  "dashboard_tabs": 4,
+  "files": {
+    "auto-handoff.js": "c27e6e9562e22e652d1a0a354f7fc7134c8c1f35642d2447f7011e0f2a5b80b8",
+    "cycle-panel.js": "1843806d340759680bd628862be329ae809a22810e19ae8cd8b710c8696ac138",
+    "index.html": "d61d83741c5cd0c5f7c2c42030b0fb5229cd5755f5c4f75393252632cbd34d10",
+    "package.json": "8b15bfdb18eb36af2dddcacb5af04f1c9e23466ccbbfe495f1399e022d670c08",
+    "remote-client.js": "255006a079a0794d7b558b61fb83c928f95de45e9220406fce853cadce237551",
+    "remote-gateway.mjs": "22a961bd7a719aba1baac3d4c41b418ac7434b71f62677ec33260cc7c07dc245",
+    "server.mjs": "10178d13560c2a186c54c016d8f9ef2884328ebe3752f295cca2035e21a280be",
+    "theme-client.js": "c1294b9e71aa4882ba4e7f11561c7c7298560701b8a1477110310469069c2a8c",
+    "theme.css": "515e037cedac885733a25eaff96bd1963242aa92b34c073fbdb1b626d7e04c72",
+    "toolbar.html": "b85fae2d0ace26f11622e7cba26b04eee7c23bd4e467c147bf08787c99759475"
+  },
+  "limitations": "No actual owner-phone full cycle accepted. Voice response speech end not yet established; no new unproven completion shortcut. Context gap, lack of actual ended event, or missing exact chat ownership stops automatic delete.",
+  "permissions_items": 74,
+  "privacy": "Event codes, bounded counter values, aggregate packet-flow classes, and boolean DOM shape only. No audio samples, transcript text, media URLs, device address or conversation UUID logged.",
+  "scope": "Test release: passive audio telemetry from Voice ON independently of Voice text receipt; Read Aloud pause position, HTML media end state and UI return; WebRTC inbound packets/energy classes; read-only owned-chat deletion context; preserve exact cleanup safeguards and no arbitrary completion timer.",
+  "tests": {
+    "audio_html_webRTC_and_delete_context": 41,
+    "cancel_pending_send": 8,
+    "cycle_modes_and_independent_voice_trace": 49,
+    "dashboard_regressions": 24,
+    "delete_menu_races": 11,
+    "unbounded_response_waits": 7,
+    "voice_ownership_end_gates": 15
+  },
+  "version": "web-v1.6.46"
+}
