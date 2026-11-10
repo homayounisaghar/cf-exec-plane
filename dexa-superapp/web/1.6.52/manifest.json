@@ -1,0 +1,32 @@
+{
+  "android_installed_on_phone": false,
+  "android_version_code_available": 16,
+  "archive_sha256": "1f75c88838f4f782fffd433ed8377b98210b118846befba0628576d787ff8621",
+  "canonical_private_commit": "79aa27e354605660d8c3080adfbe6f97b7491557",
+  "dashboard_tabs": 4,
+  "files": {
+    "auto-handoff.js": "c27e6e9562e22e652d1a0a354f7fc7134c8c1f35642d2447f7011e0f2a5b80b8",
+    "cycle-panel.js": "f90e1077d5f20d7e708abd46970a4c785b113419297098a3a1b5158ab4b21f21",
+    "index.html": "fb7db6de03f3f181aff0a1c070089d706df505ed63655cb65a7c3971dcc66f23",
+    "package.json": "8b15bfdb18eb36af2dddcacb5af04f1c9e23466ccbbfe495f1399e022d670c08",
+    "remote-client.js": "17047e44caa49b74eb5d568a0bb091086ae0de51858928453fd8e7721f926c36",
+    "remote-gateway.mjs": "22a961bd7a719aba1baac3d4c41b418ac7434b71f62677ec33260cc7c07dc245",
+    "server.mjs": "cc08e0736f13396cec339b7cf29e6596395cad7d159b6e435378eb75b2da0f1b",
+    "theme-client.js": "c1294b9e71aa4882ba4e7f11561c7c7298560701b8a1477110310469069c2a8c",
+    "theme.css": "515e037cedac885733a25eaff96bd1963242aa92b34c073fbdb1b626d7e04c72",
+    "toolbar.html": "b85fae2d0ace26f11622e7cba26b04eee7c23bd4e467c147bf08787c99759475"
+  },
+  "notes": "Web refresh required; Android 16 must be installed by owner separately. No destructive owner-phone acceptance test.",
+  "permissions_items": 74,
+  "scope": "No wait on initial/final delete and draft-clear receipts; text-only title; delayed Send editor; real natural audio end without mic/text recheck; remove remote 150s monitor limit.",
+  "tests": {
+    "blind_effort": 23,
+    "blind_send_with_late_editors": 13,
+    "js_syntax": 4,
+    "regression": 11,
+    "remaining_gates_adversarial": 16,
+    "shared_header_title_delete": 12,
+    "three_mode_sequence": 23
+  },
+  "version": "web-v1.6.52"
+}
