@@ -1,0 +1,26 @@
+{
+  "version": "web-v1.6.65",
+  "archive_sha256": "1828240c641f189ae45462e94119997bc5239c88ae36cd3516ae7da70f66f2ab",
+  "files": {
+    "auto-handoff.js": "c27e6e9562e22e652d1a0a354f7fc7134c8c1f35642d2447f7011e0f2a5b80b8",
+    "cycle-panel.js": "2e9197db4aa1350ff87466bf059f88029f4a9f2a1da9664543b1a3fda0404769",
+    "index.html": "6759fbdbeb04d22e53eb939745b552bbef58d47fbe74c34f16fb6ee8160aca2f",
+    "package.json": "8b15bfdb18eb36af2dddcacb5af04f1c9e23466ccbbfe495f1399e022d670c08",
+    "remote-client.js": "17047e44caa49b74eb5d568a0bb091086ae0de51858928453fd8e7721f926c36",
+    "remote-gateway.mjs": "22a961bd7a719aba1baac3d4c41b418ac7434b71f62677ec33260cc7c07dc245",
+    "server.mjs": "4f179514076b4dbd6dc67e41c118528444d198847b8caf24aa80091bc046b2ea",
+    "theme-client.js": "c1294b9e71aa4882ba4e7f11561c7c7298560701b8a1477110310469069c2a8c",
+    "theme.css": "515e037cedac885733a25eaff96bd1963242aa92b34c073fbdb1b626d7e04c72",
+    "toolbar.html": "b85fae2d0ace26f11622e7cba26b04eee7c23bd4e467c147bf08787c99759475"
+  },
+  "android_signed_apk_sha256": "8cbf66cca9ad0f6e31cb0cda6cb478278f5bb10225f6ff3deeacd0002e40409a",
+  "android_version_code": 17,
+  "android_required_for_wake": true,
+  "public_apk_download": "https://cf-onshape.duckdns.org/dexa-superapp/android-v17.apk",
+  "permissions_items": 74,
+  "dashboard_tabs": 4,
+  "page_agent_revision": "power-slider-v1665",
+  "note": "Near-silent nonzero browser output attenuation preserves decoder path; first owner quiet opens speaker, audio-blind native-text+RTC idle fails open and may prove bounded finish; speaker closes at accepted audio end, mic stays muted, Android v17 unchanged.",
+  "canonical_private_commit": "b02002c5b536332086fdc80d5bea6df12713f1c3",
+  "previous_version": "web-v1.6.64"
+}
