@@ -1,0 +1,26 @@
+{
+  "version": "web-v1.6.67",
+  "archive_sha256": "9727483a031063f14ee32f1a475fbf1f6f56b5ab703f288936c970f84865cf08",
+  "files": {
+    "auto-handoff.js": "c27e6e9562e22e652d1a0a354f7fc7134c8c1f35642d2447f7011e0f2a5b80b8",
+    "cycle-panel.js": "979d3ad9d832bd35d21cef9773d9f7ff34bd97075c3abc86b03e211f99dc5a5f",
+    "index.html": "6759fbdbeb04d22e53eb939745b552bbef58d47fbe74c34f16fb6ee8160aca2f",
+    "package.json": "8b15bfdb18eb36af2dddcacb5af04f1c9e23466ccbbfe495f1399e022d670c08",
+    "remote-client.js": "17047e44caa49b74eb5d568a0bb091086ae0de51858928453fd8e7721f926c36",
+    "remote-gateway.mjs": "22a961bd7a719aba1baac3d4c41b418ac7434b71f62677ec33260cc7c07dc245",
+    "server.mjs": "972845b36e042def14cafa53fe740bb08d4d1f73af189627ffb2e2d5b0ecd86d",
+    "theme-client.js": "c1294b9e71aa4882ba4e7f11561c7c7298560701b8a1477110310469069c2a8c",
+    "theme.css": "515e037cedac885733a25eaff96bd1963242aa92b34c073fbdb1b626d7e04c72",
+    "toolbar.html": "b85fae2d0ace26f11622e7cba26b04eee7c23bd4e467c147bf08787c99759475"
+  },
+  "android_signed_apk_sha256": "a825818783edf470311e8ce013c4526ae91a7abde99aeabfe527709389712f25",
+  "android_version_code": 18,
+  "android_required_for_wake": true,
+  "public_apk_download": "https://cf-onshape.duckdns.org/dexa-superapp/android-v18.apk",
+  "permissions_items": 74,
+  "dashboard_tabs": 4,
+  "page_agent_revision": "power-slider-v1667",
+  "note": "Native binary Browser2 audio mute starts after Voice/WebRTC setup, immediately before actual second Send. Opens only after real post-Send RTP speech then first saved quiet; no pre-speech/no-energy fallback. On proven end native re-mutes before Voice Exit and remains muted across 2500ms exit chime tail, restoring after. Mic stays muted; signed Android v18 unchanged.",
+  "canonical_private_commit": "76a90c3bd0bc010b1db46feda74fe95c2ff6e3ec",
+  "previous_version": "web-v1.6.66"
+}
