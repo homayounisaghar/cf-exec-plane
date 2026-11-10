@@ -1,0 +1,41 @@
+{
+  "android_unchanged": true,
+  "archive_sha256": "4a4c027e94e9943bdcb85875ee97f1fa4b8ce0ea8f772f6d5cb34d6d324a202e",
+  "canonical_private_commit": "02997b53f93254fcf4bc6109b64a82804b21f8c8",
+  "dashboard_tabs": 4,
+  "files": {
+    "auto-handoff.js": "c27e6e9562e22e652d1a0a354f7fc7134c8c1f35642d2447f7011e0f2a5b80b8",
+    "cycle-panel.js": "cea28a2d48398546ea940db6da07d514e9d1a94c2545126620d654ac3f8f0b83",
+    "index.html": "46c1696974b49ab84c5b09ec2324ce74ef8a2d4c689ca4f5bdcfc3906ec8132b",
+    "package.json": "8b15bfdb18eb36af2dddcacb5af04f1c9e23466ccbbfe495f1399e022d670c08",
+    "remote-client.js": "17047e44caa49b74eb5d568a0bb091086ae0de51858928453fd8e7721f926c36",
+    "remote-gateway.mjs": "22a961bd7a719aba1baac3d4c41b418ac7434b71f62677ec33260cc7c07dc245",
+    "server.mjs": "eff844d963d6244656d009aaef8b504e742abaf4c856da69e62718fe5b9367c4",
+    "theme-client.js": "c1294b9e71aa4882ba4e7f11561c7c7298560701b8a1477110310469069c2a8c",
+    "theme.css": "515e037cedac885733a25eaff96bd1963242aa92b34c073fbdb1b626d7e04c72",
+    "toolbar.html": "b85fae2d0ace26f11622e7cba26b04eee7c23bd4e467c147bf08787c99759475"
+  },
+  "limitation": "No authenticated real owner-phone Voice action was performed during tests.",
+  "page_agent_revision": "power-slider-v1657",
+  "permissions_items": 74,
+  "previous_page_agent_revision": "power-slider-v1655",
+  "scope": "Force actual old ChatGPT in-page agent replacement after web refresh; keep 1.5-second RTP/HTML speaking-turn algorithm from web-v1.6.56 exactly.",
+  "tests": {
+    "blind_effort": 23,
+    "blind_remaining": 16,
+    "clear_after_delete": 18,
+    "cycle_sequence": 24,
+    "effort_serialization": 15,
+    "header_delete": 12,
+    "js_syntax": 4,
+    "live_http_telemetry": 11,
+    "old_page_agent_real_upgrade": 12,
+    "regression": 11,
+    "send": 13,
+    "voice_media_events": 6,
+    "voice_stale_html_rtp": 15,
+    "voice_start_per_run": 17,
+    "voice_turn_evidence": 14
+  },
+  "version": "web-v1.6.57"
+}
