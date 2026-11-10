@@ -1,0 +1,30 @@
+{
+  "android_version_unchanged": 15,
+  "archive_sha256": "735d5f0abf6cdf7c8527704c52cbb517f2fefcb1b26794e61125b85080d87753",
+  "canonical_private_commit": "656b5d8f8ce96336880864d7e48bb9f1681613fe",
+  "dashboard_tabs": 4,
+  "files": {
+    "auto-handoff.js": "c27e6e9562e22e652d1a0a354f7fc7134c8c1f35642d2447f7011e0f2a5b80b8",
+    "cycle-panel.js": "77c00af3c8ac80ac4233ca019342955732bb40ce81f8698c5db29d5782662a60",
+    "index.html": "da949c80eedf1148b03d4c807706e43fbb9353eefa653c6d613988e96924c99e",
+    "package.json": "8b15bfdb18eb36af2dddcacb5af04f1c9e23466ccbbfe495f1399e022d670c08",
+    "remote-client.js": "255006a079a0794d7b558b61fb83c928f95de45e9220406fce853cadce237551",
+    "remote-gateway.mjs": "22a961bd7a719aba1baac3d4c41b418ac7434b71f62677ec33260cc7c07dc245",
+    "server.mjs": "ad09750c339c5306d8c3b3b67aff7990d86f5d52043b98debeca5cb6dbf17733",
+    "theme-client.js": "c1294b9e71aa4882ba4e7f11561c7c7298560701b8a1477110310469069c2a8c",
+    "theme.css": "515e037cedac885733a25eaff96bd1963242aa92b34c073fbdb1b626d7e04c72",
+    "toolbar.html": "b85fae2d0ace26f11622e7cba26b04eee7c23bd4e467c147bf08787c99759475"
+  },
+  "limitations": "UI action readiness still awaited. No actual owner-phone destructive Send/Delete test. Android local-file WebView evaluation timeout unchanged.",
+  "permissions_items": 74,
+  "scope": "No initial Delete/Clear/Effort result gate; blind Power slider reset; no pre-send draft/text receipt; no post-Voice natural audio re-proof; unchanged natural audio detection; dynamic server build header.",
+  "tests": {
+    "blind_effort": 23,
+    "blind_send": 8,
+    "js_syntax": 3,
+    "regression_audio": 10,
+    "shared_header_delete": 12,
+    "three_mode_sequence": 23
+  },
+  "version": "web-v1.6.51"
+}
