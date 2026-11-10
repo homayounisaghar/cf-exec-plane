@@ -3,11 +3,11 @@ name: Dexa Super Dashboard Web 1649 Controlled Release
   push:
     branches: [main]
     paths:
-      - 'server-bootstrap/control/dexa-super-dashboard-web/*.request'
+      - 'server-bootstrap/control/dexa-super-dashboard-web/dexa-web1649-*.request'
 permissions:
   contents: read
 concurrency:
-  group: dexa-super-dashboard-web-scoped
+  group: dexa-super-dashboard-web-v1649-scoped
   cancel-in-progress: false
 jobs:
   deploy:
