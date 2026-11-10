@@ -1,0 +1,5 @@
+request_id=dexa-web1660-20261110-a9ffe225
+source_commit=61d9b177f090ba48d4c7e6d1ddd0dca61d79c130
+archive_sha256=a9ffe225c641be30258fdccc3cf215a8cd9932649d0ac9a2dbb91ebb28b3146e
+expected_old_web_version=web-v1.6.59
+release=web-v1.6.60
