@@ -1,0 +1,34 @@
+{
+  "android_unchanged": true,
+  "archive_sha256": "59d9ff1ab51d487e9fd09252460385803610c45338319726abf1149e257bfe6a",
+  "canonical_private_commit": "8afe6885d5931b1a7edd7d4968f2294f400a2b69",
+  "dashboard_tabs": 4,
+  "files": {
+    "auto-handoff.js": "c27e6e9562e22e652d1a0a354f7fc7134c8c1f35642d2447f7011e0f2a5b80b8",
+    "cycle-panel.js": "d1062cd8f62ac74575b6057d5ca7daff90d0408f9284f50e814ed040a8e99f84",
+    "index.html": "f77e4f1ca06a9a48efdf51694d481f3e9332a3b7d8ac3ee517bee91ef4ecda60",
+    "package.json": "8b15bfdb18eb36af2dddcacb5af04f1c9e23466ccbbfe495f1399e022d670c08",
+    "remote-client.js": "17047e44caa49b74eb5d568a0bb091086ae0de51858928453fd8e7721f926c36",
+    "remote-gateway.mjs": "22a961bd7a719aba1baac3d4c41b418ac7434b71f62677ec33260cc7c07dc245",
+    "server.mjs": "07d07328573afbe962a7ab46ca23b3e0af1981420f96ce832313f5ec4d93e518",
+    "theme-client.js": "c1294b9e71aa4882ba4e7f11561c7c7298560701b8a1477110310469069c2a8c",
+    "theme.css": "515e037cedac885733a25eaff96bd1963242aa92b34c073fbdb1b626d7e04c72",
+    "toolbar.html": "b85fae2d0ace26f11622e7cba26b04eee7c23bd4e467c147bf08787c99759475"
+  },
+  "limitation": "The real owner-phone ChatGPT web UI has not undergone a destructive authenticated acceptance test. No arbitrary timeout in UI queue.",
+  "permissions_items": 74,
+  "scope": "Per-slot sequential Delete/full-draft-clear then Power menu Effort with no readbacks; recover dismissed Power menu; three effort milestones and run ID; server-authoritative build on all telemetry.",
+  "tests": {
+    "blind_effort": 23,
+    "effort_queue_and_menu_recovery": 15,
+    "full_draft_clear": 18,
+    "header_delete": 12,
+    "real_http_telemetry_build": 11,
+    "regression": 11,
+    "remaining": 16,
+    "send": 13,
+    "syntax": 4,
+    "three_mode_cycle": 24
+  },
+  "version": "web-v1.6.54"
+}
