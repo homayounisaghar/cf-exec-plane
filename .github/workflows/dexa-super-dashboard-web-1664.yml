@@ -35,8 +35,8 @@ jobs:
           request_id="$(basename "$req" .request)"
           [[ "$request_id" =~ ^dexa-web1664-20261110-[0-9a-f]{8}$ ]] || exit 23
           grep -Fxq "request_id=$request_id" "$req"
-          grep -Fxq "source_commit=e8ea69d7992bdd5cc500c4d0578858c1dd4e45b7" "$req"
-          grep -Fxq "archive_sha256=037a380265d85ae0c42535141572cb034b6a5602c94cd69eb4c7b37a50c7adc6" "$req"
+          grep -Fxq "source_commit=820fdcfc2833a14fe4471ab5be6a649c2ac91ae0" "$req"
+          grep -Fxq "archive_sha256=311c1bc6fe4034a48346c33a1ffef1921374481926fd880a1a5bf3d759edcb80" "$req"
           grep -Fxq "expected_old_web_version=web-v1.6.63" "$req"
           grep -Fxq "release=web-v1.6.64" "$req"
           [[ "$(wc -l < "$req")" -eq 5 ]] || exit 24
@@ -44,15 +44,15 @@ jobs:
           archive=dexa-superapp/web/1.6.64/dexa-super-dashboard-web-v1664-source-only.tar.gz
           manifest=dexa-superapp/web/1.6.64/manifest.json
           test -f "$archive" && test -f "$manifest"
-          printf '%s  %s\n' 037a380265d85ae0c42535141572cb034b6a5602c94cd69eb4c7b37a50c7adc6 "$archive" | sha256sum -c -
+          printf '%s  %s\n' 311c1bc6fe4034a48346c33a1ffef1921374481926fd880a1a5bf3d759edcb80 "$archive" | sha256sum -c -
           python3 - <<'PY'
           import json,hashlib,tarfile
           from pathlib import Path
           root=Path('dexa-superapp/web/1.6.64')
           m=json.loads((root/'manifest.json').read_text())
-          assert m['canonical_private_commit']=='e8ea69d7992bdd5cc500c4d0578858c1dd4e45b7'
+          assert m['canonical_private_commit']=='820fdcfc2833a14fe4471ab5be6a649c2ac91ae0'
           assert m['version']=='web-v1.6.64'
-          assert m['archive_sha256']=='037a380265d85ae0c42535141572cb034b6a5602c94cd69eb4c7b37a50c7adc6'
+          assert m['archive_sha256']=='311c1bc6fe4034a48346c33a1ffef1921374481926fd880a1a5bf3d759edcb80'
           assert m['permissions_items']==74
           names={'auto-handoff.js','cycle-panel.js','index.html','package.json',
                  'remote-client.js','remote-gateway.mjs','server.mjs',
@@ -103,7 +103,7 @@ jobs:
           req="$1"
           [[ "$req" =~ ^dexa-web1664-20261110-[0-9a-f]{8}$ ]] || exit 41
           archive="/tmp/$req.tgz"
-          sha=037a380265d85ae0c42535141572cb034b6a5602c94cd69eb4c7b37a50c7adc6
+          sha=311c1bc6fe4034a48346c33a1ffef1921374481926fd880a1a5bf3d759edcb80
           [[ "$(sha256sum "$archive" | cut -d' ' -f1)" == "$sha" ]] || exit 42
           [[ -d /home/cfserver/dexa-superapp-build/v7-source/web ]] || exit 43
           release="/home/cfserver/dexa-superapp-build/releases/dexa-dashboard-web-1664-$req"
@@ -252,6 +252,7 @@ jobs:
             !c.includes("invoke(1,'microphone','unmute'"),
             'SPEAKER_FIRST_QUIET_OR_MIC_STAYS_MUTED_MISSING');
           need(c.includes('VOICE_SPEAKER_RECEIVER_PRESERVED') &&
+            c.includes("window[NAME]?.audioMonitor?.('speakerRelease')") &&
             c.includes('VOICE_SPEAKER_MUTED_AT_AUDIO_END') &&
             c.includes('CYCLE_SPEAKER_CLOSED_ON_AUDIO_END') &&
             c.includes("audioMonitor','speakerClose'") &&
