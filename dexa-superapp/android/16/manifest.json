@@ -1,0 +1,17 @@
+{
+  "alignedUnsignedSha256": "9350ecb2a89608dfbe156c8a212cdc27c99b5c193af5a38a4602b3ac79374fad",
+  "canonical_private_commit": "79aa27e354605660d8c3080adfbe6f97b7491557",
+  "owner_install_pending": true,
+  "package": "com.homayounisaghar.dexasuperdashboard",
+  "permissionsByteIdentical": true,
+  "previousSignedSha256": "d6f2af117c9ed3c9fc128e9516b9ce341b269e639b9a91a3f6d40fd9818374c9",
+  "realPhoneInstalled": false,
+  "signatureV2": true,
+  "signatureV3": true,
+  "signedBytes": 62164,
+  "signedSha256": "e86516a4db5a433ca2e3610a80bf0e2e303836af86570994c0da4a7e405a8a26",
+  "signerSha256": "b4e4afbd4450b710544359a01ca397f25b72c8e75ca827344292863509782c81",
+  "unsignedSha256": "9350ecb2a89608dfbe156c8a212cdc27c99b5c193af5a38a4602b3ac79374fad",
+  "versionCode": 16,
+  "versionName": "1.6.0-blind-bridge"
+}
