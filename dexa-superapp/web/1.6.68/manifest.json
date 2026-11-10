@@ -1,0 +1,26 @@
+{
+  "version": "web-v1.6.68",
+  "archive_sha256": "0b7ca0df1845f9262dff984bf69ffd0b7cb15fd6ef7dcbb61465bf9777678a7c",
+  "files": {
+    "auto-handoff.js": "c27e6e9562e22e652d1a0a354f7fc7134c8c1f35642d2447f7011e0f2a5b80b8",
+    "cycle-panel.js": "994546fdd2f0d5d9c8ff1a9240d61f39fd3a9d8e5bd1e36933d0a4f9ee12bd5b",
+    "index.html": "6759fbdbeb04d22e53eb939745b552bbef58d47fbe74c34f16fb6ee8160aca2f",
+    "package.json": "8b15bfdb18eb36af2dddcacb5af04f1c9e23466ccbbfe495f1399e022d670c08",
+    "remote-client.js": "17047e44caa49b74eb5d568a0bb091086ae0de51858928453fd8e7721f926c36",
+    "remote-gateway.mjs": "22a961bd7a719aba1baac3d4c41b418ac7434b71f62677ec33260cc7c07dc245",
+    "server.mjs": "f974bed6f756ad690c9d2c529e1a87c7e693e899feb59da708b5f556f46df6a3",
+    "theme-client.js": "c1294b9e71aa4882ba4e7f11561c7c7298560701b8a1477110310469069c2a8c",
+    "theme.css": "515e037cedac885733a25eaff96bd1963242aa92b34c073fbdb1b626d7e04c72",
+    "toolbar.html": "b85fae2d0ace26f11622e7cba26b04eee7c23bd4e467c147bf08787c99759475"
+  },
+  "android_signed_apk_sha256": "a825818783edf470311e8ce013c4526ae91a7abde99aeabfe527709389712f25",
+  "android_version_code": 18,
+  "android_required_for_wake": true,
+  "public_apk_download": "https://cf-onshape.duckdns.org/dexa-superapp/android-v18.apk",
+  "permissions_items": 74,
+  "dashboard_tabs": 4,
+  "page_agent_revision": "power-slider-v1668",
+  "note": "Native binary Browser2 speaker mute is VERIFIED BEFORE Voice entry ding. First unmute requires fresh post-Send received speech via totalAudioEnergy, RTC RTP synchronization audioLevel or inbound audioLevel, then first saved quiet. After 16s audio-blind from completed text, FAIL and exit Voice, stop outbound mic tracks, wait exit ding 2500ms then restore speaker. Explicit Wake stop polls native inactive. Android v18 unchanged.",
+  "canonical_private_commit": "459c9f2b3d6a5754c4ad03e9568aad97c3437820",
+  "previous_version": "web-v1.6.67"
+}
