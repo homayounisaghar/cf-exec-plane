@@ -1,0 +1,47 @@
+{
+  "android_unchanged": true,
+  "archive_sha256": "b181518a7b77830eaf5a5be222a510b5577ba2de9bc9ed1eede1f0271d53ee4e",
+  "canonical_private_commit": "66ebe83e21e57e3e45422e17a248c3196e67dff2",
+  "dashboard_tabs": 4,
+  "files": {
+    "auto-handoff.js": "c27e6e9562e22e652d1a0a354f7fc7134c8c1f35642d2447f7011e0f2a5b80b8",
+    "cycle-panel.js": "4698669e65ffa597f420b2c141f3ebc98119bd2899a61dc6bef938a01f2d45d8",
+    "index.html": "7477faabd6001a306961840e603e7882998fea3b8d2678fc590d08394398e9e3",
+    "package.json": "8b15bfdb18eb36af2dddcacb5af04f1c9e23466ccbbfe495f1399e022d670c08",
+    "remote-client.js": "17047e44caa49b74eb5d568a0bb091086ae0de51858928453fd8e7721f926c36",
+    "remote-gateway.mjs": "22a961bd7a719aba1baac3d4c41b418ac7434b71f62677ec33260cc7c07dc245",
+    "server.mjs": "47eb64397143d0d625d7dd965e456ce155535fe7cadb87d1db467954e0522c77",
+    "theme-client.js": "c1294b9e71aa4882ba4e7f11561c7c7298560701b8a1477110310469069c2a8c",
+    "theme.css": "515e037cedac885733a25eaff96bd1963242aa92b34c073fbdb1b626d7e04c72",
+    "toolbar.html": "b85fae2d0ace26f11622e7cba26b04eee7c23bd4e467c147bf08787c99759475"
+  },
+  "limitation": "No real authenticated owner-phone Voice completion test has been performed.",
+  "page_agent_revision": "power-slider-v1658",
+  "permissions_items": 74,
+  "scope": "Same Cycle response-mode card editable decimal seconds persisted in existing localStorage, frozen per Cycle and passed to all Voice RTP/HTML monitor arming, rearm, send/mark. New in-page agent revision required.",
+  "tests": {
+    "blind_effort": 23,
+    "blind_remaining": 16,
+    "clear_after_delete": 18,
+    "cycle_sequence": 28,
+    "effort_serialization": 15,
+    "header_delete": 12,
+    "js_syntax": 4,
+    "live_http_telemetry": 11,
+    "quiet_card_persistence": 15,
+    "regression": 11,
+    "send": 13,
+    "stale_inpage_agent_upgrade": 12,
+    "voice_media_events": 6,
+    "voice_stale_html_rtp": 15,
+    "voice_start_per_run": 17,
+    "voice_turn_evidence": 19
+  },
+  "version": "web-v1.6.58",
+  "voice_quiet_default_seconds": 1.5,
+  "voice_quiet_storage_key": "dexa-cycle-panel-settings-v1",
+  "voice_quiet_supported_range_seconds": [
+    0.1,
+    3600
+  ]
+}
