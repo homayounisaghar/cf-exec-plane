@@ -1,0 +1,37 @@
+{
+  "android_unchanged": true,
+  "archive_sha256": "94a08bb29ffb1fc071c7f70e1753dd48c55599c3df69788669d18a9d9a528427",
+  "boundary": "No real authenticated owner-phone Voice user action has been performed.",
+  "canonical_private_commit": "42a92a234a377dc5c30837354c7b30d77013d13d",
+  "dashboard_tabs": 4,
+  "files": {
+    "auto-handoff.js": "c27e6e9562e22e652d1a0a354f7fc7134c8c1f35642d2447f7011e0f2a5b80b8",
+    "cycle-panel.js": "380100c9330d858c66f828b962abbac3e0975f5ad1f27f4f44a50e6aa3e8fb37",
+    "index.html": "46c1696974b49ab84c5b09ec2324ce74ef8a2d4c689ca4f5bdcfc3906ec8132b",
+    "package.json": "8b15bfdb18eb36af2dddcacb5af04f1c9e23466ccbbfe495f1399e022d670c08",
+    "remote-client.js": "17047e44caa49b74eb5d568a0bb091086ae0de51858928453fd8e7721f926c36",
+    "remote-gateway.mjs": "22a961bd7a719aba1baac3d4c41b418ac7434b71f62677ec33260cc7c07dc245",
+    "server.mjs": "344a153aee6666d2c96375c304d778dd54004bf9b492ec75e7349a19286be961",
+    "theme-client.js": "c1294b9e71aa4882ba4e7f11561c7c7298560701b8a1477110310469069c2a8c",
+    "theme.css": "515e037cedac885733a25eaff96bd1963242aa92b34c073fbdb1b626d7e04c72",
+    "toolbar.html": "b85fae2d0ace26f11622e7cba26b04eee7c23bd4e467c147bf08787c99759475"
+  },
+  "permissions_items": 74,
+  "scope": "Voice already-active detection, one-shot Send per Cycle, post-Send HTML media natural end plus 2.5s continuous quiet, RTP fallback, manually closed Voice handling, no session-close gate.",
+  "tests": {
+    "blind_effort": 23,
+    "clear_after_delete": 18,
+    "cycle_sequence": 24,
+    "effort_serialization": 15,
+    "header_delete": 12,
+    "live_http_telemetry": 11,
+    "regression": 11,
+    "remaining": 16,
+    "send": 13,
+    "syntax": 4,
+    "voice_media_events": 6,
+    "voice_start_per_run": 17,
+    "voice_turn_evidence": 14
+  },
+  "version": "web-v1.6.55"
+}
