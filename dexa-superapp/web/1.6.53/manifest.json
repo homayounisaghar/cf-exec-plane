@@ -1,0 +1,32 @@
+{
+  "android_unchanged": true,
+  "archive_sha256": "8b42e5841afd357601e2b1bc32366104d9a78e36fe7a69e07e794fa833977c4a",
+  "canonical_private_commit": "aac04d37fb6392ef92bc31bb394a9fe13cf92f40",
+  "dashboard_tabs": 4,
+  "files": {
+    "auto-handoff.js": "c27e6e9562e22e652d1a0a354f7fc7134c8c1f35642d2447f7011e0f2a5b80b8",
+    "cycle-panel.js": "14b7b06085fd7c9e7042c7471837f75bf77af277e29d6d982c64ed57aee79b55",
+    "index.html": "073f4d3031d88ba6eeb9b409c65d8b62ad6205cc55eaf62de4548e1776238388",
+    "package.json": "8b15bfdb18eb36af2dddcacb5af04f1c9e23466ccbbfe495f1399e022d670c08",
+    "remote-client.js": "17047e44caa49b74eb5d568a0bb091086ae0de51858928453fd8e7721f926c36",
+    "remote-gateway.mjs": "22a961bd7a719aba1baac3d4c41b418ac7434b71f62677ec33260cc7c07dc245",
+    "server.mjs": "f332b12b118f8f91490de066f7687e7702ac65f11949a73aa3b6af4691a9a313",
+    "theme-client.js": "c1294b9e71aa4882ba4e7f11561c7c7298560701b8a1477110310469069c2a8c",
+    "theme.css": "515e037cedac885733a25eaff96bd1963242aa92b34c073fbdb1b626d7e04c72",
+    "toolbar.html": "b85fae2d0ace26f11622e7cba26b04eee7c23bd4e467c147bf08787c99759475"
+  },
+  "limitation": "No real owner-phone authenticated ChatGPT destructive acceptance test performed; DOM-level attachment buttons are best effort.",
+  "permissions_items": 74,
+  "scope": "After any shared header-title delete attempt clear all draft composers, file inputs and attachment chips in the same WebView; no draft content checks or timers; remove independent early-clear action.",
+  "tests": {
+    "blind_other": 16,
+    "clear_entire_draft_after_shared_delete": 18,
+    "cycle_sequence": 24,
+    "effort": 23,
+    "header_delete": 12,
+    "js_syntax": 3,
+    "regression": 11,
+    "send": 13
+  },
+  "version": "web-v1.6.53"
+}
