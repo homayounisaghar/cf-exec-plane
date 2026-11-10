@@ -1,0 +1,27 @@
+{
+  "android_version_unchanged": 15,
+  "archive_sha256": "9a16ea3d99253855b30d6d46e8d0de645a0b687b67bce297e3eb683145f7aeaa",
+  "canonical_private_commit": "1fb709f849e7bfada7d3430b20ee3649c30cd222",
+  "dashboard_tabs": 4,
+  "files": {
+    "auto-handoff.js": "c27e6e9562e22e652d1a0a354f7fc7134c8c1f35642d2447f7011e0f2a5b80b8",
+    "cycle-panel.js": "3ae3f8d37c1093574139f2243a206e51a64d94514f8b83fcf4934f7e6f254a09",
+    "index.html": "715cf687098b67ae35e83cb43e8251923adf1e087b65337dc4b89792d3488c88",
+    "package.json": "8b15bfdb18eb36af2dddcacb5af04f1c9e23466ccbbfe495f1399e022d670c08",
+    "remote-client.js": "255006a079a0794d7b558b61fb83c928f95de45e9220406fce853cadce237551",
+    "remote-gateway.mjs": "22a961bd7a719aba1baac3d4c41b418ac7434b71f62677ec33260cc7c07dc245",
+    "server.mjs": "e7f12a47e1b125302ba9e6839a254bb02ec7c30fabd7d351c9daf5bac473eb70",
+    "theme-client.js": "c1294b9e71aa4882ba4e7f11561c7c7298560701b8a1477110310469069c2a8c",
+    "theme.css": "515e037cedac885733a25eaff96bd1963242aa92b34c073fbdb1b626d7e04c72",
+    "toolbar.html": "b85fae2d0ace26f11622e7cba26b04eee7c23bd4e467c147bf08787c99759475"
+  },
+  "limitations": "Confirmed Delete button click is telemetry evidence, not an independent ChatGPT history/database audit. Owner-phone acceptance is outstanding.",
+  "permissions_items": 74,
+  "scope": "One shared header-title Delete UI for Development, Cycle beginning and Cycle ending; Chat/Work without conversation title is NEW_CHAT. No route or sidebar in Delete UI.",
+  "tests": {
+    "shared_header_delete_vm": 12,
+    "syntax": 2,
+    "voice_readaloud_contract": 19
+  },
+  "version": "web-v1.6.49"
+}
