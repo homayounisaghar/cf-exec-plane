@@ -1,0 +1,38 @@
+{
+  "android_unchanged": true,
+  "archive_sha256": "bf2500db69eb8580e77a85bf70ef319c7cb61e6b40af1dccf30bbe9ca8726826",
+  "canonical_private_commit": "d65fa5541c1f77382f5548456462b3256b6310b1",
+  "dashboard_tabs": 4,
+  "files": {
+    "auto-handoff.js": "c27e6e9562e22e652d1a0a354f7fc7134c8c1f35642d2447f7011e0f2a5b80b8",
+    "cycle-panel.js": "211a24f482acf17d9dee690975add9e7f86b6f9a6826241ff14867cdb29659a2",
+    "index.html": "46c1696974b49ab84c5b09ec2324ce74ef8a2d4c689ca4f5bdcfc3906ec8132b",
+    "package.json": "8b15bfdb18eb36af2dddcacb5af04f1c9e23466ccbbfe495f1399e022d670c08",
+    "remote-client.js": "17047e44caa49b74eb5d568a0bb091086ae0de51858928453fd8e7721f926c36",
+    "remote-gateway.mjs": "22a961bd7a719aba1baac3d4c41b418ac7434b71f62677ec33260cc7c07dc245",
+    "server.mjs": "efbf316008bfaebd0f1cb47bf28ebf846200d9aae30187807d6b6c668ce6ca4d",
+    "theme-client.js": "c1294b9e71aa4882ba4e7f11561c7c7298560701b8a1477110310469069c2a8c",
+    "theme.css": "515e037cedac885733a25eaff96bd1963242aa92b34c073fbdb1b626d7e04c72",
+    "toolbar.html": "b85fae2d0ace26f11622e7cba26b04eee7c23bd4e467c147bf08787c99759475"
+  },
+  "limitation": "No real authenticated owner-phone Voice turn acceptance test after this deployment.",
+  "permissions_items": 74,
+  "scope": "Only current-turn HTML playback can veto RTP speech-to-quiet; stale pre-Send HTML ignored; manual closure independent; actual media/RTP quiet 1500ms; real flow stop preserves observed quiet.",
+  "tests": {
+    "blind_effort": 23,
+    "blind_remaining": 16,
+    "clear_after_delete": 18,
+    "cycle_sequence": 24,
+    "effort_serialization": 15,
+    "header_delete": 12,
+    "js_syntax": 4,
+    "live_http_telemetry": 11,
+    "regression": 11,
+    "send": 13,
+    "voice_media_events": 6,
+    "voice_stale_html_rtp": 15,
+    "voice_start_per_run": 17,
+    "voice_turn_evidence": 14
+  },
+  "version": "web-v1.6.56"
+}
