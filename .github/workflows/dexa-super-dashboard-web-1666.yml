@@ -41,14 +41,14 @@ jobs:
           grep -Fxq "release=web-v1.6.66" "$req"
           [[ "$(wc -l < "$req")" -eq 5 ]] || exit 24
           echo "RELEASE_REQUEST_ID=$request_id" >> "$GITHUB_ENV"
-          archive=dexa-superapp/web/1.6.65/dexa-super-dashboard-web-v1666-source-only.tar.gz
-          manifest=dexa-superapp/web/1.6.65/manifest.json
+          archive=dexa-superapp/web/1.6.66/dexa-super-dashboard-web-v1666-source-only.tar.gz
+          manifest=dexa-superapp/web/1.6.66/manifest.json
           test -f "$archive" && test -f "$manifest"
           printf '%s  %s\n' 1274a8fda7a8d37bda05765e4a6d24877b9fca1263070082b631de8f6afeee28 "$archive" | sha256sum -c -
           python3 - <<'PY'
           import json,hashlib,tarfile
           from pathlib import Path
-          root=Path('dexa-superapp/web/1.6.65')
+          root=Path('dexa-superapp/web/1.6.66')
           m=json.loads((root/'manifest.json').read_text())
           assert m['canonical_private_commit']=='4f2f65a5067bbb9d1a61d1fae8be01ed806a70cd'
           assert m['version']=='web-v1.6.66'
@@ -95,7 +95,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          archive=dexa-superapp/web/1.6.65/dexa-super-dashboard-web-v1666-source-only.tar.gz
+          archive=dexa-superapp/web/1.6.66/dexa-super-dashboard-web-v1666-source-only.tar.gz
           sshopt=(-i "$DEXA_SSH_DIR/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$DEXA_SSH_DIR/known_hosts")
           scp "${sshopt[@]}" -P "$DEXA_SSH_PORT" "$archive" "${VPS_SSH_USER}@${VPS_HOST}:/tmp/${RELEASE_REQUEST_ID}.tgz"
           ssh "${sshopt[@]}" -p "$DEXA_SSH_PORT" "${VPS_SSH_USER}@${VPS_HOST}" "bash -s -- '$RELEASE_REQUEST_ID'" <<'REMOTE'
@@ -180,16 +180,16 @@ jobs:
           [[ "$result" == web-v1.6.66 ]] || exit 61
           curl -fsS --max-time 10 "$base/cycle-panel.js" -o "$RUNNER_TEMP/live-cycle-panel.js"
           node --check "$RUNNER_TEMP/live-cycle-panel.js"
-          expected=$(node -e 'const fs=require("fs");const m=JSON.parse(fs.readFileSync("dexa-superapp/web/1.6.65/manifest.json"));console.log(m.files["cycle-panel.js"])')
+          expected=$(node -e 'const fs=require("fs");const m=JSON.parse(fs.readFileSync("dexa-superapp/web/1.6.66/manifest.json"));console.log(m.files["cycle-panel.js"])')
           actual=$(sha256sum "$RUNNER_TEMP/live-cycle-panel.js" | cut -d' ' -f1)
           [[ "$actual" == "$expected" ]] || exit 62
           curl -fsS --max-time 10 "$base/remote-client.js" -o "$RUNNER_TEMP/live-remote-client.js"
           node --check "$RUNNER_TEMP/live-remote-client.js"
-          expectedRemote=$(node -e 'const fs=require("fs");const m=JSON.parse(fs.readFileSync("dexa-superapp/web/1.6.65/manifest.json"));console.log(m.files["remote-client.js"])')
+          expectedRemote=$(node -e 'const fs=require("fs");const m=JSON.parse(fs.readFileSync("dexa-superapp/web/1.6.66/manifest.json"));console.log(m.files["remote-client.js"])')
           actualRemote=$(sha256sum "$RUNNER_TEMP/live-remote-client.js" | cut -d' ' -f1)
           [[ "$actualRemote" == "$expectedRemote" ]] || exit 63
           curl -fsS --max-time 10 "$base/" -o "$RUNNER_TEMP/live-dashboard-index.html"
-          expectedIndex=$(node -e 'const fs=require("fs");const m=JSON.parse(fs.readFileSync("dexa-superapp/web/1.6.65/manifest.json"));console.log(m.files["index.html"])')
+          expectedIndex=$(node -e 'const fs=require("fs");const m=JSON.parse(fs.readFileSync("dexa-superapp/web/1.6.66/manifest.json"));console.log(m.files["index.html"])')
           actualIndex=$(sha256sum "$RUNNER_TEMP/live-dashboard-index.html" | cut -d' ' -f1)
           [[ "$actualIndex" == "$expectedIndex" ]] || exit 64
 
