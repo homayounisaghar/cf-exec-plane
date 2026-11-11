@@ -1,0 +1,6 @@
+request_id=dexa-conversation-turn-v1-20261111-57b9ebb9
+source_commit=2cd2ff1b13e884dfb799424197e102f99478d1a2
+archive_sha256=57b9ebb9668096ecac2923f765cb0cb16a341fc4d384d9d1d42d257350bbc8e0
+expected_engine_server_sha256=fdb185a6a60633a7e4b5f85e99512ae225880d4ab35ee55617ecb2f242f300c2
+expected_old_web_version=web-v1.6.75
+release=dexa-conversation-engine-v1
