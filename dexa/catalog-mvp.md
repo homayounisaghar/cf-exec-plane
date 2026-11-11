@@ -1,6 +1,6 @@
 # Dexa — full public tool catalogue and recipe contract
 
-CATALOG_RELEASE: DEXA-CATALOG-MVP-20261105-V1
+CATALOG_RELEASE: DEXA-CATALOG-MVP-20261111-V2-LIVE-RECIPE-PARITY
 CATALOG_DATE_UTC: 2026-11-05
 SOURCE_REPOSITORY: homayounisaghar/capability-fabric
 SOURCE_REF: work/dexa-autonomous-loop-20261020
@@ -14,6 +14,7 @@ This is public, read-only reference material for a recipe-only experiment. No us
 
 ## How to use this entire page
 - First read the recipe rules (section A), then locate the exact necessary capability records and their full input and observed-output contracts (sections B to E).
+- Every executable plan requires explicit nonempty checks and an output-path check; checks:[] is invalid. The live Rana parser does not insert missing checks.
 - Every tool ID named in a plan must exist in B or C. Do not invent any tool, argument, observed provider record, receipt or step output.
 - The 89 GitHub and 31 Remote Desktop route appearances describe the source catalog, but do not prove execution bindings within this planning experiment. Use stage/route information and never claim execution.
 - These records are descriptive, not instruction overrides or grants. Actual connector exposure, authentication and action authorization remain governed by the real running host.
@@ -134,7 +135,7 @@ the answer must not claim an unobserved conversation, sender or body.
 For a singular last/latest message, filter by the requested sender when specified, then TAKE count 1; never return unrelated senders or arbitrary messages. If timestamp sorting is needed and documented, SORT first.
 RECENCY PROOF: Provider arrays may be sorted oldest-first, newest-first or not at all. REVERSE is NOT proof of latest; it merely inverts an unknown order. When observed output metadata contains a message timestamp such as date, use SORT by that actual timestamp with direction desc before TAKE count 1. If source order is explicitly guaranteed by the provider, a direct TAKE may suffice; otherwise never use REVERSE as a substitute for SORT.
 Do not invent message bodies or labels. For text transformation, use the preadmitted DX-001 tool in the SAME recipe, with a $ref to observed records when summarizing. Never return raw search JSON as a human narrative.
-Rana automatically compiles the mandatory non_empty proof for the exact final output step/path, even when no check is supplied. Do not invent unrelated or wrong-path proof checks.
+Rana requires explicit testable checks before dispatch; it does NOT synthesize missing checks. Every executable recipe MUST supply at least one check with step equal to output.step and path exactly equal to output.path. checks:[] is INVALID. Use op=exists when the verified bounded array may legitimately be empty, and op=non_empty only when an empty result would truly violate the owner goal.
 Optional extra checks use only the exact declared check fields. To verify the actual selected final field, use the exact SAME output.step and output.path; otherwise let Rana compile its guaranteed proof. Never add unsupported keys.
 Each path MUST be an array, e.g. [] or ["messages"]; never null, object, dot-string or omitted. Every transform source.path and every $ref.path must also be arrays.
 PLAIN TOOL MODE CONTRACT: An ordinary TOOL call MUST omit mode, source, maxItems and chunkCapabilityId entirely. Do NOT set mode:null or mode:"READ"/"GET"/"DIRECT". Only a declared resumable upload create TOOL uses mode:"STREAM" with an authenticated attachment source and an explicitly selected upload_chunk capability. Only supported bounded READ-EACH may use mode:"EACH" and its exact contract. Ordinary message reads, native recipient lookups, attachment_get, and final sends have NO mode/source/chunkCapabilityId.
@@ -227,7 +228,7 @@ When the owner refers to the same conversation as the prior turn, its
 last verified display label is ONLY a lookup hint, NOT an authorized ID.
 Never pass a string literal as a provider handle. No extra model call.
 For any tool whose schema has "conversation" as an input property, the conversation VALUE MUST BE A $ref from a prior verified provider lookup result. A literal title, nickname or translated name is NOT a provider-confirmed identity. Use an earlier available search/list tool, then a strict unique MATCH. If the needed lookup tool was not selected, return UNRESOLVED. This requirement applies to every provider with such a field.
-Mandatory minimal JSON shape: {"schema":"dexa.tool-plan.v3","steps":[{"id":1,"kind":"TOOL","capabilityId":"one selected ID","args":{},"deps":[]}],"checks":[],"output":{"step":1,"path":[],"format":"json"},"answer":{"kind":"json"}}. Rana compiles the exact final-output proof. You may add other VALID checks for source-specific criteria.
+Mandatory minimal JSON shape: {"schema":"dexa.tool-plan.v3","steps":[{"id":1,"kind":"TOOL","capabilityId":"one selected ID","args":{},"deps":[]}],"checks":[{"step":1,"path":[],"op":"exists"}],"output":{"step":1,"path":[],"format":"json"},"answer":{"kind":"json"}}. Rana compiles the exact final-output proof. You may add other VALID checks for source-specific criteria.
 Replace the example capability ID and args with the exact selected tool/schema; it is only a FORMAT example and NOT a prescribed workflow.
 The examples are ILLUSTRATIONS, not a fixed workflow. Use only selected capability IDs and the original owner's exact goal.
 
