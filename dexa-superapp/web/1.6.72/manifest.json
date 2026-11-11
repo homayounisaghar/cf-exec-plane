@@ -1,0 +1,31 @@
+{
+  "version": "web-v1.6.72",
+  "archive_sha256": "ea566857b1b22c042849086df022f664ab43feab85e7af6177fedcbba8513dd1",
+  "files": {
+    "auto-handoff.js": "c27e6e9562e22e652d1a0a354f7fc7134c8c1f35642d2447f7011e0f2a5b80b8",
+    "cycle-panel.js": "37d608422eeeaacf987558caccc04ba7727fbc5dc2037af26eb03b2c4726e4a8",
+    "index.html": "6759fbdbeb04d22e53eb939745b552bbef58d47fbe74c34f16fb6ee8160aca2f",
+    "package.json": "8b15bfdb18eb36af2dddcacb5af04f1c9e23466ccbbfe495f1399e022d670c08",
+    "remote-client.js": "17047e44caa49b74eb5d568a0bb091086ae0de51858928453fd8e7721f926c36",
+    "remote-gateway.mjs": "22a961bd7a719aba1baac3d4c41b418ac7434b71f62677ec33260cc7c07dc245",
+    "server.mjs": "57c8007436253babf8afca833bcb8c70205d0b0cdeb3028dd76b1f1d3227155c",
+    "theme-client.js": "c1294b9e71aa4882ba4e7f11561c7c7298560701b8a1477110310469069c2a8c",
+    "theme.css": "515e037cedac885733a25eaff96bd1963242aa92b34c073fbdb1b626d7e04c72",
+    "toolbar.html": "b85fae2d0ace26f11622e7cba26b04eee7c23bd4e467c147bf08787c99759475",
+    "dexa-integration.mjs": "38b502f41d13a7dbb5f4fd42e9332ecf7f34d1c296b2c87108b50d1e0af275c9",
+    "catalog-mvp.md": "0e5ccb37dfbde606d6345460bc4c990bfa9219c6ed8c7dc65423e737da3cf57d"
+  },
+  "android_signed_apk_sha256": "a825818783edf470311e8ce013c4526ae91a7abde99aeabfe527709389712f25",
+  "android_version_code": 18,
+  "android_required_for_wake": true,
+  "public_apk_download": "https://cf-onshape.duckdns.org/dexa-superapp/android-v18.apk",
+  "permissions_items": 74,
+  "dashboard_tabs": 4,
+  "page_agent_revision": "power-slider-v1672",
+  "note": "Web-only Android Cloudflare path recovery: direct same-owner HTTPS CORS-gated Dexa API; secure one-time second-device invite issued only to existing paired owner, distinct 256-bit tokens, no engine or Android changes; no Delete/Effort time limits.",
+  "canonical_private_commit": "fdb0eabc6bfb3166439f2ec110e681b3b3400f68",
+  "engine_private_source_commit": "6dfbbbf3720727e33d104a022d57b09807ad4c34",
+  "engine_original_sha256": "d1a76fe7ddcbd41e3baf75de74c21b0fb9f35912b1985aa0b2e22e20d4a3cc76",
+  "engine_candidate_sha256": "fdb185a6a60633a7e4b5f85e99512ae225880d4ab35ee55617ecb2f242f300c2",
+  "previous_version": "web-v1.6.71"
+}

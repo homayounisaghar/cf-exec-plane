@@ -1,0 +1,115 @@
+name: Dexa Web 1672 Owner Pairing Recovery
+'on':
+  push:
+    branches: [main]
+    paths:
+      - 'server-bootstrap/control/dexa-super-dashboard-web/dexa-web1672-*.request'
+permissions:
+  contents: read
+concurrency:
+  group: dexa-super-dashboard-web-v1672-scoped
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Admit one immutable owner web request and pinned source only
+        shell: bash
+        run: |
+          set -euo pipefail
+          changes=$(git diff --name-status "$GITHUB_SHA^" "$GITHUB_SHA")
+          expected=$'A\tserver-bootstrap/control/dexa-super-dashboard-web/dexa-web1672-20261111-ea566857.request'
+          [[ "$changes" == "$expected" ]] || exit 21
+          req=server-bootstrap/control/dexa-super-dashboard-web/dexa-web1672-20261111-ea566857.request
+          grep -Fxq 'request_id=dexa-web1672-20261111-ea566857' "$req"
+          grep -Fxq 'source_commit=fdb0eabc6bfb3166439f2ec110e681b3b3400f68' "$req"
+          grep -Fxq 'archive_sha256=ea566857b1b22c042849086df022f664ab43feab85e7af6177fedcbba8513dd1' "$req"
+          grep -Fxq 'expected_old_web_version=web-v1.6.71' "$req"
+          grep -Fxq 'release=web-v1.6.72' "$req"
+          [[ "$(wc -l < "$req")" == 5 ]] || exit 22
+          archive=dexa-superapp/web/1.6.72/dexa-super-dashboard-web-v1672-source-only.tar.gz
+          manifest=dexa-superapp/web/1.6.72/manifest.json
+          script=qualification/dexa-superapp-v1672/deploy-superapp-v1672.sh
+          test -f "$archive" && test -f "$manifest" && test -f "$script"
+          printf '%s  %s\n' ea566857b1b22c042849086df022f664ab43feab85e7af6177fedcbba8513dd1 "$archive" | sha256sum -c -
+          [[ "$(git hash-object "$script")" == 8dc92f1132c1a2c38716a251882595fbecc5bec2 ]] || exit 23
+          bash -n "$script"
+          python3 - <<'PY'
+          from pathlib import Path
+          import tarfile,json,hashlib
+          root=Path('dexa-superapp/web/1.6.72')
+          m=json.loads((root/'manifest.json').read_text())
+          assert m['version']=='web-v1.6.72'
+          assert m['canonical_private_commit']=='fdb0eabc6bfb3166439f2ec110e681b3b3400f68'
+          assert m['previous_version']=='web-v1.6.71'
+          assert m['archive_sha256']=='ea566857b1b22c042849086df022f664ab43feab85e7af6177fedcbba8513dd1'
+          assert m['dashboard_tabs']==4 and m['permissions_items']==74 and m['android_version_code']==18
+          expected={'auto-handoff.js','cycle-panel.js','index.html','package.json','remote-client.js','remote-gateway.mjs','server.mjs','theme-client.js','theme.css','toolbar.html','dexa-integration.mjs','catalog-mvp.md'}
+          assert set(m['files'])==expected
+          with tarfile.open(root/'dexa-super-dashboard-web-v1672-source-only.tar.gz') as t:
+           parts=t.getmembers()
+           assert len(parts)==12
+           assert all(x.isfile() and not x.issym() and x.name.startswith('web/') for x in parts)
+           assert set(x.name[4:] for x in parts)==expected
+           for x in parts:
+            assert hashlib.sha256(t.extractfile(x).read()).hexdigest()==m['files'][x.name[4:]]
+          print('DEXA_1672_ALL_TWELVE_SOURCE_FILES_PINNED')
+          PY
+          mkdir -p "$RUNNER_TEMP/dexa1672"
+          tar -xzf "$archive" -C "$RUNNER_TEMP/dexa1672"
+          node --check "$RUNNER_TEMP/dexa1672/web/server.mjs"
+          node --check "$RUNNER_TEMP/dexa1672/web/dexa-integration.mjs"
+          node --check "$RUNNER_TEMP/dexa1672/web/cycle-panel.js"
+      - name: Use pinned VPS SSH host and deploy dashboard only
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -n "$VPS_SSH_KEY" && -n "$VPS_HOST" && -n "$VPS_SSH_USER" && -n "$VPS_HOST_KEY" ]] || exit 31
+          [[ "$VPS_SSH_USER" == root || "$VPS_SSH_USER" == cfserver ]] || exit 32
+          port="$VPS_PORT"
+          [[ -n "$port" ]] || port=22
+          [[ "$port" =~ ^[0-9]+$ ]] || exit 33
+          dir="$RUNNER_TEMP/dexa1672ssh"
+          install -d -m 0700 "$dir"
+          printf '%s\n' "$VPS_SSH_KEY" > "$dir/key"
+          chmod 0600 "$dir/key"
+          read -r algorithm material extra <<< "$VPS_HOST_KEY"
+          [[ "$algorithm" == ssh-ed25519 && -n "$material" && -z "$extra" ]] || exit 34
+          printf '%s %s %s\n' "$VPS_HOST" "$algorithm" "$material" > "$dir/known_hosts"
+          printf '[%s]:%s %s %s\n' "$VPS_HOST" "$port" "$algorithm" "$material" >> "$dir/known_hosts"
+          chmod 0600 "$dir/known_hosts"
+          scp -i "$dir/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$dir/known_hosts" -P "$port" dexa-superapp/web/1.6.72/dexa-super-dashboard-web-v1672-source-only.tar.gz "$VPS_SSH_USER@$VPS_HOST:/tmp/dexa-web1672-20261111-ea566857.tgz"
+          scp -i "$dir/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$dir/known_hosts" -P "$port" qualification/dexa-superapp-v1672/deploy-superapp-v1672.sh "$VPS_SSH_USER@$VPS_HOST:/tmp/dexa-web1672-20261111-ea566857.deploy.sh"
+          ssh -i "$dir/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$dir/known_hosts" -p "$port" "$VPS_SSH_USER@$VPS_HOST" 'bash /tmp/dexa-web1672-20261111-ea566857.deploy.sh dexa-web1672-20261111-ea566857'
+      - name: Verify real live public version, hashes and cross-origin preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          base=https://cf-onshape.duckdns.org/dexa-superapp
+          found=0
+          for n in 1 2 3 4 5 6 7 8 9 10;do
+            version=$(curl -fsS --max-time 10 "$base/api/health" | node -p 'JSON.parse(require("fs").readFileSync(0,"utf8")).webVersion' 2>/dev/null || true)
+            if [[ "$version" == web-v1.6.72 ]];then found=1;break;fi
+            sleep 2
+          done
+          [[ "$found" == 1 ]] || exit 61
+          curl -fsS --max-time 12 "$base/cycle-panel.js" -o "$RUNNER_TEMP/served.js"
+          printf '%s  %s\n' 37d608422eeeaacf987558caccc04ba7727fbc5dc2037af26eb03b2c4726e4a8 "$RUNNER_TEMP/served.js" | sha256sum -c -
+          curl -fsS --max-time 12 "$base/api/config" | node -e 'let s="";process.stdin.on("data",b=>s+=b).on("end",()=>{let j=JSON.parse(s);if(j.build!=="web-v1.6.72"||j.permissions?.length!==74||j.dashboards?.length!==4)process.exit(2)})'
+          curl -fsS --max-time 12 "$base/api/dexa/pair/status" | node -e 'let s="";process.stdin.on("data",b=>s+=b).on("end",()=>{let j=JSON.parse(s);if(!j.paired||!j.configured)process.exit(2)})'
+          headers="$RUNNER_TEMP/cors.txt"
+          code=$(curl -s -o /dev/null -D "$headers" -w '%{http_code}' --max-time 12 -X OPTIONS "$base/api/dexa/pair" -H 'Origin: https://dexa-cf-worker-canary-20261104.mirkazem.workers.dev' -H 'Access-Control-Request-Method: POST' -H 'Access-Control-Request-Headers: content-type,x-dexa-owner-token')
+          [[ "$code" == 204 ]] || exit 64
+          grep -iq 'access-control-allow-origin: https://dexa-cf-worker-canary-20261104.mirkazem.workers.dev' "$headers"
+          echo DEXA_WEB1672_PUBLIC_VERIFIED
