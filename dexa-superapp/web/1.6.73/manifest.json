@@ -21,7 +21,7 @@
   "public_apk_download": "https://cf-onshape.duckdns.org/dexa-superapp/android-v18.apk",
   "permissions_items": 74,
   "dashboard_tabs": 4,
-  "page_agent_revision": "power-slider-v1673",
+  "page_agent_revision": "power-slider-v1671",
   "note": "Dexa typed recipe contract parity: explicit output-path postconditions in web reference and original engine prompt, per-run GET fetch evidence and fail-closed unfetched recipe admission, sanitized parser-code telemetry; browser1 answer preserved after rejection. Android v18 and unlimited Delete/Effort unchanged.",
   "canonical_private_commit": "67a4a17f3db55044215143294a095d27832c8b20",
   "engine_private_source_commit": "02ab9b5a4d799cfb6ef2692a49f7f512cda4d404",

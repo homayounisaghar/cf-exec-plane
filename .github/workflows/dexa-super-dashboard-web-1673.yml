@@ -66,7 +66,7 @@ jobs:
           assert m['engine_prompt_new_sha256']=='7ca0f7551bc429347545b5f721bd425ce865ff4b698f1a537fbd29212634efbd'
           assert m['android_version_code']==18
           assert m['dashboard_tabs']==4 and m['permissions_items']==74
-          assert m['page_agent_revision']=='power-slider-v1672'
+          assert m['page_agent_revision']=='power-slider-v1671'
           expected={'auto-handoff.js','cycle-panel.js','index.html',
             'package.json','remote-client.js','remote-gateway.mjs',
             'server.mjs','theme-client.js','theme.css','toolbar.html',
