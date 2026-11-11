@@ -1,0 +1,139 @@
+name: Dexa Superapp Conversation Engine V1
+'on':
+  push:
+    branches: [main]
+    paths:
+      - 'server-bootstrap/control/dexa-superapp-conversation-engine-v1/*.request'
+permissions:
+  contents: read
+concurrency:
+  group: dexa-superapp-conversation-engine-v1
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Admit one immutable pinned engine request
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "$GITHUB_SHA^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || exit 21
+          IFS=$'\t' read -r kind filepath <<< "${changes[0]}"
+          [[ "$kind" == A && "$filepath" == server-bootstrap/control/dexa-superapp-conversation-engine-v1/dexa-conversation-turn-v1-20261111-*.request ]] || exit 22
+          request_id=$(basename "$filepath" .request)
+          [[ "$request_id" =~ ^dexa-conversation-turn-v1-20261111-[a-f0-9]{8}$ ]] || exit 23
+          [[ "$(wc -l < "$filepath")" -eq 6 ]] || exit 24
+          grep -Fxq "request_id=$request_id" "$filepath"
+          grep -Fxq 'source_commit=2cd2ff1b13e884dfb799424197e102f99478d1a2' "$filepath"
+          grep -Fxq 'archive_sha256=57b9ebb9668096ecac2923f765cb0cb16a341fc4d384d9d1d42d257350bbc8e0' "$filepath"
+          grep -Fxq 'expected_engine_server_sha256=fdb185a6a60633a7e4b5f85e99512ae225880d4ab35ee55617ecb2f242f300c2' "$filepath"
+          grep -Fxq 'expected_old_web_version=web-v1.6.75' "$filepath"
+          grep -Fxq 'release=dexa-conversation-engine-v1' "$filepath"
+          echo "RELEASE_REQUEST_ID=$request_id" >> "$GITHUB_ENV"
+          root=dexa-superapp/engine/conversation-v1
+          archive="$root/dexa-superapp-conversation-engine-v1-source-only.tar.gz"
+          manifest="$root/manifest.json"
+          script=qualification/dexa-superapp-conversation-engine-v1/deploy.sh
+          test -f "$archive" && test -f "$manifest" && test -f "$script"
+          printf '%s  %s\n' 57b9ebb9668096ecac2923f765cb0cb16a341fc4d384d9d1d42d257350bbc8e0 "$archive" | sha256sum -c -
+          printf '%s  %s\n' 7da949db925287d02ce459172ea313cfbc3e74834cac62a267e1263690b41e71 "$script" | sha256sum -c -
+          bash -n "$script"
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,hashlib,tarfile
+          root=Path('dexa-superapp/engine/conversation-v1')
+          m=json.loads((root/'manifest.json').read_text())
+          assert m['schema']=='dexa.superapp.conversation-engine-release.v1'
+          assert m['canonicalPrivateCommit']=='2cd2ff1b13e884dfb799424197e102f99478d1a2'
+          assert m['release']=='dexa-conversation-engine-v1'
+          assert m['webVersion']=='web-v1.6.76' and m['previousWebVersion']=='web-v1.6.75'
+          assert m['archiveSha256']=='57b9ebb9668096ecac2923f765cb0cb16a341fc4d384d9d1d42d257350bbc8e0'
+          assert m['historyLimitDefault']==30 and m['historyLimitMin']==1 and m['historyLimitMax']==100
+          assert m['originalRanaParserUntouched'] and m['originalRanaExecutorUntouched']
+          assert m['androidVersion']==18 and m['dashboardTabs']==4 and m['permissions']==74
+          assert m['androidApkSha256']=='a825818783edf470311e8ce013c4526ae91a7abde99aeabfe527709389712f25'
+          expected={'engine/server.mjs','engine/index.html','engine/dexa_superapp_turn_memory_v1.mjs',
+            'sync/publish-catalog-history.py'}|{'web/'+n for n in (
+              'auto-handoff.js','cycle-panel.js','index.html','package.json',
+              'remote-client.js','remote-gateway.mjs','server.mjs','theme-client.js',
+              'theme.css','toolbar.html','dexa-integration.mjs','catalog-mvp.md')}
+          assert set(m['files'])==expected
+          with tarfile.open(root/'dexa-superapp-conversation-engine-v1-source-only.tar.gz') as tf:
+            items=tf.getmembers()
+            assert len(items)==16 and all(x.isfile() and not x.issym() for x in items)
+            assert {x.name for x in items}==expected
+            for x in items:
+              assert hashlib.sha256(tf.extractfile(x).read()).hexdigest()==m['files'][x.name]
+          print('DEXA_CONVERSATION_ENGINE_16_FILES_PINNED_AND_VERIFIED')
+          PY
+          mkdir -p "$RUNNER_TEMP/dexa-conversation-engine-v1"
+          tar -xzf "$archive" -C "$RUNNER_TEMP/dexa-conversation-engine-v1"
+          node --check "$RUNNER_TEMP/dexa-conversation-engine-v1/engine/server.mjs"
+          node --check "$RUNNER_TEMP/dexa-conversation-engine-v1/engine/dexa_superapp_turn_memory_v1.mjs"
+          node --check "$RUNNER_TEMP/dexa-conversation-engine-v1/web/cycle-panel.js"
+          node --check "$RUNNER_TEMP/dexa-conversation-engine-v1/web/dexa-integration.mjs"
+          node --check "$RUNNER_TEMP/dexa-conversation-engine-v1/web/server.mjs"
+          python3 -m py_compile "$RUNNER_TEMP/dexa-conversation-engine-v1/sync/publish-catalog-history.py"
+      - name: Prepare existing SSH identity and pinned host
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -n "$VPS_SSH_KEY" && -n "$VPS_HOST" && -n "$VPS_SSH_USER" && -n "$VPS_HOST_KEY" ]] || exit 31
+          [[ "$VPS_SSH_USER" == cfserver || "$VPS_SSH_USER" == root ]] || exit 32
+          port="${VPS_PORT:-22}"
+          [[ "$port" =~ ^[0-9]+$ ]] || exit 33
+          dir="$RUNNER_TEMP/dexa-conversation-ssh"
+          install -d -m 0700 "$dir"
+          printf '%s\n' "$VPS_SSH_KEY" > "$dir/key"
+          chmod 0600 "$dir/key"
+          read -r algorithm material extra <<< "$VPS_HOST_KEY"
+          [[ "$algorithm" == ssh-ed25519 && -n "$material" && -z "${extra:-}" ]] || exit 34
+          printf '%s %s %s\n' "$VPS_HOST" "$algorithm" "$material" > "$dir/known_hosts"
+          printf '[%s]:%s %s %s\n' "$VPS_HOST" "$port" "$algorithm" "$material" >> "$dir/known_hosts"
+          chmod 0600 "$dir/known_hosts"
+          echo "DEXA_SSH_DIR=$dir" >> "$GITHUB_ENV"
+          echo "DEXA_SSH_PORT=$port" >> "$GITHUB_ENV"
+      - name: Guarded restart of only Dexa engine and web publisher
+        shell: bash
+        run: |
+          set -euo pipefail
+          root=dexa-superapp/engine/conversation-v1
+          script=qualification/dexa-superapp-conversation-engine-v1/deploy.sh
+          archive="$root/dexa-superapp-conversation-engine-v1-source-only.tar.gz"
+          manifest="$root/manifest.json"
+          opts=(-i "$DEXA_SSH_DIR/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$DEXA_SSH_DIR/known_hosts")
+          scp "${opts[@]}" -P "$DEXA_SSH_PORT" "$archive" "$VPS_SSH_USER@$VPS_HOST:/tmp/$RELEASE_REQUEST_ID.tgz"
+          scp "${opts[@]}" -P "$DEXA_SSH_PORT" "$manifest" "$VPS_SSH_USER@$VPS_HOST:/tmp/$RELEASE_REQUEST_ID.manifest.json"
+          scp "${opts[@]}" -P "$DEXA_SSH_PORT" "$script" "$VPS_SSH_USER@$VPS_HOST:/tmp/$RELEASE_REQUEST_ID.deploy.sh"
+          ssh "${opts[@]}" -p "$DEXA_SSH_PORT" "$VPS_SSH_USER@$VPS_HOST" "bash /tmp/$RELEASE_REQUEST_ID.deploy.sh '$RELEASE_REQUEST_ID'"
+      - name: Verify live canonical and Android Worker versions
+        shell: bash
+        run: |
+          set -euo pipefail
+          main=https://cf-onshape.duckdns.org/dexa-superapp
+          worker=https://dexa-cf-worker-canary-20261104.mirkazem.workers.dev/dexa-superapp
+          ok=0
+          for n in 1 2 3 4 5 6 7 8 9 10;do
+            v=$(curl -fsS --max-time 8 "$main/api/health" | node -p 'JSON.parse(require("fs").readFileSync(0,"utf8")).webVersion' 2>/dev/null || true)
+            if [[ "$v" == web-v1.6.76 ]];then ok=1;break;fi
+            sleep 2
+          done
+          [[ "$ok" == 1 ]] || exit 61
+          curl -fsS --max-time 12 "$worker/api/health" | node -e 'let b="";process.stdin.on("data",x=>b+=x).on("end",()=>{let d=JSON.parse(b);if(d.webVersion!=="web-v1.6.76")process.exit(1)})'
+          curl -fsS --max-time 12 "$main/cycle-panel.js" | sha256sum | grep -Fq '8d806dbb78641e6a3d91bccb23726a84ecbc4a2c83ace42187841a760ae90e1c'
+          curl -fsS --max-time 12 "$worker/cycle-panel.js" | sha256sum | grep -Fq '8d806dbb78641e6a3d91bccb23726a84ecbc4a2c83ace42187841a760ae90e1c'
+          curl -fsS --max-time 12 "$main/api/config" | node -e 'let b="";process.stdin.on("data",x=>b+=x).on("end",()=>{let d=JSON.parse(b);if(d.build!=="web-v1.6.76"||d.permissions?.length!==74||d.dashboards?.length!==4)process.exit(1)})'
+          curl -fsS --max-time 12 "$main/api/dexa/pair/status" | node -e 'let b="";process.stdin.on("data",x=>b+=x).on("end",()=>{let d=JSON.parse(b);if(!d.paired||!d.secondDevicePaired)process.exit(1)})'
+          echo DEXA_CONVERSATION_ENGINE_V1_PUBLIC_VERIFIED
