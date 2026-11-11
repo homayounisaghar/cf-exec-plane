@@ -13,7 +13,7 @@ expected_archive="57b9ebb9668096ecac2923f765cb0cb16a341fc4d384d9d1d42d257350bbc8
 engine="/var/lib/capability-fabric/paa-remote/dexa-mvp"
 web_old="$base/releases/dexa-dashboard-web-1675-dexa-web1675-20261111-296f641f/web"
 private="/home/cfserver/.config/dexa-integration"
-stage="$base/releases/dexa-conversation-engine-v1-$req"
+stage="$base/dexa-conversation-engine-live-$req"
 override="/home/cfserver/.config/systemd/user/dexa-super-dashboard-v6.service.d/99-web-v1676.conf"
 hash(){ sha256sum "$1" | cut -d' ' -f1; }
 [[ -f "$archive" && -f "$manifest" ]] || exit 42

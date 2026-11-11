@@ -48,7 +48,7 @@ jobs:
           script=qualification/dexa-superapp-conversation-engine-v1/deploy.sh
           test -f "$archive" && test -f "$manifest" && test -f "$script"
           printf '%s  %s\n' 57b9ebb9668096ecac2923f765cb0cb16a341fc4d384d9d1d42d257350bbc8e0 "$archive" | sha256sum -c -
-          printf '%s  %s\n' 7da949db925287d02ce459172ea313cfbc3e74834cac62a267e1263690b41e71 "$script" | sha256sum -c -
+          printf '%s  %s\n' 1aeb1468f185bace3e997ce1f24f88e2ca450efe4270fb131ee7c597dc7df9ad "$script" | sha256sum -c -
           bash -n "$script"
           python3 - <<'PY'
           from pathlib import Path
