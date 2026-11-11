@@ -1,0 +1,170 @@
+--- a/server.mjs
++++ b/server.mjs
+@@ -3,7 +3,7 @@
+ import fs from "node:fs";
+ import path from "node:path";
+ import {spawn} from "node:child_process";
+-import {randomUUID, createHash} from "node:crypto";
++import {randomUUID, createHash, timingSafeEqual} from "node:crypto";
+ import {fileURLToPath} from "node:url";
+ import {promisify} from "node:util";
+ import {requestInstantRecipe, inspectInstantSession} from "./instant_bridge.mjs";
+@@ -133,6 +133,37 @@
+   !SYNTHETIC_PLANNER&&!CEREBRAS_PHONE_BRIDGE&&!CEREBRAS_API_ACTIVE;
+ const REUSABLE_OWNER_FORM=CEREBRAS_LIVE&&UNIFIED_RUNTIME&&!OFFLINE_ACCEPTANCE_ONLY
+  ? createReusableOwnerFormGate({storeDir:STORE,origin:"http://127.0.0.1:"+PORT}) : null;
++// The superapp uses one server-to-server 256-bit secret stored only on VPS.
++// NEVER expose this through Caddy, JSON status, frontend JS or telemetry.
++const SUPERAPP_SECRET_FILE="/home/cfserver/.config/dexa-integration/engine-bridge-key";
++const SUPERAPP_REQUEST=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
++function superappBridgeAuthorized(req){
++ try{
++  const st=fs.statSync(SUPERAPP_SECRET_FILE);
++  if(!st.isFile()||(st.mode&0o077)!==0)return false;
++  const expected=fs.readFileSync(SUPERAPP_SECRET_FILE,"utf8").trim();
++  const provided=req.headers["x-dexa-superapp-bridge-key"];
++  if(typeof provided!=="string"||!/[0-9a-f]{64}/.test(provided)||
++     !/[0-9a-f]{64}/.test(expected))return false;
++  return timingSafeEqual(Buffer.from(provided,"hex"),Buffer.from(expected,"hex"));
++ }catch{return false}
++}
++function superappLookup(requestId){
++ return [...mem.values()].find(m=>m.source==="dexa_superapp"&&
++   m.superappRequestId===requestId)||null;
++}
++function superappPublicOutcome(m){
++ if(!m)return {error:"SUPERAPP_RECIPE_NOT_FOUND"};
++ const shown=presentTelegramMvpReply(m);
++ const message=m.displayedReplyExact??shown??m.outcome?.result??null;
++ return {ok:true,id:m.id,requestId:m.superappRequestId,
++  state:m.state,version:m.version,
++  terminal:TERMINAL.has(m.state),waiting:WAITING.has(m.state),
++  result:typeof message==="string"?message:
++   message===null?null:JSON.stringify(message),
++  reason:m.outcome?.reason||null,
++  userQuestion:m.outcome?.userQuestion||null};
++}
+ const webSubmissionMissionIds=new Map();
+ async function livePlannerStatus(){
+   // Synthetic acceptance tests NEVER read or depend on the real Cerebras tab.
+@@ -2399,6 +2430,17 @@
+         await finishMission(m, {...outcome, state: outcome.state || "FAILED"});
+         return;
+       }
++      if(m.source==="dexa_superapp"){
++        // No Cerebras/Instant fallback: Browser1 is the only cognitive
++        // planner on this route. Never replay an ambiguous external effect.
++        await askUser(m,"WAITING_USER_DECISION",
++          "SUPERAPP_BROWSER1_REPLAN_REQUIRED",
++          "اجرای رسپی در یک گام با مانع واقعی روبه‌رو شد. برای ادامه، رسپی تازه‌ای از مرورگر اول با شواهد همین گام لازم است؛ اجرای خودکار دوباره انجام نمی‌شود.",
++          {effectsExecuted:outcome.proof?.effectsExecuted??0,
++           blockedStepId:outcome.proof?.blockedStepId||null,
++           executorReason:outcome.reason||null});
++        return;
++      }
+       if(isUniversalMission(m)){
+         // This is a generic unresolved identity, not a provider denial.
+         // Never invent an alias or auto-repeat a failed unique name search.
+@@ -2914,6 +2956,102 @@
+         planner:await livePlannerStatus(),modelPromptCount:"ONE_INITIAL",
+         cognitiveRepair:false,runtimeObstructionReplanMax:1});
+     }
++    // A physically owner-paired dashboard may submit the EXACT finished
++    // Browser1 typed recipe. This does not invoke Kata or any planner.
++    // Direct loopback only, secret-gated, request-id deduplicated, and Rana
++    // still owns schema admission, execution, receipts and owner policies.
++    if(url.pathname.startsWith("/api/superapp/")){
++      if(!superappBridgeAuthorized(req))
++        return sendJson(res,401,{error:"SUPERAPP_BRIDGE_AUTH_REQUIRED"});
++      if(req.method==="GET"&&url.pathname==="/api/superapp/history"){
++        const exchanges=[...mem.values()]
++          .filter(m=>m.source==="dexa_superapp"&&TERMINAL.has(m.state)&&
++            typeof m.text==="string"&&m.text.length>0&&
++            typeof m.outcome?.result==="string"&&m.outcome.result.length>0)
++          .sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt)))
++          .slice(0,30).reverse().map(m=>({
++           createdAt:m.createdAt,user:m.text,
++           assistant:m.displayedReplyExact??presentTelegramMvpReply(m)??m.outcome.result
++          }));
++        return sendJson(res,200,{ok:true,exchanges});
++      }
++      if(req.method==="GET"&&url.pathname==="/api/superapp/recipes"){
++        const requestId=url.searchParams.get("requestId");
++        if(!SUPERAPP_REQUEST.test(requestId||""))
++          return sendJson(res,400,{error:"SUPERAPP_REQUEST_ID_INVALID"});
++        const m=superappLookup(requestId);
++        if(!m)return sendJson(res,404,{error:"SUPERAPP_RECIPE_NOT_FOUND"});
++        return sendJson(res,200,superappPublicOutcome(m));
++      }
++      if(req.method==="POST"&&url.pathname==="/api/superapp/recipes"){
++        if(gracefulStopRequested||isDexaAdmissionDraining())
++          return sendJson(res,503,{error:"DEXA_DEPLOYMENT_DRAINING"});
++        const data=await readBody(req,90000);
++        const requestId=data?.requestId,goal=data?.goal,recipe=data?.recipe;
++        if(!SUPERAPP_REQUEST.test(requestId||"")||
++           typeof goal!=="string"||goal.trim().length<3||
++           goal.length>MAX_TASK_LENGTH||
++           typeof recipe!=="string"||recipe.length<30||recipe.length>35000)
++          return sendJson(res,400,{error:"SUPERAPP_RECIPE_INPUT_INVALID"});
++        const previous=superappLookup(requestId);
++        if(previous){
++          if(previous.text!==goal||previous.externalRecipeDigest!==sha256(recipe))
++            return sendJson(res,409,{error:"SUPERAPP_REQUEST_CONFLICT"});
++          return sendJson(res,200,{...superappPublicOutcome(previous),idempotent:true});
++        }
++        // Typed admission runs BEFORE mission creation and before ANY
++        // authenticated tool effect. Unknown/unbound cards cannot be
++        // elevated by a JSON field or prompt-injection instructions.
++        const allowed=ownerCatalogSnapshot().map(c=>c.id);
++        let parsed;
++        try{parsed=parseTypedPlan(recipe,allowed)}
++        catch(error){return sendJson(res,422,{error:"SUPERAPP_RECIPE_INVALID",
++          code:String(error?.code||error?.message||"TOOL_PLAN_INVALID").slice(0,90)});}
++        const id=randomUUID();
++        const m=normalizeMission({
++          id,text:goal,source:"dexa_superapp",superappRequestId:requestId,
++          externalRecipeDigest:sha256(recipe),
++          context:null,rollingMemory:null,trackingWindowN:30,
++          universalRuntimeVersion:null,
++          state:"ACCEPTED",createdAt:nowIso(),updatedAt:nowIso(),version:0,
++          planVersion:0,replanCount:0,nextStepIndex:0,activeStep:null,
++          events:[],stepReceipts:[],operationOutcomes:[],checkpoints:[],
++          plans:[],kataCalls:[],plannerCalls:[],followups:[],userClarifications:[],
++          progressFingerprints:[],executionContext:{},recipe:[],recipeRaw:null,
++          outcome:null,provenance:{...RUNTIME_PROVENANCE},
++          trace:{inputHash:sha256(goal),inputLength:goal.length,
++           acceptedVia:"DEXA_SUPERAPP_BROWSER1_TYPED_RECIPE",
++           recipeHash:sha256(recipe),modelSource:"OWNER_CHATGPT_WEBVIEW_1"},
++          successContract:deriveSuccessContract(goal,parsed.steps||[])
++        });
++        mem.set(id,m);
++        await transition(m,"ACCEPTED","رسپی مرورگر اول دریافت شد؛ بدون فراخوانی مدل دیگر برای رانا ثبت می‌شود.",{
++         source:"dexa_superapp",kind:"SUPERAPP_EXTERNAL_RECIPE_ACCEPTED",
++         data:{recipeHash:sha256(recipe),source:"BROWSER1",
++           effectsExecuted:0,requestId}});
++        if(parsed.status){
++          await handleTypedPlanIntervention(m,recipe,allowed);
++          return sendJson(res,202,superappPublicOutcome(m));
++        }
++        await storePlan(m,{source:"INITIAL_INSTANT",raw:recipe,
++         steps:parsed.steps,allowed,promptHash:sha256(goal),promptLength:goal.length,
++         model:"ChatGPT WebView Browser 1",actualBrowserBridge:true});
++        if(m.successContract?.ready===false){
++          await askUser(m,"WAITING_USER_DECISION",
++           m.successContract.blocker||"TASK_CRITERIA_UNCLEAR",
++           m.successContract.userQuestion||"برای اجرای این درخواست مشخصهٔ بیشتری لازم است.",
++           {effectsExecuted:0});
++          return sendJson(res,202,superappPublicOutcome(m));
++        }
++        await transition(m,"EXECUTING","رسپی کامل اعتبارسنجی شد؛ رانا اجرای آن را آغاز می‌کند.",{
++         source:"dexa_superapp",kind:"SUPERAPP_RANA_EXECUTION_READY",
++         data:{planVersion:m.planVersion,stepCount:m.recipe.length,
++           effectsExecuted:0}});
++        enqueue(m);
++        return sendJson(res,202,superappPublicOutcome(m));
++      }
++      return sendJson(res,404,{error:"NOT_FOUND"});
++    }
+     if (req.method === "GET" && url.pathname === "/api/missions") {
+       const requested=url.searchParams.get("limit");
+       if(requested!==null&&!["5","15","50"].includes(requested))
