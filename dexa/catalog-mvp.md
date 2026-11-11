@@ -269,8 +269,8 @@ Each user/assistant exchange is complete after the assistant replies, even if ex
 Conversation completion NEVER implies a tool ran successfully. Never invent missing messages.
 
 HISTORY_LIMIT: 30
-HISTORY_COUNT: 9
-HISTORY_SHA256: dc4e26ab04839834934c89e73929bfa2361edbac7c485337fe9a5b35ff74e060
+HISTORY_COUNT: 10
+HISTORY_SHA256: 28859bb7b5c172c69769ef06ad2e24dc7df7b4b6a3125e30c9999b9f76ed8651
 
 ~~~json
 [
@@ -349,6 +349,15 @@ HISTORY_SHA256: dc4e26ab04839834934c89e73929bfa2361edbac7c485337fe9a5b35ff74e060
   {
     "exchange": 9,
     "createdAt": "2026-11-11T23:48:50.421Z",
+    "ownerRequest": "وضعیت هوای فردای تهران رو بهم بگو.",
+    "dexaVisibleReply": "ارسال پیام به مرورگر اول تأیید نشد. ممکن است پیام دریافت شده باشد، اما در گفت‌وگو دیده نشده است. برای جلوگیری از ارسال تکراری، چرخه متوقف شد.",
+    "executionState": "OUTCOME_UNKNOWN",
+    "turnComplete": true,
+    "effectsExecuted": 0
+  },
+  {
+    "exchange": 10,
+    "createdAt": "2026-11-11T23:49:26.920Z",
     "ownerRequest": "وضعیت هوای فردای تهران رو بهم بگو.",
     "dexaVisibleReply": "ارسال پیام به مرورگر اول تأیید نشد. ممکن است پیام دریافت شده باشد، اما در گفت‌وگو دیده نشده است. برای جلوگیری از ارسال تکراری، چرخه متوقف شد.",
     "executionState": "OUTCOME_UNKNOWN",
