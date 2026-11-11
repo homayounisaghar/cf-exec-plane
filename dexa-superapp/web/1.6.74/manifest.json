@@ -1,0 +1,31 @@
+{
+  "version": "web-v1.6.74",
+  "previous_version": "web-v1.6.73",
+  "canonical_private_commit": "572d511af7a0ba4fb2223c11856c6dd3ea7f4ed3",
+  "archive_sha256": "e29d930584973d0e43977825b0ab9153a6385f7149259b81ee6ac55d05e8d79e",
+  "files": {
+    "web/auto-handoff.js": "c27e6e9562e22e652d1a0a354f7fc7134c8c1f35642d2447f7011e0f2a5b80b8",
+    "web/cycle-panel.js": "7603babb129f3176b497438db8ecdea0fcbbb07894635788c290129ac1896188",
+    "web/index.html": "6759fbdbeb04d22e53eb939745b552bbef58d47fbe74c34f16fb6ee8160aca2f",
+    "web/package.json": "8b15bfdb18eb36af2dddcacb5af04f1c9e23466ccbbfe495f1399e022d670c08",
+    "web/remote-client.js": "17047e44caa49b74eb5d568a0bb091086ae0de51858928453fd8e7721f926c36",
+    "web/remote-gateway.mjs": "22a961bd7a719aba1baac3d4c41b418ac7434b71f62677ec33260cc7c07dc245",
+    "web/server.mjs": "a8b3ee8a888d40add73718de0d10269806355cb9ba8549544f0eec3b6b7e9165",
+    "web/theme-client.js": "c1294b9e71aa4882ba4e7f11561c7c7298560701b8a1477110310469069c2a8c",
+    "web/theme.css": "515e037cedac885733a25eaff96bd1963242aa92b34c073fbdb1b626d7e04c72",
+    "web/toolbar.html": "b85fae2d0ace26f11622e7cba26b04eee7c23bd4e467c147bf08787c99759475",
+    "web/dexa-integration.mjs": "7afc587f8c6f2b27d87238624b16b9ff2d18a07f1a51898a8865975d911b9d51",
+    "web/catalog-mvp.md": "4afb984650e6c23794382a8f82c88f11e61725a34eb4530a6df12cd006419d4f",
+    "sync/publish-catalog-history.py": "ca5c7e6136a1e57ded524f18967c74b9d67f05199002c21054cfe2a736e743ee"
+  },
+  "android_version_code": 18,
+  "android_signed_apk_sha256": "a825818783edf470311e8ce013c4526ae91a7abde99aeabfe527709389712f25",
+  "engine_server_sha256": "fdb185a6a60633a7e4b5f85e99512ae225880d4ab35ee55617ecb2f242f300c2",
+  "engine_prompt_sha256": "7ca0f7551bc429347545b5f721bd425ce865ff4b698f1a537fbd29212634efbd",
+  "permissions_items": 74,
+  "dashboard_tabs": 4,
+  "page_agent_revision": "power-slider-v1671",
+  "public_owner_catalog": "https://raw.githubusercontent.com/homayounisaghar/cf-exec-plane/main/dexa/catalog-mvp.md",
+  "owner_history_max_completed_exchanges": 30,
+  "note": "Single public GitHub Dexa catalog includes real rolling last 30 complete owner↔Rana exchanges; one immutable commit-pinned URL delivered to Browser1 per run. Retired private context pages and artificial GET gate deleted; original Rana validator retained; Android v18, Voice/Read Aloud, infinite Delete/Effort unchanged."
+}
