@@ -1,0 +1,31 @@
+{
+  "version": "web-v1.6.75",
+  "previous_version": "web-v1.6.74",
+  "canonical_private_commit": "c0c0f1cbf6515352cf1fc8b8b55ed5f76e2925e1",
+  "archive_sha256": "296f641f4b31e065e351e702eda7d1f9792d2d6c9ec6dd3542690c3e4a2c2e22",
+  "files": {
+    "web/auto-handoff.js": "c27e6e9562e22e652d1a0a354f7fc7134c8c1f35642d2447f7011e0f2a5b80b8",
+    "web/cycle-panel.js": "33e00f6f1c3d1bfbc43127e5e299d128614ed7c6a875f3b2e5c3d0aaaf78cd41",
+    "web/index.html": "6759fbdbeb04d22e53eb939745b552bbef58d47fbe74c34f16fb6ee8160aca2f",
+    "web/package.json": "8b15bfdb18eb36af2dddcacb5af04f1c9e23466ccbbfe495f1399e022d670c08",
+    "web/remote-client.js": "17047e44caa49b74eb5d568a0bb091086ae0de51858928453fd8e7721f926c36",
+    "web/remote-gateway.mjs": "22a961bd7a719aba1baac3d4c41b418ac7434b71f62677ec33260cc7c07dc245",
+    "web/server.mjs": "1f8d813763a445b347ab8f9177ecdb2e618100353d29cf6e9ae1752b7c136db0",
+    "web/theme-client.js": "c1294b9e71aa4882ba4e7f11561c7c7298560701b8a1477110310469069c2a8c",
+    "web/theme.css": "515e037cedac885733a25eaff96bd1963242aa92b34c073fbdb1b626d7e04c72",
+    "web/toolbar.html": "b85fae2d0ace26f11622e7cba26b04eee7c23bd4e467c147bf08787c99759475",
+    "web/dexa-integration.mjs": "bafd4712055af5b0582da63419d64ca8a7c1d7dd7eb277f057d547990259c021",
+    "web/catalog-mvp.md": "4afb984650e6c23794382a8f82c88f11e61725a34eb4530a6df12cd006419d4f",
+    "sync/publish-catalog-history.py": "ca5c7e6136a1e57ded524f18967c74b9d67f05199002c21054cfe2a736e743ee"
+  },
+  "android_version_code": 18,
+  "android_signed_apk_sha256": "a825818783edf470311e8ce013c4526ae91a7abde99aeabfe527709389712f25",
+  "engine_server_sha256": "fdb185a6a60633a7e4b5f85e99512ae225880d4ab35ee55617ecb2f242f300c2",
+  "engine_prompt_sha256": "7ca0f7551bc429347545b5f721bd425ce865ff4b698f1a537fbd29212634efbd",
+  "permissions_items": 74,
+  "dashboard_tabs": 4,
+  "page_agent_revision": "power-slider-v1671",
+  "public_owner_catalog": "https://raw.githubusercontent.com/homayounisaghar/cf-exec-plane/main/dexa/catalog-mvp.md",
+  "owner_history_max_completed_exchanges": 30,
+  "note": "Safe Android credential rotation: original primary owner browser can issue a fresh one-time mobile replacement code; pending code preserves old Android token until redemption; atomically replace only the mobile hash. The original Rana planner, single public catalog, Android v18, Voice/Read Aloud and infinite Delete/Effort are unchanged."
+}
