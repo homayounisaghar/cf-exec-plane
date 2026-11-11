@@ -269,8 +269,8 @@ Each user/assistant exchange is complete after the assistant replies, even if ex
 Conversation completion NEVER implies a tool ran successfully. Never invent missing messages.
 
 HISTORY_LIMIT: 30
-HISTORY_COUNT: 6
-HISTORY_SHA256: 17e6b18785b118b3279ff24e1a170af4a23df89acad5674a5b94796ba64f145b
+HISTORY_COUNT: 8
+HISTORY_SHA256: e8a70a582658f4913d8a93b9fe110708ff9571ecaa27abfe6c8d7f7fe509a6d5
 
 ~~~json
 [
@@ -322,6 +322,24 @@ HISTORY_SHA256: 17e6b18785b118b3279ff24e1a170af4a23df89acad5674a5b94796ba64f145b
   {
     "exchange": 6,
     "createdAt": "2026-11-11T23:10:34.606Z",
+    "ownerRequest": "وضعیت هوای فردای تهران رو بهم بگو.",
+    "dexaVisibleReply": "متأسفانه نتونستم کاری که خواستی رو انجام بدم.",
+    "executionState": "FAILED",
+    "turnComplete": true,
+    "effectsExecuted": 0
+  },
+  {
+    "exchange": 7,
+    "createdAt": "2026-11-11T23:35:33.421Z",
+    "ownerRequest": "وضعیت هوای فردای تهران رو بهم بگو.",
+    "dexaVisibleReply": "متأسفانه نتونستم کاری که خواستی رو انجام بدم.",
+    "executionState": "FAILED",
+    "turnComplete": true,
+    "effectsExecuted": 0
+  },
+  {
+    "exchange": 8,
+    "createdAt": "2026-11-11T23:36:46.539Z",
     "ownerRequest": "وضعیت هوای فردای تهران رو بهم بگو.",
     "dexaVisibleReply": "متأسفانه نتونستم کاری که خواستی رو انجام بدم.",
     "executionState": "FAILED",
