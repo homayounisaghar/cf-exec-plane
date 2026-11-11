@@ -1,0 +1,7 @@
+request_id=dexa-web1671-20261111-7dc8046a
+source_commit=ced183d789d4f3a5dc2966b9f3c589c0a7c159d7
+engine_source_commit=6dfbbbf3720727e33d104a022d57b09807ad4c34
+archive_sha256=7dc8046a16f4e9cf88d2cad279162b05281dde9aaf5b5923c3a4a7e92f93fff3
+engine_patch_sha256=c2e3e6477179cf3f16567604310530f5f3bb5dbb82e4d2d78e473c8754a3ddf0
+expected_old_web_version=web-v1.6.70
+release=web-v1.6.71
