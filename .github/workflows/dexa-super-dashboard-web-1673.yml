@@ -1,0 +1,140 @@
+name: Dexa Superapp Web 1673 + Rana Explicit Postconditions and Fetch Proof Release
+'on':
+  push:
+    branches: [main]
+    paths:
+      - 'server-bootstrap/control/dexa-super-dashboard-web/dexa-web1673-*.request'
+permissions:
+  contents: read
+concurrency:
+  group: dexa-super-dashboard-web-v1673-scoped
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    env:
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_PORT: ${{ secrets.VPS_PORT }}
+      VPS_SSH_USER: ${{ secrets.VPS_SSH_USER }}
+      VPS_HOST_KEY: ${{ secrets.VPS_HOST_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Admit one immutable request and pinned secret-free source
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t changes < <(git diff --name-status "$GITHUB_SHA^" "$GITHUB_SHA")
+          [[ "${#changes[@]}" -eq 1 ]] || exit 21
+          IFS=$'\t' read -r change req <<< "${changes[0]}"
+          [[ "$change" == A && "$req" == server-bootstrap/control/dexa-super-dashboard-web/dexa-web1673-*.request ]] || exit 22
+          request_id=$(basename "$req" .request)
+          [[ "$request_id" =~ ^dexa-web1673-20261111-[0-9a-f]{8}$ ]] || exit 23
+          grep -Fxq "request_id=$request_id" "$req"
+          grep -Fxq "source_commit=67a4a17f3db55044215143294a095d27832c8b20" "$req"
+          grep -Fxq "engine_source_commit=02ab9b5a4d799cfb6ef2692a49f7f512cda4d404" "$req"
+          grep -Fxq "archive_sha256=ce38e7a99f4ff3e4314fdb90e5ec3e09b9126dd87876946d8918fb9fa16d29ac" "$req"
+          grep -Fxq "engine_patch_sha256=eb003a949bdee1b92937f536ef5e19cf556f3ed73cad0dcb089837ec3fa21f56" "$req"
+          grep -Fxq "expected_old_web_version=web-v1.6.72" "$req"
+          grep -Fxq "release=web-v1.6.73" "$req"
+          [[ "$(wc -l < "$req")" -eq 7 ]] || exit 24
+          echo "RELEASE_REQUEST_ID=$request_id" >> "$GITHUB_ENV"
+          archive=dexa-superapp/web/1.6.73/dexa-super-dashboard-web-v1673-source-only.tar.gz
+          manifest=dexa-superapp/web/1.6.73/manifest.json
+          patch=qualification/dexa-superapp-v1673/engine1673-typed-prompt.patch
+          script=qualification/dexa-superapp-v1673/deploy-superapp-v1673.sh
+          test -f "$archive" && test -f "$manifest" && test -f "$patch" && test -f "$script"
+          printf '%s  %s\n' ce38e7a99f4ff3e4314fdb90e5ec3e09b9126dd87876946d8918fb9fa16d29ac "$archive" | sha256sum -c -
+          printf '%s  %s\n' eb003a949bdee1b92937f536ef5e19cf556f3ed73cad0dcb089837ec3fa21f56 "$patch" | sha256sum -c -
+          printf '%s  %s\n' 792fc61836df378709ae2429daed9b986cc7dd0d4ef6def07292951411707598 "$script" | sha256sum -c -
+          bash -n "$script"
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,hashlib,tarfile
+          root=Path('dexa-superapp/web/1.6.73')
+          m=json.loads((root/'manifest.json').read_text())
+          assert m['version']=='web-v1.6.73'
+          assert m['canonical_private_commit']=='67a4a17f3db55044215143294a095d27832c8b20'
+          assert m['engine_private_source_commit']=='02ab9b5a4d799cfb6ef2692a49f7f512cda4d404'
+          assert m['archive_sha256']=='ce38e7a99f4ff3e4314fdb90e5ec3e09b9126dd87876946d8918fb9fa16d29ac'
+          assert m['previous_version']=='web-v1.6.72'
+          assert m['engine_prompt_old_sha256']=='e05d2a84b372f27871f08736072ffa0b466b5ed1ab1664ea996d1669652623a5'
+          assert m['engine_prompt_new_sha256']=='7ca0f7551bc429347545b5f721bd425ce865ff4b698f1a537fbd29212634efbd'
+          assert m['android_version_code']==18
+          assert m['dashboard_tabs']==4 and m['permissions_items']==74
+          assert m['page_agent_revision']=='power-slider-v1672'
+          expected={'auto-handoff.js','cycle-panel.js','index.html',
+            'package.json','remote-client.js','remote-gateway.mjs',
+            'server.mjs','theme-client.js','theme.css','toolbar.html',
+            'dexa-integration.mjs','catalog-mvp.md'}
+          assert set(m['files'])==expected
+          with tarfile.open(root/'dexa-super-dashboard-web-v1673-source-only.tar.gz') as tar:
+           names=tar.getmembers()
+           assert len(names)==len(expected)
+           assert all(x.isfile() and not x.issym() and x.name.startswith('web/') for x in names)
+           assert set(x.name[4:] for x in names)==expected
+           for x in names:
+            assert hashlib.sha256(tar.extractfile(x).read()).hexdigest()==m['files'][x.name[4:]]
+          print('DEXA_WEB_1673_12_FILES_MATCH_PINNED_MANIFEST')
+          PY
+          mkdir -p "$RUNNER_TEMP/dexa1673-qual"
+          tar -xzf "$archive" -C "$RUNNER_TEMP/dexa1673-qual"
+          node --check "$RUNNER_TEMP/dexa1673-qual/web/cycle-panel.js"
+          node --check "$RUNNER_TEMP/dexa1673-qual/web/server.mjs"
+          node --check "$RUNNER_TEMP/dexa1673-qual/web/dexa-integration.mjs"
+      - name: Use the existing pinned VPS SSH host identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -n "$VPS_SSH_KEY" && -n "$VPS_HOST" && -n "$VPS_SSH_USER" && -n "$VPS_HOST_KEY" ]] || exit 31
+          [[ "$VPS_SSH_USER" == cfserver || "$VPS_SSH_USER" == root ]] || exit 32
+          port="${VPS_PORT:-22}"
+          [[ "$port" =~ ^[0-9]+$ ]] || exit 33
+          dir="$RUNNER_TEMP/dexa1673-ssh"
+          install -d -m 0700 "$dir"
+          printf '%s\n' "$VPS_SSH_KEY" > "$dir/key"
+          chmod 0600 "$dir/key"
+          read -r algorithm material extra <<< "${VPS_HOST_KEY//$'\r'/}"
+          [[ "$algorithm" == ssh-ed25519 && -n "$material" && -z "${extra:-}" ]] || exit 34
+          printf '%s %s %s\n' "$VPS_HOST" "$algorithm" "$material" > "$dir/known_hosts"
+          printf '[%s]:%s %s %s\n' "$VPS_HOST" "$port" "$algorithm" "$material" >> "$dir/known_hosts"
+          chmod 0600 "$dir/known_hosts"
+          echo "DEXA_SSH_DIR=$dir" >> "$GITHUB_ENV"
+          echo "DEXA_SSH_PORT=$port" >> "$GITHUB_ENV"
+      - name: Update existing engine and dashboard with source hash guards, drain, and rollback
+        shell: bash
+        run: |
+          set -euo pipefail
+          root=qualification/dexa-superapp-v1673
+          archive=dexa-superapp/web/1.6.73/dexa-super-dashboard-web-v1673-source-only.tar.gz
+          sshopt=(-i "$DEXA_SSH_DIR/key" -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$DEXA_SSH_DIR/known_hosts")
+          scp "${sshopt[@]}" -P "$DEXA_SSH_PORT" "$archive" "${VPS_SSH_USER}@${VPS_HOST}:/tmp/${RELEASE_REQUEST_ID}.tgz"
+          scp "${sshopt[@]}" -P "$DEXA_SSH_PORT" "$root/engine1673-typed-prompt.patch" "${VPS_SSH_USER}@${VPS_HOST}:/tmp/${RELEASE_REQUEST_ID}.engine.patch"
+          scp "${sshopt[@]}" -P "$DEXA_SSH_PORT" "$root/deploy-superapp-v1673.sh" "${VPS_SSH_USER}@${VPS_HOST}:/tmp/${RELEASE_REQUEST_ID}.deploy.sh"
+          ssh "${sshopt[@]}" -p "$DEXA_SSH_PORT" "${VPS_SSH_USER}@${VPS_HOST}"             "bash /tmp/${RELEASE_REQUEST_ID}.deploy.sh '${RELEASE_REQUEST_ID}'"
+      - name: Independently verify actual public service and route security
+        shell: bash
+        run: |
+          set -euo pipefail
+          base=https://cf-onshape.duckdns.org/dexa-superapp
+          found=0
+          for n in 1 2 3 4 5 6 7 8 9 10; do
+            version=$(curl -fsS --max-time 10 "$base/api/health" | node -e 'let s="";process.stdin.on("data",b=>s+=b).on("end",()=>console.log(JSON.parse(s).webVersion))' 2>/dev/null || true)
+            if [[ "$version" == web-v1.6.73 ]];then found=1;break;fi
+            sleep 2
+          done
+          [[ "$found" == 1 ]] || exit 61
+          curl -fsS --max-time 12 "$base/cycle-panel.js" -o "$RUNNER_TEMP/dexa1673-public-cycle.js"
+          printf '%s  %s\n' 1fc9d6f7b6186fb254188ff34e5a5e2352ab417a4d71b75fb384bd93d3eac64c "$RUNNER_TEMP/dexa1673-public-cycle.js" | sha256sum -c -
+          node --check "$RUNNER_TEMP/dexa1673-public-cycle.js"
+          curl -fsS --max-time 12 "$base/api/config" | node -e 'let s="";process.stdin.on("data",b=>s+=b).on("end",()=>{const j=JSON.parse(s);if(j.build!=="web-v1.6.73"||j.permissions?.length!==74||j.dashboards?.length!==4)process.exit(1);console.log("DEXA_1673_PUBLIC_4_TABS_74_PERMISSIONS_OK")})'
+          curl -fsS --max-time 12 "$base/api/dexa/pair/status" | node -e 'let s="";process.stdin.on("data",b=>s+=b).on("end",()=>{const j=JSON.parse(s);if(j.configured!==true||j.paired!==true||j.secondDevicePaired!==true)process.exit(1);console.log("DEXA_1673_OWNER_PAIRING_READY")})'
+          forbidden=$(curl -s -o /dev/null -w '%{http_code}' --max-time 12 "$base/api/dexa/result?requestId=00000000-0000-0000-0000-000000000000")
+          [[ "$forbidden" == 401 ]] || exit 64
+          preflight=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 12 -X OPTIONS "$base/api/dexa/execute" -H 'Origin: https://dexa-cf-worker-canary-20261104.mirkazem.workers.dev' -H 'Access-Control-Request-Method: POST' -H 'Access-Control-Request-Headers: content-type,x-dexa-owner-token')
+          [[ "$preflight" == 204 ]] || exit 65
+          echo DEXA_1673_PUBLIC_HEALTH_AND_BINARY_MATCH_CONFIRMED

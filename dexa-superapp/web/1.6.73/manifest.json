@@ -1,0 +1,33 @@
+{
+  "version": "web-v1.6.73",
+  "archive_sha256": "ce38e7a99f4ff3e4314fdb90e5ec3e09b9126dd87876946d8918fb9fa16d29ac",
+  "files": {
+    "auto-handoff.js": "c27e6e9562e22e652d1a0a354f7fc7134c8c1f35642d2447f7011e0f2a5b80b8",
+    "cycle-panel.js": "1fc9d6f7b6186fb254188ff34e5a5e2352ab417a4d71b75fb384bd93d3eac64c",
+    "index.html": "6759fbdbeb04d22e53eb939745b552bbef58d47fbe74c34f16fb6ee8160aca2f",
+    "package.json": "8b15bfdb18eb36af2dddcacb5af04f1c9e23466ccbbfe495f1399e022d670c08",
+    "remote-client.js": "17047e44caa49b74eb5d568a0bb091086ae0de51858928453fd8e7721f926c36",
+    "remote-gateway.mjs": "22a961bd7a719aba1baac3d4c41b418ac7434b71f62677ec33260cc7c07dc245",
+    "server.mjs": "a700b0c3c6eee2e5c7aa9cf61683f7b5516a091a22515383c36aa692c0fe6a5b",
+    "theme-client.js": "c1294b9e71aa4882ba4e7f11561c7c7298560701b8a1477110310469069c2a8c",
+    "theme.css": "515e037cedac885733a25eaff96bd1963242aa92b34c073fbdb1b626d7e04c72",
+    "toolbar.html": "b85fae2d0ace26f11622e7cba26b04eee7c23bd4e467c147bf08787c99759475",
+    "dexa-integration.mjs": "78dc382a988bb8ceb29a03b8879f686ddea38bfd7b05fe1d6a097f6243fdb487",
+    "catalog-mvp.md": "4afb984650e6c23794382a8f82c88f11e61725a34eb4530a6df12cd006419d4f"
+  },
+  "android_signed_apk_sha256": "a825818783edf470311e8ce013c4526ae91a7abde99aeabfe527709389712f25",
+  "android_version_code": 18,
+  "android_required_for_wake": true,
+  "public_apk_download": "https://cf-onshape.duckdns.org/dexa-superapp/android-v18.apk",
+  "permissions_items": 74,
+  "dashboard_tabs": 4,
+  "page_agent_revision": "power-slider-v1673",
+  "note": "Dexa typed recipe contract parity: explicit output-path postconditions in web reference and original engine prompt, per-run GET fetch evidence and fail-closed unfetched recipe admission, sanitized parser-code telemetry; browser1 answer preserved after rejection. Android v18 and unlimited Delete/Effort unchanged.",
+  "canonical_private_commit": "67a4a17f3db55044215143294a095d27832c8b20",
+  "engine_private_source_commit": "02ab9b5a4d799cfb6ef2692a49f7f512cda4d404",
+  "engine_original_sha256": "d1a76fe7ddcbd41e3baf75de74c21b0fb9f35912b1985aa0b2e22e20d4a3cc76",
+  "engine_candidate_sha256": "fdb185a6a60633a7e4b5f85e99512ae225880d4ab35ee55617ecb2f242f300c2",
+  "engine_prompt_old_sha256": "e05d2a84b372f27871f08736072ffa0b466b5ed1ab1664ea996d1669652623a5",
+  "engine_prompt_new_sha256": "7ca0f7551bc429347545b5f721bd425ce865ff4b698f1a537fbd29212634efbd",
+  "previous_version": "web-v1.6.72"
+}
