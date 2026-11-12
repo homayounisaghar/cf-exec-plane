@@ -269,8 +269,8 @@ Each user/assistant exchange is complete after the assistant replies, even if ex
 Conversation completion NEVER implies a tool ran successfully. Never invent missing messages.
 
 HISTORY_LIMIT: 30
-HISTORY_COUNT: 10
-HISTORY_SHA256: 28859bb7b5c172c69769ef06ad2e24dc7df7b4b6a3125e30c9999b9f76ed8651
+HISTORY_COUNT: 11
+HISTORY_SHA256: 70056875517a5650ee070075a4814638e1d9a9ac3ba3c312e14d8935104ee925
 
 ~~~json
 [
@@ -361,6 +361,15 @@ HISTORY_SHA256: 28859bb7b5c172c69769ef06ad2e24dc7df7b4b6a3125e30c9999b9f76ed8651
     "ownerRequest": "وضعیت هوای فردای تهران رو بهم بگو.",
     "dexaVisibleReply": "ارسال پیام به مرورگر اول تأیید نشد. ممکن است پیام دریافت شده باشد، اما در گفت‌وگو دیده نشده است. برای جلوگیری از ارسال تکراری، چرخه متوقف شد.",
     "executionState": "OUTCOME_UNKNOWN",
+    "turnComplete": true,
+    "effectsExecuted": 0
+  },
+  {
+    "exchange": 11,
+    "createdAt": "2026-11-12T00:18:14.864Z",
+    "ownerRequest": "وضعیت هوای فردای تهران رو بهم بگو.",
+    "dexaVisibleReply": "در کاتالوگ فعلی توان اجرایی کافی وجود ندارد: در کاتالوگ قابلیت‌های Dexa هیچ ابزار تأییدشده‌ای برای دریافت پیش‌بینی وضعیت هوا وجود ندارد. بنابراین امکان تهیه یک برنامه اجرایی معتبر برای دریافت وضعیت هوای فردای تهران (۱۳ نوامبر ۲۰۲۶) با قابلیت‌ها و قراردادهای موجود فراهم نیست.",
+    "executionState": "BLOCKED",
     "turnComplete": true,
     "effectsExecuted": 0
   }
