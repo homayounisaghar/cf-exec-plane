@@ -269,8 +269,8 @@ Each user/assistant exchange is complete after the assistant replies, even if ex
 Conversation completion NEVER implies a tool ran successfully. Never invent missing messages.
 
 HISTORY_LIMIT: 30
-HISTORY_COUNT: 13
-HISTORY_SHA256: 1bc8da23b6beb351019f430cbcb76604e4ed2a8938ee665b351321efda21da01
+HISTORY_COUNT: 14
+HISTORY_SHA256: 4748b89295741a21f1f312860ecd37341ba1ba22cb66798af09c6fc06ed62213
 
 ~~~json
 [
@@ -387,6 +387,15 @@ HISTORY_SHA256: 1bc8da23b6beb351019f430cbcb76604e4ed2a8938ee665b351321efda21da01
     "createdAt": "2026-11-12T00:22:40.962Z",
     "ownerRequest": "سه تا چت اخیر تلگرامم رو لیست کن.",
     "dexaVisibleReply": "• نجمه ایرانسل\n• اصحاب بعد از جنگ (۱ پیام خوانده نشده)\n• KHEMASS(NaCl+C₆H₁₂O₆)",
+    "executionState": "SUCCEEDED_VERIFIED",
+    "turnComplete": true,
+    "effectsExecuted": 0
+  },
+  {
+    "exchange": 14,
+    "createdAt": "2026-11-12T07:22:54.541Z",
+    "ownerRequest": "سه تا چت اخیر تلگرامم رو لیست کن.",
+    "dexaVisibleReply": "• نجمه ایرانسل\n• اطلاع رسانی گذرنت (۱ پیام خوانده نشده)\n• اصحاب بعد از جنگ (۵ پیام خوانده نشده)",
     "executionState": "SUCCEEDED_VERIFIED",
     "turnComplete": true,
     "effectsExecuted": 0
