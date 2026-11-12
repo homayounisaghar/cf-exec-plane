@@ -269,8 +269,8 @@ Each user/assistant exchange is complete after the assistant replies, even if ex
 Conversation completion NEVER implies a tool ran successfully. Never invent missing messages.
 
 HISTORY_LIMIT: 30
-HISTORY_COUNT: 19
-HISTORY_SHA256: 113fe1b6d1e2b0f65bf2491690fc96e3d9d35dc4db90650425d7633e8693c862
+HISTORY_COUNT: 20
+HISTORY_SHA256: d8366e0c1fac2b158b67993dbdf7ad478cbadd1b5eaf0a08b49910133c46bb26
 
 ~~~json
 [
@@ -441,6 +441,15 @@ HISTORY_SHA256: 113fe1b6d1e2b0f65bf2491690fc96e3d9d35dc4db90650425d7633e8693c862
     "createdAt": "2026-11-12T22:47:21.584Z",
     "ownerRequest": "الان اخرین پیام در چتش چیه؟",
     "dexaVisibleReply": "پیام از MirKazem:\nزیر هر کلایی تو دیجی کالا \nیه نفر اومده نظر داده تازه \nدستم رسیده فعلا نظری ندارم !!\nپفیوز مگه میکروفن جلوی دهنت گرفتن \nهر وقت اون عنو استفاده کردی \nبیا نظر بده ..\n\n^SAEED^\n\n@sut_tw",
+    "executionState": "SUCCEEDED_VERIFIED",
+    "turnComplete": true,
+    "effectsExecuted": 0
+  },
+  {
+    "exchange": 20,
+    "createdAt": "2026-11-12T23:49:35.178Z",
+    "ownerRequest": "پیام قبلیش چیه؟",
+    "dexaVisibleReply": "پیام از MirKazem:\n[رسانه یا فایل]\nhttps://youtube.com/shorts/NloxaBmH5EI?si=wRR3xg2c0zoEzrgz",
     "executionState": "SUCCEEDED_VERIFIED",
     "turnComplete": true,
     "effectsExecuted": 0
