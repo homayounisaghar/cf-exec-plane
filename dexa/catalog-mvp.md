@@ -269,8 +269,8 @@ Each user/assistant exchange is complete after the assistant replies, even if ex
 Conversation completion NEVER implies a tool ran successfully. Never invent missing messages.
 
 HISTORY_LIMIT: 30
-HISTORY_COUNT: 24
-HISTORY_SHA256: f7920625c80fd8ee045ef0f7b3dc2939d1b1bd27e3abe1031c9c062b6d5560ea
+HISTORY_COUNT: 25
+HISTORY_SHA256: d7c5df510399f24dd2335241f9663601e9f5600faad405c5370897f53050345f
 
 ~~~json
 [
@@ -486,6 +486,15 @@ HISTORY_SHA256: f7920625c80fd8ee045ef0f7b3dc2939d1b1bd27e3abe1031c9c062b6d5560ea
     "createdAt": "2026-11-13T00:00:15.767Z",
     "ownerRequest": "آخرین پیام به مهدی چی بوده؟",
     "dexaVisibleReply": "پیام از MirKazem:\n[فایل]\nFirefox-VPN-1.0.5-Android-universal.apk",
+    "executionState": "SUCCEEDED_VERIFIED",
+    "turnComplete": true,
+    "effectsExecuted": 0
+  },
+  {
+    "exchange": 25,
+    "createdAt": "2026-11-13T00:02:36.032Z",
+    "ownerRequest": "پیام علی تیماچی چی بوده؟",
+    "dexaVisibleReply": "پیام از Ali Timajchi:\nفرودگاه بارسلونا",
     "executionState": "SUCCEEDED_VERIFIED",
     "turnComplete": true,
     "effectsExecuted": 0
