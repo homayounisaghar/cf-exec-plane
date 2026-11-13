@@ -270,21 +270,12 @@ Conversation completion NEVER implies a tool ran successfully. Never invent miss
 
 HISTORY_LIMIT: 30
 HISTORY_COUNT: 30
-HISTORY_SHA256: fa94e6d6195ad754c9610ba29cc6351d3aeafc6ddfbbcafc214f82728ca8c0c4
+HISTORY_SHA256: d83723322c9cf62f69ac8c68ef9bba01ff84cdc3f9f1c354ec8b1927d9c60354
 
 ~~~json
 [
   {
     "exchange": 1,
-    "createdAt": "2026-11-12T23:54:28.607Z",
-    "ownerRequest": "لیست سه تا چت اخیر واتساپم رو بده",
-    "dexaVisibleReply": "• علی تیماجچی, ABOMIS\n• شماره ایرانسل من\n• مهدی مقیمی",
-    "executionState": "SUCCEEDED_VERIFIED",
-    "turnComplete": true,
-    "effectsExecuted": 0
-  },
-  {
-    "exchange": 2,
     "createdAt": "2026-11-13T00:00:15.767Z",
     "ownerRequest": "آخرین پیام به مهدی چی بوده؟",
     "dexaVisibleReply": "پیام از MirKazem:\n[فایل]\nFirefox-VPN-1.0.5-Android-universal.apk",
@@ -293,7 +284,7 @@ HISTORY_SHA256: fa94e6d6195ad754c9610ba29cc6351d3aeafc6ddfbbcafc214f82728ca8c0c4
     "effectsExecuted": 0
   },
   {
-    "exchange": 3,
+    "exchange": 2,
     "createdAt": "2026-11-13T00:02:36.032Z",
     "ownerRequest": "پیام علی تیماچی چی بوده؟",
     "dexaVisibleReply": "پیام از Ali Timajchi:\nفرودگاه بارسلونا",
@@ -302,7 +293,7 @@ HISTORY_SHA256: fa94e6d6195ad754c9610ba29cc6351d3aeafc6ddfbbcafc214f82728ca8c0c4
     "effectsExecuted": 0
   },
   {
-    "exchange": 4,
+    "exchange": 3,
     "createdAt": "2026-11-13T00:03:40.058Z",
     "ownerRequest": "آیا توی تلگرام چتی که پیام خونده نشده داشته باشه دارم",
     "dexaVisibleReply": "• چین ، ارسال بار و پست، نیازمندیها و پذیرش و دانشجویی ، یوان، ترجمه ، بلیط و ویزا، کنسولی (۶۸ پیام خوانده نشده)\n• Allina TX (۵۱ پیام خوانده نشده)\n• U♡ (۳ پیام خوانده نشده)\n• Compact MCM Design (۴ پیام خوانده نشده)\n• ُفرصت‌های وام، ‌سرمایه‌گذاری و ... 😁 (۳ پیام خوانده نشده)",
@@ -311,7 +302,7 @@ HISTORY_SHA256: fa94e6d6195ad754c9610ba29cc6351d3aeafc6ddfbbcafc214f82728ca8c0c4
     "effectsExecuted": 0
   },
   {
-    "exchange": 5,
+    "exchange": 4,
     "createdAt": "2026-11-13T00:05:12.042Z",
     "ownerRequest": "آخرین پیام آلینا تی ایکس چی بوده؟",
     "dexaVisibleReply": "پیام از وحید حاجی‌حسنی:\nمشکل افزایش دمای کابینت برد ها حل شد \nقبلا تو حالت عادی دما تا 58 بالا میرفت \nالان با تهویه جدید دمای برد ها تا 35 بیشتر بالا نمیره که خیلی عالیه \nبا تشکر از خلیفه زاده زاهدی و آصف",
@@ -320,7 +311,7 @@ HISTORY_SHA256: fa94e6d6195ad754c9610ba29cc6351d3aeafc6ddfbbcafc214f82728ca8c0c4
     "effectsExecuted": 0
   },
   {
-    "exchange": 6,
+    "exchange": 5,
     "createdAt": "2026-11-13T00:09:53.458Z",
     "ownerRequest": "دوباره بگو",
     "dexaVisibleReply": "پیام از وحید حاجی‌حسنی:\nمشکل افزایش دمای کابینت برد ها حل شد \nقبلا تو حالت عادی دما تا 58 بالا میرفت \nالان با تهویه جدید دمای برد ها تا 35 بیشتر بالا نمیره که خیلی عالیه \nبا تشکر از خلیفه زاده زاهدی و آصف",
@@ -329,7 +320,7 @@ HISTORY_SHA256: fa94e6d6195ad754c9610ba29cc6351d3aeafc6ddfbbcafc214f82728ca8c0c4
     "effectsExecuted": 0
   },
   {
-    "exchange": 7,
+    "exchange": 6,
     "createdAt": "2026-11-13T00:12:33.534Z",
     "ownerRequest": "آخرین پیام توی گروه اصحاب از کی بوده و چی گفته بوده؟",
     "dexaVisibleReply": "پیام از مریم پیروان:\nمن آتئیست معکوسم،\nخدا به وجود من اعتقادی نداره.\n\n\nLidia @kafiha",
@@ -338,7 +329,7 @@ HISTORY_SHA256: fa94e6d6195ad754c9610ba29cc6351d3aeafc6ddfbbcafc214f82728ca8c0c4
     "effectsExecuted": 0
   },
   {
-    "exchange": 8,
+    "exchange": 7,
     "createdAt": "2026-11-13T00:13:33.062Z",
     "ownerRequest": "قبلش چی؟",
     "dexaVisibleReply": "پیام از مریم پیروان:\n[عکس]\nمتاسفانه با خبر شدیم فردوسی از اون دنیا هم رفت\n\n💬PERSIAN \nClovE @Kafiha",
@@ -347,7 +338,7 @@ HISTORY_SHA256: fa94e6d6195ad754c9610ba29cc6351d3aeafc6ddfbbcafc214f82728ca8c0c4
     "effectsExecuted": 0
   },
   {
-    "exchange": 9,
+    "exchange": 8,
     "createdAt": "2026-11-13T00:15:19.119Z",
     "ownerRequest": "دوباره بگو",
     "dexaVisibleReply": "پیام از مریم پیروان:\n[عکس]\nمتاسفانه با خبر شدیم فردوسی از اون دنیا هم رفت\n\n💬PERSIAN \nClovE @Kafiha",
@@ -356,7 +347,7 @@ HISTORY_SHA256: fa94e6d6195ad754c9610ba29cc6351d3aeafc6ddfbbcafc214f82728ca8c0c4
     "effectsExecuted": 0
   },
   {
-    "exchange": 10,
+    "exchange": 9,
     "createdAt": "2026-11-13T00:16:11.696Z",
     "ownerRequest": "و یکی قبل ترش؟",
     "dexaVisibleReply": "پیام از صبا عنایتی:\n[گیف؛ متن همراه ندارد.]",
@@ -365,7 +356,7 @@ HISTORY_SHA256: fa94e6d6195ad754c9610ba29cc6351d3aeafc6ddfbbcafc214f82728ca8c0c4
     "effectsExecuted": 0
   },
   {
-    "exchange": 11,
+    "exchange": 10,
     "createdAt": "2026-11-13T00:16:45.143Z",
     "ownerRequest": "آخرین پیام من چی بوده",
     "dexaVisibleReply": "منظورت آخرین پیام ارسالی خودت در کدام پیام‌رسان است (تلگرام، واتساپ یا پیام‌رسان دیگری)، یا آخرین پیامت در گفت‌وگو با دکسا؟",
@@ -374,7 +365,7 @@ HISTORY_SHA256: fa94e6d6195ad754c9610ba29cc6351d3aeafc6ddfbbcafc214f82728ca8c0c4
     "effectsExecuted": 0
   },
   {
-    "exchange": 12,
+    "exchange": 11,
     "createdAt": "2026-11-13T00:17:24.796Z",
     "ownerRequest": "در همان گروه",
     "dexaVisibleReply": "اجرای رسپی در یک گام با مانع واقعی روبه‌رو شد. برای ادامه، رسپی تازه‌ای از مرورگر اول با شواهد همین گام لازم است؛ اجرای خودکار دوباره انجام نمی‌شود.",
@@ -383,7 +374,7 @@ HISTORY_SHA256: fa94e6d6195ad754c9610ba29cc6351d3aeafc6ddfbbcafc214f82728ca8c0c4
     "effectsExecuted": 0
   },
   {
-    "exchange": 13,
+    "exchange": 12,
     "createdAt": "2026-11-13T00:18:13.412Z",
     "ownerRequest": "در همان گروه اصحاب تلگرام",
     "dexaVisibleReply": "متأسفانه نتونستم کاری که خواستی رو انجام بدم.",
@@ -392,7 +383,7 @@ HISTORY_SHA256: fa94e6d6195ad754c9610ba29cc6351d3aeafc6ddfbbcafc214f82728ca8c0c4
     "effectsExecuted": 0
   },
   {
-    "exchange": 14,
+    "exchange": 13,
     "createdAt": "2026-11-13T00:18:56.955Z",
     "ownerRequest": "بابا اخرین پیامم در همان گروه اصحاب تلگرام رو میخوام",
     "dexaVisibleReply": "اجرای رسپی در یک گام با مانع واقعی روبه‌رو شد. برای ادامه، رسپی تازه‌ای از مرورگر اول با شواهد همین گام لازم است؛ اجرای خودکار دوباره انجام نمی‌شود.",
@@ -401,7 +392,7 @@ HISTORY_SHA256: fa94e6d6195ad754c9610ba29cc6351d3aeafc6ddfbbcafc214f82728ca8c0c4
     "effectsExecuted": 0
   },
   {
-    "exchange": 15,
+    "exchange": 14,
     "createdAt": "2026-11-13T00:19:42.283Z",
     "ownerRequest": "اخرین پیام خودم در گروه اصحاب در تلگرام رو‌ بگو",
     "dexaVisibleReply": "پیام از MirKazem:\nنمی‌باید منطقا در عکسی که این کپشن رو داره علی هم می‌بود؟! 🤔",
@@ -410,7 +401,7 @@ HISTORY_SHA256: fa94e6d6195ad754c9610ba29cc6351d3aeafc6ddfbbcafc214f82728ca8c0c4
     "effectsExecuted": 0
   },
   {
-    "exchange": 16,
+    "exchange": 15,
     "createdAt": "2026-11-13T00:22:57.828Z",
     "ownerRequest": "دوباره بگو",
     "dexaVisibleReply": "برای بازخوانی دقیق آخرین پاسخ تأییدشده درباره پیام خودت در گروه «اصحاب بعد از جنگ» تلگرام، مرجع معتبر حافظه (refId) لازم است. این شناسه در تاریخچه ارائه‌شده موجود نیست.",
@@ -419,7 +410,7 @@ HISTORY_SHA256: fa94e6d6195ad754c9610ba29cc6351d3aeafc6ddfbbcafc214f82728ca8c0c4
     "effectsExecuted": 0
   },
   {
-    "exchange": 17,
+    "exchange": 16,
     "createdAt": "2026-11-13T00:26:44.997Z",
     "ownerRequest": "خب برو و اخرین پیامم رو در گروه بخون",
     "dexaVisibleReply": "متأسفانه نتونستم کاری که خواستی رو انجام بدم.",
@@ -428,7 +419,7 @@ HISTORY_SHA256: fa94e6d6195ad754c9610ba29cc6351d3aeafc6ddfbbcafc214f82728ca8c0c4
     "effectsExecuted": 0
   },
   {
-    "exchange": 18,
+    "exchange": 17,
     "createdAt": "2026-11-13T08:45:53.682Z",
     "ownerRequest": "یه بررسی کن ببین توی علی بابا پیام جدید دارم؟",
     "dexaVisibleReply": "در کاتالوگ فعلی توان اجرایی کافی وجود ندارد: The catalog provides the read-only capability tool.cf.alibaba_unread_list with a valid input schema, but does not provide an audited observedOutputContract for its results. Therefore, the exact output path and record shape needed for a verified conversations answer cannot be established without guessing. The capability exists, but a contract-confor",
@@ -437,7 +428,7 @@ HISTORY_SHA256: fa94e6d6195ad754c9610ba29cc6351d3aeafc6ddfbbcafc214f82728ca8c0c4
     "effectsExecuted": 0
   },
   {
-    "exchange": 19,
+    "exchange": 18,
     "createdAt": "2026-11-13T08:46:52.008Z",
     "ownerRequest": "یه بررسی کن ببین توی علی‌بابا پیام جدید دارم؟",
     "dexaVisibleReply": "در کاتالوگ فعلی توان اجرایی کافی وجود ندارد: قابلیت خواندنی tool.cf.alibaba_unread_list برای بررسی گفتگوهای دارای پیام خوانده‌نشده در علی‌بابا موجود است و inputSchema معتبر دارد، اما کاتالوگ برای خروجی آن observedOutputContract تأییدشده ارائه نمی‌کند. بنابراین ساختار دقیق پاسخ، مسیر آرایه گفتگوها و فیلدهای وضعیت پیام‌های خوانده‌نشده مشخص نیست و نمی‌توان بدون حدس‌زدن output.path و check معتبر ",
@@ -446,7 +437,7 @@ HISTORY_SHA256: fa94e6d6195ad754c9610ba29cc6351d3aeafc6ddfbbcafc214f82728ca8c0c4
     "effectsExecuted": 0
   },
   {
-    "exchange": 20,
+    "exchange": 19,
     "createdAt": "2026-11-13T08:48:16.324Z",
     "ownerRequest": "لیست ۵ تا چت اخیر علی‌بابامو بده",
     "dexaVisibleReply": "در کاتالوگ فعلی توان اجرایی کافی وجود ندارد: قابلیت tool.cf.alibaba_conversation_list برای دریافت ۵ گفتگوی اخیر علی‌بابا در کاتالوگ موجود است و inputSchema آن limit=5 را پشتیبانی می‌کند، اما هیچ observedOutputContract تأییدشده‌ای برای خروجی این قابلیت تعریف نشده است. بنابراین مسیر دقیق آرایه گفتگوها (output.path)، ساختار رکوردها و ترتیب زمانی آن‌ها قابل تأیید نیست و نمی‌توان بدون حدس‌زدن، خرو",
@@ -455,7 +446,7 @@ HISTORY_SHA256: fa94e6d6195ad754c9610ba29cc6351d3aeafc6ddfbbcafc214f82728ca8c0c4
     "effectsExecuted": 0
   },
   {
-    "exchange": 21,
+    "exchange": 20,
     "createdAt": "2026-11-13T15:02:29.489Z",
     "ownerRequest": "I'm here.",
     "dexaVisibleReply": "What would you like Dexa to do? 'I'm here' does not specify an actionable request.",
@@ -464,7 +455,7 @@ HISTORY_SHA256: fa94e6d6195ad754c9610ba29cc6351d3aeafc6ddfbbcafc214f82728ca8c0c4
     "effectsExecuted": 0
   },
   {
-    "exchange": 22,
+    "exchange": 21,
     "createdAt": "2026-11-13T15:03:53.214Z",
     "ownerRequest": "لیست ۱۰ تا چت اخیر تلگرامم رو بده.",
     "dexaVisibleReply": "You're here. What would you like Dexa to do next? Please specify the action or information you want.",
@@ -473,7 +464,7 @@ HISTORY_SHA256: fa94e6d6195ad754c9610ba29cc6351d3aeafc6ddfbbcafc214f82728ca8c0c4
     "effectsExecuted": 0
   },
   {
-    "exchange": 23,
+    "exchange": 22,
     "createdAt": "2026-11-13T15:04:39.053Z",
     "ownerRequest": "I'm here.",
     "dexaVisibleReply": "What would you like Dexa to do? 'I'm here' does not specify an actionable request.",
@@ -482,7 +473,7 @@ HISTORY_SHA256: fa94e6d6195ad754c9610ba29cc6351d3aeafc6ddfbbcafc214f82728ca8c0c4
     "effectsExecuted": 0
   },
   {
-    "exchange": 24,
+    "exchange": 23,
     "createdAt": "2026-11-13T15:05:53.380Z",
     "ownerRequest": "دمای تهران چقدره؟",
     "dexaVisibleReply": "What would you like Dexa to do? 'I'm here' does not specify an actionable request.",
@@ -491,7 +482,7 @@ HISTORY_SHA256: fa94e6d6195ad754c9610ba29cc6351d3aeafc6ddfbbcafc214f82728ca8c0c4
     "effectsExecuted": 0
   },
   {
-    "exchange": 25,
+    "exchange": 24,
     "createdAt": "2026-11-13T15:15:53.811Z",
     "ownerRequest": "دمای تهران چقدره؟",
     "dexaVisibleReply": "در کاتالوگ فعلی توان اجرایی کافی وجود ندارد: کاتالوگ قابلیت‌های Dexa فاقد ابزار تأییدشده برای دریافت دمای فعلی یا اطلاعات زنده آب‌وهوای تهران است. بنابراین امکان تهیه برنامه اجرایی معتبر برای این درخواست وجود ندارد.",
@@ -500,7 +491,7 @@ HISTORY_SHA256: fa94e6d6195ad754c9610ba29cc6351d3aeafc6ddfbbcafc214f82728ca8c0c4
     "effectsExecuted": 0
   },
   {
-    "exchange": 26,
+    "exchange": 25,
     "createdAt": "2026-11-13T15:16:55.597Z",
     "ownerRequest": "سه تا چت آخر تلگرامم رو بده.",
     "dexaVisibleReply": "• نجمه ایرانسل\n• Allina TX (۵۵ پیام خوانده نشده)\n• سهیل صفوی",
@@ -509,7 +500,7 @@ HISTORY_SHA256: fa94e6d6195ad754c9610ba29cc6351d3aeafc6ddfbbcafc214f82728ca8c0c4
     "effectsExecuted": 0
   },
   {
-    "exchange": 27,
+    "exchange": 26,
     "createdAt": "2026-11-13T15:18:04.396Z",
     "ownerRequest": ". آخرین. پیام در چت سهیل صفوی چی بوده؟",
     "dexaVisibleReply": "پیام از MirKazem:\nنه گلم، فقط اعلام برنامه کردم!",
@@ -518,7 +509,7 @@ HISTORY_SHA256: fa94e6d6195ad754c9610ba29cc6351d3aeafc6ddfbbcafc214f82728ca8c0c4
     "effectsExecuted": 0
   },
   {
-    "exchange": 28,
+    "exchange": 27,
     "createdAt": "2026-11-13T15:18:59.392Z",
     "ownerRequest": "توی همون چت یه ایموجی لبخند بفرست.",
     "dexaVisibleReply": "متأسفانه نتونستم کاری که خواستی رو انجام بدم.",
@@ -527,7 +518,7 @@ HISTORY_SHA256: fa94e6d6195ad754c9610ba29cc6351d3aeafc6ddfbbcafc214f82728ca8c0c4
     "effectsExecuted": 0
   },
   {
-    "exchange": 29,
+    "exchange": 28,
     "createdAt": "2026-11-13T15:19:42.214Z",
     "ownerRequest": "چرا نتونستی کاری که خواستم رو انجام بدی؟",
     "dexaVisibleReply": "در کاتالوگ فعلی توان اجرایی کافی وجود ندارد: در آخرین درخواست ثبت‌شده، کاربر خواسته بود یک ایموجی لبخند در چت تلگرام «سهیل صفوی» ارسال شود. تاریخچه فقط وضعیت FAILED و effectsExecuted=0 را ثبت کرده و علت فنی شکست، خطای ابزار یا گزارش اجرای مرحله ناموفق را ارائه نمی‌کند. در کاتالوگ نیز قابلیت تأییدشده‌ای با قرارداد خروجی مشخص برای بازیابی جزئیات خطای اجرای قبلی Dexa وجود ندارد. بنابراین نمی‌توا",
@@ -536,11 +527,20 @@ HISTORY_SHA256: fa94e6d6195ad754c9610ba29cc6351d3aeafc6ddfbbcafc214f82728ca8c0c4
     "effectsExecuted": 0
   },
   {
-    "exchange": 30,
+    "exchange": 29,
     "createdAt": "2026-11-13T15:21:01.360Z",
     "ownerRequest": "یه بار دیگه لیست سه تا چت آخر تلگرامم رو بده.",
     "dexaVisibleReply": "• نجمه ایرانسل\n• Allina TX (۵۵ پیام خوانده نشده)\n• سهیل صفوی",
     "executionState": "SUCCEEDED_VERIFIED",
+    "turnComplete": true,
+    "effectsExecuted": 0
+  },
+  {
+    "exchange": 30,
+    "createdAt": "2026-11-13T15:21:44.884Z",
+    "ownerRequest": "به همون نجم ایرانسل بگو، خیلی دوست دارم.",
+    "dexaVisibleReply": "رسپی قبل از اجرای ابزارها قابل پذیرش نبود؛ هیچ عملیاتی اجرا نشد.",
+    "executionState": "FAILED",
     "turnComplete": true,
     "effectsExecuted": 0
   }
