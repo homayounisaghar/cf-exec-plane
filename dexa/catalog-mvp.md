@@ -270,21 +270,12 @@ Conversation completion NEVER implies a tool ran successfully. Never invent miss
 
 HISTORY_LIMIT: 30
 HISTORY_COUNT: 30
-HISTORY_SHA256: 7a97880d8205e84a5727a25d3e671fa9c432397ac34284d8b6eab27c49362821
+HISTORY_SHA256: 1af8646a630122967ea42b36008878d5c545ac3113930f7864a10ba4dc5702a8
 
 ~~~json
 [
   {
     "exchange": 1,
-    "createdAt": "2026-11-13T15:24:15.201Z",
-    "ownerRequest": "آخر. این پیام سهیل به من چی بوده؟",
-    "dexaVisibleReply": "پیام از سهیل صفوی:\nتهدید کردی؟",
-    "executionState": "SUCCEEDED_VERIFIED",
-    "turnComplete": true,
-    "effectsExecuted": 0
-  },
-  {
-    "exchange": 2,
     "createdAt": "2026-11-13T15:28:06.370Z",
     "ownerRequest": "خودتو معرفی کن.",
     "dexaVisibleReply": "• Kazem-tenghai\n• ESFA & jingrui 3Dprints protoyp (۳۰ پیام خوانده نشده)\n• ESFA & YCW bag (۹۰ پیام خوانده نشده)",
@@ -293,7 +284,7 @@ HISTORY_SHA256: 7a97880d8205e84a5727a25d3e671fa9c432397ac34284d8b6eab27c49362821
     "effectsExecuted": 0
   },
   {
-    "exchange": 3,
+    "exchange": 2,
     "createdAt": "2026-11-13T15:41:28.550Z",
     "ownerRequest": "لیست ستاپ چت آخر واتساپم رو بده.",
     "dexaVisibleReply": "• علی تیماجچی, ABOMIS\n• شماره ایرانسل من\n• مهدی مقیمی",
@@ -302,7 +293,7 @@ HISTORY_SHA256: 7a97880d8205e84a5727a25d3e671fa9c432397ac34284d8b6eab27c49362821
     "effectsExecuted": 0
   },
   {
-    "exchange": 4,
+    "exchange": 3,
     "createdAt": "2026-11-13T15:45:35.520Z",
     "ownerRequest": "آخرین چت تلگرامم چی بوده؟",
     "dexaVisibleReply": "• نجمه ایرانسل",
@@ -311,7 +302,7 @@ HISTORY_SHA256: 7a97880d8205e84a5727a25d3e671fa9c432397ac34284d8b6eab27c49362821
     "effectsExecuted": 0
   },
   {
-    "exchange": 5,
+    "exchange": 4,
     "createdAt": "2026-11-13T15:46:28.308Z",
     "ownerRequest": "دوباره بگو.",
     "dexaVisibleReply": "• نجمه ایرانسل",
@@ -320,7 +311,7 @@ HISTORY_SHA256: 7a97880d8205e84a5727a25d3e671fa9c432397ac34284d8b6eab27c49362821
     "effectsExecuted": 0
   },
   {
-    "exchange": 6,
+    "exchange": 5,
     "createdAt": "2026-11-13T15:50:22.578Z",
     "ownerRequest": "آخرین پیام در همان چت چی بوده؟",
     "dexaVisibleReply": "متأسفانه نتونستم کاری که خواستی رو انجام بدم.",
@@ -329,7 +320,7 @@ HISTORY_SHA256: 7a97880d8205e84a5727a25d3e671fa9c432397ac34284d8b6eab27c49362821
     "effectsExecuted": 0
   },
   {
-    "exchange": 7,
+    "exchange": 6,
     "createdAt": "2026-11-13T16:17:37.576Z",
     "ownerRequest": "سه تا چت آخر تلگرامم رو بده.",
     "dexaVisibleReply": "• نجمه ایرانسل\n• جلال آصف\n• 🔒{ پروکسی تلگرام }🔓 (۳ پیام خوانده نشده)",
@@ -338,7 +329,7 @@ HISTORY_SHA256: 7a97880d8205e84a5727a25d3e671fa9c432397ac34284d8b6eab27c49362821
     "effectsExecuted": 0
   },
   {
-    "exchange": 8,
+    "exchange": 7,
     "createdAt": "2026-11-13T16:18:40.539Z",
     "ownerRequest": "آخرین پیام نجم ایران سل به من چی بوده؟",
     "dexaVisibleReply": "متأسفانه نتونستم کاری که خواستی رو انجام بدم.",
@@ -347,7 +338,7 @@ HISTORY_SHA256: 7a97880d8205e84a5727a25d3e671fa9c432397ac34284d8b6eab27c49362821
     "effectsExecuted": 0
   },
   {
-    "exchange": 9,
+    "exchange": 8,
     "createdAt": "2026-11-13T17:39:19.758Z",
     "ownerRequest": "صدامو می‌شنوی؟",
     "dexaVisibleReply": "در کاتالوگ فعلی توان اجرایی کافی وجود ندارد: The current owner instruction, «صدامو می‌شنوی؟», asks whether live voice audio is being heard. The verified Dexa capability catalog does not provide a capability to detect an active microphone, listen to a live audio stream, or verify that the owner's voice is audible. Audio transcription of an existing supported attachment cannot establish live li",
@@ -356,7 +347,7 @@ HISTORY_SHA256: 7a97880d8205e84a5727a25d3e671fa9c432397ac34284d8b6eab27c49362821
     "effectsExecuted": 0
   },
   {
-    "exchange": 10,
+    "exchange": 9,
     "createdAt": "2026-11-13T17:57:31.659Z",
     "ownerRequest": "سه تا چت آخر تلگرامم رو لیست کن.",
     "dexaVisibleReply": "• نجمه ایرانسل\n• محمد عظیمی‌زاده (۲ پیام خوانده نشده)\n• اصحاب بعد از جنگ (۱ پیام خوانده نشده)",
@@ -365,7 +356,7 @@ HISTORY_SHA256: 7a97880d8205e84a5727a25d3e671fa9c432397ac34284d8b6eab27c49362821
     "effectsExecuted": 0
   },
   {
-    "exchange": 11,
+    "exchange": 10,
     "createdAt": "2026-11-13T17:58:34.813Z",
     "ownerRequest": "محمد چی گفته بوده که خونده نشده؟",
     "dexaVisibleReply": "متأسفانه نتونستم کاری که خواستی رو انجام بدم.",
@@ -374,7 +365,7 @@ HISTORY_SHA256: 7a97880d8205e84a5727a25d3e671fa9c432397ac34284d8b6eab27c49362821
     "effectsExecuted": 0
   },
   {
-    "exchange": 12,
+    "exchange": 11,
     "createdAt": "2026-11-13T18:00:32.317Z",
     "ownerRequest": "میکروفون رو تحویل بده.",
     "dexaVisibleReply": "در کاتالوگ فعلی توان اجرایی کافی وجود ندارد: در کاتالوگ تأییدشدهٔ Dexa هیچ قابلیت اجرایی برای واگذاری کنترل میکروفون، فعال‌سازی ورودی صوتی زنده یا تحویل فیزیکی میکروفون وجود ندارد. قابلیت رونویسی فایل صوتی موجود نیز امکان تحویل یا کنترل میکروفون را فراهم نمی‌کند.",
@@ -383,7 +374,7 @@ HISTORY_SHA256: 7a97880d8205e84a5727a25d3e671fa9c432397ac34284d8b6eab27c49362821
     "effectsExecuted": 0
   },
   {
-    "exchange": 13,
+    "exchange": 12,
     "createdAt": "2026-11-13T18:07:36.907Z",
     "ownerRequest": "صدامو می‌شنوی؟",
     "dexaVisibleReply": "در کاتالوگ فعلی توان اجرایی کافی وجود ندارد: درخواست فعلی «گفتم رو تحویل بده» با توجه به آخرین نوبت ثبت‌شده به تحویل میکروفون اشاره دارد. کاتالوگ تأییدشدهٔ Dexa هیچ قابلیت اجرایی برای تحویل میکروفون، واگذاری کنترل آن یا فعال‌سازی ورودی صوتی زنده ندارد. ابزارهای پردازش فایل صوتی موجود نیز این عملیات را پشتیبانی نمی‌کنند؛ بنابراین ساخت رسپی اجرایی معتبر ممکن نیست.",
@@ -392,7 +383,7 @@ HISTORY_SHA256: 7a97880d8205e84a5727a25d3e671fa9c432397ac34284d8b6eab27c49362821
     "effectsExecuted": 0
   },
   {
-    "exchange": 14,
+    "exchange": 13,
     "createdAt": "2026-11-13T18:08:48.764Z",
     "ownerRequest": "چت آخر تلگرامم مربوط به کیه؟",
     "dexaVisibleReply": "• نجمه ایرانسل",
@@ -401,7 +392,7 @@ HISTORY_SHA256: 7a97880d8205e84a5727a25d3e671fa9c432397ac34284d8b6eab27c49362821
     "effectsExecuted": 0
   },
   {
-    "exchange": 15,
+    "exchange": 14,
     "createdAt": "2026-11-13T18:52:49.269Z",
     "ownerRequest": "چت آخر تلگرامم مال کیه؟",
     "dexaVisibleReply": "• نجمه ایرانسل",
@@ -410,7 +401,7 @@ HISTORY_SHA256: 7a97880d8205e84a5727a25d3e671fa9c432397ac34284d8b6eab27c49362821
     "effectsExecuted": 0
   },
   {
-    "exchange": 16,
+    "exchange": 15,
     "createdAt": "2026-11-13T20:10:13.921Z",
     "ownerRequest": "لیست 3 تا چت آخر تلگرامم رو بده.",
     "dexaVisibleReply": "• نجمه ایرانسل\n• جلال آصف\n• اصحاب بعد از جنگ",
@@ -419,7 +410,7 @@ HISTORY_SHA256: 7a97880d8205e84a5727a25d3e671fa9c432397ac34284d8b6eab27c49362821
     "effectsExecuted": 0
   },
   {
-    "exchange": 17,
+    "exchange": 16,
     "createdAt": "2026-11-14T03:43:10.773Z",
     "ownerRequest": "لیست ست چت اخیر تلگرامم رو بده.",
     "dexaVisibleReply": "[{\"handle\":\"tgchat:d815e083-5d58-42e8-8718-11ab86605ee9\",\"name\":\"نجمه ایرانسل\",\"type\":\"user\",\"kind\":\"user\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":true,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:d20ae55e-ce30-4648-b1c5-e5c171f71978\",\"name\":\"Compact MCM Design\",\"type\":\"chat\",\"kind\":\"supergroup\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":5,\"unread_mark\":false,\"has_unread\":true},{\"handle\":\"tgchat:acfdb040-8ca2-4e86-8c75-e06ee9c55fab\",\"name\":\"چین ، ارسال بار و پست، نیازمندیها و پذیرش و دانشجویی ، یوان، ترجمه ، بلیط و ویزا، کنسولی\",\"type\":\"chat\",\"kind\":\"supergroup\",\"is_forum\":true,\"forum_kind\":\"forum\",\"pinned\":false,\"unread_count\":73,\"unread_mark\":false,\"has_unread\":true},{\"handle\":\"tgchat:2d0b229f-4244-4b86-b622-154a657b2594\",\"name\":\"اصحاب بعد از جنگ\",\"type\":\"chat\",\"kind\":\"supergroup\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":22,\"unread_mark\":false,\"has_unread\":true},{\"handle\":\"tgchat:5c3b9fc1-8a3e-4ce4-81d6-aaf53ea1a246\",\"name\":\"جلال آصف\",\"type\":\"user\",\"kind\":\"user\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:1866df69-94e2-49e0-9488-aec0748d2c19\",\"name\":\"KHEMASS(NaCl+C₆H₁₂O₆)\",\"type\":\"chat\",\"kind\":\"supergroup\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:0ffb366f-4dd5-47ef-b206-3b0bb72a8c4b\",\"name\":\"🔒{ پروکسی تلگرام }🔓\",\"type\":\"chat\",\"kind\":\"channel\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:4fa444c1-945a-4944-a920-ac17019624e9\",\"name\":\"وحید حاجی‌حسنی\",\"type\":\"user\",\"kind\":\"user\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:6f71660f-dd6c-436e-a048-2d93abcaf8c7\",\"name\":\"پارمیدا\",\"type\":\"user\",\"kind\":\"user\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:a0e028a9-688f-43a7-afb4-af6a0838ef60\",\"name\":\"محمد عظیمی‌زاده\",\"type\":\"user\",\"kind\":\"user\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:ae74fff3-b1ab-46d2-8a75-ff8ca6970181\",\"name\":\"Ekas Design Studio\",\"type\":\"chat\",\"kind\":\"channel\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:48b65b3f-b5c0-403b-90ec-51a79b85f013\",\"name\":\"Allina TX\",\"type\":\"chat\",\"kind\":\"supergroup\",\"is_forum\":true,\"forum_kind\":\"forum\",\"pinned\":false,\"unread_count\":60,\"unread_mark\":false,\"has_unread\":true},{\"handle\":\"tgchat:42e67539-e8a7-4cf3-949c-58fc7f243712\",\"name\":\"سهیل صفوی\",\"type\":\"user\",\"kind\":\"user\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:774e049a-4433-4b29-ad94-d31b6760b9d2\",\"name\":\"سینا محمدی\",\"type\":\"user\",\"kind\":\"user\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:f36f5d1c-5f3b-481f-bd68-343de7f6bfa5\",\"name\":\"مهدی رجبی\",\"type\":\"user\",\"kind\":\"user\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:51c5d75d-cce4-4666-bce3-fca822d417b4\",\"name\":\"Bijan Binaee\",\"type\":\"user\",\"kind\":\"user\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:8422ae4e-3f4f-4e29-9b43-4a5583238409\",\"name\":\"Saved Messages\",\"type\":\"user\",\"kind\":\"user\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:2ee11d0a-e8d3-4ac9-96f5-bd0c6dfc7f1e\",\"name\":\"وحید حاجی‌حسنی\",\"type\":\"user\",\"kind\":\"user\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:55f38260-5158-4c1f-a529-02f2cdcdfaaa\",\"name\":\"بهزاد مظلومی\",\"type\":\"user\",\"kind\":\"user\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:2df9baf8-e55d-4f1e-8f3a-f1c3af2f6981\",\"name\":\"MCM@ESFA\",\"type\":\"chat\",\"kind\":\"group\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:0517232a-d35e-48b9-bf80-d876079e96bc\",\"name\":\"محمدحسن زاهدی\",\"type\":\"user\",\"kind\":\"user\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:49aae9a4-853b-4eba-bb5d-c603e886ddd7\",\"name\":\"محمدحسین پیران\",\"type\":\"user\",\"kind\":\"user\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:5aefd1d7-7cc9-440a-b28c-274b9f63a5a7\",\"name\":\"U♡\",\"type\":\"chat\",\"kind\":\"channel\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:275262f2-6c31-4101-b6d5-ec3f1685b008\",\"name\":\"ُفرصت‌های وام، ‌سرمایه‌گذاری و ... 😁\",\"type\":\"chat\",\"kind\":\"group\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:84393391-65f5-43d3-a57d-f830ed1aa57a\",\"name\":\"اطلاع رسانی گذرنت\",\"type\":\"chat\",\"kind\":\"channel\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:310727db-c426-4e4b-86f7-683a184e77ee\",\"name\":\"هماهنگی نشست‌های حلقه دوستی\",\"type\":\"chat\",\"kind\":\"supergroup\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:40bc22f6-4706-4d84-84a4-207fd5fdce02\",\"name\":\"نجمه\",\"type\":\"user\",\"kind\":\"user\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:3d53bed2-9b6d-4e26-9e0a-7b5e4fb4b769\",\"name\":\"گالری قصه\",\"type\":\"chat\",\"kind\":\"channel\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:143f0489-b0b2-4c77-b5cf-12484e39dbbc\",\"name\":\"ESFA Mechanical Manufacturing\",\"type\":\"chat\",\"kind\":\"group\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:a28b5263-3156-417a-8867-39d861badb0d\",\"name\":\"محمدهادی عطاریه\",\"type\":\"user\",\"kind\":\"user\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:6ee47678-6c40-4f7b-a656-ac48b85ff216\",\"name\":\"CapTan12\",\"type\":\"chat\",\"kind\":\"group\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:9caa395c-2904-485b-a270-ca02df34f9d3\",\"name\":\"حامد مرسلی\",\"type\":\"user\",\"kind\":\"user\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:2debf4a8-c7ee-41e9-8187-af23d40f5e4c\",\"name\":\"رسول\",\"type\":\"user\",\"kind\":\"user\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:792f87f6-d7bc-4886-888e-f37fd4494d53\",\"name\":\"PISHTAZ Relay\",\"type\":\"chat\",\"kind\":\"group\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:700067dd-36ad-435b-bee2-e299c611cb1c\",\"name\":\"ESFA\",\"type\":\"chat\",\"kind\":\"supergroup\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:40417a64-d6a4-4753-af51-37e341cd7920\",\"name\":\"غلام‌رضا مرادی\",\"type\":\"user\",\"kind\":\"user\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:96207638-6783-4072-bea6-a2283c84a772\",\"name\":\"مهدی مقیمی\",\"type\":\"user\",\"kind\":\"user\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:521b2c8b-e048-487f-b795-6f45b4f34d91\",\"name\":\"melomix | ملو میکس\",\"type\":\"chat\",\"kind\":\"channel\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:cbff43ed-4364-4c15-9389-a7c9fc86660a\",\"name\":\"صالح جدید\",\"type\":\"user\",\"kind\":\"user\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:80073d0b-7582-4c8b-ad10-d01d9c780aa0\",\"name\":\"EMAM & ESFA\",\"type\":\"chat\",\"kind\":\"group\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:81f46b43-ab9a-44e0-a5a8-8df3da403573\",\"name\":\"Azimi Rehab\",\"type\":\"chat\",\"kind\":\"channel\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:43c2a78a-f9e7-49d1-b8d3-2b3d93f7e8dc\",\"name\":\"مجید محمدی\",\"type\":\"user\",\"kind\":\"user\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:8be26fe3-045b-42d6-9322-4ee08f1b7fcc\",\"name\":\"کاظم جلالی\",\"type\":\"user\",\"kind\":\"user\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:f02385ec-9f8c-4a4d-affd-6b2e5fce6ee0\",\"name\":\"رسول\",\"type\":\"user\",\"kind\":\"user\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:4876c87b-9515-4032-afc4-6e1a607c467f\",\"name\":\"امیر شکوهی نیا\",\"type\":\"user\",\"kind\":\"user\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:8b75066c-4853-4d0a-9226-fde979bd4558\",\"name\":\"ESFA Swiming Pool\",\"type\":\"chat\",\"kind\":\"group\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:9f58be7b-1b96-45dd-b04a-f357e0eb7dc4\",\"name\":\"محمد همتی\",\"type\":\"user\",\"kind\":\"user\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:6fe1c0bb-ed3f-4141-aff3-128d5c630572\",\"name\":\"پوریا الله‌کرمی\",\"type\":\"user\",\"kind\":\"user\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:6ce6319a-0109-4fb5-b1e4-fb7ab5b41a94\",\"name\":\"سرویس گذرنت\",\"type\":\"user\",\"kind\":\"bot\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:9fe7b498-9691-466e-ab7e-69bce196c433\",\"name\":\"اکانتینو | فروشگاه محصولات دیجیتال\",\"type\":\"user\",\"kind\":\"bot\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false}]",
@@ -428,7 +419,7 @@ HISTORY_SHA256: 7a97880d8205e84a5727a25d3e671fa9c432397ac34284d8b6eab27c49362821
     "effectsExecuted": 0
   },
   {
-    "exchange": 18,
+    "exchange": 17,
     "createdAt": "2026-11-14T03:48:35.156Z",
     "ownerRequest": "لیست جدید ست چت آخر تلگرامم رو بده.",
     "dexaVisibleReply": "[{\"handle\":\"tgchat:d815e083-5d58-42e8-8718-11ab86605ee9\",\"name\":\"نجمه ایرانسل\",\"type\":\"user\",\"kind\":\"user\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":true,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:d20ae55e-ce30-4648-b1c5-e5c171f71978\",\"name\":\"Compact MCM Design\",\"type\":\"chat\",\"kind\":\"supergroup\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":5,\"unread_mark\":false,\"has_unread\":true},{\"handle\":\"tgchat:acfdb040-8ca2-4e86-8c75-e06ee9c55fab\",\"name\":\"چین ، ارسال بار و پست، نیازمندیها و پذیرش و دانشجویی ، یوان، ترجمه ، بلیط و ویزا، کنسولی\",\"type\":\"chat\",\"kind\":\"supergroup\",\"is_forum\":true,\"forum_kind\":\"forum\",\"pinned\":false,\"unread_count\":73,\"unread_mark\":false,\"has_unread\":true}]",
@@ -437,7 +428,7 @@ HISTORY_SHA256: 7a97880d8205e84a5727a25d3e671fa9c432397ac34284d8b6eab27c49362821
     "effectsExecuted": 0
   },
   {
-    "exchange": 19,
+    "exchange": 18,
     "createdAt": "2026-11-14T03:51:47.081Z",
     "ownerRequest": "مت چنده؟",
     "dexaVisibleReply": "مدل رسپی اجرایی نساخت و فرمان فعلی هم به یک فراخوانی مستقیمِ بدون حدس تبدیل نشد؛ هیچ ابزار یا نتیجه‌ای جعل نشد.",
@@ -446,7 +437,7 @@ HISTORY_SHA256: 7a97880d8205e84a5727a25d3e671fa9c432397ac34284d8b6eab27c49362821
     "effectsExecuted": 0
   },
   {
-    "exchange": 20,
+    "exchange": 19,
     "createdAt": "2026-11-14T03:52:54.794Z",
     "ownerRequest": "ساعت چنده؟",
     "dexaVisibleReply": "مدل رسپی اجرایی نساخت و فرمان فعلی هم به یک فراخوانی مستقیمِ بدون حدس تبدیل نشد؛ هیچ ابزار یا نتیجه‌ای جعل نشد.",
@@ -455,7 +446,7 @@ HISTORY_SHA256: 7a97880d8205e84a5727a25d3e671fa9c432397ac34284d8b6eab27c49362821
     "effectsExecuted": 0
   },
   {
-    "exchange": 21,
+    "exchange": 20,
     "createdAt": "2026-11-14T03:58:47.911Z",
     "ownerRequest": "ساعت چنده؟",
     "dexaVisibleReply": "مدل رسپی اجرایی نساخت و فرمان فعلی هم به یک فراخوانی مستقیمِ بدون حدس تبدیل نشد؛ هیچ ابزار یا نتیجه‌ای جعل نشد.",
@@ -464,7 +455,7 @@ HISTORY_SHA256: 7a97880d8205e84a5727a25d3e671fa9c432397ac34284d8b6eab27c49362821
     "effectsExecuted": 0
   },
   {
-    "exchange": 22,
+    "exchange": 21,
     "createdAt": "2026-11-14T04:01:37.991Z",
     "ownerRequest": "چنده؟",
     "dexaVisibleReply": "مدل رسپی اجرایی نساخت و فرمان فعلی هم به یک فراخوانی مستقیمِ بدون حدس تبدیل نشد؛ هیچ ابزار یا نتیجه‌ای جعل نشد.",
@@ -473,7 +464,7 @@ HISTORY_SHA256: 7a97880d8205e84a5727a25d3e671fa9c432397ac34284d8b6eab27c49362821
     "effectsExecuted": 0
   },
   {
-    "exchange": 23,
+    "exchange": 22,
     "createdAt": "2026-11-14T04:06:41.507Z",
     "ownerRequest": "سه تا چت آخر تلگرامم رو بده.",
     "dexaVisibleReply": "[{\"handle\":\"tgchat:d815e083-5d58-42e8-8718-11ab86605ee9\",\"name\":\"نجمه ایرانسل\",\"type\":\"user\",\"kind\":\"user\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":true,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:d20ae55e-ce30-4648-b1c5-e5c171f71978\",\"name\":\"Compact MCM Design\",\"type\":\"chat\",\"kind\":\"supergroup\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":5,\"unread_mark\":false,\"has_unread\":true},{\"handle\":\"tgchat:acfdb040-8ca2-4e86-8c75-e06ee9c55fab\",\"name\":\"چین ، ارسال بار و پست، نیازمندیها و پذیرش و دانشجویی ، یوان، ترجمه ، بلیط و ویزا، کنسولی\",\"type\":\"chat\",\"kind\":\"supergroup\",\"is_forum\":true,\"forum_kind\":\"forum\",\"pinned\":false,\"unread_count\":73,\"unread_mark\":false,\"has_unread\":true}]",
@@ -482,7 +473,7 @@ HISTORY_SHA256: 7a97880d8205e84a5727a25d3e671fa9c432397ac34284d8b6eab27c49362821
     "effectsExecuted": 0
   },
   {
-    "exchange": 24,
+    "exchange": 23,
     "createdAt": "2026-11-14T04:24:07.578Z",
     "ownerRequest": "کار تلگراممو بده.",
     "dexaVisibleReply": "مدل رسپی اجرایی نساخت و فرمان فعلی هم به یک فراخوانی مستقیمِ بدون حدس تبدیل نشد؛ هیچ ابزار یا نتیجه‌ای جعل نشد.",
@@ -491,7 +482,7 @@ HISTORY_SHA256: 7a97880d8205e84a5727a25d3e671fa9c432397ac34284d8b6eab27c49362821
     "effectsExecuted": 0
   },
   {
-    "exchange": 25,
+    "exchange": 24,
     "createdAt": "2026-11-14T04:28:36.639Z",
     "ownerRequest": "تو چت آخر تلگرامم رو بده.",
     "dexaVisibleReply": "[{\"handle\":\"tgchat:d815e083-5d58-42e8-8718-11ab86605ee9\",\"name\":\"نجمه ایرانسل\",\"type\":\"user\",\"kind\":\"user\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":true,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false}]",
@@ -500,7 +491,7 @@ HISTORY_SHA256: 7a97880d8205e84a5727a25d3e671fa9c432397ac34284d8b6eab27c49362821
     "effectsExecuted": 0
   },
   {
-    "exchange": 26,
+    "exchange": 25,
     "createdAt": "2026-11-14T04:34:18.575Z",
     "ownerRequest": "تو آخر تلگرامم رو بده.",
     "dexaVisibleReply": "[{\"handle\":\"tgchat:d815e083-5d58-42e8-8718-11ab86605ee9\",\"name\":\"نجمه ایرانسل\",\"type\":\"user\",\"kind\":\"user\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":true,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:2d0b229f-4244-4b86-b622-154a657b2594\",\"name\":\"اصحاب بعد از جنگ\",\"type\":\"chat\",\"kind\":\"supergroup\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":23,\"unread_mark\":false,\"has_unread\":true}]",
@@ -509,7 +500,7 @@ HISTORY_SHA256: 7a97880d8205e84a5727a25d3e671fa9c432397ac34284d8b6eab27c49362821
     "effectsExecuted": 0
   },
   {
-    "exchange": 27,
+    "exchange": 26,
     "createdAt": "2026-11-14T04:37:36.629Z",
     "ownerRequest": "ساعت چنده؟",
     "dexaVisibleReply": "مدل رسپی اجرایی نساخت و فرمان فعلی هم به یک فراخوانی مستقیمِ بدون حدس تبدیل نشد؛ هیچ ابزار یا نتیجه‌ای جعل نشد.",
@@ -518,7 +509,7 @@ HISTORY_SHA256: 7a97880d8205e84a5727a25d3e671fa9c432397ac34284d8b6eab27c49362821
     "effectsExecuted": 0
   },
   {
-    "exchange": 28,
+    "exchange": 27,
     "createdAt": "2026-11-14T04:51:08.716Z",
     "ownerRequest": "ساعت چنده؟",
     "dexaVisibleReply": "مدل رسپی اجرایی نساخت و فرمان فعلی هم به یک فراخوانی مستقیمِ بدون حدس تبدیل نشد؛ هیچ ابزار یا نتیجه‌ای جعل نشد.",
@@ -527,7 +518,7 @@ HISTORY_SHA256: 7a97880d8205e84a5727a25d3e671fa9c432397ac34284d8b6eab27c49362821
     "effectsExecuted": 0
   },
   {
-    "exchange": 29,
+    "exchange": 28,
     "createdAt": "2026-11-14T05:00:37.768Z",
     "ownerRequest": "ساعت چنده؟",
     "dexaVisibleReply": "مدل رسپی اجرایی نساخت و فرمان فعلی هم به یک فراخوانی مستقیمِ بدون حدس تبدیل نشد؛ هیچ ابزار یا نتیجه‌ای جعل نشد.",
@@ -536,8 +527,17 @@ HISTORY_SHA256: 7a97880d8205e84a5727a25d3e671fa9c432397ac34284d8b6eab27c49362821
     "effectsExecuted": 0
   },
   {
-    "exchange": 30,
+    "exchange": 29,
     "createdAt": "2026-11-14T05:01:31.030Z",
+    "ownerRequest": "ساعت چنده؟",
+    "dexaVisibleReply": "مدل رسپی اجرایی نساخت و فرمان فعلی هم به یک فراخوانی مستقیمِ بدون حدس تبدیل نشد؛ هیچ ابزار یا نتیجه‌ای جعل نشد.",
+    "executionState": "FAILED",
+    "turnComplete": true,
+    "effectsExecuted": 0
+  },
+  {
+    "exchange": 30,
+    "createdAt": "2026-11-14T05:02:27.392Z",
     "ownerRequest": "ساعت چنده؟",
     "dexaVisibleReply": "مدل رسپی اجرایی نساخت و فرمان فعلی هم به یک فراخوانی مستقیمِ بدون حدس تبدیل نشد؛ هیچ ابزار یا نتیجه‌ای جعل نشد.",
     "executionState": "FAILED",
