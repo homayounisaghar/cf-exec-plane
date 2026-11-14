@@ -1,6 +1,6 @@
 # Dexa — public tool catalogue and one-turn answer / recipe contract
 
-CATALOG_RELEASE: DEXA-CATALOG-MVP-20261114-V219-VOICE-FIRST-SHORTEST-PRESENTATION
+CATALOG_RELEASE: DEXA-CATALOG-MVP-20261114-V221-DIRECTION-FIRST-ALL-MESSENGERS
 CATALOG_DATE_UTC: 2026-11-14
 SOURCE_REPOSITORY: homayounisaghar/capability-fabric
 SOURCE_REF: work/dexa-autonomous-loop-20261020
@@ -99,7 +99,7 @@ outgoing/from_me are observed direction, date is observed Unix seconds,
 timestamp_ms is observed Unix milliseconds, sender_name is a provider
 display label only, identity/medium/time preserve provenance and limits.
 CANONICAL CONVERSATION: name,handle,last_activity_ms,identity,time.
-Use canonical_messages as the source for FILTER(outgoing=false),
+Use canonical_messages as the source for FILTER(outgoing=false) for messages sent TO the owner, or FILTER(outgoing=true) for messages the owner SENT, after the widest native bounded source read,
 SORT by date descending and TAKE count 1, then output.path:[] with
 answer.kind="messages". Canonical messages and native messages remain
 read-only provider evidence; never treat a caption as media transcription.
@@ -141,7 +141,7 @@ state/provider/metadata when the actual message is a nested record.
 NEVER invent a messages array or move a model-written text into it.
 Only verified provider message-record fields may ground the sender/content;
 the answer must not claim an unobserved conversation, sender or body.
-For a singular last/latest message, filter by the requested sender when specified, then TAKE count 1; never return unrelated senders or arbitrary messages. If timestamp sorting is needed and documented, SORT first.
+DIRECTION FIRST FOR EVERY MESSENGER: When owner asks for "their latest message TO ME", filter actual provider direction INCOMING (outgoing=false or from_me=false). When owner asks "my latest message TO THEM", filter OUTGOING (outgoing=true or from_me=true). For providers with only an audited direction string, use incoming/outgoing instead; never invent a sender from display labels. If the owner asks for the last message in the chat without specifying a sender, do not add direction. For the latest N messages by direction, first read the widest permitted bounded native message window in ONE original tool call (use the provider input schema's maximum limit, unless the provider supports filtering the direction natively), then TRANSFORM FILTER by direction, then SORT by an audited message timestamp descending when available, and only THEN TAKE the final requested N. This order is required for Telegram, WhatsApp, Bale, Alibaba, WeChat and any future audited messenger. Never fetch only N or 30 mixed-direction messages and filter afterward; that can incorrectly return "no messages" when older in-bound/out-bound messages exist. The final displayed messages must still be at most 30. No extra tool call, model call, repair, approval or delay. In a bounded visible window with no matching direction, write a very short presentation.empty explicitly limited to the checked recent messages; do not claim no message exists in the entire conversation.
 RECENCY PROOF: Provider arrays may be sorted oldest-first, newest-first or not at all. REVERSE is NOT proof of latest; it merely inverts an unknown order. When observed output metadata contains a message timestamp such as date, use SORT by that actual timestamp with direction desc before TAKE count 1. If source order is explicitly guaranteed by the provider, a direct TAKE may suffice; otherwise never use REVERSE as a substitute for SORT.
 Do not invent message bodies or labels. For text transformation, use the preadmitted DX-001 tool in the SAME recipe, with a $ref to observed records when summarizing. Never return raw search JSON as a human narrative.
 Rana requires explicit testable checks before dispatch; it does NOT synthesize missing checks. Every executable recipe MUST supply at least one check with step equal to output.step and path exactly equal to output.path. checks:[] is INVALID. Use op=exists when the verified bounded array may legitimately be empty, and op=non_empty only when an empty result would truly violate the owner goal.
@@ -164,7 +164,7 @@ Projection types are types of the FINAL SELECTED FIELD, not the containing provi
 Numeric zero is a valid count, and must not be mistaken for missing provider evidence. NEVER invent a number or infer the current count from stale previous conversation context.
 For a TRANSFORM whose result is an array (FILTER, TAKE, SORT, REVERSE, UNIQUE), use output.path:[] to return the whole array. To output a scalar field, first ONLY/MATCH then output.path:[the provider-documented field].
 Only create additional independent checks if their schema and source shape are known. Prefer one adequate final-output count or non_empty check to a malformed redundant check.
-When owner asks what someone recently said, prefer a small bounded set of newest relevant messages (1-5) rather than dumping the entire chat, unless a larger window is explicitly requested.
+When owner asks what someone recently said, return only the requested small FINAL number of newest relevant direction-matched messages (usually 1-5). Do not limit the initial mixed-direction native source to this final count; first read the broadest provider-allowed window, FILTER by observed direction, then SORT by observed time and TAKE final N.
 Check examples: {"step":3,"path":["text"],"op":"non_empty"}; {"step":3,"path":["outgoing"],"op":"equal","value":false}.
 Check operators: exists, non_empty, equal, normalized_equal, not_equal, count_equal, count_at_least, all_equal, sorted_asc, sorted_desc.
 A check is a runtime predicate on REAL returned tool or transform data, not an assistant claim.
