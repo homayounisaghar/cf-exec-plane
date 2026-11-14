@@ -273,21 +273,12 @@ Conversation completion NEVER implies a tool ran successfully. Never invent miss
 
 HISTORY_LIMIT: 30
 HISTORY_COUNT: 30
-HISTORY_SHA256: 2c2a6e052bbb08d6717c91b5109d3b3d17e36d3dc19d73fc724e964ec38388d0
+HISTORY_SHA256: 24ba019a7e7c88717fa4c660b67a560c154918f462b6e713f6d8d7b9a3e858fe
 
 ~~~json
 [
   {
     "exchange": 1,
-    "createdAt": "2026-11-14T04:34:18.575Z",
-    "ownerRequest": "تو آخر تلگرامم رو بده.",
-    "dexaVisibleReply": "[{\"handle\":\"tgchat:d815e083-5d58-42e8-8718-11ab86605ee9\",\"name\":\"نجمه ایرانسل\",\"type\":\"user\",\"kind\":\"user\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":true,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:2d0b229f-4244-4b86-b622-154a657b2594\",\"name\":\"اصحاب بعد از جنگ\",\"type\":\"chat\",\"kind\":\"supergroup\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":23,\"unread_mark\":false,\"has_unread\":true}]",
-    "executionState": "SUCCEEDED_VERIFIED",
-    "turnComplete": true,
-    "effectsExecuted": 0
-  },
-  {
-    "exchange": 2,
     "createdAt": "2026-11-14T04:37:36.629Z",
     "ownerRequest": "ساعت چنده؟",
     "dexaVisibleReply": "مدل رسپی اجرایی نساخت و فرمان فعلی هم به یک فراخوانی مستقیمِ بدون حدس تبدیل نشد؛ هیچ ابزار یا نتیجه‌ای جعل نشد.",
@@ -296,7 +287,7 @@ HISTORY_SHA256: 2c2a6e052bbb08d6717c91b5109d3b3d17e36d3dc19d73fc724e964ec38388d0
     "effectsExecuted": 0
   },
   {
-    "exchange": 3,
+    "exchange": 2,
     "createdAt": "2026-11-14T04:51:08.716Z",
     "ownerRequest": "ساعت چنده؟",
     "dexaVisibleReply": "مدل رسپی اجرایی نساخت و فرمان فعلی هم به یک فراخوانی مستقیمِ بدون حدس تبدیل نشد؛ هیچ ابزار یا نتیجه‌ای جعل نشد.",
@@ -305,7 +296,7 @@ HISTORY_SHA256: 2c2a6e052bbb08d6717c91b5109d3b3d17e36d3dc19d73fc724e964ec38388d0
     "effectsExecuted": 0
   },
   {
-    "exchange": 4,
+    "exchange": 3,
     "createdAt": "2026-11-14T05:00:37.768Z",
     "ownerRequest": "ساعت چنده؟",
     "dexaVisibleReply": "مدل رسپی اجرایی نساخت و فرمان فعلی هم به یک فراخوانی مستقیمِ بدون حدس تبدیل نشد؛ هیچ ابزار یا نتیجه‌ای جعل نشد.",
@@ -314,7 +305,7 @@ HISTORY_SHA256: 2c2a6e052bbb08d6717c91b5109d3b3d17e36d3dc19d73fc724e964ec38388d0
     "effectsExecuted": 0
   },
   {
-    "exchange": 5,
+    "exchange": 4,
     "createdAt": "2026-11-14T05:01:31.030Z",
     "ownerRequest": "ساعت چنده؟",
     "dexaVisibleReply": "مدل رسپی اجرایی نساخت و فرمان فعلی هم به یک فراخوانی مستقیمِ بدون حدس تبدیل نشد؛ هیچ ابزار یا نتیجه‌ای جعل نشد.",
@@ -323,7 +314,7 @@ HISTORY_SHA256: 2c2a6e052bbb08d6717c91b5109d3b3d17e36d3dc19d73fc724e964ec38388d0
     "effectsExecuted": 0
   },
   {
-    "exchange": 6,
+    "exchange": 5,
     "createdAt": "2026-11-14T05:02:27.392Z",
     "ownerRequest": "ساعت چنده؟",
     "dexaVisibleReply": "مدل رسپی اجرایی نساخت و فرمان فعلی هم به یک فراخوانی مستقیمِ بدون حدس تبدیل نشد؛ هیچ ابزار یا نتیجه‌ای جعل نشد.",
@@ -332,7 +323,7 @@ HISTORY_SHA256: 2c2a6e052bbb08d6717c91b5109d3b3d17e36d3dc19d73fc724e964ec38388d0
     "effectsExecuted": 0
   },
   {
-    "exchange": 7,
+    "exchange": 6,
     "createdAt": "2026-11-14T05:09:44.217Z",
     "ownerRequest": "ساعت چنده؟",
     "dexaVisibleReply": "مدل رسپی اجرایی نساخت و فرمان فعلی هم به یک فراخوانی مستقیمِ بدون حدس تبدیل نشد؛ هیچ ابزار یا نتیجه‌ای جعل نشد.",
@@ -341,7 +332,7 @@ HISTORY_SHA256: 2c2a6e052bbb08d6717c91b5109d3b3d17e36d3dc19d73fc724e964ec38388d0
     "effectsExecuted": 0
   },
   {
-    "exchange": 8,
+    "exchange": 7,
     "createdAt": "2026-11-14T05:10:16.997Z",
     "ownerRequest": "ساعت چنده؟",
     "dexaVisibleReply": "مدل رسپی اجرایی نساخت و فرمان فعلی هم به یک فراخوانی مستقیمِ بدون حدس تبدیل نشد؛ هیچ ابزار یا نتیجه‌ای جعل نشد.",
@@ -350,7 +341,7 @@ HISTORY_SHA256: 2c2a6e052bbb08d6717c91b5109d3b3d17e36d3dc19d73fc724e964ec38388d0
     "effectsExecuted": 0
   },
   {
-    "exchange": 9,
+    "exchange": 8,
     "createdAt": "2026-11-14T05:11:13.022Z",
     "ownerRequest": "ساعت چنده؟",
     "dexaVisibleReply": "{\"result\":{\"schema\":\"dexa.web-source.v1\",\"provider\":\"serper.google-search\",\"operation\":\"search\",\"query\":\"current local time in Munich Germany now\",\"results\":[{\"title\":\"Current Local Time in Munich, Bavaria, Germany (München)\",\"url\":\"https://www.timeanddate.com/worldclock/germany/munich\",\"snippet\":\"Current local time in Germany – Bavaria – Munich. Time Zone CET (Central European Time) UTC/GMT +1 hour Daylight … 117° Southeast Sunset 4:36 pm ↑ 243°\",\"publishedAt\":null,\"observedAt\":\"2026-11-14T05:11:14.092Z\",\"sourceTrust\":\"UNTRUSTED_PUBLIC_WEB_SNIPPET\"},{\"title\":\"Current local time in Munich, Germany\",\"url\":\"https://www.worldtimeserver.com/current_time_in_DE.aspx?city=munich\",\"snippet\":\"What Time Is It In Munich, Germany?Local Time. 3:42:03 PM. Thursday, November 12, 2026. Central European ...\",\"publishedAt\":null,\"observedAt\":\"2026-11-14T05:11:14.092Z\",\"sourceTrust\":\"UNTRUSTED_PUBLIC_WEB_SNIPPET\"},{\"title\":\"Time in Munich, Germany now\",\"url\":\"https://time.is/Munich\",\"snippet\":\"in Munich, Germany now 12:02:00am Saturday, 07:19AM Sunset: 04:37PM Day length: 9h 18m Solar noon: 11:58AM The current local time in Munich is 2 minutes behind ...\",\"publishedAt\":null,\"observedAt\":\"2026-11-14T05:11:14.092Z\",\"sourceTrust\":\"UNTRUSTED_PUBLIC_WEB_SNIPPET\"}],\"readAt\":\"2026-11-14T05:11:14.092Z\",\"contentDigest\":\"c4966f66cb5588e0a58cd34995e7b88c9bbd584d01839e4735f82355fda2f22b\",\"sourceUrl\":\"https://google.serper.dev/search\",\"sourceTrust\":\"UNTRUSTED_PUBLIC_SEARCH\",\"sourceVerification\":\"SOURCE_VERIFIED\",\"receiptId\":\"c389568f-9f68-43dc-b760-fb36e5d299b8\",\"resultCount\":3,\"credentialSlot\":1,\"configuredKeySlots\":2,\"fallbackFrom\":null,\"primaryFailureCode\":null},\"providerTool\":\"DEXA.INTERNAL.dexa_web_search\",\"durationMs\":1028}",
@@ -359,7 +350,7 @@ HISTORY_SHA256: 2c2a6e052bbb08d6717c91b5109d3b3d17e36d3dc19d73fc724e964ec38388d0
     "effectsExecuted": 0
   },
   {
-    "exchange": 10,
+    "exchange": 9,
     "createdAt": "2026-11-14T05:18:48.689Z",
     "ownerRequest": "ساعت چنده؟",
     "dexaVisibleReply": "مدل رسپی اجرایی نساخت و فرمان فعلی هم به یک فراخوانی مستقیمِ بدون حدس تبدیل نشد؛ هیچ ابزار یا نتیجه‌ای جعل نشد.",
@@ -368,7 +359,7 @@ HISTORY_SHA256: 2c2a6e052bbb08d6717c91b5109d3b3d17e36d3dc19d73fc724e964ec38388d0
     "effectsExecuted": 0
   },
   {
-    "exchange": 11,
+    "exchange": 10,
     "createdAt": "2026-11-14T05:19:30.527Z",
     "ownerRequest": "ساعت چنده؟",
     "dexaVisibleReply": "مدل رسپی اجرایی نساخت و فرمان فعلی هم به یک فراخوانی مستقیمِ بدون حدس تبدیل نشد؛ هیچ ابزار یا نتیجه‌ای جعل نشد.",
@@ -377,7 +368,7 @@ HISTORY_SHA256: 2c2a6e052bbb08d6717c91b5109d3b3d17e36d3dc19d73fc724e964ec38388d0
     "effectsExecuted": 0
   },
   {
-    "exchange": 12,
+    "exchange": 11,
     "createdAt": "2026-11-14T05:26:06.580Z",
     "ownerRequest": "ساعت چنده؟",
     "dexaVisibleReply": "مدل رسپی اجرایی نساخت و فرمان فعلی هم به یک فراخوانی مستقیمِ بدون حدس تبدیل نشد؛ هیچ ابزار یا نتیجه‌ای جعل نشد.",
@@ -386,7 +377,7 @@ HISTORY_SHA256: 2c2a6e052bbb08d6717c91b5109d3b3d17e36d3dc19d73fc724e964ec38388d0
     "effectsExecuted": 0
   },
   {
-    "exchange": 13,
+    "exchange": 12,
     "createdAt": "2026-11-14T05:32:08.838Z",
     "ownerRequest": "ساعت چنده؟",
     "dexaVisibleReply": "{\"output\":{\"error\":\"OUTPUT_NOT_RETURNED_BY_TOOL\",\"observed\":[{\"stepId\":1,\"kind\":\"TOOL\",\"capabilityId\":\"web.search\",\"physicalTool\":\"dexa_web_search\",\"startedAt\":\"2026-11-14T05:32:08.858Z\",\"completedAt\":\"2026-11-14T05:32:09.828Z\",\"commandIssued\":true,\"resultVerified\":true,\"actualError\":null,\"postDispatchReceiptMissing\":false,\"resultDigest\":\"a6af2c5fb8e2142384b495b5b9fb33bf675bedad10b70db6cfa0afe377a13b0b\"},{\"stepId\":2,\"diagnostic\":\"UNRESOLVED_REFERENCE_SENT_AS_IS\"},{\"stepId\":2,\"kind\":\"TOOL\",\"capabilityId\":\"dexa.text.process\",\"physicalTool\":\"dexa_text_process\",\"startedAt\":\"2026-11-14T05:32:09.847Z\",\"completedAt\":\"2026-11-14T05:32:09.862Z\",\"commandIssued\":true,\"resultVerified\":false,\"actualError\":\"DX001_WRITER_SOURCE_EMPTY\",\"postDispatchReceiptMissing\":false,\"resultDigest\":\"81b14be5e85813a9eb93832b89f6be8814928ae9b58fdac3440f135c0016a207\"}]},\"actualStepErrors\":[{\"stepId\":2,\"kind\":\"TOOL\",\"code\":\"DX001_WRITER_SOURCE_EMPTY\",\"physicalCallIssued\":true},{\"stepId\":2,\"code\":\"OUTPUT_PATH_TOOL_PLAN_DATA_PATH_MISSING\",\"physicalCallIssued\":false}],\"successfulPhysicalCalls\":2,\"warning\":\"Actual commands issued; failed steps were not treated as success.\"}",
@@ -395,7 +386,7 @@ HISTORY_SHA256: 2c2a6e052bbb08d6717c91b5109d3b3d17e36d3dc19d73fc724e964ec38388d0
     "effectsExecuted": 0
   },
   {
-    "exchange": 14,
+    "exchange": 13,
     "createdAt": "2026-11-14T05:43:53.920Z",
     "ownerRequest": "ساعت چنده؟",
     "dexaVisibleReply": "مدل رسپی اجرایی نساخت و فرمان فعلی هم به یک فراخوانی مستقیمِ بدون حدس تبدیل نشد؛ هیچ ابزار یا نتیجه‌ای جعل نشد.",
@@ -404,7 +395,7 @@ HISTORY_SHA256: 2c2a6e052bbb08d6717c91b5109d3b3d17e36d3dc19d73fc724e964ec38388d0
     "effectsExecuted": 0
   },
   {
-    "exchange": 15,
+    "exchange": 14,
     "createdAt": "2026-11-14T05:45:00.181Z",
     "ownerRequest": "تو چند سالته؟",
     "dexaVisibleReply": "من دکسا هستم، یه دستیار هوش مصنوعی، پس سن انسانی ندارم! ولی خوشحالم که اینجام تا کمکت کنم. 😊",
@@ -413,7 +404,7 @@ HISTORY_SHA256: 2c2a6e052bbb08d6717c91b5109d3b3d17e36d3dc19d73fc724e964ec38388d0
     "effectsExecuted": 0
   },
   {
-    "exchange": 16,
+    "exchange": 15,
     "createdAt": "2026-11-14T05:45:47.036Z",
     "ownerRequest": "از سرور خودت بگو ساعت چنده.",
     "dexaVisibleReply": "مدل رسپی اجرایی نساخت و فرمان فعلی هم به یک فراخوانی مستقیمِ بدون حدس تبدیل نشد؛ هیچ ابزار یا نتیجه‌ای جعل نشد.",
@@ -422,7 +413,7 @@ HISTORY_SHA256: 2c2a6e052bbb08d6717c91b5109d3b3d17e36d3dc19d73fc724e964ec38388d0
     "effectsExecuted": 0
   },
   {
-    "exchange": 17,
+    "exchange": 16,
     "createdAt": "2026-11-14T05:46:29.072Z",
     "ownerRequest": "لیست 3 تا چت آخر تلگرامم رو بگو.",
     "dexaVisibleReply": "[{\"handle\":\"tgchat:d815e083-5d58-42e8-8718-11ab86605ee9\",\"name\":\"نجمه ایرانسل\",\"type\":\"user\",\"kind\":\"user\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":true,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:6f71660f-dd6c-436e-a048-2d93abcaf8c7\",\"name\":\"پارمیدا\",\"type\":\"user\",\"kind\":\"user\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":1,\"unread_mark\":false,\"has_unread\":true},{\"handle\":\"tgchat:2d0b229f-4244-4b86-b622-154a657b2594\",\"name\":\"اصحاب بعد از جنگ\",\"type\":\"chat\",\"kind\":\"supergroup\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false}]",
@@ -431,7 +422,7 @@ HISTORY_SHA256: 2c2a6e052bbb08d6717c91b5109d3b3d17e36d3dc19d73fc724e964ec38388d0
     "effectsExecuted": 0
   },
   {
-    "exchange": 18,
+    "exchange": 17,
     "createdAt": "2026-11-14T05:47:08.334Z",
     "ownerRequest": "آیا سشن ویچت وصله؟",
     "dexaVisibleReply": "مدل رسپی اجرایی نساخت و فرمان فعلی هم به یک فراخوانی مستقیمِ بدون حدس تبدیل نشد؛ هیچ ابزار یا نتیجه‌ای جعل نشد.",
@@ -440,7 +431,7 @@ HISTORY_SHA256: 2c2a6e052bbb08d6717c91b5109d3b3d17e36d3dc19d73fc724e964ec38388d0
     "effectsExecuted": 0
   },
   {
-    "exchange": 19,
+    "exchange": 18,
     "createdAt": "2026-11-14T05:54:59.362Z",
     "ownerRequest": "لیست سه تا چت آخرت تلگرامم رو بده.",
     "dexaVisibleReply": "[{\"handle\":\"tgchat:d815e083-5d58-42e8-8718-11ab86605ee9\",\"name\":\"نجمه ایرانسل\",\"type\":\"user\",\"kind\":\"user\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":true,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:d20ae55e-ce30-4648-b1c5-e5c171f71978\",\"name\":\"Compact MCM Design\",\"type\":\"chat\",\"kind\":\"supergroup\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":8,\"unread_mark\":false,\"has_unread\":true},{\"handle\":\"tgchat:6f71660f-dd6c-436e-a048-2d93abcaf8c7\",\"name\":\"پارمیدا\",\"type\":\"user\",\"kind\":\"user\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":1,\"unread_mark\":false,\"has_unread\":true}]",
@@ -449,7 +440,7 @@ HISTORY_SHA256: 2c2a6e052bbb08d6717c91b5109d3b3d17e36d3dc19d73fc724e964ec38388d0
     "effectsExecuted": 0
   },
   {
-    "exchange": 20,
+    "exchange": 19,
     "createdAt": "2026-11-14T05:57:59.993Z",
     "ownerRequest": "ساعت چنده؟",
     "dexaVisibleReply": "{\"output\":{\"error\":\"OUTPUT_NOT_RETURNED_BY_TOOL\",\"observed\":[{\"stepId\":1,\"kind\":\"TOOL\",\"capabilityId\":\"web.read\",\"physicalTool\":\"dexa_web_read\",\"startedAt\":\"2026-11-14T05:58:00.009Z\",\"completedAt\":\"2026-11-14T05:58:00.219Z\",\"commandIssued\":true,\"resultVerified\":true,\"actualError\":null,\"postDispatchReceiptMissing\":false,\"resultDigest\":\"20b2481edc8f2cdcf4d2c5405aceed4f0a3bce15a6aeed9e62372f69b2849dac\"},{\"stepId\":2,\"diagnostic\":\"UNRESOLVED_REFERENCE_SENT_AS_IS\"},{\"stepId\":2,\"kind\":\"TOOL\",\"capabilityId\":\"dexa.text.process\",\"physicalTool\":\"dexa_text_process\",\"startedAt\":\"2026-11-14T05:58:00.240Z\",\"completedAt\":\"2026-11-14T05:58:00.261Z\",\"commandIssued\":true,\"resultVerified\":false,\"actualError\":\"DX001_WRITER_SOURCE_EMPTY\",\"postDispatchReceiptMissing\":false,\"resultDigest\":\"81b14be5e85813a9eb93832b89f6be8814928ae9b58fdac3440f135c0016a207\"}]},\"actualStepErrors\":[{\"stepId\":2,\"kind\":\"TOOL\",\"code\":\"DX001_WRITER_SOURCE_EMPTY\",\"physicalCallIssued\":true},{\"stepId\":2,\"code\":\"OUTPUT_PATH_TOOL_PLAN_DATA_PATH_MISSING\",\"physicalCallIssued\":false}],\"successfulPhysicalCalls\":2,\"warning\":\"Actual commands issued; failed steps were not treated as success.\"}",
@@ -458,7 +449,7 @@ HISTORY_SHA256: 2c2a6e052bbb08d6717c91b5109d3b3d17e36d3dc19d73fc724e964ec38388d0
     "effectsExecuted": 0
   },
   {
-    "exchange": 21,
+    "exchange": 20,
     "createdAt": "2026-11-14T05:59:24.795Z",
     "ownerRequest": "ساعت چنده؟",
     "dexaVisibleReply": "مدل رسپی اجرایی نساخت و فرمان فعلی هم به یک فراخوانی مستقیمِ بدون حدس تبدیل نشد؛ هیچ ابزار یا نتیجه‌ای جعل نشد.",
@@ -467,7 +458,7 @@ HISTORY_SHA256: 2c2a6e052bbb08d6717c91b5109d3b3d17e36d3dc19d73fc724e964ec38388d0
     "effectsExecuted": 0
   },
   {
-    "exchange": 22,
+    "exchange": 21,
     "createdAt": "2026-11-14T06:03:34.707Z",
     "ownerRequest": "چت آخر تلگرامم رو بده.",
     "dexaVisibleReply": "[{\"handle\":\"tgchat:d815e083-5d58-42e8-8718-11ab86605ee9\",\"name\":\"نجمه ایرانسل\",\"type\":\"user\",\"kind\":\"user\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":true,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false}]",
@@ -476,7 +467,7 @@ HISTORY_SHA256: 2c2a6e052bbb08d6717c91b5109d3b3d17e36d3dc19d73fc724e964ec38388d0
     "effectsExecuted": 0
   },
   {
-    "exchange": 23,
+    "exchange": 22,
     "createdAt": "2026-11-14T06:21:44.011Z",
     "ownerRequest": "تلگرامم رو بده.",
     "dexaVisibleReply": "مدل رسپی اجرایی نساخت و فرمان فعلی هم به یک فراخوانی مستقیمِ بدون حدس تبدیل نشد؛ هیچ ابزار یا نتیجه‌ای جعل نشد.",
@@ -485,7 +476,7 @@ HISTORY_SHA256: 2c2a6e052bbb08d6717c91b5109d3b3d17e36d3dc19d73fc724e964ec38388d0
     "effectsExecuted": 0
   },
   {
-    "exchange": 24,
+    "exchange": 23,
     "createdAt": "2026-11-14T06:43:01.004Z",
     "ownerRequest": "لیست سه تا چت آخر تلگرامم رو بگو.",
     "dexaVisibleReply": "[{\"handle\":\"tgchat:d815e083-5d58-42e8-8718-11ab86605ee9\",\"name\":\"نجمه ایرانسل\",\"type\":\"user\",\"kind\":\"user\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":true,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:d20ae55e-ce30-4648-b1c5-e5c171f71978\",\"name\":\"Compact MCM Design\",\"type\":\"chat\",\"kind\":\"supergroup\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":11,\"unread_mark\":false,\"has_unread\":true},{\"handle\":\"tgchat:6f71660f-dd6c-436e-a048-2d93abcaf8c7\",\"name\":\"پارمیدا\",\"type\":\"user\",\"kind\":\"user\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":1,\"unread_mark\":false,\"has_unread\":true}]",
@@ -494,7 +485,7 @@ HISTORY_SHA256: 2c2a6e052bbb08d6717c91b5109d3b3d17e36d3dc19d73fc724e964ec38388d0
     "effectsExecuted": 0
   },
   {
-    "exchange": 25,
+    "exchange": 24,
     "createdAt": "2026-11-14T06:43:46.045Z",
     "ownerRequest": "پارمیدا چی بوده؟",
     "dexaVisibleReply": "[{\"handle\":\"tgmsg:4587cf45-6ec5-4a67-98b8-a30e9eecd0a8\",\"kind\":\"message\",\"sender_name\":\"پارمیدا\",\"sender_id\":\"92587676\",\"text\":\"😍😍😍😍\",\"date\":1794634936,\"outgoing\":false,\"media_type\":null,\"media_open_kind\":null,\"media_unread\":false,\"attachments\":[],\"service_action\":null,\"reply_count\":0,\"has_replies\":false,\"direct_to_target\":null,\"has_reactions\":false,\"reaction_total_count\":0,\"reaction_distinct_count\":0,\"reaction_counts\":[]},{\"handle\":\"tgmsg:d6b4336e-93fe-4cd9-ad75-d5ec4ebcf050\",\"kind\":\"message\",\"sender_name\":\"MirKazem\",\"sender_id\":\"97992162\",\"text\":\"\",\"date\":1794632769,\"outgoing\":true,\"media_type\":\"messageMediaPhoto\",\"media_open_kind\":null,\"media_unread\":false,\"attachments\":[{\"handle\":\"tgatt:2eebe9df-71ae-470e-b2df-fa0fbe6fdb17\",\"media_kind\":\"photo\",\"media_type\":\"image/jpeg\",\"size_bytes\":98240,\"filename\":null,\"duration_seconds\":null,\"title\":null,\"performer\":null,\"sticker_emoji\":null,\"sticker_format\":null,\"animated\":false,\"has_preview\":false,\"width\":1280,\"height\":683}],\"service_action\":null,\"reply_count\":0,\"has_replies\":false,\"direct_to_target\":null,\"has_reactions\":false,\"reaction_total_count\":0,\"reaction_distinct_count\":0,\"reaction_counts\":[]},{\"handle\":\"tgmsg:021c89b5-6913-4e9a-8471-f764d2910ce5\",\"kind\":\"message\",\"sender_name\":\"MirKazem\",\"sender_id\":\"97992162\",\"text\":\"\",\"date\":1794632734,\"outgoing\":true,\"media_type\":\"messageMediaDocument\",\"media_open_kind\":null,\"media_unread\":false,\"attachments\":[{\"handle\":\"tgatt:7575913b-1618-4a21-a4a5-3fdacca3d106\",\"media_kind\":\"sticker\",\"media_type\":\"video/webm\",\"size_bytes\":82103,\"filename\":\"sticker.webm\",\"duration_seconds\":3,\"title\":null,\"performer\":null,\"sticker_emoji\":\"😋\",\"sticker_format\":\"video\",\"animated\":true,\"has_preview\":true,\"width\":365,\"height\":512}],\"service_action\":null,\"reply_count\":0,\"has_replies\":false,\"direct_to_target\":null,\"has_reactions\":false,\"reaction_total_count\":0,\"reaction_distinct_count\":0,\"reaction_counts\":[]}]",
@@ -503,7 +494,7 @@ HISTORY_SHA256: 2c2a6e052bbb08d6717c91b5109d3b3d17e36d3dc19d73fc724e964ec38388d0
     "effectsExecuted": 0
   },
   {
-    "exchange": 26,
+    "exchange": 25,
     "createdAt": "2026-11-14T06:46:00.947Z",
     "ownerRequest": "سه تا چت آخر ویچتم رو بده.",
     "dexaVisibleReply": "[{\"conversation_ref\":\"wechat-name:Kazem-tenghai\",\"name\":\"Kazem-tenghai\",\"identity_strength\":\"display_name_snapshot\",\"duplicate_name_safe\":false,\"selected\":true,\"unread_count\":0,\"has_unread\":false,\"read_state\":\"no_explicit_unread_badge\",\"muted\":false,\"pinned\":true,\"timestamp\":null,\"preview\":\"Z-YU: 我问一下昨天我问还没修好\\nYesterday 03:56\",\"source\":\"bounded_atspi_semantic_helper\"},{\"conversation_ref\":\"wechat-name:ESFA%20%26%20HXY%20Heatsink\",\"name\":\"ESFA & HXY Heatsink\",\"identity_strength\":\"display_name_snapshot\",\"duplicate_name_safe\":false,\"selected\":false,\"unread_count\":55,\"has_unread\":true,\"read_state\":\"explicit_unread\",\"muted\":true,\"pinned\":null,\"timestamp\":\"06:31\",\"preview\":\"Mandy Yang: [Photo]\",\"source\":\"bounded_atspi_semantic_helper\"},{\"conversation_ref\":\"wechat-name:ESFA%20%26%20%20jingrui%203Dprints%20protoyp\",\"name\":\"ESFA &  jingrui 3Dprints protoyp\",\"identity_strength\":\"display_name_snapshot\",\"duplicate_name_safe\":false,\"selected\":false,\"unread_count\":30,\"has_unread\":true,\"read_state\":\"explicit_unread\",\"muted\":true,\"pinned\":null,\"timestamp\":\"08:26\",\"preview\":\"A精锐3D打印 cnc加工 复膜-宋小姐: 哈喽亲爱的，订单数量确认了吗 @John Asef\",\"source\":\"bounded_atspi_semantic_helper\"}]",
@@ -512,7 +503,7 @@ HISTORY_SHA256: 2c2a6e052bbb08d6717c91b5109d3b3d17e36d3dc19d73fc724e964ec38388d0
     "effectsExecuted": 0
   },
   {
-    "exchange": 27,
+    "exchange": 26,
     "createdAt": "2026-11-14T06:47:31.416Z",
     "ownerRequest": "آخرین پیام در گروه اول مال کی بوده؟",
     "dexaVisibleReply": "منظورت گروه «ESFA & HXY Heatsink» در وی‌چت است؟ در فهرست قبلی، «Kazem-tenghai» چت اول بود و «ESFA & HXY Heatsink» اولین گروه. اگر منظورت همین گروه است، بگو تا بررسی کنم؛ البته ابزار وی‌چت ممکن است نتواند فرستندهٔ آخرین پیام را با قطعیت مشخص کند.",
@@ -521,7 +512,7 @@ HISTORY_SHA256: 2c2a6e052bbb08d6717c91b5109d3b3d17e36d3dc19d73fc724e964ec38388d0
     "effectsExecuted": 0
   },
   {
-    "exchange": 28,
+    "exchange": 27,
     "createdAt": "2026-11-14T06:48:29.392Z",
     "ownerRequest": "منظورم همون چتی بود که در لیست اولی بود.",
     "dexaVisibleReply": "متوجه شدم؛ منظورت چت «Kazem-tenghai» در وی‌چت است که اولین مورد فهرست قبلی بود، نه گروه «ESFA & HXY Heatsink». برای مشخص کردن فرستندهٔ آخرین پیام این چت، باید خود گفتگو بررسی شود. ابزار فعلی وی‌چت امکان تأیید قطعی فرستندهٔ آخرین پیام را ندارد؛ بنابراین نمی‌توانم بدون بررسی معتبر بگویم پیام از طرف چه کسی بوده است.",
@@ -530,7 +521,7 @@ HISTORY_SHA256: 2c2a6e052bbb08d6717c91b5109d3b3d17e36d3dc19d73fc724e964ec38388d0
     "effectsExecuted": 0
   },
   {
-    "exchange": 29,
+    "exchange": 28,
     "createdAt": "2026-11-14T06:50:23.781Z",
     "ownerRequest": "چت آخر واتساپم رو بگو.",
     "dexaVisibleReply": "[{\"handle\":\"wachat:21762733510774@lid\",\"name\":\"علی دبیری\",\"kind\":\"user\",\"unread_count\":0,\"marked_unread\":false,\"has_unread\":false,\"pinned\":false,\"archived\":false,\"muted\":false,\"last_activity_ms\":1794589192000}]",
@@ -539,11 +530,20 @@ HISTORY_SHA256: 2c2a6e052bbb08d6717c91b5109d3b3d17e36d3dc19d73fc724e964ec38388d0
     "effectsExecuted": 0
   },
   {
-    "exchange": 30,
+    "exchange": 29,
     "createdAt": "2026-11-14T06:56:32.280Z",
     "ownerRequest": "آخرین پیام علی دبیری چی بوده؟",
     "dexaVisibleReply": "[{\"handle\":\"wamsg:false_21762733510774@lid_A583F92576DD0A32860A37E0B79CEF10\",\"provider_message_id\":\"false_21762733510774@lid_A583F92576DD0A32860A37E0B79CEF10\",\"conversation_handle\":\"wachat:21762733510774@lid\",\"from_me\":false,\"sender\":\"21762733510774@lid\",\"type\":\"chat\",\"text\":\"الهی آمین 🙏🙏🙏🤲🤲🤲\",\"caption\":null,\"timestamp_ms\":1794589171000,\"has_media\":false,\"media_type\":null,\"filename\":null,\"size_bytes\":null,\"ack\":3,\"quoted_message_id\":null,\"quoted_message_handle\":null,\"edited\":false,\"revoked\":false,\"has_reaction\":true}]",
     "executionState": "SUCCEEDED_VERIFIED",
+    "turnComplete": true,
+    "effectsExecuted": 0
+  },
+  {
+    "exchange": 30,
+    "createdAt": "2026-11-14T06:59:17.360Z",
+    "ownerRequest": "ساعت چنده؟",
+    "dexaVisibleReply": "الان ساعت ۱۰:۲۹ صبح به وقت ایران است.",
+    "executionState": "CONVERSATION_TURN_COMPLETED",
     "turnComplete": true,
     "effectsExecuted": 0
   }
