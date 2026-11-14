@@ -288,21 +288,12 @@ Conversation completion NEVER implies a tool ran successfully. Never invent miss
 
 HISTORY_LIMIT: 30
 HISTORY_COUNT: 30
-HISTORY_SHA256: 6c20715db02bc9125f438a33d37723b356aab0a14708be7fa8f8da584d5323c8
+HISTORY_SHA256: 5e43c0d9e5797eca6db3a0dffd95e7f2a0ecadbe3514bb51d3b9788bc305884e
 
 ~~~json
 [
   {
     "exchange": 1,
-    "createdAt": "2026-11-14T10:23:28.661Z",
-    "ownerRequest": "ساعت چنده؟",
-    "dexaVisibleReply": "الان ساعت ۱۳:۵۲ (۱:۵۲ بعدازظهر) به وقت ایران است.",
-    "executionState": "CONVERSATION_TURN_COMPLETED",
-    "turnComplete": true,
-    "effectsExecuted": 0
-  },
-  {
-    "exchange": 2,
     "createdAt": "2026-11-14T10:49:19.438Z",
     "ownerRequest": "سه تا چت آخر تلگراممو بده.",
     "dexaVisibleReply": "[{\"schema\":\"dexa.messaging-record.v1\",\"provider\":\"telegram\",\"handle\":\"tgchat:d815e083-5d58-42e8-8718-11ab86605ee9\",\"name\":\"نجمه ایرانسل\",\"kind\":\"user\",\"unread_count\":0,\"has_unread\":false,\"timestamp_ms\":null,\"last_activity_ms\":null,\"identity\":{\"conversation_handle\":\"tgchat:d815e083-5d58-42e8-8718-11ab86605ee9\",\"display_name\":\"نجمه ایرانسل\",\"provider_observed\":true,\"human_identity_verified\":false,\"addressable_with_handle\":true},\"time\":{\"timestamp_ms\":null,\"iso_utc\":null,\"precision\":null,\"display_time\":null,\"time_verified\":false},\"flags\":{\"unread_count\":0,\"has_unread\":false,\"pinned\":true,\"muted\":null},\"provenance\":{\"source_native_tool\":\"telegram_conversation_list\",\"provider_origin\":\"AUTHENTICATED_CF_READ\",\"canonicalizer\":\"dexa.messaging-record.v1\",\"provider_identity_strength\":null}},{\"schema\":\"dexa.messaging-record.v1\",\"provider\":\"telegram\",\"handle\":\"tgchat:d20ae55e-ce30-4648-b1c5-e5c171f71978\",\"name\":\"Compact MCM Design\",\"kind\":\"supergroup\",\"unread_count\":1,\"has_unread\":true,\"timestamp_ms\":null,\"last_activity_ms\":null,\"identity\":{\"conversation_handle\":\"tgchat:d20ae55e-ce30-4648-b1c5-e5c171f71978\",\"display_name\":\"Compact MCM Design\",\"provider_observed\":true,\"human_identity_verified\":false,\"addressable_with_handle\":true},\"time\":{\"timestamp_ms\":null,\"iso_utc\":null,\"precision\":null,\"display_time\":null,\"time_verified\":false},\"flags\":{\"unread_count\":1,\"has_unread\":true,\"pinned\":false,\"muted\":null},\"provenance\":{\"source_native_tool\":\"telegram_conversation_list\",\"provider_origin\":\"AUTHENTICATED_CF_READ\",\"canonicalizer\":\"dexa.messaging-record.v1\",\"provider_identity_strength\":null}},{\"schema\":\"dexa.messaging-record.v1\",\"provider\":\"telegram\",\"handle\":\"tgchat:2d0b229f-4244-4b86-b622-154a657b2594\",\"name\":\"اصحاب بعد از جنگ\",\"kind\":\"supergroup\",\"unread_count\":1,\"has_unread\":true,\"timestamp_ms\":null,\"last_activity_ms\":null,\"identity\":{\"conversation_handle\":\"tgchat:2d0b229f-4244-4b86-b622-154a657b2594\",\"display_name\":\"اصحاب بعد از جنگ\",\"provider_observed\":true,\"human_identity_verified\":false,\"addressable_with_handle\":true},\"time\":{\"timestamp_ms\":null,\"iso_utc\":null,\"precision\":null,\"display_time\":null,\"time_verified\":false},\"flags\":{\"unread_count\":1,\"has_unread\":true,\"pinned\":false,\"muted\":null},\"provenance\":{\"source_native_tool\":\"telegram_conversation_list\",\"provider_origin\":\"AUTHENTICATED_CF_READ\",\"canonicalizer\":\"dexa.messaging-record.v1\",\"provider_identity_strength\":null}}]",
@@ -311,7 +302,7 @@ HISTORY_SHA256: 6c20715db02bc9125f438a33d37723b356aab0a14708be7fa8f8da584d5323c8
     "effectsExecuted": 0
   },
   {
-    "exchange": 3,
+    "exchange": 2,
     "createdAt": "2026-11-14T10:50:04.943Z",
     "ownerRequest": "گفتی اولیش مال کی بود؟",
     "dexaVisibleReply": "اولیش نجمه ایرانسل بود.",
@@ -320,7 +311,7 @@ HISTORY_SHA256: 6c20715db02bc9125f438a33d37723b356aab0a14708be7fa8f8da584d5323c8
     "effectsExecuted": 0
   },
   {
-    "exchange": 4,
+    "exchange": 3,
     "createdAt": "2026-11-14T10:50:35.359Z",
     "ownerRequest": "آخرین پیام تو همون چت چیه؟",
     "dexaVisibleReply": "[{\"handle\":\"tgmsg:45fbb00a-2a1a-4add-a986-f30587a973c2\",\"kind\":\"message\",\"sender_name\":\"MirKazem\",\"sender_id\":\"97992162\",\"text\":\"❤️\",\"date\":1794639484,\"outgoing\":true,\"media_type\":null,\"media_open_kind\":null,\"media_unread\":false,\"attachments\":[],\"service_action\":null,\"reply_count\":0,\"has_replies\":false,\"direct_to_target\":null,\"has_reactions\":false,\"reaction_total_count\":0,\"reaction_distinct_count\":0,\"reaction_counts\":[]}]",
@@ -329,7 +320,7 @@ HISTORY_SHA256: 6c20715db02bc9125f438a33d37723b356aab0a14708be7fa8f8da584d5323c8
     "effectsExecuted": 0
   },
   {
-    "exchange": 5,
+    "exchange": 4,
     "createdAt": "2026-11-14T10:51:22.711Z",
     "ownerRequest": "آخرین پیام اون به من چی بوده؟",
     "dexaVisibleReply": "[]",
@@ -338,7 +329,7 @@ HISTORY_SHA256: 6c20715db02bc9125f438a33d37723b356aab0a14708be7fa8f8da584d5323c8
     "effectsExecuted": 0
   },
   {
-    "exchange": 6,
+    "exchange": 5,
     "createdAt": "2026-11-14T11:04:49.268Z",
     "ownerRequest": "یه بار دیگه تلاش کن",
     "dexaVisibleReply": "{\"output\":{\"stepId\":6,\"error\":\"TOOL_PLAN_TAKE_EXPECTS_ARRAY\",\"physicalCommandIssued\":false,\"completed\":false},\"actualStepErrors\":[{\"stepId\":4,\"kind\":\"TRANSFORM\",\"code\":\"TOOL_PLAN_DATA_PATH_MISSING\",\"physicalCallIssued\":false},{\"stepId\":5,\"kind\":\"TRANSFORM\",\"code\":\"TOOL_PLAN_SORT_EXPECTS_ARRAY\",\"physicalCallIssued\":false},{\"stepId\":6,\"kind\":\"TRANSFORM\",\"code\":\"TOOL_PLAN_TAKE_EXPECTS_ARRAY\",\"physicalCallIssued\":false}],\"successfulPhysicalCalls\":2,\"warning\":\"Actual commands issued; failed steps were not treated as success.\"}",
@@ -347,7 +338,7 @@ HISTORY_SHA256: 6c20715db02bc9125f438a33d37723b356aab0a14708be7fa8f8da584d5323c8
     "effectsExecuted": 0
   },
   {
-    "exchange": 7,
+    "exchange": 6,
     "createdAt": "2026-11-14T11:07:13.115Z",
     "ownerRequest": "پرسیدم آخرین پیام نجمه ایران سل به من چی بوده توی تلگرام.",
     "dexaVisibleReply": "[{\"handle\":\"tgmsg:412d5a3a-ca1c-43f9-b239-c1a9878b8d8b\",\"kind\":\"message\",\"sender_name\":\"نجمه ایرانسل\",\"sender_id\":\"1851194994\",\"text\":\"\",\"date\":1794315280,\"outgoing\":false,\"media_type\":\"messageMediaDocument\",\"media_open_kind\":\"voice\",\"media_unread\":false,\"attachments\":[{\"handle\":\"tgatt:728bf7e1-bd2a-484b-904f-94f11683cde3\",\"media_kind\":\"voice\",\"media_type\":\"audio/ogg\",\"size_bytes\":26589,\"filename\":null,\"duration_seconds\":8,\"title\":null,\"performer\":null,\"sticker_emoji\":null,\"sticker_format\":null,\"animated\":false,\"has_preview\":false,\"width\":null,\"height\":null}],\"service_action\":null,\"reply_count\":0,\"has_replies\":false,\"direct_to_target\":null,\"has_reactions\":false,\"reaction_total_count\":0,\"reaction_distinct_count\":0,\"reaction_counts\":[]}]",
@@ -356,7 +347,7 @@ HISTORY_SHA256: 6c20715db02bc9125f438a33d37723b356aab0a14708be7fa8f8da584d5323c8
     "effectsExecuted": 0
   },
   {
-    "exchange": 8,
+    "exchange": 7,
     "createdAt": "2026-11-14T11:30:13.438Z",
     "ownerRequest": "آخرین پیام در چت تلگرام نجم ایران‌سل از طرف کی بوده و چی بوده؟",
     "dexaVisibleReply": "[{\"handle\":\"tgmsg:45fbb00a-2a1a-4add-a986-f30587a973c2\",\"kind\":\"message\",\"sender_name\":\"MirKazem\",\"sender_id\":\"97992162\",\"text\":\"❤️\",\"date\":1794639484,\"outgoing\":true,\"media_type\":null,\"media_open_kind\":null,\"media_unread\":false,\"attachments\":[],\"service_action\":null,\"reply_count\":0,\"has_replies\":false,\"direct_to_target\":null,\"has_reactions\":false,\"reaction_total_count\":0,\"reaction_distinct_count\":0,\"reaction_counts\":[]}]",
@@ -365,7 +356,7 @@ HISTORY_SHA256: 6c20715db02bc9125f438a33d37723b356aab0a14708be7fa8f8da584d5323c8
     "effectsExecuted": 0
   },
   {
-    "exchange": 9,
+    "exchange": 8,
     "createdAt": "2026-11-14T11:31:03.499Z",
     "ownerRequest": "خب، آخرین پیام از طرف اون به من چی بوده؟",
     "dexaVisibleReply": "متأسفانه نتونستم کاری که خواستی رو انجام بدم.",
@@ -374,7 +365,7 @@ HISTORY_SHA256: 6c20715db02bc9125f438a33d37723b356aab0a14708be7fa8f8da584d5323c8
     "effectsExecuted": 0
   },
   {
-    "exchange": 10,
+    "exchange": 9,
     "createdAt": "2026-11-14T11:59:44.103Z",
     "ownerRequest": "ساعت چنده؟",
     "dexaVisibleReply": "الان ساعت ۳:۲۹ بعدازظهر به وقت ایرانه.",
@@ -383,7 +374,7 @@ HISTORY_SHA256: 6c20715db02bc9125f438a33d37723b356aab0a14708be7fa8f8da584d5323c8
     "effectsExecuted": 0
   },
   {
-    "exchange": 11,
+    "exchange": 10,
     "createdAt": "2026-11-14T12:09:35.963Z",
     "ownerRequest": "برای مأموریت قبلی، تیکت بزن.",
     "dexaVisibleReply": "تیکت مشکل پیدا نکردن آخرین پیام دریافتی از نجمه ایرانسل در تلگرام رو توی کدوم ریپازیتوری گیت‌هاب ثبت کنم؟",
@@ -392,7 +383,7 @@ HISTORY_SHA256: 6c20715db02bc9125f438a33d37723b356aab0a14708be7fa8f8da584d5323c8
     "effectsExecuted": 0
   },
   {
-    "exchange": 12,
+    "exchange": 11,
     "createdAt": "2026-11-14T14:10:00.571Z",
     "ownerRequest": "چنده؟",
     "dexaVisibleReply": "الان ساعت ۵:۳۹ عصر به وقت ایرانه.",
@@ -401,7 +392,7 @@ HISTORY_SHA256: 6c20715db02bc9125f438a33d37723b356aab0a14708be7fa8f8da584d5323c8
     "effectsExecuted": 0
   },
   {
-    "exchange": 13,
+    "exchange": 12,
     "createdAt": "2026-11-14T14:10:58.947Z",
     "ownerRequest": "چراغ‌ها رو خاموش کن.",
     "dexaVisibleReply": "فعلاً امکان کنترل چراغ‌ها رو ندارم.",
@@ -410,7 +401,7 @@ HISTORY_SHA256: 6c20715db02bc9125f438a33d37723b356aab0a14708be7fa8f8da584d5323c8
     "effectsExecuted": 0
   },
   {
-    "exchange": 14,
+    "exchange": 13,
     "createdAt": "2026-11-14T14:11:45.384Z",
     "ownerRequest": "دمای تهران چقدره؟",
     "dexaVisibleReply": "فعلاً ابزار دریافت دمای لحظه‌ای تهران رو ندارم.",
@@ -419,7 +410,7 @@ HISTORY_SHA256: 6c20715db02bc9125f438a33d37723b356aab0a14708be7fa8f8da584d5323c8
     "effectsExecuted": 0
   },
   {
-    "exchange": 15,
+    "exchange": 14,
     "createdAt": "2026-11-14T14:13:36.518Z",
     "ownerRequest": "تو چه کارایی می‌تونی بکنی؟",
     "dexaVisibleReply": "می‌تونم پیام‌هات رو بخونم و بفرستم، ایمیل و تقویمت رو مدیریت کنم، فایل‌ها رو پیدا کنم، توی گیت‌هاب کار کنم و به سؤال‌هات جواب بدم؛ البته بسته به ابزارهای متصل.",
@@ -428,7 +419,7 @@ HISTORY_SHA256: 6c20715db02bc9125f438a33d37723b356aab0a14708be7fa8f8da584d5323c8
     "effectsExecuted": 0
   },
   {
-    "exchange": 16,
+    "exchange": 15,
     "createdAt": "2026-11-14T14:35:55.583Z",
     "ownerRequest": "تو منو دوست داری؟",
     "dexaVisibleReply": "من احساس عاشقانه ندارم، ولی برام مهمی و دوست دارم کمکت کنم. ❤️",
@@ -437,7 +428,7 @@ HISTORY_SHA256: 6c20715db02bc9125f438a33d37723b356aab0a14708be7fa8f8da584d5323c8
     "effectsExecuted": 0
   },
   {
-    "exchange": 17,
+    "exchange": 16,
     "createdAt": "2026-11-14T14:37:02.448Z",
     "ownerRequest": "پیام قبلی من چی بود؟",
     "dexaVisibleReply": "پیام قبلیت این بود: «تو منو دوست داری؟»",
@@ -446,7 +437,7 @@ HISTORY_SHA256: 6c20715db02bc9125f438a33d37723b356aab0a14708be7fa8f8da584d5323c8
     "effectsExecuted": 0
   },
   {
-    "exchange": 18,
+    "exchange": 17,
     "createdAt": "2026-11-14T14:40:22.528Z",
     "ownerRequest": "صدامو می‌شنوی؟",
     "dexaVisibleReply": "آره، صدات به من می‌رسه.",
@@ -455,7 +446,7 @@ HISTORY_SHA256: 6c20715db02bc9125f438a33d37723b356aab0a14708be7fa8f8da584d5323c8
     "effectsExecuted": 0
   },
   {
-    "exchange": 19,
+    "exchange": 18,
     "createdAt": "2026-11-14T14:43:40.690Z",
     "ownerRequest": "ساعت چنده؟",
     "dexaVisibleReply": "الان ساعت ۶:۱۳ عصر به وقت ایرانه.",
@@ -464,7 +455,7 @@ HISTORY_SHA256: 6c20715db02bc9125f438a33d37723b356aab0a14708be7fa8f8da584d5323c8
     "effectsExecuted": 0
   },
   {
-    "exchange": 20,
+    "exchange": 19,
     "createdAt": "2026-11-14T15:26:40.871Z",
     "ownerRequest": "ساعت چنده؟",
     "dexaVisibleReply": "الان ساعت ۶:۵۶ عصر به وقت ایرانه.",
@@ -473,7 +464,7 @@ HISTORY_SHA256: 6c20715db02bc9125f438a33d37723b356aab0a14708be7fa8f8da584d5323c8
     "effectsExecuted": 0
   },
   {
-    "exchange": 21,
+    "exchange": 20,
     "createdAt": "2026-11-14T15:28:19.529Z",
     "ownerRequest": "ساعت چنده؟",
     "dexaVisibleReply": "الان ساعت ۶:۵۸ عصر به وقت ایرانه.",
@@ -482,7 +473,7 @@ HISTORY_SHA256: 6c20715db02bc9125f438a33d37723b356aab0a14708be7fa8f8da584d5323c8
     "effectsExecuted": 0
   },
   {
-    "exchange": 22,
+    "exchange": 21,
     "createdAt": "2026-11-14T15:38:22.775Z",
     "ownerRequest": "سه تا چت آخرِ ویچتم رو بگو.",
     "dexaVisibleReply": "[{\"conversation_ref\":\"wechat-name:Kazem-tenghai\",\"name\":\"Kazem-tenghai\",\"identity_strength\":\"display_name_snapshot\",\"duplicate_name_safe\":false,\"selected\":true,\"unread_count\":0,\"has_unread\":false,\"read_state\":\"no_explicit_unread_badge\",\"muted\":false,\"pinned\":true,\"timestamp\":null,\"preview\":\"Z-YU: 我问一下昨天我问还没修好\\nYesterday 03:56\",\"source\":\"bounded_atspi_semantic_helper\"},{\"conversation_ref\":\"wechat-name:ESFA%20%26%20HXY%20Heatsink\",\"name\":\"ESFA & HXY Heatsink\",\"identity_strength\":\"display_name_snapshot\",\"duplicate_name_safe\":false,\"selected\":false,\"unread_count\":58,\"has_unread\":true,\"read_state\":\"explicit_unread\",\"muted\":true,\"pinned\":null,\"timestamp\":\"13:13\",\"preview\":\"Moe: [OK][OK][OK]\",\"source\":\"bounded_atspi_semantic_helper\"},{\"conversation_ref\":\"wechat-name:ESFA%20tracking%20number\",\"name\":\"ESFA tracking number\",\"identity_strength\":\"display_name_snapshot\",\"duplicate_name_safe\":false,\"selected\":false,\"unread_count\":0,\"has_unread\":false,\"read_state\":\"no_explicit_unread_badge\",\"muted\":false,\"pinned\":null,\"timestamp\":\"09:10\",\"preview\":\"A. Zeinali: سلام و درود\",\"source\":\"bounded_atspi_semantic_helper\"}]",
@@ -491,7 +482,7 @@ HISTORY_SHA256: 6c20715db02bc9125f438a33d37723b356aab0a14708be7fa8f8da584d5323c8
     "effectsExecuted": 0
   },
   {
-    "exchange": 23,
+    "exchange": 22,
     "createdAt": "2026-11-14T15:41:54.808Z",
     "ownerRequest": "ساعت چنده؟",
     "dexaVisibleReply": "الان ساعت ۷:۱۱ شبه به وقت ایران.",
@@ -500,7 +491,7 @@ HISTORY_SHA256: 6c20715db02bc9125f438a33d37723b356aab0a14708be7fa8f8da584d5323c8
     "effectsExecuted": 0
   },
   {
-    "exchange": 24,
+    "exchange": 23,
     "createdAt": "2026-11-14T15:46:56.485Z",
     "ownerRequest": "د تا چت آخر وی چتمو بگو.",
     "dexaVisibleReply": "چند تا چت آخر وی‌چتت رو می‌خوای؟",
@@ -509,7 +500,7 @@ HISTORY_SHA256: 6c20715db02bc9125f438a33d37723b356aab0a14708be7fa8f8da584d5323c8
     "effectsExecuted": 0
   },
   {
-    "exchange": 25,
+    "exchange": 24,
     "createdAt": "2026-11-14T15:47:52.746Z",
     "ownerRequest": "د تا",
     "dexaVisibleReply": "منظورت ده تا چت آخر وی‌چته؟",
@@ -518,7 +509,7 @@ HISTORY_SHA256: 6c20715db02bc9125f438a33d37723b356aab0a14708be7fa8f8da584d5323c8
     "effectsExecuted": 0
   },
   {
-    "exchange": 26,
+    "exchange": 25,
     "createdAt": "2026-11-14T15:48:33.992Z",
     "ownerRequest": "نه، منظورم دو تاست.",
     "dexaVisibleReply": "متأسفانه نتونستم کاری که خواستی رو انجام بدم.",
@@ -527,7 +518,7 @@ HISTORY_SHA256: 6c20715db02bc9125f438a33d37723b356aab0a14708be7fa8f8da584d5323c8
     "effectsExecuted": 0
   },
   {
-    "exchange": 27,
+    "exchange": 26,
     "createdAt": "2026-11-14T15:49:23.971Z",
     "ownerRequest": "لیست دو تا چت آخر وی چتم رو بده.",
     "dexaVisibleReply": "[{\"conversation_ref\":\"wechat-name:Kazem-tenghai\",\"name\":\"Kazem-tenghai\",\"identity_strength\":\"display_name_snapshot\",\"duplicate_name_safe\":false,\"selected\":true,\"unread_count\":0,\"has_unread\":false,\"read_state\":\"no_explicit_unread_badge\",\"muted\":false,\"pinned\":true,\"timestamp\":null,\"preview\":\"Z-YU: 我问一下昨天我问还没修好\\nYesterday 03:56\",\"source\":\"bounded_atspi_semantic_helper\"},{\"conversation_ref\":\"wechat-name:ESFA%20%26%20HXY%20Heatsink\",\"name\":\"ESFA & HXY Heatsink\",\"identity_strength\":\"display_name_snapshot\",\"duplicate_name_safe\":false,\"selected\":false,\"unread_count\":58,\"has_unread\":true,\"read_state\":\"explicit_unread\",\"muted\":true,\"pinned\":null,\"timestamp\":\"13:13\",\"preview\":\"Moe: [OK][OK][OK]\",\"source\":\"bounded_atspi_semantic_helper\"}]",
@@ -536,7 +527,7 @@ HISTORY_SHA256: 6c20715db02bc9125f438a33d37723b356aab0a14708be7fa8f8da584d5323c8
     "effectsExecuted": 0
   },
   {
-    "exchange": 28,
+    "exchange": 27,
     "createdAt": "2026-11-14T15:51:03.378Z",
     "ownerRequest": "ساعت چنده؟",
     "dexaVisibleReply": "الان ساعت ۷:۲۰ شبه به وقت ایرانه.",
@@ -545,7 +536,7 @@ HISTORY_SHA256: 6c20715db02bc9125f438a33d37723b356aab0a14708be7fa8f8da584d5323c8
     "effectsExecuted": 0
   },
   {
-    "exchange": 29,
+    "exchange": 28,
     "createdAt": "2026-11-14T15:53:09.759Z",
     "ownerRequest": "ساعت چنده؟",
     "dexaVisibleReply": "الان ساعت ۷:۲۳ شبه به وقت ایرانه.",
@@ -554,11 +545,20 @@ HISTORY_SHA256: 6c20715db02bc9125f438a33d37723b356aab0a14708be7fa8f8da584d5323c8
     "effectsExecuted": 0
   },
   {
-    "exchange": 30,
+    "exchange": 29,
     "createdAt": "2026-11-14T15:54:02.520Z",
     "ownerRequest": "امروز چندمه؟",
     "dexaVisibleReply": "امروز شنبه ۲۳ آبان ۱۴۰۵ه.",
     "executionState": "CONVERSATION_TURN_COMPLETED",
+    "turnComplete": true,
+    "effectsExecuted": 0
+  },
+  {
+    "exchange": 30,
+    "createdAt": "2026-11-14T18:32:18.149Z",
+    "ownerRequest": "لیست ۵ تا چت آخر تلگرامم رو بده.",
+    "dexaVisibleReply": "[{\"handle\":\"tgchat:d815e083-5d58-42e8-8718-11ab86605ee9\",\"name\":\"نجمه ایرانسل\",\"type\":\"user\",\"kind\":\"user\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":true,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:acfdb040-8ca2-4e86-8c75-e06ee9c55fab\",\"name\":\"چین ، ارسال بار و پست، نیازمندیها و پذیرش و دانشجویی ، یوان، ترجمه ، بلیط و ویزا، کنسولی\",\"type\":\"chat\",\"kind\":\"supergroup\",\"is_forum\":true,\"forum_kind\":\"forum\",\"pinned\":false,\"unread_count\":68,\"unread_mark\":false,\"has_unread\":true},{\"handle\":\"tgchat:310727db-c426-4e4b-86f7-683a184e77ee\",\"name\":\"هماهنگی نشست‌های حلقه دوستی\",\"type\":\"chat\",\"kind\":\"supergroup\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":16,\"unread_mark\":false,\"has_unread\":true},{\"handle\":\"tgchat:0ffb366f-4dd5-47ef-b206-3b0bb72a8c4b\",\"name\":\"🔒{ پروکسی تلگرام }🔓\",\"type\":\"chat\",\"kind\":\"channel\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":2,\"unread_mark\":false,\"has_unread\":true},{\"handle\":\"tgchat:2d0b229f-4244-4b86-b622-154a657b2594\",\"name\":\"اصحاب بعد از جنگ\",\"type\":\"chat\",\"kind\":\"supergroup\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":2,\"unread_mark\":false,\"has_unread\":true}]",
+    "executionState": "SUCCEEDED_VERIFIED",
     "turnComplete": true,
     "effectsExecuted": 0
   }
