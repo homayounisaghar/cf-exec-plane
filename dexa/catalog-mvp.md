@@ -98,8 +98,8 @@ Each user/assistant exchange is complete after the assistant replies, even if ex
 Conversation completion NEVER implies a tool ran successfully. Never invent missing messages.
 
 HISTORY_LIMIT: 30
-HISTORY_COUNT: 22
-HISTORY_SHA256: fc2dacbe0f1aed3901163197b2436b11a110254857afb980d4aca39412bdf377
+HISTORY_COUNT: 21
+HISTORY_SHA256: b70274aaeb31959bebac46c5f485e11553fa539da0d8a262ccc8112bc3de538c
 
 ~~~json
 [
@@ -240,15 +240,6 @@ HISTORY_SHA256: fc2dacbe0f1aed3901163197b2436b11a110254857afb980d4aca39412bdf377
   },
   {
     "exchange": 16,
-    "createdAt": "2026-11-15T16:42:36.528Z",
-    "ownerRequest": "مگه خودت نمی‌تونی کانتکت‌های گوشی من رو بخونی؟",
-    "dexaVisibleReply": "مستقیم نه؛ ولی اگه دسترسی مخاطبین گوشی به دکسا داده شده باشه، می‌تونم از طریق ابزارش بخونمشون.",
-    "executionState": "CONVERSATION_TURN_COMPLETED",
-    "turnComplete": true,
-    "effectsExecuted": 0
-  },
-  {
-    "exchange": 17,
     "createdAt": "2026-11-15T18:48:56.547Z",
     "ownerRequest": "توی لیست کانتکت‌های من در گوشی‌ام یک شماره وجود داره به اسم «شماره ایرانسل من»؛ به اون شماره یک پیامک حاوی یک نقطه تنها بزن.",
     "dexaVisibleReply": "بخشی از عملیات واقعاً انجام شده است؛ بدون تکرار آثار قبلی، وضعیت بقیه بررسی شود.",
@@ -257,7 +248,7 @@ HISTORY_SHA256: fc2dacbe0f1aed3901163197b2436b11a110254857afb980d4aca39412bdf377
     "effectsExecuted": 1
   },
   {
-    "exchange": 18,
+    "exchange": 17,
     "createdAt": "2026-11-15T21:47:59.837Z",
     "ownerRequest": "یه زنگ بزن به نجم ایرانسل و بذار روی بلندگو.",
     "dexaVisibleReply": "فعلاً امکان برقراری مستقیم تماس و فعال‌کردن بلندگو رو ندارم. می‌تونم مخاطب «نجم ایرانسل» رو توی گوشی پیدا کنم، ولی برای تماس باید از شماره‌گیر گوشی استفاده کنی.",
@@ -266,7 +257,7 @@ HISTORY_SHA256: fc2dacbe0f1aed3901163197b2436b11a110254857afb980d4aca39412bdf377
     "effectsExecuted": 0
   },
   {
-    "exchange": 19,
+    "exchange": 18,
     "createdAt": "2026-11-15T21:53:20.298Z",
     "ownerRequest": "یه زنگ بزن به نجم ایرانسل و بذار روی بلندگو.",
     "dexaVisibleReply": "فعلاً امکان برقراری مستقیم تماس و فعال‌کردن بلندگو رو ندارم. می‌تونم مخاطب «نجم ایرانسل» رو پیدا کنم، اما تماس رو باید از شماره‌گیر گوشی برقرار کنی و بلندگو رو روشن کنی.",
@@ -275,7 +266,7 @@ HISTORY_SHA256: fc2dacbe0f1aed3901163197b2436b11a110254857afb980d4aca39412bdf377
     "effectsExecuted": 0
   },
   {
-    "exchange": 20,
+    "exchange": 19,
     "createdAt": "2026-11-15T21:54:08.849Z",
     "ownerRequest": "فلش گوشی رو روشن کن.",
     "dexaVisibleReply": "فعلاً ابزار مستقیمی برای روشن‌کردن فلش گوشی ندارم. برای روشن‌کردنش، پنل تنظیمات سریع گوشی رو از بالای صفحه پایین بکش و روی آیکون چراغ‌قوه بزن.",
@@ -284,7 +275,7 @@ HISTORY_SHA256: fc2dacbe0f1aed3901163197b2436b11a110254857afb980d4aca39412bdf377
     "effectsExecuted": 0
   },
   {
-    "exchange": 21,
+    "exchange": 20,
     "createdAt": "2026-11-15T21:55:00.993Z",
     "ownerRequest": "لاگ رو نگاه کن و بگو چه کارهایی روی گوشی می‌تونی انجام بدی.",
     "dexaVisibleReply": "مأموریت به درخواست کاربر، پیش از تکمیل متوقف شد.",
@@ -293,7 +284,7 @@ HISTORY_SHA256: fc2dacbe0f1aed3901163197b2436b11a110254857afb980d4aca39412bdf377
     "effectsExecuted": 0
   },
   {
-    "exchange": 22,
+    "exchange": 21,
     "createdAt": "2026-11-15T21:59:12.373Z",
     "ownerRequest": "اما یه ریاضی در حد خیلی ساده و یه خطی برام طراحی می‌کنی.",
     "dexaVisibleReply": "حتماً! 😊 سؤال ریاضی خیلی ساده و یک‌خطی: ۳ + ۵ = ؟",
