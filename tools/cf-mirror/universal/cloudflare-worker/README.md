@@ -57,3 +57,15 @@ node --test tests/worker-proxy.test.mjs tests/dynamic-ring.test.mjs
 ```
 
 **17/17 mocked tests passed**: cookie, CSRF, HTML, MJPEG, gzip, WSS socket control, source expiry, N=7 rotation, correct-session health check and 1027 failover. Live public Worker-to-Quick-Tunnel HTTP routing is **verified** (login 200, protected media 401). Authenticated MJPEG/WS microphone/touch and Android VPN-OFF network accessibility remain **unverified**.
+
+## 2026-11-15 Android login: `Origin denied` fix deployed
+
+Observed: Android opens the Worker-hosted password form, but after submission/post-login navigation sees a white page saying `Origin denied`. The literal text comes from the Cloudflare Worker `validateBrowser` rejecting incoming request headers before forwarding to the mirror gateway. It is not an error from the upstream Telegram tab.
+
+Corrected Worker version **`cfm-worker-n-ring-20261115-originfix1`** is LIVE at `https://cf-mirror-bridge.mirkazem-design.workers.dev`, deployed from the authenticated Cloudflare Quick Edit UI (no Wrangler/OAuth). The upload was verified byte-for-byte using a foreground, persistent X11 clipboard process; the temporary clipboard job is terminated after use.
+
+Policy: read-only GET/HEAD navigations ignore inconsistent browser Origin headers, including `Origin: null` after a 303 redirect, but still require the gateway's authenticated session Cookie. Login form POSTs require the exact worker Origin, or when missing/null, verified `Sec-Fetch-Site: same-origin` or same-origin Referer; the upstream hidden session CSRF remains required. Other mutating POSTs and WebSockets retain strict Origin and signed HMAC CSRF and session cookie checks. A cross-site login POST remains denied.
+
+Live verification: health reports the `originfix1` version; GET with `Origin: null` returns 200; synthetic `/login` POST with `Origin: null` + same-origin fetch metadata, and with worker Origin + same-site fetch metadata, reached upstream and returned `Invalid login token` (expected for intentionally invalid CSRF), NOT `Origin denied`; cross-site POST returned 403; unauthenticated image/WS routes remain 401. All 23 mock regression tests pass, including six new Android/CSRF/Origin checks. **Real phone login, touch and microphone remain user-device tests**.
+
+Active session after correction is `cfmirror_worker_source_1115c` on X11 :124; expires `2026-11-15T15:16:55.287Z`. The public Worker URL is stable but its underlying mirror source and expiration need reconfiguration when the temporary mirror rotates. Never commit the session password.

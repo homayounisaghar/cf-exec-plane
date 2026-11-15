@@ -8,7 +8,7 @@
  * stay pinned to one same-origin Worker; new visits rotate by time slot.
  * Service Worker falls forward on verified 1027 quota exhaustion.
  */
-const VERSION = 'cfm-worker-n-ring-20261115';
+const VERSION = 'cfm-worker-n-ring-20261115-originfix1';
 const REGISTRY_URL = 'https://raw.githubusercontent.com/homayounisaghar/cf-exec-plane/main/tools/cf-mirror/universal/cloudflare-worker/route-pool.json';
 const SCHEMA = 'cf-mirror.worker-pool.v1';
 const NO_STORE = 'no-store, private, max-age=0, no-transform';
