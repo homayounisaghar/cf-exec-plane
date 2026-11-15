@@ -522,8 +522,8 @@ HISTORY_COUNT: 29
     "exchange": 29,
     "createdAt": "2026-11-15T20:25:12.605Z",
     "ownerRequest": "توی لیست کانتکت‌های من در گوشی‌ام یک شماره وجود داره به اسم «شماره ایرانسل من»؛ به اون شماره یک پیامک حاوی یک نقطه تنها بزن.",
-    "dexaVisibleReply": "شناسهٔ فرمان ذخیره شد؛ تکمیل واقعی دستگاه هنوز تأیید نشده است.",
-    "executionState": "WAITING_EXTERNAL",
+    "dexaVisibleReply": "فرمان قبلی طبق رسید واقعی ارائه‌دهنده ناموفق بوده است.",
+    "executionState": "FAILED",
     "turnComplete": true,
     "effectsExecuted": 0
   }
