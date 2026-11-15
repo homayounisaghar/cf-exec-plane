@@ -99,21 +99,12 @@ Conversation completion NEVER implies a tool ran successfully. Never invent miss
 
 HISTORY_LIMIT: 30
 HISTORY_COUNT: 29
-HISTORY_SHA256: 0393f67ea44c066f85b561580595f5e2444cb3cb5ddde5ce9fa5645091125a5d
+HISTORY_SHA256: cbed750dfbbfe4b9163342f67affcd95a5f7ff26ca801ae1c710db56f865f180
 
 ~~~json
 [
   {
     "exchange": 1,
-    "createdAt": "2026-11-14T18:37:28.857Z",
-    "ownerRequest": "ساعت چنده؟",
-    "dexaVisibleReply": "الان ساعت ۱۰:۰۷ شبه به وقت ایرانه.",
-    "executionState": "CONVERSATION_TURN_COMPLETED",
-    "turnComplete": true,
-    "effectsExecuted": 0
-  },
-  {
-    "exchange": 2,
     "createdAt": "2026-11-14T18:58:53.190Z",
     "ownerRequest": "۲۲ تا چت اخیر وی چتم رو بده.",
     "dexaVisibleReply": "انجام این درخواست ناموفق بود. دکسا نتوانست نتیجهٔ موردنیاز را از خروجی ابزار استخراج کند؛ بنابراین پاسخ درخواستی در دسترس نیست.",
@@ -122,7 +113,7 @@ HISTORY_SHA256: 0393f67ea44c066f85b561580595f5e2444cb3cb5ddde5ce9fa5645091125a5d
     "effectsExecuted": 0
   },
   {
-    "exchange": 3,
+    "exchange": 2,
     "createdAt": "2026-11-14T20:05:14.406Z",
     "ownerRequest": "ساعت چنده؟",
     "dexaVisibleReply": "الان ساعت ۱۱:۳۵ شبه به وقت ایرانه.",
@@ -131,7 +122,7 @@ HISTORY_SHA256: 0393f67ea44c066f85b561580595f5e2444cb3cb5ddde5ce9fa5645091125a5d
     "effectsExecuted": 0
   },
   {
-    "exchange": 4,
+    "exchange": 3,
     "createdAt": "2026-11-14T20:56:59.788Z",
     "ownerRequest": "آخرین چت وی‌چتم متعلق به کیه؟",
     "dexaVisibleReply": "اولین چت فهرست وی‌چتت متعلق به Kazem-tenghaiه.",
@@ -140,7 +131,7 @@ HISTORY_SHA256: 0393f67ea44c066f85b561580595f5e2444cb3cb5ddde5ce9fa5645091125a5d
     "effectsExecuted": 0
   },
   {
-    "exchange": 5,
+    "exchange": 4,
     "createdAt": "2026-11-14T20:58:34.656Z",
     "ownerRequest": "آخرین پیام توی اون چت رو برام بخون.",
     "dexaVisibleReply": "انجام این درخواست ناموفق بود. ابزار وی‌چت فراخوانی شد، اما نتیجهٔ موردنیاز برای گزارش به دست نیامد.",
@@ -149,7 +140,7 @@ HISTORY_SHA256: 0393f67ea44c066f85b561580595f5e2444cb3cb5ddde5ce9fa5645091125a5d
     "effectsExecuted": 0
   },
   {
-    "exchange": 6,
+    "exchange": 5,
     "createdAt": "2026-11-14T21:10:35.509Z",
     "ownerRequest": "توی چتی که بالای لیست وی‌چت هم پین شده، آخرین پیام چی بوده؟",
     "dexaVisibleReply": "انجام این درخواست ناموفق بود. دکسا نتوانست نتیجهٔ موردنیاز را از خروجی ابزار استخراج کند؛ بنابراین پاسخ درخواستی در دسترس نیست.",
@@ -158,7 +149,7 @@ HISTORY_SHA256: 0393f67ea44c066f85b561580595f5e2444cb3cb5ddde5ce9fa5645091125a5d
     "effectsExecuted": 0
   },
   {
-    "exchange": 7,
+    "exchange": 6,
     "createdAt": "2026-11-14T21:21:48.725Z",
     "ownerRequest": "اون تو ونکوور ساعت چنده؟",
     "dexaVisibleReply": "متأسفانه نتونستم کاری که خواستی رو انجام بدم.",
@@ -167,7 +158,7 @@ HISTORY_SHA256: 0393f67ea44c066f85b561580595f5e2444cb3cb5ddde5ce9fa5645091125a5d
     "effectsExecuted": 0
   },
   {
-    "exchange": 8,
+    "exchange": 7,
     "createdAt": "2026-11-14T21:26:11.601Z",
     "ownerRequest": "چت‌های تلگرامم که پیام نخونده دارن رو لیست کن.",
     "dexaVisibleReply": "متأسفانه نتونستم کاری که خواستی رو انجام بدم.",
@@ -176,7 +167,7 @@ HISTORY_SHA256: 0393f67ea44c066f85b561580595f5e2444cb3cb5ddde5ce9fa5645091125a5d
     "effectsExecuted": 0
   },
   {
-    "exchange": 9,
+    "exchange": 8,
     "createdAt": "2026-11-14T22:13:28.706Z",
     "ownerRequest": "آخرین پیام در چتی که بالای ویچت هم پین شده چیه؟",
     "dexaVisibleReply": "متأسفانه نتونستم کاری که خواستی رو انجام بدم.",
@@ -185,7 +176,7 @@ HISTORY_SHA256: 0393f67ea44c066f85b561580595f5e2444cb3cb5ddde5ce9fa5645091125a5d
     "effectsExecuted": 0
   },
   {
-    "exchange": 10,
+    "exchange": 9,
     "createdAt": "2026-11-14T22:30:12.527Z",
     "ownerRequest": "آخرین پیام در چتی که بالای ویچتم پین شده چیه؟",
     "dexaVisibleReply": "آخرین پیام قابل مشاهده: «我问一下昨天我问还没修好»",
@@ -194,7 +185,7 @@ HISTORY_SHA256: 0393f67ea44c066f85b561580595f5e2444cb3cb5ddde5ce9fa5645091125a5d
     "effectsExecuted": 1
   },
   {
-    "exchange": 11,
+    "exchange": 10,
     "createdAt": "2026-11-15T03:51:18.233Z",
     "ownerRequest": "این پیام که در ویچتم پین شده متعلق به کیه؟",
     "dexaVisibleReply": "این پیام توی چت پین‌شدهٔ Kazem-tenghai بوده؛ اسم فرستنده‌اش مشخص نیست.",
@@ -203,7 +194,7 @@ HISTORY_SHA256: 0393f67ea44c066f85b561580595f5e2444cb3cb5ddde5ce9fa5645091125a5d
     "effectsExecuted": 0
   },
   {
-    "exchange": 12,
+    "exchange": 11,
     "createdAt": "2026-11-15T07:57:30.503Z",
     "ownerRequest": "کنترل رو تحویل بده",
     "dexaVisibleReply": "فرمان مستقیم انجام‌پذیر نبود. خطای واقعی: NOT_CHATGPT",
@@ -212,7 +203,7 @@ HISTORY_SHA256: 0393f67ea44c066f85b561580595f5e2444cb3cb5ddde5ce9fa5645091125a5d
     "effectsExecuted": 0
   },
   {
-    "exchange": 13,
+    "exchange": 12,
     "createdAt": "2026-11-15T07:57:54.182Z",
     "ownerRequest": "کنترل رو تحویل بده.",
     "dexaVisibleReply": "فرمان مستقیم انجام‌پذیر نبود. خطای واقعی: SCRIPT_EXCEPTION:خطای اجرای کد: Failed to execute 'observe' on 'MutationObserver': parameter 1 is not of type 'Node'.",
@@ -221,7 +212,7 @@ HISTORY_SHA256: 0393f67ea44c066f85b561580595f5e2444cb3cb5ddde5ce9fa5645091125a5d
     "effectsExecuted": 0
   },
   {
-    "exchange": 14,
+    "exchange": 13,
     "createdAt": "2026-11-15T14:24:51.462Z",
     "ownerRequest": "توی لیست مخاطبین گوشی من یه کسی هست به اسم «شماره ایرانسل من»، بهش یک اس‌ام‌اس سلام بفرست.",
     "dexaVisibleReply": "مأموریت به درخواست کاربر، پیش از تکمیل متوقف شد.",
@@ -230,7 +221,7 @@ HISTORY_SHA256: 0393f67ea44c066f85b561580595f5e2444cb3cb5ddde5ce9fa5645091125a5d
     "effectsExecuted": 0
   },
   {
-    "exchange": 15,
+    "exchange": 14,
     "createdAt": "2026-11-15T14:25:12.862Z",
     "ownerRequest": "چه وضعیتی هستی؟",
     "dexaVisibleReply": "مأموریت به درخواست کاربر، پیش از تکمیل متوقف شد.",
@@ -239,7 +230,7 @@ HISTORY_SHA256: 0393f67ea44c066f85b561580595f5e2444cb3cb5ddde5ce9fa5645091125a5d
     "effectsExecuted": 0
   },
   {
-    "exchange": 16,
+    "exchange": 15,
     "createdAt": "2026-11-15T14:26:02.838Z",
     "ownerRequest": "به شماره 0912 778 48 91 یک پیامک بزن و یک نقطه خالی بفرست.",
     "dexaVisibleReply": "فرمان مستقیم انجام‌پذیر نبود. خطای واقعی: DEXA_OWNER_GET_UNREACHABLE",
@@ -248,7 +239,7 @@ HISTORY_SHA256: 0393f67ea44c066f85b561580595f5e2444cb3cb5ddde5ce9fa5645091125a5d
     "effectsExecuted": 0
   },
   {
-    "exchange": 17,
+    "exchange": 16,
     "createdAt": "2026-11-15T15:52:28.128Z",
     "ownerRequest": "توی لیست کانتکت‌های گوشی من یک کانتکت هست به اسم «شماره. ایرانسل من»؛ به اون کانتکت یک اس‌ام‌اس شامل یک نقطه خالی بفرست.",
     "dexaVisibleReply": "برای ارسال پیامک باید شمارهٔ این مخاطب مشخص بشه؛ شماره‌اش رو می‌گی؟",
@@ -257,7 +248,7 @@ HISTORY_SHA256: 0393f67ea44c066f85b561580595f5e2444cb3cb5ddde5ce9fa5645091125a5d
     "effectsExecuted": 0
   },
   {
-    "exchange": 18,
+    "exchange": 17,
     "createdAt": "2026-11-15T15:53:18.434Z",
     "ownerRequest": "0912 778 4891.",
     "dexaVisibleReply": "با این شماره چه کاری انجام بدم؟",
@@ -266,7 +257,7 @@ HISTORY_SHA256: 0393f67ea44c066f85b561580595f5e2444cb3cb5ddde5ce9fa5645091125a5d
     "effectsExecuted": 0
   },
   {
-    "exchange": 19,
+    "exchange": 18,
     "createdAt": "2026-11-15T15:54:23.631Z",
     "ownerRequest": "مگه حافظه پیام‌ها رو نداری؟ مگه بهت نگفته بودم که یک پیامک بزنی و تو پرسیدی شماره‌اش چیه؟ خب شماره‌اش رو بهت دادم دیگه.",
     "dexaVisibleReply": "فرمان مستقیم انجام‌پذیر نبود. خطای واقعی: MODEL_RESPONSE_COMPLETION_TIMEOUT",
@@ -275,7 +266,7 @@ HISTORY_SHA256: 0393f67ea44c066f85b561580595f5e2444cb3cb5ddde5ce9fa5645091125a5d
     "effectsExecuted": 0
   },
   {
-    "exchange": 20,
+    "exchange": 19,
     "createdAt": "2026-11-15T16:41:58.987Z",
     "ownerRequest": "توی لیست کانتکت‌های من در گوشی‌ام یک شماره وجود داره به اسم «شماره ایران‌سل من»؛ به اون شماره یک پیامک حاوی یک نقطه تنها بزن.",
     "dexaVisibleReply": "شماره تلفن مخاطب «شماره ایران‌سل من» رو می‌گی تا یه پیامک فقط با یک نقطه براش بفرستم؟",
@@ -284,7 +275,7 @@ HISTORY_SHA256: 0393f67ea44c066f85b561580595f5e2444cb3cb5ddde5ce9fa5645091125a5d
     "effectsExecuted": 0
   },
   {
-    "exchange": 21,
+    "exchange": 20,
     "createdAt": "2026-11-15T16:42:36.528Z",
     "ownerRequest": "مگه خودت نمی‌تونی کانتکت‌های گوشی من رو بخونی؟",
     "dexaVisibleReply": "مستقیم نه؛ ولی اگه دسترسی مخاطبین گوشی به دکسا داده شده باشه، می‌تونم از طریق ابزارش بخونمشون.",
@@ -293,7 +284,7 @@ HISTORY_SHA256: 0393f67ea44c066f85b561580595f5e2444cb3cb5ddde5ce9fa5645091125a5d
     "effectsExecuted": 0
   },
   {
-    "exchange": 22,
+    "exchange": 21,
     "createdAt": "2026-11-15T17:00:25.721Z",
     "ownerRequest": "الان دسترسی داری. حالا سعی کن که پیامک رو بفرستی. فقط دقت کن که ایرانسل سر همه.",
     "dexaVisibleReply": "درخواست ناموفق بود؛ دکسا نتونست نتیجهٔ لازم رو از جواب ابزار دربیاره.",
@@ -302,7 +293,7 @@ HISTORY_SHA256: 0393f67ea44c066f85b561580595f5e2444cb3cb5ddde5ce9fa5645091125a5d
     "effectsExecuted": 0
   },
   {
-    "exchange": 23,
+    "exchange": 22,
     "createdAt": "2026-11-15T18:05:31.932Z",
     "ownerRequest": "توی لیست کانتکت‌های من در گوشی‌ام یک شماره وجود داره به اسم «شماره ایرانسل من»؛ به اون شماره یک پیامک حاوی یک نقطه تنها بزن.",
     "dexaVisibleReply": "مأموریت به درخواست کاربر، پیش از تکمیل متوقف شد.",
@@ -311,7 +302,7 @@ HISTORY_SHA256: 0393f67ea44c066f85b561580595f5e2444cb3cb5ddde5ce9fa5645091125a5d
     "effectsExecuted": 0
   },
   {
-    "exchange": 24,
+    "exchange": 23,
     "createdAt": "2026-11-15T18:48:56.547Z",
     "ownerRequest": "توی لیست کانتکت‌های من در گوشی‌ام یک شماره وجود داره به اسم «شماره ایرانسل من»؛ به اون شماره یک پیامک حاوی یک نقطه تنها بزن.",
     "dexaVisibleReply": "بخشی از عملیات واقعاً انجام شده است؛ بدون تکرار آثار قبلی، وضعیت بقیه بررسی شود.",
@@ -320,7 +311,7 @@ HISTORY_SHA256: 0393f67ea44c066f85b561580595f5e2444cb3cb5ddde5ce9fa5645091125a5d
     "effectsExecuted": 1
   },
   {
-    "exchange": 25,
+    "exchange": 24,
     "createdAt": "2026-11-15T20:25:12.605Z",
     "ownerRequest": "توی لیست کانتکت‌های من در گوشی‌ام یک شماره وجود داره به اسم «شماره ایرانسل من»؛ به اون شماره یک پیامک حاوی یک نقطه تنها بزن.",
     "dexaVisibleReply": "فرمان قبلی طبق رسید واقعی ارائه‌دهنده ناموفق بوده است.",
@@ -329,7 +320,7 @@ HISTORY_SHA256: 0393f67ea44c066f85b561580595f5e2444cb3cb5ddde5ce9fa5645091125a5d
     "effectsExecuted": 0
   },
   {
-    "exchange": 26,
+    "exchange": 25,
     "createdAt": "2026-11-15T21:34:26.446Z",
     "ownerRequest": "توی لیست کانتکت‌های من در گوشی‌ام یک شماره وجود داره به اسم «شماره ایرانسل من»؛ به اون شماره یک پیامک حاوی یک نقطه تنها بزن.",
     "dexaVisibleReply": "فرمان قبلی طبق رسید واقعی ارائه‌دهنده ناموفق بوده است.",
@@ -338,7 +329,7 @@ HISTORY_SHA256: 0393f67ea44c066f85b561580595f5e2444cb3cb5ddde5ce9fa5645091125a5d
     "effectsExecuted": 0
   },
   {
-    "exchange": 27,
+    "exchange": 26,
     "createdAt": "2026-11-15T21:40:53.319Z",
     "ownerRequest": "توی لیست کانتکت‌های من در گوشی‌ام یک شماره وجود داره به اسم «شماره ایرانسل من»؛ به اون شماره یک پیامک حاوی یک نقطه تنها بزن.",
     "dexaVisibleReply": "فرمان قبلی طبق رسید واقعی ارائه‌دهنده ناموفق بوده است.",
@@ -347,7 +338,7 @@ HISTORY_SHA256: 0393f67ea44c066f85b561580595f5e2444cb3cb5ddde5ce9fa5645091125a5d
     "effectsExecuted": 0
   },
   {
-    "exchange": 28,
+    "exchange": 27,
     "createdAt": "2026-11-15T21:47:59.837Z",
     "ownerRequest": "یه زنگ بزن به نجم ایرانسل و بذار روی بلندگو.",
     "dexaVisibleReply": "فعلاً امکان برقراری مستقیم تماس و فعال‌کردن بلندگو رو ندارم. می‌تونم مخاطب «نجم ایرانسل» رو توی گوشی پیدا کنم، ولی برای تماس باید از شماره‌گیر گوشی استفاده کنی.",
@@ -356,10 +347,19 @@ HISTORY_SHA256: 0393f67ea44c066f85b561580595f5e2444cb3cb5ddde5ce9fa5645091125a5d
     "effectsExecuted": 0
   },
   {
-    "exchange": 29,
+    "exchange": 28,
     "createdAt": "2026-11-15T21:48:47.598Z",
     "ownerRequest": "پس لااقل یک ایموجی گل براش بفرست.",
     "dexaVisibleReply": "فرمان قبلی طبق رسید واقعی ارائه‌دهنده ناموفق بوده است.",
+    "executionState": "FAILED",
+    "turnComplete": true,
+    "effectsExecuted": 0
+  },
+  {
+    "exchange": 29,
+    "createdAt": "2026-11-15T21:50:28.908Z",
+    "ownerRequest": "دوباره براش بفرست.",
+    "dexaVisibleReply": "فرمان مستقیم انجام‌پذیر نبود. خطای واقعی: DEXA_OWNER_GET_UNREACHABLE",
     "executionState": "FAILED",
     "turnComplete": true,
     "effectsExecuted": 0
