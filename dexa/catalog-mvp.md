@@ -98,8 +98,8 @@ Each user/assistant exchange is complete after the assistant replies, even if ex
 Conversation completion NEVER implies a tool ran successfully. Never invent missing messages.
 
 HISTORY_LIMIT: 30
-HISTORY_COUNT: 25
-HISTORY_SHA256: 3e5a700bfc9b9b668a6e421a00b45ca28f0aacea0fc02f3ab0b3acc111f78de9
+HISTORY_COUNT: 24
+HISTORY_SHA256: 168dff136afec81e46105e9153384a5ef6a8c17815642ccff6a26d49b9cf2e9a
 
 ~~~json
 [
@@ -276,15 +276,6 @@ HISTORY_SHA256: 3e5a700bfc9b9b668a6e421a00b45ca28f0aacea0fc02f3ab0b3acc111f78de9
   },
   {
     "exchange": 20,
-    "createdAt": "2026-11-15T20:25:12.605Z",
-    "ownerRequest": "توی لیست کانتکت‌های من در گوشی‌ام یک شماره وجود داره به اسم «شماره ایرانسل من»؛ به اون شماره یک پیامک حاوی یک نقطه تنها بزن.",
-    "dexaVisibleReply": "فرمان قبلی طبق رسید واقعی ارائه‌دهنده ناموفق بوده است.",
-    "executionState": "FAILED",
-    "turnComplete": true,
-    "effectsExecuted": 0
-  },
-  {
-    "exchange": 21,
     "createdAt": "2026-11-15T21:47:59.837Z",
     "ownerRequest": "یه زنگ بزن به نجم ایرانسل و بذار روی بلندگو.",
     "dexaVisibleReply": "فعلاً امکان برقراری مستقیم تماس و فعال‌کردن بلندگو رو ندارم. می‌تونم مخاطب «نجم ایرانسل» رو توی گوشی پیدا کنم، ولی برای تماس باید از شماره‌گیر گوشی استفاده کنی.",
@@ -293,7 +284,7 @@ HISTORY_SHA256: 3e5a700bfc9b9b668a6e421a00b45ca28f0aacea0fc02f3ab0b3acc111f78de9
     "effectsExecuted": 0
   },
   {
-    "exchange": 22,
+    "exchange": 21,
     "createdAt": "2026-11-15T21:53:20.298Z",
     "ownerRequest": "یه زنگ بزن به نجم ایرانسل و بذار روی بلندگو.",
     "dexaVisibleReply": "فعلاً امکان برقراری مستقیم تماس و فعال‌کردن بلندگو رو ندارم. می‌تونم مخاطب «نجم ایرانسل» رو پیدا کنم، اما تماس رو باید از شماره‌گیر گوشی برقرار کنی و بلندگو رو روشن کنی.",
@@ -302,7 +293,7 @@ HISTORY_SHA256: 3e5a700bfc9b9b668a6e421a00b45ca28f0aacea0fc02f3ab0b3acc111f78de9
     "effectsExecuted": 0
   },
   {
-    "exchange": 23,
+    "exchange": 22,
     "createdAt": "2026-11-15T21:54:08.849Z",
     "ownerRequest": "فلش گوشی رو روشن کن.",
     "dexaVisibleReply": "فعلاً ابزار مستقیمی برای روشن‌کردن فلش گوشی ندارم. برای روشن‌کردنش، پنل تنظیمات سریع گوشی رو از بالای صفحه پایین بکش و روی آیکون چراغ‌قوه بزن.",
@@ -311,7 +302,7 @@ HISTORY_SHA256: 3e5a700bfc9b9b668a6e421a00b45ca28f0aacea0fc02f3ab0b3acc111f78de9
     "effectsExecuted": 0
   },
   {
-    "exchange": 24,
+    "exchange": 23,
     "createdAt": "2026-11-15T21:55:00.993Z",
     "ownerRequest": "لاگ رو نگاه کن و بگو چه کارهایی روی گوشی می‌تونی انجام بدی.",
     "dexaVisibleReply": "مأموریت به درخواست کاربر، پیش از تکمیل متوقف شد.",
@@ -320,7 +311,7 @@ HISTORY_SHA256: 3e5a700bfc9b9b668a6e421a00b45ca28f0aacea0fc02f3ab0b3acc111f78de9
     "effectsExecuted": 0
   },
   {
-    "exchange": 25,
+    "exchange": 24,
     "createdAt": "2026-11-15T21:59:12.373Z",
     "ownerRequest": "اما یه ریاضی در حد خیلی ساده و یه خطی برام طراحی می‌کنی.",
     "dexaVisibleReply": "حتماً! 😊 سؤال ریاضی خیلی ساده و یک‌خطی: ۳ + ۵ = ؟",
