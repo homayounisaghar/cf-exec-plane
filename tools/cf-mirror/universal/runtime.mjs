@@ -4,6 +4,9 @@
 // on a local web page with mouse + keyboard, real cursor feedback, size matched
 // to the viewer window, default 1 s refresh. Stdlib only (Node >= 22).
 import http from 'node:http';
+import {acceptWebSocket,rejectUpgrade} from './ws-wire.mjs';
+import {Stream,CPU,autoRate} from './stream-manager.mjs';
+import {MicBridge} from './mic-bridge.mjs';
 import { spawn, execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -376,64 +379,23 @@ class X11 {
   }
 }
 
-// one shared live stream (multipart MJPEG), source runs only while a viewer is connected
-class Stream {
-  constructor(be, interval) { this.be = be; this.ms = interval * 1000; this.clients = new Set(); this.last = 0; this.pending = null; this.timer = null; }
-  add(res) {
-    res.writeHead(200, { 'content-type': 'multipart/x-mixed-replace; boundary=cfmframe', 'cache-control': 'no-store', connection: 'close' });
-    this.clients.add(res);
-    res.on('close', () => { this.clients.delete(res); if (!this.clients.size) this.stopSrc(); });
-    if (this.lastFrame) this.write(res, this.lastFrame);
-    if (!this.src) this.src = this.be.startStream(f => this.frame(f), Math.max(1, Math.round(1000 / this.ms)));
-  }
-  write(res, f) { res.write(`--cfmframe\r\nContent-Type: image/jpeg\r\nContent-Length: ${f.length}\r\n\r\n`); res.write(f); res.write('\r\n'); }
-  frame(f) { // throttle to interval
-    this.pending = f; const now = Date.now(), wait = this.last + this.ms - now;
-    if (wait <= 0) this.flush(); else if (!this.timer) this.timer = setTimeout(() => { this.timer = null; this.flush(); }, wait);
-  }
-  flush() { const f = this.pending; if (!f) return; this.pending = null; this.last = Date.now(); this.lastFrame = f; for (const r of this.clients) this.write(r, f); }
-  stopSrc() { if (this.src) { try { this.src(); } catch {} this.src = null; } }
-  setRate(sec) { if (Math.abs(sec * 1000 - this.ms) < 1) return; this.ms = sec * 1000; console.log(new Date().toISOString(), 'rate', sec, 'cpu', CPU.pct);
-    if (this.src) { this.stopSrc(); this.src = this.be.startStream(f => this.frame(f), Math.round(1000 / this.ms)); }
-    this.be.ackDelay = this.ms; }
-}
-
-// whole-server CPU use (all programs, not only mirrors), sampled every 3 s
-const CPU = { pct: 0, prev: null };
-function cpuSample() {
-  const a = fs.readFileSync('/proc/stat', 'utf8').split('\n')[0].trim().split(/\s+/).slice(1).map(Number);
-  const idle = a[3] + (a[4] || 0), tot = a.reduce((x, y) => x + y, 0);
-  if (CPU.prev) { const dt = tot - CPU.prev.tot, di = idle - CPU.prev.idle; if (dt > 0) CPU.pct = Math.round(100 * (1 - di / dt)); }
-  CPU.prev = { tot, idle };
-}
-// auto mode: 0.05 s normally; busy server -> 0.1 s -> 0.2 s; back up only after ~15 s calm
-function autoRate(stream) {
-  const L = [0.05, 0.1, 0.2]; let i = 0, calm = 0;
-  stream.be.level = 0;
-  cpuSample();
-  setInterval(() => {
-    cpuSample();
-    if (CPU.pct >= 75 && i < L.length - 1) { i++; calm = 0; stream.be.level = i; stream.setRate(L[i]); }
-    else if (CPU.pct < 50 && i > 0) { if (++calm >= 5) { i--; calm = 0; stream.be.level = i; stream.setRate(L[i]); } }
-    else calm = 0;
-  }, 3000);
-}
-
 async function serve(o) {
   const name = o._[1], auto = !o.interval || o.interval === 'auto';
-  const interval = auto ? 0.05 : Math.max(0.05, +o.interval);
+  const interval = auto ? 0.1 : Math.max(0.05, +o.interval);
   const be = o.cdp ? new CDP(+o.cdp, o.match, !o['no-fit'], o['target-id']) : new X11(o.x11, !!o.full);
   const stream = new Stream(be, interval);
+  const mic=new MicBridge(o.x11?{kind:'x11',display:o.x11}:{kind:'cdp',port:Number(o.cdp)});
+  mic.inspect().catch(()=>{});
   if (auto) autoRate(stream);
   if (be.findRegion) setInterval(() => { const r = be.findRegion(), c = be.region; if (r.x !== c.x || r.y !== c.y || r.w !== c.w || r.h !== c.h) { be.region = r; if (stream.src) { stream.stopSrc(); stream.src = be.startStream(f => stream.frame(f), Math.round(1000 / stream.ms)); } } }, 2000);
-  const quit = async () => { stream.stopSrc(); await be.unfit(); process.exit(0); };
+  const quit = async () => { stream.stopSrc(); mic.shutdown(); await be.unfit(); process.exit(0); };
   process.on('SIGTERM', quit); process.on('SIGINT', quit);
-  http.createServer(async (req, res) => {
+  const server=http.createServer(async (req, res) => {
     const out = (code, body, ct = 'application/json') => { res.writeHead(code, { 'content-type': ct, 'cache-control': 'no-store' }); res.end(body); };
     try {
       const u = req.url.split('?')[0];
       if (req.method === 'GET' && u === '/health') return out(200, '{"ok":true}');
-      if (req.method === 'GET' && u === '/info') return out(200, JSON.stringify({ kind:be instanceof CDP?'cdp':'x11', region: be.region || null, cursor: await be.pointerPosition(), interval_s: stream.ms / 1000, auto, cpu_pct: CPU.pct, quality: ['high', 'medium', 'low'][be.level ?? 1] }));
+      if (req.method === 'GET' && u === '/info') return out(200, JSON.stringify({ kind:be instanceof CDP?'cdp':'x11', region: be.region || null, cursor: await be.pointerPosition(), interval_s: stream.ms / 1000, auto, cpu_pct: CPU.pct, mem_available_pct:Math.round(CPU.memPct*100),loop_lag_ms:CPU.loopLag,network_dropped_frames:stream.clientDrops,microphone:mic.status(),quality: ['high', 'medium', 'low'][be.level ?? 1] }));
       if (req.method === 'GET' && u === '/shot.jpg') return out(200, await be.shot(), 'image/jpeg');
       if (req.method === 'GET' && u === '/stream.mjpg') return stream.add(res);
       if (req.method === 'GET' && u === '/') return out(200, PAGE(pretty(name).replace(/[<>&"]/g, ''), interval), 'text/html; charset=utf-8');
@@ -443,7 +405,60 @@ async function serve(o) {
       if (!f) return out(404, '{}');
       const r = await f(); out(200, JSON.stringify({ ok: true, ...(r || {}) }));
     } catch (e) { out(500, JSON.stringify({ ok: false, error: String(e.message || e) })); }
-  }).listen(+o.port, '127.0.0.1', () => console.log(`serving ${name} on 127.0.0.1:${o.port}`));
+  });
+  server.on('upgrade',(req,socket,head)=>{
+    if(req.url?.split('?')[0]==='/mic-ws'){
+      let client=null;
+      client=acceptWebSocket(req,socket,head,{
+        protocol:'cfm-mic',maxFrameBytes:128*1024,
+        onText:(txt,ws)=>mic.message(txt,ws).catch(()=>mic.send({t:'mic-error',message:'Microphone routing failed'})),
+        onBinary:(data)=>mic.pushAudio(data),
+        onClose:()=>mic.disconnect(client)
+      });
+      if(client)mic.attach(client);
+      return;
+    }
+    if(req.url?.split('?')[0]!=='/input-ws'){rejectUpgrade(socket,404);return;}
+    let pendingX=0,pendingY=0,lastSeq=0,pumping=false,scheduled=false;
+    let ws;
+    const schedule=()=>{
+      if(scheduled||pumping||!ws?.open)return;
+      scheduled=true;
+      setImmediate(async()=>{
+        scheduled=false;
+        if(pumping||!ws?.open)return;
+        pumping=true;
+        try{
+          while(ws.open&&(Math.abs(pendingX)>.01||Math.abs(pendingY)>.01)){
+            const dx=Math.max(-420,Math.min(420,pendingX));
+            const dy=Math.max(-420,Math.min(420,pendingY));
+            const seq=lastSeq;
+            pendingX-=dx;pendingY-=dy;
+            const r=await be.moveRelative({dx,dy});
+            stream.noteInput();
+            // Ack after all accumulated deltas have been applied.
+            if(Math.abs(pendingX)<.01&&Math.abs(pendingY)<.01)ws.send({t:'ack',s:seq,c:r?.cursorPos||null});
+          }
+        }catch{ws.send({t:'err',message:'Mouse input unavailable'});}
+        finally{pumping=false;if(ws?.open&&(Math.abs(pendingX)>.01||Math.abs(pendingY)>.01))schedule();}
+      });
+    };
+    ws=acceptWebSocket(req,socket,head,{
+      onText(txt){
+        let j;
+        try{j=JSON.parse(txt);}catch{ws.close(1003);return;}
+        if(j?.t!=='m'||!Number.isFinite(j.x)||!Number.isFinite(j.y)||!Number.isSafeInteger(j.s)||
+           j.s<0||Math.abs(j.x)>420||Math.abs(j.y)>420){ws.close(1008);return;}
+        // Every relative delta is accumulated. No motion is discarded.
+        pendingX=Math.max(-10000,Math.min(10000,pendingX+j.x));
+        pendingY=Math.max(-10000,Math.min(10000,pendingY+j.y));
+        lastSeq=Math.max(lastSeq,j.s);
+        schedule();
+      }
+    });
+    if(ws)ws.send({t:'ready',interval:stream.ms/1000});
+  });
+  server.listen(+o.port,'127.0.0.1',()=>console.log('serving '+name+' on 127.0.0.1:'+o.port));
 }
 
 const o = args(process.argv.slice(2));

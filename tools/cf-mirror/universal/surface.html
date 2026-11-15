@@ -15,6 +15,7 @@ body{display:flex;flex-direction:column}
 #stage{position:relative;flex:1;width:100%;min-height:0;overflow:hidden;background:#121822;touch-action:none;user-select:none;-webkit-user-select:none;overscroll-behavior:none;cursor:none}
 #surface{position:absolute;left:0;top:0;transform-origin:top left;will-change:transform;pointer-events:none}
 #image{display:block;width:100%;height:100%;max-width:none;max-height:none;user-select:none;-webkit-user-drag:none;pointer-events:none}
+#instantCursor{position:absolute;z-index:4;left:-50px;top:-50px;width:19px;height:19px;box-sizing:border-box;pointer-events:none;display:none;transform:translate(-50%,-50%);border:2px solid #fff;border-radius:50%;background:rgba(49,133,255,.19);box-shadow:0 0 0 2px #1162d8,0 1px 4px #000a;will-change:left,top}
 #hud{position:absolute;right:8px;top:8px;z-index:3;pointer-events:none;background:#0b1525a9;color:#d8e6fa;border-radius:6px;padding:3px 7px;font:11px system-ui}
 #bottom{min-height:48px;flex:none;display:flex;align-items:center;gap:5px;padding:5px 7px calc(5px + env(safe-area-inset-bottom));background:#192437;border-top:1px solid #33455f}
 button,.tool{background:#2a3c55;color:#ecf5ff;border:1px solid #526988;border-radius:8px;font:12px system-ui;padding:7px 9px;cursor:pointer;touch-action:manipulation;text-decoration:none;white-space:nowrap}
@@ -28,7 +29,8 @@ button[aria-pressed="true"]{background:#1958a5;border-color:#72b1ff}
 #voicePanel.open{display:flex}
 #voiceLang{background:#253e5b;color:#edf5ff;border:1px solid #6480a2;border-radius:6px;padding:6px;font:12px system-ui;max-width:110px}
 #voiceStatus{font:12px system-ui;color:#e8f2ff;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#micToggle.active{background:#a02e3c;border-color:#ec7581}
+#micToggle.armed{background:#1958a5;border-color:#72b1ff}
+#micToggle.recording{background:#a02e3c;border-color:#ec7581}
 #micToggle{font-size:15px;min-width:38px}
 /* The whole icon is a real editable input: direct taps open the phone's IME.
    Text is relayed to the remote app; no separate text-entry bar is shown. */
@@ -50,6 +52,7 @@ button[aria-pressed="true"]{background:#1958a5;border-color:#72b1ff}
  <div id="surface">
   <img id="image" alt="Live mirror surface">
  </div>
+ <div id="instantCursor" aria-hidden="true"></div>
  <div id="hud">Loading…</div>
 </div>
 <div id="bottom">
@@ -57,7 +60,8 @@ button[aria-pressed="true"]{background:#1958a5;border-color:#72b1ff}
  <button id="viewMode" title="Switch between fit and fill">Fit</button>
  <button id="reset" title="Reset digital zoom and pan">1×</button>
  <button id="keysButton" aria-expanded="false">Keys</button>
- <button id="micToggle" type="button" title="Dictate with phone microphone" aria-label="Start voice typing" aria-pressed="false">🎙</button>
+ <button id="cursorToggle" type="button" title="Show or hide instant touchpad cursor" aria-label="Toggle instant cursor" aria-pressed="false" style="padding:7px 9px;min-width:34px;font-size:17px">⌖</button>
+ <button id="micToggle" type="button" title="Arm remote app microphone (does not record until an app requests it)" aria-label="Arm remote microphone standby" aria-pressed="false">🎙</button>
  <div class="keyboard-control" title="Android keyboard: direct input"><span aria-hidden="true">⌨</span><input id="keyboardToggle" class="keyboard-direct" type="text" inputmode="text" enterkeyhint="done" autocapitalize="sentences" autocomplete="off" autocorrect="on" spellcheck="true" aria-label="Android keyboard input"/></div>
  <button id="fullscreen" title="Full screen">⛶</button>
 </div>
@@ -84,36 +88,31 @@ button[aria-pressed="true"]{background:#1958a5;border-color:#72b1ff}
  </div>
 </section>
 <section id="voicePanel" role="status" aria-live="polite">
- <span id="voiceStatus">Tap 🎙 to dictate into the focused remote field.</span>
- <select id="voiceLang" aria-label="Speech language">
-  <option value="fa-IR">فارسی</option>
-  <option value="en-US">English</option>
-  <option value="de-DE">Deutsch</option>
-  <option value="ar-SA">العربية</option>
-  <option value="tr-TR">Türkçe</option>
- </select>
+ <span id="voiceStatus">🎙: standby sends no audio. The phone mic opens only while a remote app records.</span>
  <button id="closeVoice" type="button" aria-label="Dismiss voice status">×</button>
 </section>
 <div id="help">
  <strong>Touchpad controls</strong>
  <div>One finger swipe: move remote cursor, wherever it already is.</div>
  <div>Tap: left click at remote cursor. Double tap: double click. Hold ~0.6 s: right click.</div>
- <div>Fast finger flick: pointer glides briefly with inertia. Drag button: toggle left-button hold for dragging.</div>
+ <div>Finger movement is direct without momentum. Tap ⌖ to toggle an instant predictive touchpad circle; the real remote cursor remains in the streamed image. Drag holds left button.</div>
  <div>Two fingers: pinch to zoom; pan the magnified image. At 1×, two-finger slide scrolls the remote page.</div>
- <div>Fit/Fill changes viewing zoom only. Tap ⌨ to open your real Android keyboard directly (no extra text bar); it relays typing, deletion, paste and supported shortcuts to the remote field. 🎙 is optional speech-to-text; Keys sends missing desktop keys.</div>
+ <div>Fit/Fill changes viewing zoom only. Tap ⌨ to open your real Android keyboard directly (no extra text bar); it relays typing, deletion, paste and supported shortcuts to the remote field. 🎙 arms the remote app microphone without recording; audio starts only when a remote app requests input. Keys sends desktop keys.</div>
 </div>
 <script>
 'use strict';
 const CONTROL_CSRF='__CONTROL_CSRF__';
 const stage=document.getElementById('stage'),surface=document.getElementById('surface');
-const image=document.getElementById('image');
+const image=document.getElementById('image'),instantCursor=document.getElementById('instantCursor');
 const stateText=document.getElementById('state'),hud=document.getElementById('hud'),hint=document.getElementById('hint');
 const keys=document.getElementById('keys'),help=document.getElementById('help');
 let iw=1280,ih=800,base=1,scale=1,zoom=1,mode='fit',panX=0,panY=0,tx=0,ty=0,remote={x:640,y:400};
 let rate='?',ready=false,infoBusy=false,reconnectTimer=null,dragHeld=false,remoteFitTimer=null,sourceKind='x11';
+let cursorHintEnabled=false,cursorHint={x:640,y:400},lastHintMotion=0;
 const fingers=new Map();
 let one=null,pinch=null,suppressUntilAllUp=false,longTimer=null,tapTimer=null,lastTapAt=0;
-let inertiaId=0,moveBusy=false,dxWaiting=0,dyWaiting=0,moveResolvers=[],lastPointerEvent=0;
+let moveBusy=false,dxWaiting=0,dyWaiting=0,moveResolvers=[],lastPointerEvent=0;
+let inputSocket=null,wsReady=false,wsNextSeq=0,wsSentSeq=0,wsAckSeq=0,wsRetry=null,wsClosing=false;
 const mods={ctrl:false,alt:false,shift:false,meta:false};
 const clamp=(n,lo,hi)=>Math.max(lo,Math.min(hi,n));
 const now=()=>performance.now();
@@ -123,9 +122,18 @@ function post(url,payload={}){
    .then(async r=>{const j=await r.json().catch(()=>({ok:false}));if(!r.ok||j.ok===false)throw Error(j.error||'Remote input failed');return j;});
 }
 function postSafe(url,payload={}){return post(url,payload).catch(e=>{hud.textContent='Input unavailable';return {ok:false,error:e.message};});}
+function placeHint(){
+ if(!cursorHintEnabled)return;
+ instantCursor.style.left=(tx+cursorHint.x*scale)+'px';
+ instantCursor.style.top=(ty+cursorHint.y*scale)+'px';
+}
 function updateRemote(r){
  if(r?.cursorPos&&Number.isFinite(r.cursorPos.x)&&Number.isFinite(r.cursorPos.y)){
   remote={x:clamp(r.cursorPos.x,0,iw-1),y:clamp(r.cursorPos.y,0,ih-1)};
+  // Avoid yanking the predictive ring backward while the finger is moving.
+  if(now()-lastHintMotion>210){
+   cursorHint={...remote};placeHint();
+  }
  }
 }
 function clampPan(){
@@ -142,6 +150,7 @@ function render(){
  tx=(w-iw*scale)/2+panX;ty=(h-ih*scale)/2+panY;
  surface.style.width=iw+'px';surface.style.height=ih+'px';
  surface.style.transform='translate('+tx+'px,'+ty+'px) scale('+scale+')';
+ placeHint();
  document.getElementById('reset').textContent=zoom.toFixed(1)+'×';
  document.getElementById('viewMode').textContent=mode==='fit'?'Fit':'Fill';
  hud.textContent=(ready?'Live':'Loading')+' · '+Math.round(iw)+'×'+Math.round(ih)+' · '+rate;
@@ -152,14 +161,62 @@ function pointToSource(x,y,strict=false){
  if(strict&&(sx<0||sx>=iw||sy<0||sy>=ih))return null;
  return{x:clamp(Math.round(sx),0,iw-1),y:clamp(Math.round(sy),0,ih-1)};
 }
+// A persistent WS transports movements without waiting for the preceding
+// round trip. Every delta is retained, including while waiting to reconnect.
+function connectInputWS(){
+ if(typeof window.WebSocket!=='function'||!window.location?.origin||wsClosing)return;
+ let ws;
+ try{
+  const url=new URL('/input-ws',window.location.origin);
+  url.protocol=window.location.protocol==='https:'?'wss:':'ws:';
+  ws=new window.WebSocket(url.href,['cfm-input',CONTROL_CSRF]);
+ }catch{return;}
+ inputSocket=ws;
+ ws.onmessage=e=>{
+  if(inputSocket!==ws)return;
+  try{
+   const m=JSON.parse(e.data);
+   if(m.t==='ready'){wsReady=true;flushMove();}
+   else if(m.t==='ack'){wsAckSeq=Math.max(wsAckSeq,Number(m.s)||0);if(m.c)updateRemote({cursorPos:m.c});resolveMoves();}
+   else if(m.t==='err'){hud.textContent='WS input error';}
+  }catch{}
+ };
+ ws.onerror=()=>{if(inputSocket===ws){wsReady=false;resolveMoves();}};
+ ws.onclose=()=>{
+  if(inputSocket!==ws)return;
+  inputSocket=null;wsReady=false;wsAckSeq=wsSentSeq;
+  resolveMoves();
+  flushMove(); // HTTP fallback if a queued move has not yet been sent.
+  if(!wsClosing){wsRetry=setTimeout(connectInputWS,1600);}
+ };
+}
 function queueMove(dx,dy){
  if(!Number.isFinite(dx)||!Number.isFinite(dy))return;
+ if(cursorHintEnabled){
+  cursorHint={x:clamp(cursorHint.x+dx,0,iw-1),y:clamp(cursorHint.y+dy,0,ih-1)};
+  lastHintMotion=now();
+  placeHint();
+ }
  dxWaiting+=dx;dyWaiting+=dy;
  if(!moveBusy)flushMove();
 }
 async function flushMove(){
  if(moveBusy)return;
- if(Math.abs(dxWaiting)<.15&&Math.abs(dyWaiting)<.15)return resolveMoves();
+ if(wsReady&&inputSocket?.readyState===1){
+  try{
+   while(Math.abs(dxWaiting)>.01||Math.abs(dyWaiting)>.01){
+    if(inputSocket.bufferedAmount>8192){setTimeout(flushMove,12);break;}
+    const dx=clamp(dxWaiting,-420,420),dy=clamp(dyWaiting,-420,420);
+    dxWaiting-=dx;dyWaiting-=dy;
+    const seq=++wsNextSeq;
+    inputSocket.send(JSON.stringify({t:'m',s:seq,x:dx,y:dy}));
+    wsSentSeq=seq;
+   }
+  }catch{wsReady=false;flushMove();}
+  if(Math.abs(dxWaiting)<.01&&Math.abs(dyWaiting)<.01&&wsAckSeq>=wsSentSeq)resolveMoves();
+  return;
+ }
+ if(Math.abs(dxWaiting)<.15&&Math.abs(dyWaiting)<.15){resolveMoves();return;}
  const dx=clamp(dxWaiting,-420,420),dy=clamp(dyWaiting,-420,420);
  dxWaiting-=dx;dyWaiting-=dy;
  moveBusy=true;
@@ -167,27 +224,19 @@ async function flushMove(){
  catch(e){hud.textContent='Mouse input error';stateText.textContent='Touchpad input failed: '+String(e.message||e).slice(0,55);}
  finally{moveBusy=false;if(Math.abs(dxWaiting)>.15||Math.abs(dyWaiting)>.15)flushMove();else resolveMoves();}
 }
-function resolveMoves(){for(const f of moveResolvers.splice(0))f();}
-function movementsSettled(){return(!moveBusy&&Math.abs(dxWaiting)<.15&&Math.abs(dyWaiting)<.15)?Promise.resolve():new Promise(r=>moveResolvers.push(r));}
-function moveRelativeScreen(dx,dy,velocity){
- const acceleration=clamp(.88+velocity*.55,.88,1.8);
- queueMove(dx/Math.max(scale,.08)*acceleration,dy/Math.max(scale,.08)*acceleration);
+function resolveMoves(){
+ if(moveBusy||Math.abs(dxWaiting)>.15||Math.abs(dyWaiting)>.15||(wsReady&&wsAckSeq<wsSentSeq))return;
+ for(const f of moveResolvers.splice(0))f();
+}
+function movementsSettled(){
+ return (!moveBusy&&Math.abs(dxWaiting)<.15&&Math.abs(dyWaiting)<.15&&(!wsReady||wsAckSeq>=wsSentSeq))
+   ?Promise.resolve():new Promise(r=>moveResolvers.push(r));
+}
+function moveRelativeScreen(dx,dy){
+ // Direct movement proportional to the finger; no speed amplification or momentum.
+ queueMove(dx/Math.max(scale,.08),dy/Math.max(scale,.08));
 }
 function cancelLong(){if(longTimer!==null){clearTimeout(longTimer);longTimer=null;}}
-function cancelInertia(){if(inertiaId){cancelAnimationFrame(inertiaId);inertiaId=0;}}
-function startInertia(vx,vy){
- cancelInertia();
- let last=now(),duration=0;
- const tick=t=>{
-  let dt=Math.min(t-last,35);last=t;duration+=dt;
-  const decay=Math.exp(-dt/150);
-  vx*=decay;vy*=decay;
-  if(duration>550||Math.hypot(vx,vy)<.025||fingers.size){inertiaId=0;return;}
-  moveRelativeScreen(vx*dt,vy*dt,Math.hypot(vx,vy));
-  inertiaId=requestAnimationFrame(tick);
- };
- inertiaId=requestAnimationFrame(tick);
-}
 async function leftClick(){await movementsSettled();if(dragHeld)return;updateRemote(await postSafe('/click-rel',{button:0}));}
 async function doubleClick(){await movementsSettled();if(dragHeld)return;updateRemote(await postSafe('/double-rel'));}
 function tap(){
@@ -201,7 +250,7 @@ function longPress(){
  movementsSettled().then(()=>postSafe('/click-rel',{button:2})).then(updateRemote);
 }
 function beginPinch(){
- cancelLong();cancelInertia();
+ cancelLong();
  if(tapTimer){clearTimeout(tapTimer);tapTimer=null;}
  lastTapAt=0;
  suppressUntilAllUp=true;
@@ -247,11 +296,11 @@ function onPointerDown(e){
   }
   return;
  }
- e.preventDefault();cancelInertia();
+ e.preventDefault();
  try{stage.setPointerCapture(e.pointerId);}catch{}
  fingers.set(e.pointerId,{x:e.clientX,y:e.clientY});
  if(fingers.size>=2){beginPinch();return;}
- one={id:e.pointerId,lastX:e.clientX,lastY:e.clientY,startX:e.clientX,startY:e.clientY,lastTime:now(),startTime:now(),moved:0,vx:0,vy:0,longPressed:false};
+ one={id:e.pointerId,lastX:e.clientX,lastY:e.clientY,startX:e.clientX,startY:e.clientY,startTime:now(),moved:0,longPressed:false};
  cancelLong();
  longTimer=setTimeout(()=>{longTimer=null;longPress();},610);
 }
@@ -270,14 +319,10 @@ function onPointerMove(e){
  if(fingers.size>=2){movePinch();return;}
  if(!one||one.id!==e.pointerId)return;
  const dx=e.clientX-one.lastX,dy=e.clientY-one.lastY;
- const dt=Math.max(8,now()-one.lastTime);
- one.lastX=e.clientX;one.lastY=e.clientY;one.lastTime=now();
+ one.lastX=e.clientX;one.lastY=e.clientY;
  one.moved+=Math.hypot(dx,dy);
  if(one.moved>9)cancelLong();
- const curSpeed=Math.hypot(dx,dy)/dt;
- one.vx=one.vx*.38+dx/dt*.62;
- one.vy=one.vy*.38+dy/dt*.62;
- if(one.moved>1)moveRelativeScreen(dx,dy,curSpeed);
+ if(one.moved>1)moveRelativeScreen(dx,dy);
 }
 function onPointerUp(e){
  if(useNativeTouchEvents&&e.pointerType==='touch'&&!e.__fromTouch)return;
@@ -296,7 +341,7 @@ function onPointerUp(e){
  if(!fingers.size){pinch=null;suppressUntilAllUp=false;}
  if(!single||!gesture||gesture.id!==e.pointerId||suppressUntilAllUp)return;
  if(!gesture.longPressed&&gesture.moved<10&&now()-gesture.startTime<480){tap();}
- else if(!gesture.longPressed&&gesture.moved>24&&now()-gesture.lastTime<150&&Math.hypot(gesture.vx,gesture.vy)>.16)startInertia(gesture.vx,gesture.vy);
+
  one=null;
 }
 stage.addEventListener('pointerdown',onPointerDown);
@@ -304,7 +349,7 @@ stage.addEventListener('pointermove',onPointerMove);
 stage.addEventListener('pointerup',onPointerUp);
 stage.addEventListener('pointercancel',e=>{
  if(useNativeTouchEvents&&e.pointerType==='touch')return;
- cancelLong();cancelInertia();fingers.delete(e.pointerId);
+ cancelLong();fingers.delete(e.pointerId);
  if(!fingers.size){suppressUntilAllUp=false;pinch=null;one=null;}
 });
 // Use native Touch Events on Android/iOS. They remain reliable in nested
@@ -326,7 +371,7 @@ if(useNativeTouchEvents){
   for(const t of e.changedTouches)onPointerUp(converted(t,e));
  },{passive:false});
  stage.addEventListener('touchcancel',e=>{
-  e.preventDefault();cancelLong();cancelInertia();
+  e.preventDefault();cancelLong();
   for(const t of e.changedTouches)fingers.delete(t.identifier);
   if(!fingers.size){suppressUntilAllUp=false;pinch=null;one=null;}
  },{passive:false});
@@ -352,6 +397,12 @@ stage.addEventListener('keydown',e=>{
  }else postSafe('/type',{s:e.key});
 });
 document.getElementById('helpToggle').addEventListener('click',()=>help.classList.toggle('open'));
+document.getElementById('cursorToggle').addEventListener('click',e=>{
+ cursorHintEnabled=!cursorHintEnabled;
+ e.currentTarget.setAttribute('aria-pressed',String(cursorHintEnabled));
+ instantCursor.style.display=cursorHintEnabled?'block':'none';
+ if(cursorHintEnabled){cursorHint={...remote};lastHintMotion=0;placeHint();}
+});
 document.getElementById('viewMode').addEventListener('click',()=>{mode=mode==='fit'?'fill':'fit';panX=panY=0;zoom=1;render();});
 document.getElementById('reset').addEventListener('click',()=>{mode='fit';zoom=1;panX=panY=0;render();});
 document.getElementById('fullscreen').addEventListener('click',()=>{if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen?.().catch(()=>{});});
@@ -373,10 +424,9 @@ const keyboardButton=document.getElementById('keyboardToggle');
 const voicePanel=document.getElementById('voicePanel');
 const voiceStatus=document.getElementById('voiceStatus');
 const micButton=document.getElementById('micToggle');
-const voiceLang=document.getElementById('voiceLang');
-const SpeechAPI=window.SpeechRecognition||window.webkitSpeechRecognition;
-voiceLang.value=(navigator.language||'').toLowerCase().startsWith('fa')?'fa-IR':(navigator.language||'').toLowerCase().startsWith('en')?'en-US':'fa-IR';
-let recognition=null;
+// Microphone button arms only a data link. The Android microphone itself
+// remains OFF until Telegram/WeChat/Chrome opens the remote virtual source.
+let micSocket=null,micArmed=false,micRecording=false,micStream=null,micRecorder=null,micRecorderChain=Promise.resolve();
 let keyboardComposing=false;
 let keyboardShadow='';
 let remoteSelectionAll=false;
@@ -571,83 +621,138 @@ keyboardButton.addEventListener('keydown',e=>{
  // Printable characters, voice dictation, auto-correction, emojis and paste
  // are handled by input/composition events, never by duplicate keydown typing.
 });
-document.getElementById('closeVoice').addEventListener('click',()=>{
- if(recognition){try{recognition.stop();}catch{}}
- voicePanel.classList.remove('open');
-});
-function speechNotice(message){voiceStatus.textContent=message;voicePanel.classList.add('open');}
-function resetMic(){
- micButton.classList.remove('active');
- micButton.setAttribute('aria-pressed','false');
- micButton.setAttribute('aria-label','Start voice typing');
+document.getElementById('closeVoice').addEventListener('click',()=>voicePanel.classList.remove('open'));
+function micNotice(message,show=true){
+ voiceStatus.textContent=message;
+ if(show)voicePanel.classList.add('open');
+}
+function micButtonState(){
+ micButton.classList.toggle('armed',micArmed);
+ micButton.classList.toggle('recording',micRecording);
+ micButton.setAttribute('aria-pressed',String(micArmed));
+ micButton.setAttribute('aria-label',micRecording?'Remote microphone actively recording':micArmed?'Disarm remote microphone':'Arm remote microphone standby');
+ micButton.title=micRecording?'Phone mic live — tap to disarm':micArmed?'Remote mic armed; tap to turn off':'Arm remote mic; microphone stays off until remote app starts recording';
+}
+function stopPhoneCapture(){
+ micRecording=false;
+ const rec=micRecorder;micRecorder=null;
+ if(rec&&rec.state!=='inactive'){try{rec.stop();}catch{}}
+ const stream=micStream;micStream=null;
+ if(stream)for(const track of stream.getTracks())track.stop();
+ micButtonState();
+}
+async function startPhoneCapture(){
+ if(!micArmed||micRecording)return;
+ const ws=micSocket;
+ if(!ws||ws.readyState!==1)return;
+ if(!navigator.mediaDevices?.getUserMedia){
+  micNotice('Microphone capture unavailable in this browser or context.');
+  ws.send(JSON.stringify({t:'client-audio-error',message:'getUserMedia unsupported'}));return;
+ }
+ if(!window.MediaRecorder||!window.MediaRecorder.isTypeSupported?.('audio/webm;codecs=opus')){
+  micNotice('This browser cannot encode WebM/Opus for the remote microphone.');
+  ws.send(JSON.stringify({t:'client-audio-error',message:'WebM Opus unavailable'}));return;
+ }
+ micNotice('Remote app requested audio: Android may ask for microphone permission.');
+ let stream;
+ try{
+  stream=await navigator.mediaDevices.getUserMedia({
+   audio:{channelCount:1,echoCancellation:true,noiseSuppression:true,autoGainControl:true},video:false
+  });
+ }catch(e){
+  micNotice('Microphone permission unavailable: '+String(e.name||'Denied').slice(0,45)+'. Tap 🎙 off/on to retry.');
+  if(ws.readyState===1)ws.send(JSON.stringify({t:'client-audio-error',message:String(e.name||'Permission denied').slice(0,90)}));
+  return;
+ }
+ // A pending Android permission prompt might resolve after the remote app has
+ // stopped recording. Never retain a microphone track in that situation.
+ if(!micArmed||micSocket!==ws||ws.readyState!==1){
+  stream.getTracks().forEach(t=>t.stop());return;
+ }
+ let rec;
+ try{rec=new window.MediaRecorder(stream,{mimeType:'audio/webm;codecs=opus',audioBitsPerSecond:36000});}
+ catch(e){stream.getTracks().forEach(t=>t.stop());micNotice('Audio encoder could not start');return;}
+ micStream=stream;micRecorder=rec;micRecording=true;
+ micButtonState();
+ micNotice('🔴 Remote app is recording via your phone microphone.');
+ rec.ondataavailable=e=>{
+  if(!e.data?.size)return;
+  // Maintain encoder chunk order; never create a large queue of stale audio.
+  micRecorderChain=micRecorderChain.then(async()=>{
+   if(!micRecording||micRecorder!==rec||micSocket!==ws||ws.readyState!==1)return;
+   const data=await e.data.arrayBuffer();
+   if(data.byteLength<120000&&ws.bufferedAmount<192000&&micRecording)ws.send(data);
+  }).catch(()=>{});
+ };
+ rec.onerror=()=>{stopPhoneCapture();micNotice('Audio recording failed — toggle mic to retry.');};
+ stream.getAudioTracks().forEach(t=>t.addEventListener('ended',()=>{
+  if(micRecorder===rec){stopPhoneCapture();micNotice('Phone microphone track ended.');}
+ },{once:true}));
+ try{rec.start(100);}
+ catch(e){stopPhoneCapture();micNotice('Failed to begin live microphone capture.');}
+}
+function connectMic(){
+ if(!micArmed||micSocket?.readyState===1||micSocket?.readyState===0)return;
+ if(typeof window.WebSocket!=='function'||window.location.protocol!=='https:'&&window.location.hostname!=='127.0.0.1'){
+  micNotice('Standby microphone requires a secure HTTPS mirror.');micArmed=false;micButtonState();return;
+ }
+ let ws;
+ try{
+  const url=new URL('/mic-ws',window.location.origin);
+  url.protocol=window.location.protocol==='https:'?'wss:':'ws:';
+  ws=new window.WebSocket(url.href,['cfm-mic',CONTROL_CSRF]);
+ }catch{
+  micNotice('Could not connect remote audio input.');micArmed=false;micButtonState();return;
+ }
+ micSocket=ws;ws.binaryType='arraybuffer';
+ ws.onopen=()=>{
+  if(micSocket!==ws)return;
+  if(!micArmed){ws.close();return;}
+  ws.send(JSON.stringify({t:'arm',enabled:true}));
+ };
+ ws.onmessage=e=>{
+  if(micSocket!==ws)return;
+  let m;try{m=JSON.parse(e.data);}catch{return;}
+  if(m.t==='mic-connected')return;
+  if(m.t==='standby')micNotice('🔵 Ready. Android mic is OFF until the remote app requests recording.',false);
+  else if(m.t==='capture-needed')startPhoneCapture();
+  else if(m.t==='capture-stop'){
+   stopPhoneCapture();
+   if(micArmed)micNotice('🔵 Standby. Remote app stopped recording; phone mic is OFF.',false);
+  }else if(m.t==='mic-error')micNotice('Remote microphone: '+String(m.message||'Unavailable').slice(0,110));
+  else if(m.t==='standby-off')stopPhoneCapture();
+ };
+ ws.onclose=()=>{
+  if(micSocket!==ws)return;
+  stopPhoneCapture();
+  micSocket=null;
+  if(micArmed){micArmed=false;micButtonState();micNotice('Audio connection closed. Tap 🎙 to re-arm.');}
+ };
+ ws.onerror=()=>{
+  if(micSocket===ws)micNotice('Remote audio connection error. Tap 🎙 to retry.');
+ };
 }
 micButton.addEventListener('click',()=>{
- if(recognition){
-  try{recognition.stop();speechNotice('Finishing dictation…');}
-  catch{recognition=null;resetMic();}
-  return;
- }
- if(!SpeechAPI||!window.isSecureContext){
-  speechNotice('Browser speech unavailable. Tap ⌨; use your keyboard’s voice input if available.');
-  return;
- }
- keyboardButton.blur();
- let r;
- try{r=new SpeechAPI();}catch{
-  speechNotice('Voice typing unsupported. Try the ⌨ keyboard.');return;
- }
- recognition=r;
- r.lang=voiceLang.value;
- r.interimResults=true;
- r.continuous=false;
- r.maxAlternatives=1;
- let sentFinal=false,hadError=false;
- r.onstart=()=>{
-  micButton.classList.add('active');
-  micButton.setAttribute('aria-pressed','true');
-  micButton.setAttribute('aria-label','Stop voice typing');
-  speechNotice('🎙 Listening… speak now');
- };
- r.onresult=e=>{
-  for(let i=e.resultIndex;i<e.results.length;i++){
-   const segment=e.results[i];
-   const words=String(segment?.[0]?.transcript||'').trim();
-   if(!words)continue;
-   if(segment.isFinal&&!sentFinal){
-    sentFinal=true;
-    speechNotice('Sending: '+words.slice(0,120));
-    // A final speech result is sent only once, into the currently focused remote field.
-    postSafe('/type',{s:words}).then(ans=>{
-     if(ans?.ok)speechNotice('✓ Sent: '+words.slice(0,110));
-     else speechNotice('Could not type remotely. Try ⌨.');
-    });
-   }else if(!segment.isFinal&&!sentFinal)speechNotice('🎙 '+words.slice(0,120));
+ if(micArmed){
+  micArmed=false;
+  stopPhoneCapture();
+  if(micSocket){
+   if(micSocket.readyState===1)micSocket.send(JSON.stringify({t:'arm',enabled:false}));
+   micSocket.close(1000);
+   micSocket=null;
   }
- };
- r.onerror=e=>{
-  hadError=true;
-  const code=String(e.error||'unknown');
-  const message={
-   'not-allowed':'Microphone permission blocked. Use ⌨ or allow microphone access.',
-   'service-not-allowed':'Speech service unavailable. Tap ⌨ and use keyboard voice input if supported.',
-   'network':'Speech service network error. Try ⌨ instead.',
-   'no-speech':'No speech detected. Tap 🎙 to retry.',
-   'audio-capture':'Phone microphone not available.',
-   'language-not-supported':'This voice language is unavailable. Select another language.'
-  }[code]||('Voice typing error: '+code);
-  speechNotice(message);
- };
- r.onend=()=>{
-  if(recognition===r)recognition=null;
-  resetMic();
-  if(!sentFinal&&!hadError)speechNotice('Stopped. Tap 🎙 to dictate again.');
- };
- speechNotice('Requesting microphone access…');
- try{r.start();}catch(e){
-  recognition=null;
-  resetMic();
-  speechNotice('Microphone could not start. Tap ⌨ and use your preferred Android keyboard.');
+  micButtonState();
+  micNotice('Microphone disarmed. No audio capture.',false);
+  return;
  }
+ micArmed=true;
+ micButtonState();
+ micNotice('🔵 Connecting standby audio. No microphone capture yet.');
+ connectMic();
+});
+window.addEventListener('pagehide',()=>{
+ micArmed=false;stopPhoneCapture();
+ if(micSocket){micSocket.close(1000);micSocket=null;}
 });
 document.getElementById('dragToggle').addEventListener('click',async e=>{
  dragHeld=!dragHeld;e.target.setAttribute('aria-pressed',String(dragHeld));e.target.textContent=dragHeld?'Drag: on':'Drag: off';
@@ -663,7 +768,7 @@ async function information(){
   if(j.cursor)updateRemote({cursorPos:j.cursor});
   if(sourceKind!==j.kind){sourceKind=j.kind;scheduleRemoteFit();}
   rate=Math.round(1/(j.interval_s||.2))+' fps';
-  ready=true;stateText.textContent='Live · touchpad · '+rate;render();
+  ready=true;stateText.textContent='Live · touchpad · '+rate+(wsReady?' · WS':' · HTTP');render();
  }catch{ready=false;stateText.textContent='Reconnecting…';}
  finally{infoBusy=false;}
 }
@@ -684,6 +789,7 @@ function scheduleRemoteFit(){
 window.addEventListener('resize',()=>{render();scheduleRemoteFit();});
 new ResizeObserver(()=>{render();scheduleRemoteFit();}).observe(stage);
 image.src='/stream.mjpg?t='+Date.now();
+connectInputWS();
 information();setInterval(information,2600);
 stage.focus({preventScroll:true});
 render();

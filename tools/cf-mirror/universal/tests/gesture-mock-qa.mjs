@@ -14,7 +14,7 @@ class ClassList{
 class Node{
  constructor(id){this.id=id;this.events=new Map();this.style={};this.classList=new ClassList();this.dataset={};this.textContent='';this.value='';this.naturalWidth=1400;this.naturalHeight=860;this.clientWidth=id==='stage'?390:0;this.clientHeight=id==='stage'?730:0;this.width=390;this.height=730;}
  addEventListener(name,fn){(this.events.get(name)||this.events.set(name,[]).get(name)).push(fn)}
- emit(name,data={}){for(const f of this.events.get(name)||[])f({...data,preventDefault(){},stopPropagation(){},target:this});}
+ emit(name,data={}){for(const f of this.events.get(name)||[])f({...data,preventDefault(){},stopPropagation(){},target:this,currentTarget:this});}
  getBoundingClientRect(){return {left:0,top:42,width:this.clientWidth,height:this.clientHeight,right:this.clientWidth,bottom:42+this.clientHeight}}
  setAttribute(a,v){this[a]=v;}
  setPointerCapture(){}
@@ -119,13 +119,16 @@ keyboardButton.emit('input');
 await new Promise(r=>setTimeout(r,25));
 assert(calls.some(x=>x.url==='/key'&&x.data.key==='Backspace'),'Backspace on direct input failed');
 console.log('DIRECT_KEYBOARD_AND_BACKSPACE_PASS');
-assert(voiceSessions===0,'microphone must not start automatically');
-const voiceButton=nodes.get('micToggle');
-voiceButton.emit('click');
-await new Promise(r=>setTimeout(r,65));
-assert(voiceSessions===1,'voice recognition did not start on tap');
-assert(calls.some(x=>x.url==='/type'&&x.data.s==='سلام دنیا'),'final voice transcript not forwarded once');
-assert(calls.filter(x=>x.url==='/type'&&x.data.s==='سلام دنیا').length===1,'final transcript sent twice');
-assert(nodes.get('micToggle').attributes?.['aria-pressed']!=='true','mic still active');
-console.log('SPEECH_RECOGNITION_FARSI_PASS');
-console.log('ALL_GESTURE_AND_VOICE_MOCKS_PASS');
+assert(voiceSessions===0,'speech-recognition must not start automatically');
+const instant=nodes.get('instantCursor'),pointerToggle=nodes.get('cursorToggle');
+assert(instant.style.display!=='block','predictive circle must default OFF');
+pointerToggle.emit('click');
+assert(instant.style.display==='block','crosshair did not turn predictive cursor on');
+const x0=instant.style.left;
+ev('pointerdown',61,100,400);ev('pointermove',61,160,400);ev('pointerup',61,160,400);
+assert(instant.style.left!==x0,'predictive cursor failed to respond to finger immediately');
+pointerToggle.emit('click');
+assert(instant.style.display==='none','crosshair did not turn predictive cursor off');
+assert(!html.includes('id="cursor"')&&!html.includes('id="pointer-arrow"'),'old artificial cursor reappeared');
+console.log('OPTIONAL_PREDICTIVE_CURSOR_TOGGLE_PASS');
+console.log('ALL_GESTURE_AND_KEYBOARD_MOCKS_PASS');

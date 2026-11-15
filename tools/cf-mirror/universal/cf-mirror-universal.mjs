@@ -3,6 +3,7 @@
 // Bound to loopback. Web sessions are accessible only through a per-session HTTPS
 // Cloudflare Quick Tunnel + authenticated, expiring gateway. No domain allowlist.
 import http from 'node:http';
+import net from 'node:net';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -479,6 +480,42 @@ async function serve(config){
   await startBackend();
   server=http.createServer((req,res)=>handler(req,res));
   server.on('connection',sock=>{sockets.add(sock);sock.on('close',()=>sockets.delete(sock));});
+  server.on('upgrade',(req,socket,head)=>{
+    const deny=(status,label)=>{
+      if(socket.destroyed)return;
+      const body=label||'Access denied';
+      socket.end('HTTP/1.1 '+status+' '+(status===401?'Unauthorized':status===403?'Forbidden':status===410?'Gone':'Bad Request')+
+        '\r\nConnection: close\r\nContent-Type: text/plain\r\nContent-Length: '+Buffer.byteLength(body)+'\r\n\r\n'+body);
+    };
+    if(isExpired()){deny(410,'Mirror expired');cleanup().catch(()=>{});return;}
+    if(req.url!=='/input-ws'&&req.url!=='/mic-ws')return deny(404,'Not found');
+    const wsPath=req.url,wsProtocol=wsPath==='/mic-ws'?'cfm-mic':'cfm-input';
+    if(c.mode==='web'&&!authCookie(req))return deny(401,'Password required');
+    // Browsers cannot provide custom WS headers. Require both same-origin
+    // and the signed per-login CSRF token in a WebSocket subprotocol.
+    if(!originOK(req))return deny(403,'Invalid origin');
+    const parts=String(req.headers['sec-websocket-protocol']||'').split(',').map(x=>x.trim());
+    const expected=controlToken(req);
+    const ok=parts.includes(wsProtocol)&&parts.some(t=>t.length===expected.length&&crypto.timingSafeEqual(Buffer.from(t),Buffer.from(expected)));
+    if(!ok)return deny(403,'Invalid control token');
+    // Whitelist the handshake fields. Never expose CDP or X11 ports or
+    // provide an unauthenticated public raw-socket forwarding endpoint.
+    const key=String(req.headers['sec-websocket-key']||'');
+    if(!/^[A-Za-z0-9+/]{22}==$/.test(key)||String(req.headers['sec-websocket-version'])!=='13')return deny(400,'Bad websocket handshake');
+    const upstream=net.connect({host:'127.0.0.1',port:c.backendPort});
+    upstream.setNoDelay(true);socket.setNoDelay(true);
+    upstream.once('connect',()=>{
+      if(socket.destroyed){upstream.destroy();return;}
+      upstream.write('GET '+wsPath+' HTTP/1.1\r\nHost: 127.0.0.1:'+c.backendPort+
+        '\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: '+key+
+        '\r\nSec-WebSocket-Version: 13\r\nSec-WebSocket-Protocol: '+wsProtocol+'\r\n\r\n');
+      if(head?.length)upstream.write(head);
+      upstream.pipe(socket);
+      socket.pipe(upstream);
+    });
+    upstream.once('error',()=>{if(!socket.destroyed)socket.destroy();});
+    socket.once('close',()=>upstream.destroy());
+  });
   await new Promise((resolve,reject)=>{server.once('error',reject);server.listen(c.port,'127.0.0.1',resolve);});
   if(c.mode==='web'){
    if(!fs.existsSync(TUNNEL))throw Error('cloudflared is not installed at '+TUNNEL);
@@ -497,6 +534,14 @@ async function serve(config){
     tunnel.once('exit',(code)=>{if(!finished){finished=true;clearTimeout(timer);reject(Error('Cloudflared exited '+code));}});
    });
   }
+  // CSP self alone does not reliably include ws/wss in all Android browsers.
+  // Permit this single session's websocket origin, never arbitrary hosts.
+  const allowedWsOrigin=c.mode==='web'&&webUrl
+    ?new URL(webUrl).origin.replace(/^https:/,'wss:')
+    :'ws://127.0.0.1:'+c.port;
+  baseHeaders['content-security-policy']=baseHeaders['content-security-policy'].replace(
+    "connect-src 'self';","connect-src 'self' "+allowedWsOrigin+";"
+  );
   writeState(state({ready:true}));
   if(c.expiresAt)setTimeout(()=>{cleanup().catch(()=>process.exit(1));},Math.max(1,c.expiresAt-Date.now())).unref();
  }catch(e){
