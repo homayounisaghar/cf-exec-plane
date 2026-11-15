@@ -288,8 +288,8 @@ Each user/assistant exchange is complete after the assistant replies, even if ex
 Conversation completion NEVER implies a tool ran successfully. Never invent missing messages.
 
 HISTORY_LIMIT: 30
-HISTORY_COUNT: 30
-HISTORY_SHA256: a2fa7431b13b54f312d8c9687ddbd6aa6e50612b2046f315807fff64fb9ab958
+HISTORY_COUNT: 29
+HISTORY_SHA256: 12e45d116bcf2b8eca6cc5ed8a65868fa4ccd535b8dcc22294bf9409f60f2f0e
 
 ~~~json
 [
@@ -547,15 +547,6 @@ HISTORY_SHA256: a2fa7431b13b54f312d8c9687ddbd6aa6e50612b2046f315807fff64fb9ab958
   },
   {
     "exchange": 29,
-    "createdAt": "2026-11-15T03:50:38.353Z",
-    "ownerRequest": "میگا متوقف شو.",
-    "dexaVisibleReply": "باشه، متوقف شدم.",
-    "executionState": "CONVERSATION_TURN_COMPLETED",
-    "turnComplete": true,
-    "effectsExecuted": 0
-  },
-  {
-    "exchange": 30,
     "createdAt": "2026-11-15T03:51:18.233Z",
     "ownerRequest": "این پیام که در ویچتم پین شده متعلق به کیه؟",
     "dexaVisibleReply": "این پیام توی چت پین‌شدهٔ Kazem-tenghai بوده؛ اسم فرستنده‌اش مشخص نیست.",
