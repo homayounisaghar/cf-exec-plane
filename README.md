@@ -1,5 +1,8 @@
 # Capability Fabric Public Execution Plane
 
+> **DEXA OWNER VPN-OFF REQUIREMENT (2026-11-15):** All Dexa public Worker, Android, web, Rana and server execution artifacts must preserve operation **without VPN on the owner's actual Iranian phone**. Android v36/web v1.8.70 immediate launch after force-stop and cache clearing was owner-confirmed; both Workers were reachable, while direct upstream timed out. Before editing any `dexa/` or `dexa-superapp/` artifact, read [root agent rules](AGENTS.md) and the [canonical private VPN-OFF Connectivity Contract](https://github.com/homayounisaghar/capability-fabric/blob/main/projects/dexa-dashboard-superapp/VPN_FREE_CONNECTIVITY_CONTRACT.md). This is a mandatory release nonregression condition, not proof of untested Rana/native API paths. Public artifacts are *not* the private continuity source.
+
+
 This public repository is the canonical **secret-free execution plane** for CI, qualification, bootstrap, and deployment-control tasks whose executable payload can be separated from private state and credentials.
 
 Canonical source/state remains private in:
