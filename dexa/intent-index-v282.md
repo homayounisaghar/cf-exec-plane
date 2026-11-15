@@ -528,8 +528,8 @@ HISTORY_COUNT: 29
     "exchange": 29,
     "createdAt": "2026-11-15T21:48:47.598Z",
     "ownerRequest": "پس لااقل یک ایموجی گل براش بفرست.",
-    "dexaVisibleReply": "شناسهٔ فرمان ذخیره شد؛ تکمیل واقعی دستگاه هنوز تأیید نشده است.",
-    "executionState": "WAITING_EXTERNAL",
+    "dexaVisibleReply": "فرمان قبلی طبق رسید واقعی ارائه‌دهنده ناموفق بوده است.",
+    "executionState": "FAILED",
     "turnComplete": true,
     "effectsExecuted": 0
   }
