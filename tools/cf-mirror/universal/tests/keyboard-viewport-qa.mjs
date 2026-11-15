@@ -81,6 +81,15 @@ await pause(15);
 assert(calls.some(x=>x.url==='/key'&&x.data.key==='ArrowLeft'));
 assert(calls.some(x=>x.url==='/key'&&x.data.key==='Escape'));
 console.log('HARDWARE_SPECIAL_KEYS_PASS');
+// The keyboard app is irrelevant: no keydown is needed for these IME events.
+k.value='predict';k.fire('input');
+k.value='prediction';k.fire('beforeinput',{inputType:'insertReplacementText'});k.fire('input');
+await pause(28);
+assert(calls.some(x=>x.url==='/type'&&x.data.s==='ion'),'IME suggestion replacement was not relayed');
+k.value='';k.fire('input');await pause(16);
+k.fire('beforeinput',{inputType:'deleteWordBackward'});await pause(14);
+assert(calls.some(x=>x.url==='/key'&&x.data.key==='Backspace'&&x.data.ctrl===true),'IME word-delete without keydown failed');
+console.log('VENDOR_NEUTRAL_IME_REPLACEMENT_AND_WORD_DELETE_PASS');
 k.blur();assert(messages.length>=2);
 console.log('GESTURE_RELAY_TESTS_FINISHED');
 

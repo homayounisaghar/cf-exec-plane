@@ -407,7 +407,7 @@ function keyboardSnapshot(next){
  while(end<previous.length-start&&end<current.length-start&&previous[previous.length-1-end]===current[current.length-1-end])end++;
  const remove=previous.length-start-end;
  const insert=current.slice(start,current.length-end).join('');
- // A Google Keyboard suggestion can replace a word instead of appending;
+ // Any Android IME can replace text (autocorrect, prediction, swipe input), not only append;
  // reconcile the edit at the remote caret, preserving unchanged suffix.
  for(let i=0;i<end;i++)remoteKey('ArrowLeft');
  for(let i=0;i<remove;i++)remoteKey('Backspace');
@@ -460,6 +460,13 @@ keyboardButton.addEventListener('beforeinput',e=>{
   forwardDelete('Delete');
   return;
  }
+ // Some Android IMEs send word-delete events without keydown events.
+ if(t==='deleteWordBackward'&&keyboardButton.value===''){
+  e.preventDefault();remoteKey('Backspace',{ctrl:true});return;
+ }
+ if(t==='deleteWordForward'&&keyboardButton.value===''){
+  e.preventDefault();remoteKey('Delete',{ctrl:true});return;
+ }
  if(t==='insertLineBreak'||t==='insertParagraph'){
   e.preventDefault();remoteKey('Enter');return;
  }
@@ -489,7 +496,7 @@ keyboardButton.addEventListener('keydown',e=>{
  const ctrl=!!(e.ctrlKey||e.metaKey),alt=!!e.altKey,shift=!!e.shiftKey;
  if(ctrl||alt){
   if(ctrl&&!alt&&e.key.toLowerCase()==='v'){
-   // Let Gboard/Android paste into its local input first. The following
+   // Let the active Android keyboard paste into its local input first. The following
    // input event relays the phone clipboard text, not a stale X11 clipboard.
    const before=pasteSeen,shadow=keyboardShadow;
    setTimeout(()=>{if(pasteSeen===before&&keyboardShadow===shadow)remoteKey('v',{ctrl:true,shift});},180);
@@ -534,7 +541,7 @@ micButton.addEventListener('click',()=>{
   return;
  }
  if(!SpeechAPI||!window.isSecureContext){
-  speechNotice('Browser speech unavailable. Tap ⌨ and use the mic on Gboard.');
+  speechNotice('Browser speech unavailable. Tap ⌨; use your keyboard’s voice input if available.');
   return;
  }
  keyboardButton.blur();
@@ -575,7 +582,7 @@ micButton.addEventListener('click',()=>{
   const code=String(e.error||'unknown');
   const message={
    'not-allowed':'Microphone permission blocked. Use ⌨ or allow microphone access.',
-   'service-not-allowed':'Speech service unavailable. Try Gboard microphone with ⌨.',
+   'service-not-allowed':'Speech service unavailable. Tap ⌨ and use keyboard voice input if supported.',
    'network':'Speech service network error. Try ⌨ instead.',
    'no-speech':'No speech detected. Tap 🎙 to retry.',
    'audio-capture':'Phone microphone not available.',
@@ -592,7 +599,7 @@ micButton.addEventListener('click',()=>{
  try{r.start();}catch(e){
   recognition=null;
   resetMic();
-  speechNotice('Could not start microphone. Use ⌨ with Gboard.');
+  speechNotice('Microphone could not start. Tap ⌨ and use your preferred Android keyboard.');
  }
 });
 document.getElementById('dragToggle').addEventListener('click',async e=>{
