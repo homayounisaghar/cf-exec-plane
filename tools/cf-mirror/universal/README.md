@@ -11,6 +11,8 @@ This is an operationally completed local/public mirroring tool, **not** a VPN-fr
 
 The VPN-free experiments are **closed**. Public mirroring is delivered best effort with VPN advice. The experiment-only JPEG10/network probe UI was removed from production viewer; no private session passwords are published.
 
+**Local desktop mouse pointer fix (2026-11-16):** The image/touchpad previously used `cursor:none` everywhere, hiding the actual OS mouse in a server desktop browser. `surface.html` now shows the normal cursor only for physical mouse/trackpad media capabilities (`any-hover: hover` plus `any-pointer: fine`); touchscreen-only devices remain unchanged. For already running sessions, `viewer.html` uses a same-origin iframe style shim after browser refresh, so backend and app processes do not need restarting. Regression check: `node --test test-desktop-cursor.mjs`. If you see the old behavior on the server graphical browser, hard-refresh the same mirror URL with Ctrl+Shift+R.
+
 
 Generic, owner-controlled mirroring for any accessible Chrome DevTools Protocol (CDP) browser or X11 application on the Linux CF Server. Uses the existing cf-mirror engine: adaptive 20/10/5 FPS MJPEG, JPEG quality levels, mouse and keyboard, viewport fit. The runtime copy adds exact CDP tab selection, X11 authorization discovery and mobile touch forwarding.
 

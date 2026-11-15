@@ -13,6 +13,10 @@ body{display:flex;flex-direction:column}
 #state{font:12px/1.3 system-ui;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#b7c9df}
 .pill{font-size:11px;background:#324e69;color:#e7f5ff;padding:3px 6px;border-radius:5px}
 #stage{position:relative;flex:1;width:100%;min-height:0;overflow:hidden;background:#121822;touch-action:none;user-select:none;-webkit-user-select:none;overscroll-behavior:none;cursor:none}
+/* Keep the OS mouse pointer visible on desktop/trackpad. Touch-only devices
+   retain the remote-only cursor behavior. Mouse events already use absolute
+   pointToSource() coordinates, so the visible pointer marks the click target. */
+@media (any-hover: hover) and (any-pointer: fine) { #stage { cursor: default; } }
 #surface{position:absolute;left:0;top:0;transform-origin:top left;will-change:transform;pointer-events:none}
 #image{display:block;width:100%;height:100%;max-width:none;max-height:none;user-select:none;-webkit-user-drag:none;pointer-events:none}
 #instantCursor{position:absolute;z-index:4;left:-50px;top:-50px;width:19px;height:19px;box-sizing:border-box;pointer-events:none;display:none;transform:translate(-50%,-50%);border:2px solid #fff;border-radius:50%;background:rgba(49,133,255,.19);box-shadow:0 0 0 2px #1162d8,0 1px 4px #000a;will-change:left,top}
@@ -772,7 +776,14 @@ async function information(){
  }catch{ready=false;stateText.textContent='Reconnecting…';}
  finally{infoBusy=false;}
 }
-image.addEventListener('load',()=>{if(image.naturalWidth&&image.naturalHeight&&(image.naturalWidth!==iw||image.naturalHeight!==ih)){iw=image.naturalWidth;ih=image.naturalHeight;render();}});
+image.addEventListener('load',()=>{
+  // Full X11 source is 1440x900 while transported frames may be 1024x640.
+  // Preserve logical source dimensions from /info for touchpad coordinates.
+  if(sourceKind==='x11')return;
+  if(image.naturalWidth&&image.naturalHeight&&(image.naturalWidth!==iw||image.naturalHeight!==ih)){
+    iw=image.naturalWidth;ih=image.naturalHeight;render();
+  }
+});
 image.addEventListener('error',()=>{
  ready=false;stateText.textContent='Reconnecting video…';
  if(reconnectTimer)clearTimeout(reconnectTimer);
@@ -793,6 +804,122 @@ connectInputWS();
 information();setInterval(information,2600);
 stage.focus({preventScroll:true});
 render();
+</script>
+<script>
+(function () {
+  'use strict';
+  // CF Mirror protected worker route: a long-lived multipart response may be
+  // blocked/buffered even when short HTTPS GET requests are reachable.
+  // A simple same-origin JPEG polling fallback keeps the X11 mirror visible
+  // without sending image requests to any untrusted hostname.
+  if (window.__cfmAdaptiveVideoInstalled ||
+      !/^[a-z0-9-]+\.[a-z0-9-]+\.workers\.dev$/i.test(location.hostname))
+    return;
+  window.__cfmAdaptiveVideoInstalled = true;
+  const image=document.getElementById('image');
+  const bar=document.getElementById('top');
+  if (!image || !bar) return;
+  let mode='stream', lastShot=0, failures=0, sequence=0;
+  let tick=null, guard=null, seenStreamFrame=false;
+  const button=document.createElement('button');
+  button.id='cfmVideoTransport';
+  button.type='button';
+  button.style.cssText='padding:5px 7px;font-size:11px;white-space:nowrap';
+  button.title='Switch between MJPEG streaming and ordinary HTTPS JPEG frames';
+  bar.insertBefore(button,bar.lastElementChild||null);
+  const clear=()=>{
+    if(tick){clearTimeout(tick);tick=null}
+    if(guard){clearTimeout(guard);guard=null}
+  };
+  const setLabel=(extra='')=>{
+    button.textContent=(mode==='snapshot'?'📷 JPEG':'🎞 Stream')+(extra?' !':'');
+    button.setAttribute('aria-label',mode==='snapshot'?
+      'JPEG snapshots over HTTPS; tap for MJPEG stream':
+      'Live MJPEG stream; tap for HTTPS JPEG snapshots');
+    button.title=mode==='snapshot'?
+      'Ordinary same-origin HTTPS JPEG frames'+(extra?' - '+extra:''):
+      'Continuous same-origin MJPEG stream'+(extra?' - '+extra:'');
+  };
+  function shot(){
+    if(mode!=='snapshot')return;
+    if(document.visibilityState==='hidden'){
+      tick=setTimeout(shot,1400);
+      return;
+    }
+    const n=++sequence;
+    image.src='/shot.jpg?cfm_snapshot='+Date.now()+'_'+n;
+    if(guard)clearTimeout(guard);
+    guard=setTimeout(()=>{
+      if(mode!=='snapshot'||n!==sequence)return;
+      failures++;
+      setLabel('frame timeout');
+      tick=setTimeout(shot,Math.min(2500,1000+failures*250));
+    },7500);
+  }
+  function snapshots(reason=''){
+    if(mode==='snapshot')return;
+    mode='snapshot';clear();failures=0;
+    // Cancel the blocked MJPEG request, release its open connection.
+    image.removeAttribute('src');
+    setLabel(reason);
+    tick=setTimeout(shot,50);
+  }
+  function stream(){
+    if(mode==='stream')return;
+    mode='stream';clear();failures=0;
+    seenStreamFrame=false;
+    setLabel();
+    image.src='/stream.mjpg?t='+Date.now();
+    guard=setTimeout(()=>{
+      if(mode==='stream'&&!seenStreamFrame&&
+         !(image.complete&&image.naturalWidth>0))
+        snapshots('stream unavailable');
+    },6500);
+  }
+  image.addEventListener('load',()=>{
+    if(mode==='stream'){
+      seenStreamFrame=true;
+      if(guard){clearTimeout(guard);guard=null}
+      return;
+    }
+    if(mode!=='snapshot')return;
+    lastShot=Date.now();
+    failures=0;setLabel();
+    if(guard){clearTimeout(guard);guard=null}
+    if(tick)clearTimeout(tick);
+    tick=setTimeout(shot,900);
+  },false);
+  // Capture before the pre-existing backend handler re-enqueues MJPEG.
+  image.addEventListener('error',ev=>{
+    if(mode==='stream'){
+      ev.stopImmediatePropagation();
+      snapshots('stream error');
+    } else if(mode==='snapshot'){
+      ev.stopImmediatePropagation();
+      if(guard){clearTimeout(guard);guard=null}
+      failures++;setLabel('image GET failed');
+      if(tick)clearTimeout(tick);
+      tick=setTimeout(shot,Math.min(3000,1200+failures*300));
+    }
+  },true);
+  button.addEventListener('click',()=>{
+    if(mode==='stream')snapshots('manual');else stream();
+  });
+  document.addEventListener('visibilitychange',()=>{
+    if(document.visibilityState==='visible'&&mode==='snapshot'){
+      clear();tick=setTimeout(shot,100);
+    }
+  });
+  addEventListener('pagehide',()=>{clear();});
+  setLabel();
+  // Use the original native MJPEG stream when it works. Fall back only
+  // if the browser could not decode any image within the startup window.
+  guard=setTimeout(()=>{
+    if(mode==='stream'&&image.naturalWidth===0)
+      snapshots('no first frame');
+  },5500);
+})();
+
 </script>
 </body>
 </html>

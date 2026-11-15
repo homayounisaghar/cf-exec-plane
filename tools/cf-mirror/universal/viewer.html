@@ -155,4 +155,28 @@ if(BROWSER_MODE){
   install();
 })();
 </script>
+
+<script id="cfm-desktop-pointer-20261116">
+(function(){
+  'use strict';
+  // Existing running backends cached surface.html at startup; patch their
+  // same-origin iframe when the top-level viewer reloads, no restart needed.
+  // Touchpad-only phone input remains unchanged.
+  const iframe=document.getElementById('mirror');
+  if(!iframe||!window.matchMedia('(any-hover: hover) and (any-pointer: fine)').matches)return;
+  function applyDesktopPointer(){
+    try{
+      const doc=iframe.contentDocument;
+      if(!doc?.getElementById('stage')||doc.getElementById('cfm-desktop-cursor-style'))return;
+      const style=doc.createElement('style');
+      style.id='cfm-desktop-cursor-style';
+      style.textContent='@media (any-hover:hover) and (any-pointer:fine){#stage{cursor:default !important}}';
+      (doc.head||doc.documentElement).appendChild(style);
+    }catch(_){}
+  }
+  iframe.addEventListener('load',applyDesktopPointer);
+  applyDesktopPointer();
+})();
+</script>
+
 </body></html>
