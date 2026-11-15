@@ -90,3 +90,7 @@ The repository includes cf-mirror-mcp-tools.mjs which exports registerCfMirrorUn
 A privileged release integration/restart is still required to make these dedicated names show up in cf_tool_list; do not patch the running production release without the owner approval and normal release tests. Until then the installed cf-mirror-any CLI is immediately callable by ChatGPT through server_exec. The only newly installed executable is in the owner's home, not /usr/local/bin; the previous cf-mirror remains untouched.
 
 Actual mobile-device UI end-to-end was not tested; mobile touch and keyboard behavior is implemented but requires on-device validation.
+
+## 2026-11-15 mobile browser login fix
+
+The previous login page used an Origin-only check on its normal HTML form POST. Some mobile/privacy browsers omit the Origin header even when submitting the form from the same HTTPS page, causing HTTP 403 `Invalid origin`. The revised login form embeds a session-scoped high-entropy anti-CSRF token. POST /login validates that token using constant-time comparison before checking the password; no Origin header is required for that form alone. Every authenticated viewer control POST (/move, /key, /api/*, etc.) still requires same-origin verification; other security checks and public expiration are unchanged. Negative tests: valid CSRF plus bad password without Origin => 401; missing/bad CSRF => 403; the HTTPS login page renders the hidden token. No password was stored in repo.

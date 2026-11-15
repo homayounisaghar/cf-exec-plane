@@ -253,8 +253,8 @@ async function screenshotCLI(o){
 function htmlEscape(x){
  return String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
-function loginPage(){
- return '<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Secure mirror access</title><style>body{font:16px system-ui;background:#151923;color:#eee;display:grid;place-items:center;min-height:100vh;margin:0}form{background:#262d3c;padding:25px;border-radius:16px;width:min(340px,85vw)}input,button{box-sizing:border-box;width:100%;padding:14px;margin-top:12px;border-radius:8px;font:inherit}button{background:#6c8cff;border:0;cursor:pointer}</style><form method="POST" action="/login"><h2>Private live mirror</h2><p>Enter the session password to continue.</p><input type="password" name="password" required autofocus autocomplete="off" placeholder="Session password"><button>Unlock mirror</button><small>Access ends automatically when the session expires.</small></form></html>';
+function loginPage(csrf){
+ return '<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Secure mirror access</title><style>body{font:16px system-ui;background:#151923;color:#eee;display:grid;place-items:center;min-height:100vh;margin:0}form{background:#262d3c;padding:25px;border-radius:16px;width:min(340px,85vw)}input,button{box-sizing:border-box;width:100%;padding:14px;margin-top:12px;border-radius:8px;font:inherit}button{background:#6c8cff;border:0;cursor:pointer}</style><form method="POST" action="/login"><input type="hidden" name="csrf" value="__CF_CSRF__"><h2>Private live mirror</h2><p>Enter the session password to continue.</p><input type="password" name="password" required autofocus autocomplete="off" placeholder="Session password"><button>Unlock mirror</button><small>Access ends automatically when the session expires.</small></form></html>'.replace('__CF_CSRF__',csrf);
 }
 async function bodyString(req,limit=65536){
  let s='';
@@ -268,6 +268,7 @@ async function serve(config){
  const c=config,sockets=new Set();
  let done=false,webUrl=null,backend=null,tunnel=null,server=null,selectedId=c.source.selectedId||null,changing=Promise.resolve();
  const salt=crypto.randomBytes(16),pwHash=c.mode==='web'?crypto.scryptSync(c.password,salt,32):null;
+ const loginCsrf=crypto.randomBytes(32).toString('base64url');
  c.password=undefined;
  const sessions=new Map(),bad=new Map();
  const gateOrigin=()=>{
@@ -400,18 +401,22 @@ async function serve(config){
    if(isExpired()){reply(res,410,'Mirror session expired','text/plain');await cleanup();return;}
    const u=new URL(req.url,'http://127.0.0.1:'+c.port), pathname=u.pathname;
    if(c.mode==='web'&&!authCookie(req)){
-    if(req.method==='GET'&&(pathname==='/'||pathname==='/login'))return reply(res,200,loginPage(),'text/html; charset=utf-8');
+    if(req.method==='GET'&&(pathname==='/'||pathname==='/login'))return reply(res,200,loginPage(loginCsrf),'text/html; charset=utf-8');
     if(req.method==='POST'&&pathname==='/login'){
-     if(!originOK(req))return reply(res,403,{ok:false,error:'Invalid origin'});
+     // The session-scoped hidden CSRF token protects mobile HTML form POSTs.
+     // Some privacy browsers omit Origin; authenticated controls still require it.
+     const form=new URLSearchParams(await bodyString(req,4096));
+     const csrf=String(form.get('csrf')||'');
+     if(csrf.length!==loginCsrf.length||!crypto.timingSafeEqual(Buffer.from(csrf),Buffer.from(loginCsrf)))
+       return reply(res,403,{ok:false,error:'Invalid login token'});
      const key=String(req.headers['cf-connecting-ip']||req.socket.remoteAddress||'unknown').slice(0,120);
      const x=bad.get(key)||{n:0,until:0};
      if(x.n>=8&&x.until>Date.now())return reply(res,429,'Too many login attempts; retry later','text/plain');
-     const form=new URLSearchParams(await bodyString(req,4096));
      const pass=String(form.get('password')||'');
      const ph=crypto.scryptSync(pass,salt,32);
      if(!crypto.timingSafeEqual(ph,pwHash)){
       const n=x.until>Date.now()?x.n+1:1;bad.set(key,{n,until:Date.now()+600000});
-      return reply(res,401,loginPage().replace('Enter the session password','Incorrect password. Try again'),'text/html; charset=utf-8');
+      return reply(res,401,loginPage(loginCsrf).replace('Enter the session password','Incorrect password. Try again'),'text/html; charset=utf-8');
      }
      bad.delete(key);
      const cookie=crypto.randomBytes(32).toString('base64url');
