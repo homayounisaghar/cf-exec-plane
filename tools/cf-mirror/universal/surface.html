@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <title>__MIRROR_NAME__ · touchpad mirror</title>
 <style>
 :root{color-scheme:dark;font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#eff5ff;background:#0d121b}
@@ -12,10 +12,9 @@ body{display:flex;flex-direction:column}
 #top{height:42px;min-height:42px;flex:none;display:flex;align-items:center;gap:8px;padding:4px 10px;background:#1a2638;border-bottom:1px solid #33455f;user-select:none}
 #state{font:12px/1.3 system-ui;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#b7c9df}
 .pill{font-size:11px;background:#324e69;color:#e7f5ff;padding:3px 6px;border-radius:5px}
-#stage{position:relative;flex:1;width:100%;min-height:0;overflow:hidden;background:#121822;touch-action:none;user-select:none;-webkit-user-select:none;overscroll-behavior:none;cursor:crosshair}
+#stage{position:relative;flex:1;width:100%;min-height:0;overflow:hidden;background:#121822;touch-action:none;user-select:none;-webkit-user-select:none;overscroll-behavior:none;cursor:none}
 #surface{position:absolute;left:0;top:0;transform-origin:top left;will-change:transform;pointer-events:none}
 #image{display:block;width:100%;height:100%;max-width:none;max-height:none;user-select:none;-webkit-user-drag:none;pointer-events:none}
-#pointer-arrow{position:absolute;left:0;top:0;width:25px;height:32px;z-index:4;pointer-events:none;transform:translate3d(-100px,-100px,0);will-change:transform;filter:drop-shadow(0 1px 2px #000c)}
 #hud{position:absolute;right:8px;top:8px;z-index:3;pointer-events:none;background:#0b1525a9;color:#d8e6fa;border-radius:6px;padding:3px 7px;font:11px system-ui}
 #bottom{min-height:48px;flex:none;display:flex;align-items:center;gap:5px;padding:5px 7px calc(5px + env(safe-area-inset-bottom));background:#192437;border-top:1px solid #33455f}
 button,.tool{background:#2a3c55;color:#ecf5ff;border:1px solid #526988;border-radius:8px;font:12px system-ui;padding:7px 9px;cursor:pointer;touch-action:manipulation;text-decoration:none;white-space:nowrap}
@@ -25,15 +24,20 @@ button[aria-pressed="true"]{background:#1958a5;border-color:#72b1ff}
 #keys{display:none;position:absolute;z-index:8;left:8px;right:8px;bottom:53px;padding:9px;border-radius:10px;border:1px solid #516a86;background:#192538f5;box-shadow:0 10px 35px #0008}
 #keys.open{display:block}
 #keyrow{display:flex;flex-wrap:wrap;gap:5px}
-#nativeBar{display:none;position:absolute;z-index:10;left:8px;right:8px;bottom:54px;align-items:center;gap:6px;padding:9px;border-radius:10px;border:1px solid #5b7191;background:#182538f5;box-shadow:0 12px 30px #0009}
-#nativeBar.open{display:flex}
-#nativeInput{display:block;flex:1;min-width:0;padding:10px;border:1px solid #597797;border-radius:7px;color:#fff;background:#152135;font:16px system-ui;outline-offset:2px}
 #voicePanel{display:none;position:absolute;z-index:9;left:8px;right:8px;bottom:54px;align-items:center;gap:8px;padding:9px;border-radius:10px;border:1px solid #567392;background:#17283cf5;box-shadow:0 12px 30px #0009}
 #voicePanel.open{display:flex}
 #voiceLang{background:#253e5b;color:#edf5ff;border:1px solid #6480a2;border-radius:6px;padding:6px;font:12px system-ui;max-width:110px}
 #voiceStatus{font:12px system-ui;color:#e8f2ff;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #micToggle.active{background:#a02e3c;border-color:#ec7581}
 #micToggle{font-size:15px;min-width:38px}
+/* The whole icon is a real editable input: direct taps open the phone's IME.
+   Text is relayed to the remote app; no separate text-entry bar is shown. */
+.keyboard-control{display:flex;position:relative;align-items:center;justify-content:center;flex:none;width:44px;height:36px;background:#2a3c55;border:1px solid #526988;border-radius:8px;color:#ecf5ff;font-size:18px;overflow:hidden;touch-action:manipulation}
+.keyboard-control:focus-within{background:#154d87;border-color:#8ab8f3}
+.keyboard-control>span{pointer-events:none;user-select:none}
+#keyboardToggle.keyboard-direct{position:absolute;inset:0;display:block;width:100%;height:100%;min-width:0;margin:0;padding:0;border:0;outline:0;background:transparent;color:transparent;-webkit-text-fill-color:transparent;caret-color:transparent;font:16px system-ui;opacity:1;border-radius:8px}
+#keyboardToggle.keyboard-direct::selection{background:transparent}
+
 #help{display:none;position:absolute;z-index:7;left:8px;right:8px;top:52px;padding:10px 13px;border-radius:9px;background:#1d2a3cf5;border:1px solid #5c708c;box-shadow:0 10px 25px #0008;font:12px/1.7 system-ui}
 #help.open{display:block}
 @media(max-width:540px){#hint{display:none}#bottom{justify-content:space-between;gap:4px}}
@@ -46,9 +50,6 @@ button[aria-pressed="true"]{background:#1958a5;border-color:#72b1ff}
  <div id="surface">
   <img id="image" alt="Live mirror surface">
  </div>
- <svg id="pointer-arrow" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="25" height="32" viewBox="0 0 25 32">
-   <path d="M2 2L2 25L8 20L12 30L17 28L13 18L23 18Z" fill="#fff" stroke="#101820" stroke-width="2" stroke-linejoin="round"/>
- </svg>
  <div id="hud">Loading…</div>
 </div>
 <div id="bottom">
@@ -57,7 +58,7 @@ button[aria-pressed="true"]{background:#1958a5;border-color:#72b1ff}
  <button id="reset" title="Reset digital zoom and pan">1×</button>
  <button id="keysButton" aria-expanded="false">Keys</button>
  <button id="micToggle" type="button" title="Dictate with phone microphone" aria-label="Start voice typing" aria-pressed="false">🎙</button>
- <button id="keyboardToggle" type="button" title="Show Android keyboard" aria-label="Open phone keyboard" aria-pressed="false">⌨</button>
+ <label class="keyboard-control" title="Android keyboard: direct input"><span aria-hidden="true">⌨</span><input id="keyboardToggle" class="keyboard-direct" type="text" inputmode="text" enterkeyhint="done" autocapitalize="sentences" autocomplete="off" autocorrect="on" spellcheck="true" aria-label="Android keyboard input"/></label>
  <button id="fullscreen" title="Full screen">⛶</button>
 </div>
 <section id="keys" aria-label="Remote special keys">
@@ -93,23 +94,19 @@ button[aria-pressed="true"]{background:#1958a5;border-color:#72b1ff}
  </select>
  <button id="closeVoice" type="button" aria-label="Dismiss voice status">×</button>
 </section>
-<section id="nativeBar" aria-label="Phone typing">
- <input id="nativeInput" type="text" inputmode="text" autocorrect="on" autocomplete="off" autocapitalize="sentences" spellcheck="true" placeholder="Type with Android keyboard…">
- <button id="closeKeyboard" type="button" aria-label="Hide phone keyboard">×</button>
-</section>
 <div id="help">
  <strong>Touchpad controls</strong>
  <div>One finger swipe: move remote cursor, wherever it already is.</div>
  <div>Tap: left click at remote cursor. Double tap: double click. Hold ~0.6 s: right click.</div>
  <div>Fast finger flick: pointer glides briefly with inertia. Drag button: toggle left-button hold for dragging.</div>
  <div>Two fingers: pinch to zoom; pan the magnified image. At 1×, two-finger slide scrolls the remote page.</div>
- <div>Fit/Fill changes viewing zoom only. Tap 🎙 for speech-to-text (the browser may ask for microphone permission); ⌨ opens Android/Gboard keyboard and its built-in mic. Keys sends missing desktop keys.</div>
+ <div>Fit/Fill changes viewing zoom only. Tap ⌨ to open your real Android keyboard directly (no extra text bar); it relays typing, deletion, paste and supported shortcuts to the remote field. 🎙 is optional speech-to-text; Keys sends missing desktop keys.</div>
 </div>
 <script>
 'use strict';
 const CONTROL_CSRF='__CONTROL_CSRF__';
 const stage=document.getElementById('stage'),surface=document.getElementById('surface');
-const image=document.getElementById('image'),pointerArrow=document.getElementById('pointer-arrow');
+const image=document.getElementById('image');
 const stateText=document.getElementById('state'),hud=document.getElementById('hud'),hint=document.getElementById('hint');
 const keys=document.getElementById('keys'),help=document.getElementById('help');
 let iw=1280,ih=800,base=1,scale=1,zoom=1,mode='fit',panX=0,panY=0,tx=0,ty=0,remote={x:640,y:400};
@@ -121,10 +118,6 @@ const mods={ctrl:false,alt:false,shift:false,meta:false};
 const clamp=(n,lo,hi)=>Math.max(lo,Math.min(hi,n));
 const now=()=>performance.now();
 const useNativeTouchEvents=('ontouchstart' in window)&&('TouchEvent' in window);
-function placePointer(){
- if(!pointerArrow)return;
- pointerArrow.style.transform='translate3d('+(tx+remote.x*scale)+'px,'+(ty+remote.y*scale)+'px,0)';
-}
 function post(url,payload={}){
  return fetch(url,{method:'POST',headers:{'content-type':'application/json','X-CF-Mirror-CSRF':CONTROL_CSRF},body:JSON.stringify(payload),cache:'no-store'})
    .then(async r=>{const j=await r.json().catch(()=>({ok:false}));if(!r.ok||j.ok===false)throw Error(j.error||'Remote input failed');return j;});
@@ -133,7 +126,6 @@ function postSafe(url,payload={}){return post(url,payload).catch(e=>{hud.textCon
 function updateRemote(r){
  if(r?.cursorPos&&Number.isFinite(r.cursorPos.x)&&Number.isFinite(r.cursorPos.y)){
   remote={x:clamp(r.cursorPos.x,0,iw-1),y:clamp(r.cursorPos.y,0,ih-1)};
-  placePointer();
  }
 }
 function clampPan(){
@@ -150,7 +142,6 @@ function render(){
  tx=(w-iw*scale)/2+panX;ty=(h-ih*scale)/2+panY;
  surface.style.width=iw+'px';surface.style.height=ih+'px';
  surface.style.transform='translate('+tx+'px,'+ty+'px) scale('+scale+')';
- placePointer();
  document.getElementById('reset').textContent=zoom.toFixed(1)+'×';
  document.getElementById('viewMode').textContent=mode==='fit'?'Fit':'Fill';
  hud.textContent=(ready?'Live':'Loading')+' · '+Math.round(iw)+'×'+Math.round(ih)+' · '+rate;
@@ -375,8 +366,6 @@ async function sendKey(k,override){
 }
 keys.querySelectorAll('[data-key]').forEach(b=>b.addEventListener('click',()=>sendKey(b.dataset.key)));
 keys.querySelector('[data-action=ctrlaltdel]').addEventListener('click',()=>sendKey('Delete',{ctrl:true,alt:true,shift:false,meta:false}));
-const nativeBar=document.getElementById('nativeBar');
-const nativeInput=document.getElementById('nativeInput');
 const keyboardButton=document.getElementById('keyboardToggle');
 const voicePanel=document.getElementById('voicePanel');
 const voiceStatus=document.getElementById('voiceStatus');
@@ -384,39 +373,149 @@ const micButton=document.getElementById('micToggle');
 const voiceLang=document.getElementById('voiceLang');
 const SpeechAPI=window.SpeechRecognition||window.webkitSpeechRecognition;
 voiceLang.value=(navigator.language||'').toLowerCase().startsWith('fa')?'fa-IR':(navigator.language||'').toLowerCase().startsWith('en')?'en-US':'fa-IR';
-let recognition=null,composing=false;
-function openNativeKeyboard(){
- // Focusing inside a real button click is required for Android to summon Gboard.
+let recognition=null;
+let keyboardComposing=false;
+let keyboardShadow='';
+let remoteSelectionAll=false;
+let lastDeleteAt=-1000;
+let pasteSeen=0;
+let keyboardChain=Promise.resolve();
+function keyQueue(url,payload){
+ // X11 requires ordered input: do not allow consecutive network calls to
+ // overtake one another (especially auto-correction and backspace sequences).
+ keyboardChain=keyboardChain.then(()=>postSafe(url,payload),()=>postSafe(url,payload));
+ return keyboardChain;
+}
+function remoteKey(key,extra={}){
+ return keyQueue('/key',{key,code:key,...extra});
+}
+function remoteText(text){
+ if(text)keyQueue('/type',{s:text});
+}
+function keyboardSnapshot(next){
+ const previous=Array.from(keyboardShadow),current=Array.from(next);
+ keyboardShadow=next;
+ if(remoteSelectionAll){
+  remoteSelectionAll=false;
+  if(next)remoteText(next);
+  else remoteKey('Backspace');
+  return;
+ }
+ let start=0;
+ while(start<previous.length&&start<current.length&&previous[start]===current[start])start++;
+ let end=0;
+ while(end<previous.length-start&&end<current.length-start&&previous[previous.length-1-end]===current[current.length-1-end])end++;
+ const remove=previous.length-start-end;
+ const insert=current.slice(start,current.length-end).join('');
+ // A Google Keyboard suggestion can replace a word instead of appending;
+ // reconcile the edit at the remote caret, preserving unchanged suffix.
+ for(let i=0;i<end;i++)remoteKey('ArrowLeft');
+ for(let i=0;i<remove;i++)remoteKey('Backspace');
+ if(insert)remoteText(insert);
+ for(let i=0;i<end;i++)remoteKey('ArrowRight');
+}
+function clearKeyboardShadow(){
+ keyboardShadow='';
+ keyboardButton.value='';
+ remoteSelectionAll=false;
+}
+function forwardDelete(key){
+ const t=performance.now();
+ if(t-lastDeleteAt<30)return;
+ lastDeleteAt=t;
+ remoteKey(key);
+}
+function syncKeyboardViewport(){
+ // The outer page owns the VisualViewport. Tell it to resize its iframe
+ // after Android's keyboard animation begins, without adding a typing bar.
+ try{window.parent?.postMessage({kind:'cf-mirror-viewport-sync'},window.location.origin);}catch{}
+}
+function watchKeyboardViewport(){
+ syncKeyboardViewport();
+ for(const delay of [80,180,330,550])setTimeout(syncKeyboardViewport,delay);
+}
+keyboardButton.addEventListener('focus',()=>{
  voicePanel.classList.remove('open');
- nativeBar.classList.add('open');
- keyboardButton.setAttribute('aria-pressed','true');
- nativeInput.focus({preventScroll:true});
-}
-function closeNativeKeyboard(){
- nativeInput.blur();
- nativeBar.classList.remove('open');
- keyboardButton.setAttribute('aria-pressed','false');
-}
-keyboardButton.addEventListener('click',()=>{
- if(nativeBar.classList.contains('open'))closeNativeKeyboard();else openNativeKeyboard();
+ watchKeyboardViewport();
 });
-document.getElementById('closeKeyboard').addEventListener('click',closeNativeKeyboard);
-nativeInput.addEventListener('compositionstart',()=>{composing=true;});
-nativeInput.addEventListener('compositionend',()=>{
- composing=false;
- const s=nativeInput.value;
- nativeInput.value='';
- if(s)postSafe('/type',{s});
+keyboardButton.addEventListener('blur',()=>{
+ clearKeyboardShadow();
+ watchKeyboardViewport();
 });
-nativeInput.addEventListener('input',()=>{
- if(composing)return;
- const s=nativeInput.value;
- nativeInput.value='';
- if(s)postSafe('/type',{s});
+keyboardButton.addEventListener('compositionstart',()=>{keyboardComposing=true;});
+keyboardButton.addEventListener('compositionend',()=>{
+ keyboardComposing=false;
+ keyboardSnapshot(keyboardButton.value);
 });
-nativeInput.addEventListener('keydown',e=>{
- if(e.key==='Enter'){e.preventDefault();postSafe('/key',{key:'Enter',code:'Enter'});}
- if(e.key==='Backspace'&&!nativeInput.value){e.preventDefault();postSafe('/key',{key:'Backspace',code:'Backspace'});}
+keyboardButton.addEventListener('beforeinput',e=>{
+ const t=String(e.inputType||'');
+ if(keyboardComposing)return;
+ if(t==='deleteContentBackward'&&keyboardButton.value===''){
+  e.preventDefault();
+  forwardDelete('Backspace');
+  return;
+ }
+ if(t==='deleteContentForward'&&keyboardButton.value===''){
+  e.preventDefault();
+  forwardDelete('Delete');
+  return;
+ }
+ if(t==='insertLineBreak'||t==='insertParagraph'){
+  e.preventDefault();remoteKey('Enter');return;
+ }
+ if(t==='historyUndo'||t==='historyRedo'){
+  e.preventDefault();
+  remoteKey('z',{ctrl:true,shift:t==='historyRedo'});
+  clearKeyboardShadow();
+  return;
+ }
+ if(t==='deleteByCut'){
+  e.preventDefault();remoteKey('x',{ctrl:true});clearKeyboardShadow();
+ }
+});
+keyboardButton.addEventListener('input',()=>{
+ if(keyboardComposing)return;
+ keyboardSnapshot(keyboardButton.value);
+});
+keyboardButton.addEventListener('paste',()=>{pasteSeen++;});
+keyboardButton.addEventListener('select',()=>{
+ if(document.activeElement!==keyboardButton)return;
+ const v=keyboardButton.value;
+ if(!v||keyboardButton.selectionStart!==0||keyboardButton.selectionEnd!==v.length)return;
+ if(!remoteSelectionAll){remoteKey('a',{ctrl:true});remoteSelectionAll=true;}
+});
+keyboardButton.addEventListener('keydown',e=>{
+ if(e.isComposing||keyboardComposing||e.key==='Process'||e.key==='Unidentified')return;
+ const ctrl=!!(e.ctrlKey||e.metaKey),alt=!!e.altKey,shift=!!e.shiftKey;
+ if(ctrl||alt){
+  if(ctrl&&!alt&&e.key.toLowerCase()==='v'){
+   // Let Gboard/Android paste into its local input first. The following
+   // input event relays the phone clipboard text, not a stale X11 clipboard.
+   const before=pasteSeen,shadow=keyboardShadow;
+   setTimeout(()=>{if(pasteSeen===before&&keyboardShadow===shadow)remoteKey('v',{ctrl:true,shift});},180);
+   return;
+  }
+  e.preventDefault();
+  remoteKey(e.key,{ctrl,alt,shift});
+  if(ctrl&&['a','x','z'].includes(e.key.toLowerCase()))clearKeyboardShadow();
+  return;
+ }
+ if(e.key==='Backspace'||e.key==='Delete'){
+  if(keyboardButton.value===''){
+   e.preventDefault();
+   forwardDelete(e.key);
+  }
+  // When the input has characters, let Android edit its own buffer;
+  // the 'input' delta forwards exactly one corresponding remote deletion.
+  return;
+ }
+ if(['Enter','Escape','Tab','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End','PageUp','PageDown','Insert','F5'].includes(e.key)){
+  e.preventDefault();
+  remoteKey(e.key,{shift});
+  if(e.key!=='Enter')clearKeyboardShadow();
+ }
+ // Printable characters, voice dictation, auto-correction, emojis and paste
+ // are handled by input/composition events, never by duplicate keydown typing.
 });
 document.getElementById('closeVoice').addEventListener('click',()=>{
  if(recognition){try{recognition.stop();}catch{}}
@@ -435,12 +534,10 @@ micButton.addEventListener('click',()=>{
   return;
  }
  if(!SpeechAPI||!window.isSecureContext){
-  // Fallback focuses Android's native text field synchronously with the tap.
-  openNativeKeyboard();
-  stateText.textContent='Speech API unavailable — use the mic on Gboard';
+  speechNotice('Browser speech unavailable. Tap ⌨ and use the mic on Gboard.');
   return;
  }
- closeNativeKeyboard();
+ keyboardButton.blur();
  let r;
  try{r=new SpeechAPI();}catch{
   speechNotice('Voice typing unsupported. Try the ⌨ keyboard.');return;

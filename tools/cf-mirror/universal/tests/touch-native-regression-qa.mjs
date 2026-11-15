@@ -1,8 +1,8 @@
 import fs from 'node:fs';
 import vm from 'node:vm';
 import assert from 'node:assert/strict';
-
-const html=fs.readFileSync(new URL('../surface.html',import.meta.url),'utf8');
+const f=new URL('../surface.html',import.meta.url);
+const html=fs.readFileSync(f,'utf8');
 const source=html.split('<script>')[1].split('</script>')[0];
 class Classes{
  constructor(){this.set=new Set()}
@@ -53,8 +53,9 @@ assert.equal(vm.runInContext('useNativeTouchEvents',context),true);
 const stage=nodes.get('stage');
 const point=(id,x,y)=>({identifier:id,clientX:x,clientY:y});
 function touch(event,list){stage.fire(event,{changedTouches:list,touches:list})}
-const oldArrow=nodes.get('pointer-arrow').style.transform;
-assert(oldArrow.includes('translate3d'),oldArrow);
+assert(!html.includes('id="pointer-arrow"')&&!html.includes('id="cursor"'));
+const runtime=fs.readFileSync(new URL('../runtime.mjs',import.meta.url),'utf8');
+assert(runtime.includes("'-draw_mouse', '1', '-framerate'"),'Native X11 mouse cursor is missing from MJPEG');
 stage.fire('pointerdown',{pointerType:'touch',pointerId:7,clientX:100,clientY:240});
 stage.fire('pointermove',{pointerType:'touch',pointerId:7,clientX:170,clientY:250});
 assert(!calls.some(x=>x.url==='/move-rel'),'pointer events must not duplicate native touch path');
@@ -65,11 +66,6 @@ await new Promise(r=>setTimeout(r,80));
 const moves=calls.filter(x=>x.url==='/move-rel');
 assert(moves.length>=1,'native touchmove did not send /move-rel');
 assert(moves[0].payload.dx>70,'relative movement was lost');
-const newArrow=nodes.get('pointer-arrow').style.transform;
-assert(newArrow!==oldArrow,'single arrow did not follow server-acknowledged pointer');
-console.log('NATIVE_TOUCH_WITH_CANCELLED_POINTER_EVENTS_OK',JSON.stringify({moves:moves.length,dx:moves[0].payload.dx,oldArrow,newArrow}));
-assert(!html.includes('id="cursor"'),'old ghost circle reappeared');
-const arrows=html.match(/id="pointer-arrow"/g)||[];
-assert(arrows.length===1,'expected exactly one pointer arrow');
-console.log('SINGLE_ARROW_NO_GHOST_OK');
+console.log('NATIVE_TOUCH_WITH_CANCELLED_POINTER_EVENTS_OK',JSON.stringify({moves:moves.length,dx:moves[0].payload.dx}));
+console.log('NATIVE_X11_CURSOR_NO_ARTIFICIAL_OVERLAY_PASS');
 console.log('MOBILE_TOUCH_EVENT_RECOVERY_PASS');

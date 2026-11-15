@@ -1,11 +1,12 @@
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
 <title>__MIRROR_TITLE__ · CF Universal Mirror</title>
 <style>
 :root{color-scheme:dark;font-family:system-ui;color:#eaf1ff;background:#0e1420}
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden}
-body{display:flex;flex-direction:column}
+body{display:flex;flex-direction:column;position:fixed;top:var(--cf-view-top,0px);left:0;right:0;height:var(--cf-view-height,100dvh);min-height:0}
+
 #browserControls{display:none;flex:none;background:#243247;border-bottom:1px solid #4b5b70}
 #tabs{display:flex;align-items:center;gap:5px;overflow-x:auto;padding:5px 7px 0;scrollbar-width:thin}
 .tab{display:flex;align-items:center;gap:3px;min-width:72px;max-width:200px;padding:6px 5px;background:#34465d;border-radius:7px 7px 0 0;border:1px solid transparent}
@@ -31,6 +32,31 @@ body{display:flex;flex-direction:column}
 const BROWSER_MODE=__BROWSER_MODE__,CONTROL_CSRF='__CONTROL_CSRF__';
 const controls=document.getElementById('browserControls'),tabs=document.getElementById('tabs'),frame=document.getElementById('mirror'),address=document.getElementById('address'),status=document.getElementById('status');
 if(BROWSER_MODE)controls.style.display='block';
+// The parent window's VisualViewport, unlike an iframe's, reports the space
+// left after a docked Android keyboard opens. Floating keyboard mode normally
+// leaves the VisualViewport unchanged, so we keep the full viewer height.
+function syncOuterViewport(){
+ const v=window.visualViewport;
+ const h=(v&&Number.isFinite(v.height))?v.height:window.innerHeight;
+ const top=(v&&Number.isFinite(v.offsetTop))?v.offsetTop:0;
+ document.body.style.setProperty('--cf-view-height',Math.max(140,Math.round(h))+'px');
+ document.body.style.setProperty('--cf-view-top',Math.max(0,Math.round(top))+'px');
+}
+function settleKeyboardViewport(){
+ syncOuterViewport();
+ for(const ms of [60,160,300,500,750])setTimeout(syncOuterViewport,ms);
+}
+if(window.visualViewport){
+ window.visualViewport.addEventListener('resize',syncOuterViewport,{passive:true});
+ window.visualViewport.addEventListener('scroll',syncOuterViewport,{passive:true});
+}
+window.addEventListener('resize',syncOuterViewport);
+window.addEventListener('orientationchange',settleKeyboardViewport);
+window.addEventListener('message',e=>{
+ if(e.origin!==location.origin||e.source!==frame.contentWindow)return;
+ if(e.data&&e.data.kind==='cf-mirror-viewport-sync')settleKeyboardViewport();
+});
+syncOuterViewport();
 let busy=false,selectedId=null,previousIds=null;
 async function api(action,data){
  const r=await fetch('/api/'+action,{
