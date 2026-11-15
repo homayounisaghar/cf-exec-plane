@@ -218,7 +218,17 @@ async function startCLI(o){
   throw Error('Mirror startup failed: '+(foundState?.error||'see '+logPath));
  }
  const safe={ok:true,name,mode,source:foundState.source,url:foundState.url,local_url:'http://127.0.0.1:'+port+'/',expires_at:expiresAt?new Date(expiresAt).toISOString():null,interval:config.interval};
- if(mode==='web'){safe.password=password;safe.note='Password is shown once and is required to access the public URL.';}
+ if(mode==='web'){
+  safe.password=password;
+  safe.note='Public HTTPS mirror: open the URL as a tappable link, copy the one-time password, and warn that VPN may be required on mobile networks. The Quick Tunnel may stop before the requested expiry.';
+  safe.presentation={link_label:'Open public mirror',password_copyable:true,vpn_may_be_required:true,
+    vpn_notice:'Public mirror may not load or stream without VPN; turn VPN on if needed.',
+    duration_required:true,expires_at:safe.expires_at};
+ }else{
+  safe.note='LOCAL mirror: open this numeric loopback URL in a graphical browser ON THE SERVER (XRDP/X11), not in the phone browser. No password, no VPN, and no duration required; session has no scheduled expiry by default.';
+  safe.presentation={link_label:'Open local mirror on server desktop',password_required:false,
+    duration_required:false,vpn_required:false,server_graphical_browser_only:true};
+ }
  out(safe);
 }
 function statusCLI(){
@@ -406,10 +416,24 @@ async function serve(config){
   const headers={};
   if(req.headers['content-type'])headers['content-type']=req.headers['content-type'];
   const p=http.request({host:'127.0.0.1',port:c.backendPort,path:url,method:req.method,headers},up=>{
-   res.writeHead(up.statusCode||502,{...baseHeaders,...up.headers,'cache-control':'no-store'});
-   up.pipe(res);
+   // An Android/Cloudflare client can disappear mid-JPEG. End that single
+   // request without allowing ECONNRESET to terminate the entire session.
+   up.on('error',()=>{if(!res.destroyed)res.destroy();});
+   if(res.destroyed){up.destroy();return;}
+   try{
+    res.writeHead(up.statusCode||502,{...baseHeaders,...up.headers,'cache-control':'no-store'});
+    up.pipe(res);
+   }catch(e){up.destroy();if(!res.destroyed)res.destroy();}
   });
-  p.on('error',e=>reply(res,502,{ok:false,error:'Mirror backend unavailable'}));
+  p.on('error',()=>{
+   if(res.destroyed||res.writableEnded)return;
+   if(res.headersSent)res.destroy();
+   else reply(res,502,{ok:false,error:'Mirror backend unavailable'});
+  });
+  req.on('aborted',()=>p.destroy());
+  req.on('error',()=>p.destroy());
+  res.on('close',()=>p.destroy());
+  res.on('error',()=>p.destroy());
   req.pipe(p);
  }
  async function handler(req,res){
@@ -479,7 +503,12 @@ async function serve(config){
  try{
   await startBackend();
   server=http.createServer((req,res)=>handler(req,res));
-  server.on('connection',sock=>{sockets.add(sock);sock.on('close',()=>sockets.delete(sock));});
+  server.on('connection',sock=>{
+   sockets.add(sock);
+   sock.on('close',()=>sockets.delete(sock));
+   // A reset on one tunnel/client socket must not kill every viewer session.
+   sock.on('error',e=>{if(e.code!=='ECONNRESET'&&e.code!=='EPIPE')console.error('client socket error',e.code||e.message);sock.destroy();});
+  });
   server.on('upgrade',(req,socket,head)=>{
     const deny=(status,label)=>{
       if(socket.destroyed)return;

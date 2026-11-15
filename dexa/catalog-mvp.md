@@ -1,5 +1,16 @@
 # Dexa — public tool catalogue and one-turn answer / recipe contract
 
+## 2026-11-16 — CF Universal Mirror: owner-requested creation (FINAL)
+
+**Current operator capability:** five existing CF Server mirror tools are *owner-admitted* for requests to create an internet or local mirror: `tool.cf.cf_mirror_open`, `tool.cf.cf_mirror_sources`, `tool.cf.cf_mirror_status`, `tool.cf.cf_mirror_close`, `tool.cf.cf_mirror_screenshot`. The *current live Dexa v284 tool catalog* contains **183 CF-mapped capabilities** (178 previously admitted plus these five; other historical tables below retain their versioned counts), and the first-model list is **[dexa/intent-index-v282.md](intent-index-v282.md)**. Do not construe archival "operator-only" entries below as a prohibition on the owner's own mirror request.
+
+**Natural-language activation**: For «برام یه میرورینگ ۵ ساعته از مرورگر روی اینترنت بساز» choose `cf_mirror_open` with `mode=web`, `ttl=5h` and an observed `app`, `cdp` or `x11` source. The returned public HTTPS `url` must be a **tappable link**, the returned password must be **copyable**, and the owner must receive a warning: **VPN may be required** and Quick Tunnel can stop early. No password is asked from the owner because the tool generates one.
+
+For «یه میرورینگ لوکال از وی‌چت بده» choose `cf_mirror_open` with `mode=local`, exact source, **no password or time/TTL**. Present the returned numeric `127.0.0.1` HTTP URL for a browser **on the server graphical desktop (XRDP/X11)**, not as a mobile internet link.
+
+This release **does not promise VPN-free mirroring**. Prior VPN-free field tests are closed; the tool is considered complete with a documented VPN warning. Details: [CF Universal Mirror operator guide](cf-mirror-universal-operator-guide.md) and [source documentation](../tools/cf-mirror/universal/README.md). Neither passwords nor live private mirror links belong in this catalog. Authorization and exact runtime schemas remain enforced by the physical CF connector.
+
+
 CATALOG_RELEASE: DEXA-CATALOG-MVP-20261114-V226-NORMAL-TICKET-LOCAL-VOICE
 CATALOG_DATE_UTC: 2026-11-14
 SOURCE_REPOSITORY: homayounisaghar/capability-fabric

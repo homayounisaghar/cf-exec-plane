@@ -1,5 +1,17 @@
 # CF Universal Mirror
 
+## FINAL OWNER MIRRORING CONTRACT (2026-11-16)
+
+This is an operationally completed local/public mirroring tool, **not** a VPN-free guarantee. On natural-language requests such as “mirror Telegram for 30 minutes on the internet”, “mirror Chrome for 5 hours”, or «یه میرورینگ لوکال از وی چت بده», use the already-registered CF Server MCP tool `cf_mirror_open`. If source is unclear, call `cf_mirror_sources` first. Avoid unrelated Cloudflare deployment investigations.
+
+- **Public/internet:** call `cf_mirror_open({mode:"web",app:"telegram",ttl:"30m"})` or use a verified `x11`/`cdp` source. The tool generates one-time `password`, HTTPS `url`, and `expires_at`. Present **a tappable link**, **a copyable password** and **a warning: VPN may be required** for page/image/controls (Quick Tunnel may be unreliable and expire early). Do not require the owner to invent a password.
+- **Local/server desktop:** call `cf_mirror_open({mode:"local",x11:":124"})` (actual source only). No TTL, password, cloud domain or VPN; return the actual loopback `http://127.0.0.1:<port>/` URL to be opened **in a graphical browser ON THE SERVER (XRDP/X11)**, not on the phone. The local session has no scheduled expiry by default.
+- The five CF Server tools (`cf_mirror_open`, `_sources`, `_status`, `_close`, `_screenshot`) remain subject to existing owner authorization. Public URL + password grants full interactive desktop control. Local loopback is not a remote-access public address.
+- Detailed Persian/English model guidance, CLI and examples: [MIRRORING_OPERATOR_CONTRACT.md](MIRRORING_OPERATOR_CONTRACT.md). Model/Dexa catalog should index these five names rather than excluding mirroring as “operator only” when the owner expressly requests a mirror.
+
+The VPN-free experiments are **closed**. Public mirroring is delivered best effort with VPN advice. The experiment-only JPEG10/network probe UI was removed from production viewer; no private session passwords are published.
+
+
 Generic, owner-controlled mirroring for any accessible Chrome DevTools Protocol (CDP) browser or X11 application on the Linux CF Server. Uses the existing cf-mirror engine: adaptive 20/10/5 FPS MJPEG, JPEG quality levels, mouse and keyboard, viewport fit. The runtime copy adds exact CDP tab selection, X11 authorization discovery and mobile touch forwarding.
 
 ## Modes

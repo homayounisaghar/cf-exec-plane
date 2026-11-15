@@ -126,4 +126,33 @@ if(BROWSER_MODE){
  refresh();setInterval(refresh,2600);
 }
 </script>
+
+<script id="cfm-worker-video-fallback-loader-20261115">
+(function(){
+  'use strict';
+  // This authenticated parent and its child iframe share one Worker origin.
+  // Avoid any direct phone-to-trycloudflare connection. All JPEG/MJPEG routes
+  // remain same-origin and retain the existing cookie authorization boundary.
+  if(!/^[a-z0-9-]+\.[a-z0-9-]+\.workers\.dev$/i.test(location.hostname)) return;
+  const iframe=document.getElementById('mirror');
+  if(!iframe)return;
+  const childInstaller="(function(){\"use strict\";if(window.__cfmAdaptiveVideoInstalled||!/^[a-z0-9-]+\\.[a-z0-9-]+\\.workers\\.dev$/i.test(location.hostname))return;window.__cfmAdaptiveVideoInstalled=!0;const a=document.getElementById(\"image\"),d=document.getElementById(\"top\");if(!a||!d)return;let t=\"stream\",p=0,o=0,c=0,i=null,e=null,f=!1;const n=document.createElement(\"button\");n.id=\"cfmVideoTransport\",n.type=\"button\",n.style.cssText=\"padding:5px 7px;font-size:11px;white-space:nowrap\",n.title=\"Switch between MJPEG streaming and ordinary HTTPS JPEG frames\",d.insertBefore(n,d.lastElementChild||null);const l=()=>{i&&(clearTimeout(i),i=null),e&&(clearTimeout(e),e=null)},r=(s=\"\")=>{n.textContent=(t===\"snapshot\"?\"\\u{1F4F7} JPEG\":\"\\u{1F39E} Stream\")+(s?\" !\":\"\"),n.setAttribute(\"aria-label\",t===\"snapshot\"?\"JPEG snapshots over HTTPS; tap for MJPEG stream\":\"Live MJPEG stream; tap for HTTPS JPEG snapshots\"),n.title=t===\"snapshot\"?\"Ordinary same-origin HTTPS JPEG frames\"+(s?\" - \"+s:\"\"):\"Continuous same-origin MJPEG stream\"+(s?\" - \"+s:\"\")};function m(){if(t!==\"snapshot\")return;if(document.visibilityState===\"hidden\"){i=setTimeout(m,1400);return}const s=++c;a.src=\"/shot.jpg?cfm_snapshot=\"+Date.now()+\"_\"+s,e&&clearTimeout(e),e=setTimeout(()=>{t!==\"snapshot\"||s!==c||(o++,r(\"frame timeout\"),i=setTimeout(m,Math.min(2500,1e3+o*250)))},7500)}function u(s=\"\"){t!==\"snapshot\"&&(t=\"snapshot\",l(),o=0,a.removeAttribute(\"src\"),r(s),i=setTimeout(m,50))}function h(){t!==\"stream\"&&(t=\"stream\",l(),o=0,f=!1,r(),a.src=\"/stream.mjpg?t=\"+Date.now(),e=setTimeout(()=>{t===\"stream\"&&!f&&!(a.complete&&a.naturalWidth>0)&&u(\"stream unavailable\")},6500))}a.addEventListener(\"load\",()=>{if(t===\"stream\"){f=!0,e&&(clearTimeout(e),e=null);return}t===\"snapshot\"&&(p=Date.now(),o=0,r(),e&&(clearTimeout(e),e=null),i&&clearTimeout(i),i=setTimeout(m,900))},!1),a.addEventListener(\"error\",s=>{t===\"stream\"?(s.stopImmediatePropagation(),u(\"stream error\")):t===\"snapshot\"&&(s.stopImmediatePropagation(),e&&(clearTimeout(e),e=null),o++,r(\"image GET failed\"),i&&clearTimeout(i),i=setTimeout(m,Math.min(3e3,1200+o*300)))},!0),n.addEventListener(\"click\",()=>{t===\"stream\"?u(\"manual\"):h()}),document.addEventListener(\"visibilitychange\",()=>{document.visibilityState===\"visible\"&&t===\"snapshot\"&&(l(),i=setTimeout(m,100))}),addEventListener(\"pagehide\",()=>{l()}),r(),e=setTimeout(()=>{t===\"stream\"&&a.naturalWidth===0&&u(\"no first frame\")},5500)})();\n";
+  let installedFor=null;
+  function install(){
+    try{
+      const doc=iframe.contentDocument;
+      if(!doc||doc===installedFor||!doc.getElementById('image')) return;
+      const el=doc.createElement('script');
+      el.textContent=childInstaller;
+      (doc.body||doc.documentElement).appendChild(el);
+      if(doc.defaultView&&doc.defaultView.__cfmAdaptiveVideoInstalled)
+        installedFor=doc;
+    }catch(_){}
+  }
+  iframe.addEventListener('load',install);
+  const poll=setInterval(install,300);
+  window.addEventListener('pagehide',()=>clearInterval(poll),{once:true});
+  install();
+})();
+</script>
 </body></html>

@@ -32,13 +32,13 @@ export function registerCfMirrorUniversalTools(server,z,{callAgent,callerIdentit
   });
  }
  register('cf_mirror_sources','List mirrorable browsers and apps',
-  'List all accessible CDP browser ports, tabs and X11 displays/windows on the owner server.',
+  'Find available Chrome/CDP browser tabs and X11 apps/displays when the owner says mirror a particular browser/app and you cannot resolve the target. Then use cf_mirror_open for web or local mirroring. Do not confuse a local browser URL with a phone-accessible link.',
   {},readonly,async(input,extra)=>run([BIN,'list'],extra,{seconds:20}));
  register('cf_mirror_status','Universal mirror sessions',
-  'List active local/public mirror sessions, their URLs, sources and expiration times; does not reveal passwords.',
+  'Check created local or public mirroring sessions, their tap-ready URLs, targets, active/expired status, and public expiry. Does NOT reveal session passwords, which are shown only at creation. A new web session needs a new one-time password; local mirrors require none.',
   {},readonly,async(input,extra)=>run([BIN,'status'],extra,{seconds:15}));
  register('cf_mirror_open','Open universal local or web mirror',
-  'Start a mirror of any accessible browser/CDP profile or X11 app. Default local gives a simple numeric 127.0.0.1 address for the server graphical browser. Explicit mode=web gives HTTPS Quick Tunnel and a mandatory password (auto-generated unless specified), expires after ttl. Omit tab to show ALL browser tabs with navigation/open/close; use tab only to mirror a specific page. Domains/Google OAuth redirects are not restricted. Access to a public mirror grants full mouse/keyboard control.',
+  'CREATE MIRROR ON REQUEST / MIRRORING / mirror / share a browser or app: when owner asks in Persian/English for an internet/public mirror of any Chrome/CDP tab, browser or X11 app for N minutes/hours, CALL cf_mirror_open with mode=web, target app/x11/cdp, and ttl (e.g. 5h, 30m). Password is generated automatically; do NOT ask for one. Present response.url as a TAPPABLE HTTPS link, response.password in a COPYABLE code block or copy button, expiry in user timezone, and always warn: VPN MAY BE REQUIRED to view/control/stream; VPN-free playback is not guaranteed. A Quick Tunnel can fail early. When owner requests LOCAL mirroring, CALL cf_mirror_open with mode=local (or omit mode), target app/x11/cdp, and DO NOT request or send password or ttl; return the numeric http://127.0.0.1:PORT/ URL for a browser ON THE SERVER graphical/XRDP desktop. Local is loopback-only and has no expiry by default. If target unclear, use cf_mirror_sources; avoid asking for a password or duration for local. Keep existing source/tab selectors. Public URL+password grant full mouse/keyboard control; share only with owner.',
   {name:schemaName.optional(),app:z.string().min(1).max(140).optional(),
    cdp:z.number().int().min(1).max(65535).optional(),
    x11:z.string().regex(/^:\d+$/).optional(),
@@ -78,7 +78,7 @@ export function registerCfMirrorUniversalTools(server,z,{callAgent,callerIdentit
    catch{return {ok:false,error:'Unexpected mirror start output'};}
   });
  register('cf_mirror_close','Stop and revoke mirror session',
-  'Immediately revoke one universal mirror session or all, including public URL, image streams and input control.',
+  'Stop/revoke a named local or internet mirror immediately (or all when explicitly requested). Public links/passwords and streams stop working. Do not stop sessions just because no VPN is available; only stop on owner request or session expiry.',
   {name:z.union([schemaName,z.literal('all')])},destructive,
   async(input,extra)=>run([BIN,'stop',input.name],extra,{seconds:25}));
  register('cf_mirror_screenshot','Screenshot an active universal mirror',

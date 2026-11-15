@@ -14,9 +14,10 @@ Named Android SMS recipient SPECIAL SEMANTIC SELECTOR (not a JSON output path):
 {"schema":"dexa.intent.v1","capabilityId":"dexa.android.invoke","args":{"action":"sms.send","parameters":{"recipient":{"contact_name":"the full owner-supplied contact label"},"body":"the exact owner-supplied message"}}}
 Rana performs the one actual contacts.search, uses the verified unique on-device result and sends only with existing R3 owner approval; model never chooses JSON paths.
 For other Android actions choose dexa.android.invoke args:{"action":"<native ID>","parameters":{...}}. Use required fields; optional only when actually requested.
-Only tools enumerated below are planner-admitted. Operator-only mirror and unbound GH/RD aliases are NOT options. No runtime calls in this index.
+Only tools enumerated below are planner-admitted. Unbound GH/RD aliases are NOT options. No runtime calls in this index.
+MIRRORING: To create any requested public internet mirror of a specified server browser/X11 app for N minutes/hours, choose tool.cf.cf_mirror_open with mode=web, ttl=30m/5h and exact app,cdp or x11 source; password is generated automatically. For LOCAL mirror choose mode=local and exact source, no password and no ttl. Use tool.cf.cf_mirror_sources first only when the target source cannot be identified. The EXECUTION RESULT must be presented by Rana/UI as a clickable actual URL, copyable actual password when web, real expiry, and warning that VPN may be required. Local URLs open only in a graphical browser ON THE SERVER. No VPN-free claims.
 
-## CF-backed capabilities - 178 exact native input schemas
+## CF-backed capabilities - 183 exact native input schemas
 id | human function | REQUIRED input names/types | OPTIONAL only if owner needs
 --- | --- | --- | ---
 github.auth.start | Start GitHub device login. Show the owner user_code; owner enters it at https://github.com/login/device. Token stays only on the server | {} | -
@@ -111,6 +112,11 @@ tool.cf.cf_auth_mode_set | Set owner authorization mode to disabled, observe, or
 tool.cf.cf_auth_owner_add | Add one ChatGPT subject fingerprint to the CF-server owner allowlist. Only an already-authorized owner may call this. The first owner m | subject_fingerprint:string | label
 tool.cf.cf_auth_owner_remove | Remove one ChatGPT subject fingerprint from the CF-server owner allowlist. Only an authorized owner may call this. The final owner cann | subject_fingerprint:string | -
 tool.cf.cf_auth_status | Return this caller's anonymized owner fingerprint and current owner-authorization mode. This tool is intentionally available even to an | {} | -
+tool.cf.cf_mirror_close | Revoke an exact local/public mirror immediately; name=all only on owner request. | name:string/string | -
+tool.cf.cf_mirror_open | CREATE MIRROR / mirroring from browser/CDP/X11 source. For public internet mirror of a specified duration, call cf_mirror_open mode=web | {} | app,cdp,full,interval,mode,name,no_fit,password,tab,ttl,x11
+tool.cf.cf_mirror_screenshot | Capture the current visible frame of an existing mirror without navigation; saves a server-local screenshot artifact. | name:string | -
+tool.cf.cf_mirror_sources | Discover available CDP browser tabs and X11 app windows for the owner mirroring request; use before cf_mirror_open when the source is n | {} | -
+tool.cf.cf_mirror_status | List current local/public mirror sessions, their exact URLs, sources and expiry; web passwords are only shown at creation, never here. | {} | -
 tool.cf.cf_oauth_approve | Approve a one-time OAuth pairing code from the authorization screen. Authorized ChatGPT owners only. | code:string | -
 tool.cf.cf_whoami | Read-only gate-exempt caller identity diagnostic. Returns only presence, type, length where safe, and key names for MCP metadata, authI | {} | -
 tool.cf.onshape_artifact | Stage/read temporary byte-exact artifacts used by documented multipart operations. | action:string(write/read/status/delete) | artifact_id,content_type,data_base64,filename,length,offset
