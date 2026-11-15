@@ -304,21 +304,12 @@ Conversation completion NEVER implies a tool ran successfully. Never invent miss
 
 HISTORY_LIMIT: 30
 HISTORY_COUNT: 29
-HISTORY_SHA256: 12e45d116bcf2b8eca6cc5ed8a65868fa4ccd535b8dcc22294bf9409f60f2f0e
+HISTORY_SHA256: 8cac1b7809ead886de78f6832a2d0444da8bd5f33a0731c76bd5adc75569f306
 
 ~~~json
 [
   {
     "exchange": 1,
-    "createdAt": "2026-11-14T14:13:36.518Z",
-    "ownerRequest": "تو چه کارایی می‌تونی بکنی؟",
-    "dexaVisibleReply": "می‌تونم پیام‌هات رو بخونم و بفرستم، ایمیل و تقویمت رو مدیریت کنم، فایل‌ها رو پیدا کنم، توی گیت‌هاب کار کنم و به سؤال‌هات جواب بدم؛ البته بسته به ابزارهای متصل.",
-    "executionState": "CONVERSATION_TURN_COMPLETED",
-    "turnComplete": true,
-    "effectsExecuted": 0
-  },
-  {
-    "exchange": 2,
     "createdAt": "2026-11-14T14:35:55.583Z",
     "ownerRequest": "تو منو دوست داری؟",
     "dexaVisibleReply": "من احساس عاشقانه ندارم، ولی برام مهمی و دوست دارم کمکت کنم. ❤️",
@@ -327,7 +318,7 @@ HISTORY_SHA256: 12e45d116bcf2b8eca6cc5ed8a65868fa4ccd535b8dcc22294bf9409f60f2f0e
     "effectsExecuted": 0
   },
   {
-    "exchange": 3,
+    "exchange": 2,
     "createdAt": "2026-11-14T14:37:02.448Z",
     "ownerRequest": "پیام قبلی من چی بود؟",
     "dexaVisibleReply": "پیام قبلیت این بود: «تو منو دوست داری؟»",
@@ -336,7 +327,7 @@ HISTORY_SHA256: 12e45d116bcf2b8eca6cc5ed8a65868fa4ccd535b8dcc22294bf9409f60f2f0e
     "effectsExecuted": 0
   },
   {
-    "exchange": 4,
+    "exchange": 3,
     "createdAt": "2026-11-14T14:40:22.528Z",
     "ownerRequest": "صدامو می‌شنوی؟",
     "dexaVisibleReply": "آره، صدات به من می‌رسه.",
@@ -345,7 +336,7 @@ HISTORY_SHA256: 12e45d116bcf2b8eca6cc5ed8a65868fa4ccd535b8dcc22294bf9409f60f2f0e
     "effectsExecuted": 0
   },
   {
-    "exchange": 5,
+    "exchange": 4,
     "createdAt": "2026-11-14T14:43:40.690Z",
     "ownerRequest": "ساعت چنده؟",
     "dexaVisibleReply": "الان ساعت ۶:۱۳ عصر به وقت ایرانه.",
@@ -354,7 +345,7 @@ HISTORY_SHA256: 12e45d116bcf2b8eca6cc5ed8a65868fa4ccd535b8dcc22294bf9409f60f2f0e
     "effectsExecuted": 0
   },
   {
-    "exchange": 6,
+    "exchange": 5,
     "createdAt": "2026-11-14T15:26:40.871Z",
     "ownerRequest": "ساعت چنده؟",
     "dexaVisibleReply": "الان ساعت ۶:۵۶ عصر به وقت ایرانه.",
@@ -363,7 +354,7 @@ HISTORY_SHA256: 12e45d116bcf2b8eca6cc5ed8a65868fa4ccd535b8dcc22294bf9409f60f2f0e
     "effectsExecuted": 0
   },
   {
-    "exchange": 7,
+    "exchange": 6,
     "createdAt": "2026-11-14T15:28:19.529Z",
     "ownerRequest": "ساعت چنده؟",
     "dexaVisibleReply": "الان ساعت ۶:۵۸ عصر به وقت ایرانه.",
@@ -372,7 +363,7 @@ HISTORY_SHA256: 12e45d116bcf2b8eca6cc5ed8a65868fa4ccd535b8dcc22294bf9409f60f2f0e
     "effectsExecuted": 0
   },
   {
-    "exchange": 8,
+    "exchange": 7,
     "createdAt": "2026-11-14T15:38:22.775Z",
     "ownerRequest": "سه تا چت آخرِ ویچتم رو بگو.",
     "dexaVisibleReply": "[{\"conversation_ref\":\"wechat-name:Kazem-tenghai\",\"name\":\"Kazem-tenghai\",\"identity_strength\":\"display_name_snapshot\",\"duplicate_name_safe\":false,\"selected\":true,\"unread_count\":0,\"has_unread\":false,\"read_state\":\"no_explicit_unread_badge\",\"muted\":false,\"pinned\":true,\"timestamp\":null,\"preview\":\"Z-YU: 我问一下昨天我问还没修好\\nYesterday 03:56\",\"source\":\"bounded_atspi_semantic_helper\"},{\"conversation_ref\":\"wechat-name:ESFA%20%26%20HXY%20Heatsink\",\"name\":\"ESFA & HXY Heatsink\",\"identity_strength\":\"display_name_snapshot\",\"duplicate_name_safe\":false,\"selected\":false,\"unread_count\":58,\"has_unread\":true,\"read_state\":\"explicit_unread\",\"muted\":true,\"pinned\":null,\"timestamp\":\"13:13\",\"preview\":\"Moe: [OK][OK][OK]\",\"source\":\"bounded_atspi_semantic_helper\"},{\"conversation_ref\":\"wechat-name:ESFA%20tracking%20number\",\"name\":\"ESFA tracking number\",\"identity_strength\":\"display_name_snapshot\",\"duplicate_name_safe\":false,\"selected\":false,\"unread_count\":0,\"has_unread\":false,\"read_state\":\"no_explicit_unread_badge\",\"muted\":false,\"pinned\":null,\"timestamp\":\"09:10\",\"preview\":\"A. Zeinali: سلام و درود\",\"source\":\"bounded_atspi_semantic_helper\"}]",
@@ -381,7 +372,7 @@ HISTORY_SHA256: 12e45d116bcf2b8eca6cc5ed8a65868fa4ccd535b8dcc22294bf9409f60f2f0e
     "effectsExecuted": 0
   },
   {
-    "exchange": 9,
+    "exchange": 8,
     "createdAt": "2026-11-14T15:41:54.808Z",
     "ownerRequest": "ساعت چنده؟",
     "dexaVisibleReply": "الان ساعت ۷:۱۱ شبه به وقت ایران.",
@@ -390,7 +381,7 @@ HISTORY_SHA256: 12e45d116bcf2b8eca6cc5ed8a65868fa4ccd535b8dcc22294bf9409f60f2f0e
     "effectsExecuted": 0
   },
   {
-    "exchange": 10,
+    "exchange": 9,
     "createdAt": "2026-11-14T15:46:56.485Z",
     "ownerRequest": "د تا چت آخر وی چتمو بگو.",
     "dexaVisibleReply": "چند تا چت آخر وی‌چتت رو می‌خوای؟",
@@ -399,7 +390,7 @@ HISTORY_SHA256: 12e45d116bcf2b8eca6cc5ed8a65868fa4ccd535b8dcc22294bf9409f60f2f0e
     "effectsExecuted": 0
   },
   {
-    "exchange": 11,
+    "exchange": 10,
     "createdAt": "2026-11-14T15:47:52.746Z",
     "ownerRequest": "د تا",
     "dexaVisibleReply": "منظورت ده تا چت آخر وی‌چته؟",
@@ -408,7 +399,7 @@ HISTORY_SHA256: 12e45d116bcf2b8eca6cc5ed8a65868fa4ccd535b8dcc22294bf9409f60f2f0e
     "effectsExecuted": 0
   },
   {
-    "exchange": 12,
+    "exchange": 11,
     "createdAt": "2026-11-14T15:48:33.992Z",
     "ownerRequest": "نه، منظورم دو تاست.",
     "dexaVisibleReply": "متأسفانه نتونستم کاری که خواستی رو انجام بدم.",
@@ -417,7 +408,7 @@ HISTORY_SHA256: 12e45d116bcf2b8eca6cc5ed8a65868fa4ccd535b8dcc22294bf9409f60f2f0e
     "effectsExecuted": 0
   },
   {
-    "exchange": 13,
+    "exchange": 12,
     "createdAt": "2026-11-14T15:49:23.971Z",
     "ownerRequest": "لیست دو تا چت آخر وی چتم رو بده.",
     "dexaVisibleReply": "[{\"conversation_ref\":\"wechat-name:Kazem-tenghai\",\"name\":\"Kazem-tenghai\",\"identity_strength\":\"display_name_snapshot\",\"duplicate_name_safe\":false,\"selected\":true,\"unread_count\":0,\"has_unread\":false,\"read_state\":\"no_explicit_unread_badge\",\"muted\":false,\"pinned\":true,\"timestamp\":null,\"preview\":\"Z-YU: 我问一下昨天我问还没修好\\nYesterday 03:56\",\"source\":\"bounded_atspi_semantic_helper\"},{\"conversation_ref\":\"wechat-name:ESFA%20%26%20HXY%20Heatsink\",\"name\":\"ESFA & HXY Heatsink\",\"identity_strength\":\"display_name_snapshot\",\"duplicate_name_safe\":false,\"selected\":false,\"unread_count\":58,\"has_unread\":true,\"read_state\":\"explicit_unread\",\"muted\":true,\"pinned\":null,\"timestamp\":\"13:13\",\"preview\":\"Moe: [OK][OK][OK]\",\"source\":\"bounded_atspi_semantic_helper\"}]",
@@ -426,7 +417,7 @@ HISTORY_SHA256: 12e45d116bcf2b8eca6cc5ed8a65868fa4ccd535b8dcc22294bf9409f60f2f0e
     "effectsExecuted": 0
   },
   {
-    "exchange": 14,
+    "exchange": 13,
     "createdAt": "2026-11-14T15:51:03.378Z",
     "ownerRequest": "ساعت چنده؟",
     "dexaVisibleReply": "الان ساعت ۷:۲۰ شبه به وقت ایرانه.",
@@ -435,7 +426,7 @@ HISTORY_SHA256: 12e45d116bcf2b8eca6cc5ed8a65868fa4ccd535b8dcc22294bf9409f60f2f0e
     "effectsExecuted": 0
   },
   {
-    "exchange": 15,
+    "exchange": 14,
     "createdAt": "2026-11-14T15:53:09.759Z",
     "ownerRequest": "ساعت چنده؟",
     "dexaVisibleReply": "الان ساعت ۷:۲۳ شبه به وقت ایرانه.",
@@ -444,7 +435,7 @@ HISTORY_SHA256: 12e45d116bcf2b8eca6cc5ed8a65868fa4ccd535b8dcc22294bf9409f60f2f0e
     "effectsExecuted": 0
   },
   {
-    "exchange": 16,
+    "exchange": 15,
     "createdAt": "2026-11-14T15:54:02.520Z",
     "ownerRequest": "امروز چندمه؟",
     "dexaVisibleReply": "امروز شنبه ۲۳ آبان ۱۴۰۵ه.",
@@ -453,7 +444,7 @@ HISTORY_SHA256: 12e45d116bcf2b8eca6cc5ed8a65868fa4ccd535b8dcc22294bf9409f60f2f0e
     "effectsExecuted": 0
   },
   {
-    "exchange": 17,
+    "exchange": 16,
     "createdAt": "2026-11-14T18:32:18.149Z",
     "ownerRequest": "لیست ۵ تا چت آخر تلگرامم رو بده.",
     "dexaVisibleReply": "[{\"handle\":\"tgchat:d815e083-5d58-42e8-8718-11ab86605ee9\",\"name\":\"نجمه ایرانسل\",\"type\":\"user\",\"kind\":\"user\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":true,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:acfdb040-8ca2-4e86-8c75-e06ee9c55fab\",\"name\":\"چین ، ارسال بار و پست، نیازمندیها و پذیرش و دانشجویی ، یوان، ترجمه ، بلیط و ویزا، کنسولی\",\"type\":\"chat\",\"kind\":\"supergroup\",\"is_forum\":true,\"forum_kind\":\"forum\",\"pinned\":false,\"unread_count\":68,\"unread_mark\":false,\"has_unread\":true},{\"handle\":\"tgchat:310727db-c426-4e4b-86f7-683a184e77ee\",\"name\":\"هماهنگی نشست‌های حلقه دوستی\",\"type\":\"chat\",\"kind\":\"supergroup\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":16,\"unread_mark\":false,\"has_unread\":true},{\"handle\":\"tgchat:0ffb366f-4dd5-47ef-b206-3b0bb72a8c4b\",\"name\":\"🔒{ پروکسی تلگرام }🔓\",\"type\":\"chat\",\"kind\":\"channel\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":2,\"unread_mark\":false,\"has_unread\":true},{\"handle\":\"tgchat:2d0b229f-4244-4b86-b622-154a657b2594\",\"name\":\"اصحاب بعد از جنگ\",\"type\":\"chat\",\"kind\":\"supergroup\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":2,\"unread_mark\":false,\"has_unread\":true}]",
@@ -462,7 +453,7 @@ HISTORY_SHA256: 12e45d116bcf2b8eca6cc5ed8a65868fa4ccd535b8dcc22294bf9409f60f2f0e
     "effectsExecuted": 0
   },
   {
-    "exchange": 18,
+    "exchange": 17,
     "createdAt": "2026-11-14T18:35:52.208Z",
     "ownerRequest": "دو تا چت اخیر ویچتم رو بده.",
     "dexaVisibleReply": "[{\"conversation_ref\":\"wechat-name:Kazem-tenghai\",\"name\":\"Kazem-tenghai\",\"identity_strength\":\"display_name_snapshot\",\"duplicate_name_safe\":false,\"selected\":true,\"unread_count\":0,\"has_unread\":false,\"read_state\":\"no_explicit_unread_badge\",\"muted\":false,\"pinned\":true,\"timestamp\":null,\"preview\":\"Z-YU: 我问一下昨天我问还没修好\\nYesterday 03:56\",\"source\":\"bounded_atspi_semantic_helper\"},{\"conversation_ref\":\"wechat-name:ESFA%20%26%20HXY%20Heatsink\",\"name\":\"ESFA & HXY Heatsink\",\"identity_strength\":\"display_name_snapshot\",\"duplicate_name_safe\":false,\"selected\":false,\"unread_count\":58,\"has_unread\":true,\"read_state\":\"explicit_unread\",\"muted\":true,\"pinned\":null,\"timestamp\":\"13:13\",\"preview\":\"Moe: [OK][OK][OK]\",\"source\":\"bounded_atspi_semantic_helper\"}]",
@@ -471,7 +462,7 @@ HISTORY_SHA256: 12e45d116bcf2b8eca6cc5ed8a65868fa4ccd535b8dcc22294bf9409f60f2f0e
     "effectsExecuted": 0
   },
   {
-    "exchange": 19,
+    "exchange": 18,
     "createdAt": "2026-11-14T18:37:28.857Z",
     "ownerRequest": "ساعت چنده؟",
     "dexaVisibleReply": "الان ساعت ۱۰:۰۷ شبه به وقت ایرانه.",
@@ -480,7 +471,7 @@ HISTORY_SHA256: 12e45d116bcf2b8eca6cc5ed8a65868fa4ccd535b8dcc22294bf9409f60f2f0e
     "effectsExecuted": 0
   },
   {
-    "exchange": 20,
+    "exchange": 19,
     "createdAt": "2026-11-14T18:58:53.190Z",
     "ownerRequest": "۲۲ تا چت اخیر وی چتم رو بده.",
     "dexaVisibleReply": "{\"output\":{\"stepId\":2,\"error\":\"TOOL_PLAN_DATA_PATH_MISSING\",\"physicalCommandIssued\":false,\"completed\":false},\"actualStepErrors\":[{\"stepId\":1,\"kind\":\"TOOL\",\"code\":\"_object_Object_\",\"physicalCallIssued\":true},{\"stepId\":2,\"kind\":\"TRANSFORM\",\"code\":\"TOOL_PLAN_DATA_PATH_MISSING\",\"physicalCallIssued\":false}],\"successfulPhysicalCalls\":1,\"warning\":\"Actual commands issued; failed steps were not treated as success.\"}",
@@ -489,7 +480,7 @@ HISTORY_SHA256: 12e45d116bcf2b8eca6cc5ed8a65868fa4ccd535b8dcc22294bf9409f60f2f0e
     "effectsExecuted": 0
   },
   {
-    "exchange": 21,
+    "exchange": 20,
     "createdAt": "2026-11-14T20:05:14.406Z",
     "ownerRequest": "ساعت چنده؟",
     "dexaVisibleReply": "الان ساعت ۱۱:۳۵ شبه به وقت ایرانه.",
@@ -498,7 +489,7 @@ HISTORY_SHA256: 12e45d116bcf2b8eca6cc5ed8a65868fa4ccd535b8dcc22294bf9409f60f2f0e
     "effectsExecuted": 0
   },
   {
-    "exchange": 22,
+    "exchange": 21,
     "createdAt": "2026-11-14T20:56:59.788Z",
     "ownerRequest": "آخرین چت وی‌چتم متعلق به کیه؟",
     "dexaVisibleReply": "Kazem-tenghai",
@@ -507,7 +498,7 @@ HISTORY_SHA256: 12e45d116bcf2b8eca6cc5ed8a65868fa4ccd535b8dcc22294bf9409f60f2f0e
     "effectsExecuted": 0
   },
   {
-    "exchange": 23,
+    "exchange": 22,
     "createdAt": "2026-11-14T20:58:34.656Z",
     "ownerRequest": "آخرین پیام توی اون چت رو برام بخون.",
     "dexaVisibleReply": "{\"output\":{\"error\":\"OUTPUT_NOT_RETURNED_BY_TOOL\",\"observed\":[{\"stepId\":1,\"kind\":\"TOOL\",\"capabilityId\":\"tool.cf.wechat_conversation_list\",\"physicalTool\":\"wechat_conversation_list\",\"startedAt\":\"2026-11-14T20:58:34.681Z\",\"completedAt\":\"2026-11-14T20:59:36.522Z\",\"commandIssued\":true,\"resultVerified\":false,\"actualError\":\"CATALOG_GATEWAY_TIMEOUT\",\"postDispatchReceiptMissing\":false,\"resultDigest\":\"ce5d43ba437a0a9db80960344498bf3d2a8f7f2f86b9d1e1744e0fbbfae523b4\"},{\"stepId\":2,\"kind\":\"TRANSFORM\",\"capabilityId\":\"LOCAL\",\"physicalTool\":null,\"startedAt\":\"2026-11-14T20:59:38.849Z\",\"completedAt\":\"2026-11-14T20:59:47.072Z\",\"commandIssued\":false,\"resultVerified\":false,\"actualError\":\"TOOL_PLAN_DATA_PATH_MISSING\",\"postDispatchReceiptMissing\":false,\"resultDigest\":\"4992eda375438d4f42376e91da0e5e575c43630d5e09bb5868b68b1be75e9e70\"},{\"stepId\":3,\"diagnostic\":\"UNRESOLVED_REFERENCE_SENT_AS_IS\"},{\"stepId\":3,\"kind\":\"TOOL\",\"capabilityId\":\"tool.cf.wechat_message_list\",\"physicalTool\":\"wechat_message_list\",\"startedAt\":\"2026-11-14T20:59:49.576Z\",\"completedAt\":\"2026-11-14T21:01:05.665Z\",\"commandIssued\":true,\"resultVerified\":false,\"actualError\":\"CATALOG_GATEWAY_TIMEOUT\",\"postDispatchReceiptMissing\":false,\"resultDigest\":\"1a7f662e8cb25f98129ef9752b18303574147e103ab0ab2a38d45d1793df52e1\"}]},\"actualStepErrors\":[{\"stepId\":1,\"kind\":\"TOOL\",\"code\":\"CATALOG_GATEWAY_TIMEOUT\",\"physicalCallIssued\":true},{\"stepId\":2,\"kind\":\"TRANSFORM\",\"code\":\"TOOL_PLAN_DATA_PATH_MISSING\",\"physicalCallIssued\":false},{\"stepId\":3,\"kind\":\"TOOL\",\"code\":\"CATALOG_GATEWAY_TIMEOUT\",\"physicalCallIssued\":true},{\"stepId\":3,\"code\":\"OUTPUT_PATH_TOOL_PLAN_DATA_PATH_MISSING\",\"physicalCallIssued\":false}],\"successfulPhysicalCalls\":2,\"warning\":\"Actual commands issued; failed steps were not treated as success.\"}",
@@ -516,7 +507,7 @@ HISTORY_SHA256: 12e45d116bcf2b8eca6cc5ed8a65868fa4ccd535b8dcc22294bf9409f60f2f0e
     "effectsExecuted": 0
   },
   {
-    "exchange": 24,
+    "exchange": 23,
     "createdAt": "2026-11-14T21:10:35.509Z",
     "ownerRequest": "توی چتی که بالای لیست وی‌چت هم پین شده، آخرین پیام چی بوده؟",
     "dexaVisibleReply": "{\"output\":{\"stepId\":5,\"error\":\"TOOL_PLAN_TAKE_EXPECTS_ARRAY\",\"physicalCommandIssued\":false,\"completed\":false},\"actualStepErrors\":[{\"stepId\":3,\"kind\":\"TOOL\",\"code\":\"_object_Object_\",\"physicalCallIssued\":true},{\"stepId\":4,\"kind\":\"TRANSFORM\",\"code\":\"TOOL_PLAN_DATA_PATH_MISSING\",\"physicalCallIssued\":false},{\"stepId\":5,\"kind\":\"TRANSFORM\",\"code\":\"TOOL_PLAN_TAKE_EXPECTS_ARRAY\",\"physicalCallIssued\":false}],\"successfulPhysicalCalls\":2,\"warning\":\"Actual commands issued; failed steps were not treated as success.\"}",
@@ -525,7 +516,7 @@ HISTORY_SHA256: 12e45d116bcf2b8eca6cc5ed8a65868fa4ccd535b8dcc22294bf9409f60f2f0e
     "effectsExecuted": 0
   },
   {
-    "exchange": 25,
+    "exchange": 24,
     "createdAt": "2026-11-14T21:21:48.725Z",
     "ownerRequest": "اون تو ونکوور ساعت چنده؟",
     "dexaVisibleReply": "متأسفانه نتونستم کاری که خواستی رو انجام بدم.",
@@ -534,7 +525,7 @@ HISTORY_SHA256: 12e45d116bcf2b8eca6cc5ed8a65868fa4ccd535b8dcc22294bf9409f60f2f0e
     "effectsExecuted": 0
   },
   {
-    "exchange": 26,
+    "exchange": 25,
     "createdAt": "2026-11-14T21:26:11.601Z",
     "ownerRequest": "چت‌های تلگرامم که پیام نخونده دارن رو لیست کن.",
     "dexaVisibleReply": "متأسفانه نتونستم کاری که خواستی رو انجام بدم.",
@@ -543,7 +534,7 @@ HISTORY_SHA256: 12e45d116bcf2b8eca6cc5ed8a65868fa4ccd535b8dcc22294bf9409f60f2f0e
     "effectsExecuted": 0
   },
   {
-    "exchange": 27,
+    "exchange": 26,
     "createdAt": "2026-11-14T22:13:28.706Z",
     "ownerRequest": "آخرین پیام در چتی که بالای ویچت هم پین شده چیه؟",
     "dexaVisibleReply": "متأسفانه نتونستم کاری که خواستی رو انجام بدم.",
@@ -552,7 +543,7 @@ HISTORY_SHA256: 12e45d116bcf2b8eca6cc5ed8a65868fa4ccd535b8dcc22294bf9409f60f2f0e
     "effectsExecuted": 0
   },
   {
-    "exchange": 28,
+    "exchange": 27,
     "createdAt": "2026-11-14T22:30:12.527Z",
     "ownerRequest": "آخرین پیام در چتی که بالای ویچتم پین شده چیه؟",
     "dexaVisibleReply": "[{\"body\":\"我问一下昨天我问还没修好\",\"body_may_be_truncated\":false,\"sender\":null,\"direction\":\"unknown\",\"direction_evidence\":\"row_spans_or_crosses_midline\",\"time\":null,\"after_separator\":\"03:56\",\"source\":\"visible_native_accessibility_list_item\"}]",
@@ -561,11 +552,20 @@ HISTORY_SHA256: 12e45d116bcf2b8eca6cc5ed8a65868fa4ccd535b8dcc22294bf9409f60f2f0e
     "effectsExecuted": 1
   },
   {
-    "exchange": 29,
+    "exchange": 28,
     "createdAt": "2026-11-15T03:51:18.233Z",
     "ownerRequest": "این پیام که در ویچتم پین شده متعلق به کیه؟",
     "dexaVisibleReply": "این پیام توی چت پین‌شدهٔ Kazem-tenghai بوده؛ اسم فرستنده‌اش مشخص نیست.",
     "executionState": "CONVERSATION_TURN_COMPLETED",
+    "turnComplete": true,
+    "effectsExecuted": 0
+  },
+  {
+    "exchange": 29,
+    "createdAt": "2026-11-15T07:57:30.503Z",
+    "ownerRequest": "کنترل رو تحویل بده",
+    "dexaVisibleReply": "فرمان مستقیم انجام‌پذیر نبود. خطای واقعی: NOT_CHATGPT",
+    "executionState": "FAILED",
     "turnComplete": true,
     "effectsExecuted": 0
   }
