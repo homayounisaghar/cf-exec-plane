@@ -62,6 +62,7 @@ All sample inputs below pass the actual input JSON Schema. These are nonexecutin
 ~~~
 <!-- DEXA_V282_AUDIT_END -->
 
+
 <!-- DEXA_ANDROID_KERNEL_BEGIN -->
 ## DEXA ANDROID NATIVE KERNEL — 47 TYPED TOOL CONTRACTS (v1)
 
@@ -86,8 +87,8 @@ Each user/assistant exchange is complete after the assistant replies, even if ex
 Conversation completion NEVER implies a tool ran successfully. Never invent missing messages.
 
 HISTORY_LIMIT: 30
-HISTORY_COUNT: 30
-HISTORY_SHA256: 314aa490bab74a61fcc5232dfcdec079199b09a14d10059df3426efd7718806b
+HISTORY_COUNT: 29
+HISTORY_SHA256: aa828fd8550d32387fbe1897420875065dd908c4187fe8de84a1158c27cc5dd2
 
 ~~~json
 [
@@ -228,15 +229,6 @@ HISTORY_SHA256: 314aa490bab74a61fcc5232dfcdec079199b09a14d10059df3426efd7718806b
   },
   {
     "exchange": 16,
-    "createdAt": "2026-11-15T03:50:38.353Z",
-    "ownerRequest": "میگا متوقف شو.",
-    "dexaVisibleReply": "باشه، متوقف شدم.",
-    "executionState": "CONVERSATION_TURN_COMPLETED",
-    "turnComplete": true,
-    "effectsExecuted": 0
-  },
-  {
-    "exchange": 17,
     "createdAt": "2026-11-15T03:51:18.233Z",
     "ownerRequest": "این پیام که در ویچتم پین شده متعلق به کیه؟",
     "dexaVisibleReply": "این پیام توی چت پین‌شدهٔ Kazem-tenghai بوده؛ اسم فرستنده‌اش مشخص نیست.",
@@ -245,7 +237,7 @@ HISTORY_SHA256: 314aa490bab74a61fcc5232dfcdec079199b09a14d10059df3426efd7718806b
     "effectsExecuted": 0
   },
   {
-    "exchange": 18,
+    "exchange": 17,
     "createdAt": "2026-11-15T07:57:30.503Z",
     "ownerRequest": "کنترل رو تحویل بده",
     "dexaVisibleReply": "فرمان مستقیم انجام‌پذیر نبود. خطای واقعی: NOT_CHATGPT",
@@ -254,7 +246,7 @@ HISTORY_SHA256: 314aa490bab74a61fcc5232dfcdec079199b09a14d10059df3426efd7718806b
     "effectsExecuted": 0
   },
   {
-    "exchange": 19,
+    "exchange": 18,
     "createdAt": "2026-11-15T07:57:54.182Z",
     "ownerRequest": "کنترل رو تحویل بده.",
     "dexaVisibleReply": "فرمان مستقیم انجام‌پذیر نبود. خطای واقعی: SCRIPT_EXCEPTION:خطای اجرای کد: Failed to execute 'observe' on 'MutationObserver': parameter 1 is not of type 'Node'.",
@@ -263,7 +255,7 @@ HISTORY_SHA256: 314aa490bab74a61fcc5232dfcdec079199b09a14d10059df3426efd7718806b
     "effectsExecuted": 0
   },
   {
-    "exchange": 20,
+    "exchange": 19,
     "createdAt": "2026-11-15T14:24:51.462Z",
     "ownerRequest": "توی لیست مخاطبین گوشی من یه کسی هست به اسم «شماره ایرانسل من»، بهش یک اس‌ام‌اس سلام بفرست.",
     "dexaVisibleReply": "مأموریت به درخواست کاربر، پیش از تکمیل متوقف شد.",
@@ -272,7 +264,7 @@ HISTORY_SHA256: 314aa490bab74a61fcc5232dfcdec079199b09a14d10059df3426efd7718806b
     "effectsExecuted": 0
   },
   {
-    "exchange": 21,
+    "exchange": 20,
     "createdAt": "2026-11-15T14:25:12.862Z",
     "ownerRequest": "چه وضعیتی هستی؟",
     "dexaVisibleReply": "مأموریت به درخواست کاربر، پیش از تکمیل متوقف شد.",
@@ -281,7 +273,7 @@ HISTORY_SHA256: 314aa490bab74a61fcc5232dfcdec079199b09a14d10059df3426efd7718806b
     "effectsExecuted": 0
   },
   {
-    "exchange": 22,
+    "exchange": 21,
     "createdAt": "2026-11-15T14:26:02.838Z",
     "ownerRequest": "به شماره 0912 778 48 91 یک پیامک بزن و یک نقطه خالی بفرست.",
     "dexaVisibleReply": "فرمان مستقیم انجام‌پذیر نبود. خطای واقعی: DEXA_OWNER_GET_UNREACHABLE",
@@ -290,7 +282,7 @@ HISTORY_SHA256: 314aa490bab74a61fcc5232dfcdec079199b09a14d10059df3426efd7718806b
     "effectsExecuted": 0
   },
   {
-    "exchange": 23,
+    "exchange": 22,
     "createdAt": "2026-11-15T15:52:28.128Z",
     "ownerRequest": "توی لیست کانتکت‌های گوشی من یک کانتکت هست به اسم «شماره. ایرانسل من»؛ به اون کانتکت یک اس‌ام‌اس شامل یک نقطه خالی بفرست.",
     "dexaVisibleReply": "برای ارسال پیامک باید شمارهٔ این مخاطب مشخص بشه؛ شماره‌اش رو می‌گی؟",
@@ -299,7 +291,7 @@ HISTORY_SHA256: 314aa490bab74a61fcc5232dfcdec079199b09a14d10059df3426efd7718806b
     "effectsExecuted": 0
   },
   {
-    "exchange": 24,
+    "exchange": 23,
     "createdAt": "2026-11-15T15:53:18.434Z",
     "ownerRequest": "0912 778 4891.",
     "dexaVisibleReply": "با این شماره چه کاری انجام بدم؟",
@@ -308,7 +300,7 @@ HISTORY_SHA256: 314aa490bab74a61fcc5232dfcdec079199b09a14d10059df3426efd7718806b
     "effectsExecuted": 0
   },
   {
-    "exchange": 25,
+    "exchange": 24,
     "createdAt": "2026-11-15T15:54:23.631Z",
     "ownerRequest": "مگه حافظه پیام‌ها رو نداری؟ مگه بهت نگفته بودم که یک پیامک بزنی و تو پرسیدی شماره‌اش چیه؟ خب شماره‌اش رو بهت دادم دیگه.",
     "dexaVisibleReply": "فرمان مستقیم انجام‌پذیر نبود. خطای واقعی: MODEL_RESPONSE_COMPLETION_TIMEOUT",
@@ -317,7 +309,7 @@ HISTORY_SHA256: 314aa490bab74a61fcc5232dfcdec079199b09a14d10059df3426efd7718806b
     "effectsExecuted": 0
   },
   {
-    "exchange": 26,
+    "exchange": 25,
     "createdAt": "2026-11-15T16:41:58.987Z",
     "ownerRequest": "توی لیست کانتکت‌های من در گوشی‌ام یک شماره وجود داره به اسم «شماره ایران‌سل من»؛ به اون شماره یک پیامک حاوی یک نقطه تنها بزن.",
     "dexaVisibleReply": "شماره تلفن مخاطب «شماره ایران‌سل من» رو می‌گی تا یه پیامک فقط با یک نقطه براش بفرستم؟",
@@ -326,7 +318,7 @@ HISTORY_SHA256: 314aa490bab74a61fcc5232dfcdec079199b09a14d10059df3426efd7718806b
     "effectsExecuted": 0
   },
   {
-    "exchange": 27,
+    "exchange": 26,
     "createdAt": "2026-11-15T16:42:36.528Z",
     "ownerRequest": "مگه خودت نمی‌تونی کانتکت‌های گوشی من رو بخونی؟",
     "dexaVisibleReply": "مستقیم نه؛ ولی اگه دسترسی مخاطبین گوشی به دکسا داده شده باشه، می‌تونم از طریق ابزارش بخونمشون.",
@@ -335,7 +327,7 @@ HISTORY_SHA256: 314aa490bab74a61fcc5232dfcdec079199b09a14d10059df3426efd7718806b
     "effectsExecuted": 0
   },
   {
-    "exchange": 28,
+    "exchange": 27,
     "createdAt": "2026-11-15T17:00:25.721Z",
     "ownerRequest": "الان دسترسی داری. حالا سعی کن که پیامک رو بفرستی. فقط دقت کن که ایرانسل سر همه.",
     "dexaVisibleReply": "درخواست ناموفق بود؛ دکسا نتونست نتیجهٔ لازم رو از جواب ابزار دربیاره.",
@@ -344,7 +336,7 @@ HISTORY_SHA256: 314aa490bab74a61fcc5232dfcdec079199b09a14d10059df3426efd7718806b
     "effectsExecuted": 0
   },
   {
-    "exchange": 29,
+    "exchange": 28,
     "createdAt": "2026-11-15T18:05:31.932Z",
     "ownerRequest": "توی لیست کانتکت‌های من در گوشی‌ام یک شماره وجود داره به اسم «شماره ایرانسل من»؛ به اون شماره یک پیامک حاوی یک نقطه تنها بزن.",
     "dexaVisibleReply": "مأموریت به درخواست کاربر، پیش از تکمیل متوقف شد.",
@@ -353,7 +345,7 @@ HISTORY_SHA256: 314aa490bab74a61fcc5232dfcdec079199b09a14d10059df3426efd7718806b
     "effectsExecuted": 0
   },
   {
-    "exchange": 30,
+    "exchange": 29,
     "createdAt": "2026-11-15T18:48:56.547Z",
     "ownerRequest": "توی لیست کانتکت‌های من در گوشی‌ام یک شماره وجود داره به اسم «شماره ایرانسل من»؛ به اون شماره یک پیامک حاوی یک نقطه تنها بزن.",
     "dexaVisibleReply": "بخشی از عملیات واقعاً انجام شده است؛ بدون تکرار آثار قبلی، وضعیت بقیه بررسی شود.",
