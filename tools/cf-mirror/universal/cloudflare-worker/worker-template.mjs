@@ -101,10 +101,32 @@ async function sessionFingerprint(config){
 function validateBrowser(request,incoming,isWs){
   const origin=request.headers.get('origin');
   const site=request.headers.get('sec-fetch-site');
-  if(origin&&origin!==incoming.origin)return false;
-  if((isWs||request.method==='POST')&&site&&
-     !['same-origin','none'].includes(site))return false;
-  if(isWs&&origin!==incoming.origin)return false;
+  const isPost=request.method==='POST';
+  const sameOrigin=origin===incoming.origin;
+  // Read-only GET/HEAD navigations after a 303 POST can carry Origin: null
+  // in some Android/WebView browsers. They have no side effects, and the
+  // protected mirror gateway still requires its HttpOnly session cookie.
+  if(!isWs&&!isPost)return true;
+  // The WebSocket must present an exact same-origin browser Origin AND
+  // gateway-signed CSRF subprotocol (checked below and at the gateway).
+  if(isWs)return sameOrigin&&(!site||site==='same-origin'||site==='none');
+  // The password form carries a server-generated hidden CSRF token, which
+  // the gateway verifies. Accept legitimate same-origin mobile form POSTs
+  // even if Sec-Fetch-Site is reported as "same-site". Some Android
+  // WebViews send Origin: null: require positive same-origin fetch metadata
+  // or a same-origin Referer before accepting this special case.
+  if(incoming.pathname==='/login'){
+    if(sameOrigin)return site!=='cross-site';
+    if(origin&&origin!=='null')return false;
+    let referrerMatches=false;
+    try{referrerMatches=new URL(request.headers.get('referer')||'').origin===incoming.origin}
+    catch{}
+    return site==='same-origin'||referrerMatches;
+  }
+  // Other mutating actions retain the strict Origin/Fetch-Site boundary;
+  // the original gateway independently checks session-scoped HMAC CSRF.
+  if(origin&&!sameOrigin)return false;
+  if(site&&!['same-origin','none'].includes(site))return false;
   return true;
 }
 function outboundHeaders(request,config,isWs,pathname){

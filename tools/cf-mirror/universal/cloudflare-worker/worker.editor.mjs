@@ -1,5 +1,5 @@
 const R="cfm-worker-n-ring-20261115",O="https://raw.githubusercontent.com/homayounisaghar/cf-exec-plane/main/tools/cf-mirror/universal/cloudflare\
--worker/route-pool.json",g="cf-mirror.worker-pool.v1",f="no-store, private, max-age=0, no-transform",m=new Map([["/input-ws","cfm-input"],["/mic-\
+-worker/route-pool.json",d="cf-mirror.worker-pool.v1",f="no-store, private, max-age=0, no-transform",m=new Map([["/input-ws","cfm-input"],["/mic-\
 ws","cfm-mic"]]),E=["accept","accept-language","cache-control","content-type","cookie","if-modified-since","if-none-match","pragma","range","user\
 -agent","x-cf-mirror-csrf"],x=['"use strict";const REGISTRY="/__bridge-pool",CACHE_NAME="cf-mirror-worker-pool-v1",CACHE_KEY="/__cfm_pool_cach','\
 ed",HOP_PARAM="__cfm_hop",VERSION="cfm-n-account-ring-v1";function validOrigin(t){try{const e=new URL(t);retur','n e.protocol!=="https:"||e.pathn\
@@ -41,47 +41,49 @@ s.delete("__cfm_hop"),history.replaceState(history.state,"",e.href)}catch{}},8e'
 `].join("");let u=null,w=0;function l(e,r,n={}){return new Response(r,{status:e,headers:{"content-type":"text/plain; charset=utf-8","cache-contro\
 l":f,"x-content-type-options":"nosniff","referrer-policy":"no-referrer",...n}})}function y(e){try{const r=new URL(e);return r.protocol==="https:"&&
 r.pathname==="/"&&!r.search&&!r.hash&&!r.username&&!r.password&&!r.port&&/^[a-z0-9-]+\.[a-z0-9-]+\.workers\.dev$/i.test(r.hostname)?r.origin:null}catch{
-return null}}function A(e,r){if(!e||e.schema!==g||!Array.isArray(e.origins))return null;const n=[...new Set(e.origins.slice(0,32).map(y).filter(Boolean))];
+return null}}function P(e,r){if(!e||e.schema!==d||!Array.isArray(e.origins))return null;const n=[...new Set(e.origins.slice(0,32).map(y).filter(Boolean))];
 if(!n.length)return null;n.includes(r)||n.push(r);const t=Number(e.rotationMinutes),o=Number.isInteger(t)&&t>=5&&t<=1440?t:15;return{origins:n,rotationMinutes:o}}
 async function _(e){if(u&&Date.now()<w){const r=u.origins.slice();return r.includes(e)||r.push(e),{...u,origins:r}}try{const r=await fetch(O,{headers:{
 accept:"application/json"},signal:AbortSignal.timeout(2800),cf:{cacheTtl:300,cacheEverything:!0}});if(r.ok){const n=await r.text();if(n.length<=8192){
-const t=A(JSON.parse(n),e);if(t)return u=t,w=Date.now()+3e5,{...t,origins:t.origins.slice()}}}}catch{}if(u){const r=u.origins.slice();return r.includes(
-e)||r.push(e),{...u,origins:r}}return{origins:[e],rotationMinutes:15}}function P(e,r){let n;try{n=new URL(e.MIRROR_UPSTREAM||"")}catch{return null}
+const t=P(JSON.parse(n),e);if(t)return u=t,w=Date.now()+3e5,{...t,origins:t.origins.slice()}}}}catch{}if(u){const r=u.origins.slice();return r.includes(
+e)||r.push(e),{...u,origins:r}}return{origins:[e],rotationMinutes:15}}function A(e,r){let n;try{n=new URL(e.MIRROR_UPSTREAM||"")}catch{return null}
 if(n.protocol!=="https:"||!/^[a-z0-9-]+\.trycloudflare\.com$/i.test(n.hostname)||n.pathname!=="/"||n.search||n.hash||n.port||n.username||n.password)
 return null;const t=y(r.origin);if(!t||e.PUBLIC_ORIGIN&&e.PUBLIC_ORIGIN!==t)return null;const o=Number(e.MIRROR_EXPIRES_AT||0);return e.MIRROR_EXPIRES_AT&&
-(!Number.isSafeInteger(o)||o<=0)?null:{upstream:n,current:t,expiry:o}}async function d(e){const r=e.upstream.origin+"|"+e.expiry,n=await crypto.subtle.
+(!Number.isSafeInteger(o)||o<=0)?null:{upstream:n,current:t,expiry:o}}async function g(e){const r=e.upstream.origin+"|"+e.expiry,n=await crypto.subtle.
 digest("SHA-256",new TextEncoder().encode(r));return Array.from(new Uint8Array(n).slice(0,8),t=>t.toString(16).padStart(2,"0")).join("")}function v(e,r,n){
-const t=e.headers.get("origin"),o=e.headers.get("sec-fetch-site");return!(t&&t!==r.origin||(n||e.method==="POST")&&o&&!["same-origin","none"].includes(
-o)||n&&t!==r.origin)}function T(e,r,n,t){const o=new Headers;for(const c of E){const i=e.headers.get(c);i!==null&&o.set(c,i)}if(["/","/index.html",
-"/view/","/view","/login"].includes(t)&&o.set("accept-encoding","identity"),e.headers.has("origin")&&o.set("origin",r.upstream.origin),n){o.set("\
-origin",r.upstream.origin),o.set("upgrade","websocket");const c=e.headers.get("sec-websocket-protocol");c&&o.set("sec-websocket-protocol",c)}return o}
-function b(e,r){if(!e)return e;const n="connect-src 'self' "+r.replace(/^https:/,"wss:")+";";return/(?:^|;\s*)connect-src\s+[^;]*(?:;|$)/i.test(e)?
-e.replace(/connect-src\s+[^;]*(?:;|$)/i,n):e+"; "+n}function k(e){const r="<script>"+S+"<\/script>";return/<\/body>/i.test(e)?e.replace(/<\/body>/i,
-r+"</body>"):e+r}async function I(e,r,n){const t=new Headers(e.headers);t.set("cache-control",f),t.delete("content-length"),t.delete("transfer-en\
-coding"),t.set("x-content-type-options","nosniff"),t.set("referrer-policy","no-referrer");const o=t.get("content-security-policy");o&&t.set("cont\
-ent-security-policy",b(o,r.current));const c=t.get("location");if(c)try{const s=new URL(c,r.upstream.origin);s.origin===r.upstream.origin&&t.set(
-"location",r.current+s.pathname+s.search+s.hash)}catch{t.delete("location")}if(["/","/index.html","/view/","/view","/login"].includes(n)&&e.status===
-200&&/^text\/html\b/i.test(t.get("content-type")||"")&&!t.has("content-encoding")){const s=await e.text();return s.length<45e4?(t.delete("content\
--encoding"),new Response(k(s),{status:e.status,statusText:e.statusText,headers:t})):l(502,"Unexpectedly large mirror HTML")}return new Response(e.
-body,{status:e.status,statusText:e.statusText,headers:t,encodeBody:"manual"})}async function M(e){return Response.json({ok:!0,proxy:"cf-mirror-un\
-iversal",version:R,currentOrigin:e.current,sourceKey:await d(e),expiresAt:e.expiry||null},{headers:{"cache-control":f,"access-control-allow-origi\
-n":"*"}})}async function L(e,r,n){if(e===r.current)return!0;try{const t=await fetch(e+"/__bridge-health",{signal:AbortSignal.timeout(1700),redirect:"\
-error",headers:{accept:"application/json"}});if(!t.ok)return!1;const o=await t.json();return o?.ok===!0&&o?.proxy==="cf-mirror-universal"&&o?.currentOrigin===
-e&&o?.sourceKey===n}catch{return!1}}async function U(e,r,n){const t=await _(n.current);if(t.origins.length<2)return null;const o=await d(n),c=Math.
-floor(Date.now()/(t.rotationMinutes*6e4))%t.origins.length;for(let i=0;i<t.origins.length;i++){const s=t.origins[(c+i)%t.origins.length];if(s===n.
-current)return null;if(await L(s,n,o)){const a=new URL("/",s);return a.searchParams.set("__cfm_entry","1"),Response.redirect(a.href,302)}}return null}
-var C={async fetch(e,r){const n=new URL(e.url);if(r.PUBLIC_ORIGIN&&r.PUBLIC_ORIGIN!==n.origin)return l(421,"Unexpected Worker hostname");const t=P(
-r,n);if(!t)return l(503,"Mirror Worker not configured for an active HTTPS source");if(t.expiry&&Date.now()>=t.expiry)return l(410,"Mirror session\
- expired");if(e.method==="GET"&&n.pathname==="/__bridge-health")return M(t);if(e.method==="GET"&&n.pathname==="/__bridge-pool"){const a=await _(t.
-current);return Response.json({schema:g,origins:a.origins,rotationMinutes:a.rotationMinutes,currentOrigin:t.current,sourceKey:await d(t)},{headers:{
-"cache-control":f,"access-control-allow-origin":"*"}})}if(e.method==="GET"&&n.pathname==="/sw.js")return new Response(x,{headers:{"content-type":"\
-text/javascript; charset=utf-8","service-worker-allowed":"/","cache-control":f,"x-content-type-options":"nosniff"}});const o=e.headers.get("upgra\
-de")?.toLowerCase()==="websocket";if(!["GET","HEAD","POST"].includes(e.method))return l(405,"Method not allowed");if(o&&(!m.has(n.pathname)||e.method!==
-"GET"))return l(404,"WebSocket route not found");if(!v(e,n,o))return l(403,"Origin denied");if(o){const a=(e.headers.get("sec-websocket-protocol")||
-"").split(",").map(p=>p.trim()),h=m.get(n.pathname);if(!a.includes(h)||!a.some(p=>/^[A-Za-z0-9_-]{43}$/.test(p)))return l(403,"WebSocket control \
-token required");if(!/(?:^|;\s*)cfm_auth=[A-Za-z0-9_-]{24,100}(?:;|$)/.test(e.headers.get("cookie")||""))return l(401,"Password required")}const c=e.
-headers.get("cookie")||"";if(!o&&e.method==="GET"&&n.pathname==="/"&&!/(?:^|;\s*)cfm_auth=/.test(c)&&!n.searchParams.has("__cfm_entry")&&!n.searchParams.
-has("__cfm_hop")){const a=await U(e,n,t);if(a)return a}const i=new URL(t.upstream.origin);i.pathname=n.pathname,i.search=n.search,i.searchParams.
-delete("__cfm_entry"),i.searchParams.delete("__cfm_hop");const s=T(e,t,o,n.pathname);try{if(o){const h=await fetch(i.href,{headers:s,redirect:"ma\
-nual"});return h.status===101&&h.webSocket?h:l(502,"Mirror WebSocket backend unavailable")}const a=await fetch(i.href,{method:e.method,headers:s,
-body:e.method==="POST"?e.body:void 0,redirect:"manual"});return await I(a,t,n.pathname)}catch{return l(502,"Mirror tunnel unavailable")}}};export{C as default};
+const t=e.headers.get("origin"),o=e.headers.get("sec-fetch-site"),a=e.method==="POST",i=t===r.origin;if(!n&&!a)return!0;if(n)return i&&(!o||o==="\
+same-origin"||o==="none");if(r.pathname==="/login"){if(i)return o!=="cross-site";if(t&&t!=="null")return!1;let s=!1;try{s=new URL(e.headers.get("\
+referer")||"").origin===r.origin}catch{}return o==="same-origin"||s}return!(t&&!i||o&&!["same-origin","none"].includes(o))}function T(e,r,n,t){const o=new Headers;
+for(const a of E){const i=e.headers.get(a);i!==null&&o.set(a,i)}if(["/","/index.html","/view/","/view","/login"].includes(t)&&o.set("accept-encod\
+ing","identity"),e.headers.has("origin")&&o.set("origin",r.upstream.origin),n){o.set("origin",r.upstream.origin),o.set("upgrade","websocket");const a=e.
+headers.get("sec-websocket-protocol");a&&o.set("sec-websocket-protocol",a)}return o}function b(e,r){if(!e)return e;const n="connect-src 'self' "+
+r.replace(/^https:/,"wss:")+";";return/(?:^|;\s*)connect-src\s+[^;]*(?:;|$)/i.test(e)?e.replace(/connect-src\s+[^;]*(?:;|$)/i,n):e+"; "+n}function k(e){
+const r="<script>"+S+"<\/script>";return/<\/body>/i.test(e)?e.replace(/<\/body>/i,r+"</body>"):e+r}async function I(e,r,n){const t=new Headers(e.
+headers);t.set("cache-control",f),t.delete("content-length"),t.delete("transfer-encoding"),t.set("x-content-type-options","nosniff"),t.set("refer\
+rer-policy","no-referrer");const o=t.get("content-security-policy");o&&t.set("content-security-policy",b(o,r.current));const a=t.get("location");
+if(a)try{const s=new URL(a,r.upstream.origin);s.origin===r.upstream.origin&&t.set("location",r.current+s.pathname+s.search+s.hash)}catch{t.delete(
+"location")}if(["/","/index.html","/view/","/view","/login"].includes(n)&&e.status===200&&/^text\/html\b/i.test(t.get("content-type")||"")&&!t.has(
+"content-encoding")){const s=await e.text();return s.length<45e4?(t.delete("content-encoding"),new Response(k(s),{status:e.status,statusText:e.statusText,
+headers:t})):l(502,"Unexpectedly large mirror HTML")}return new Response(e.body,{status:e.status,statusText:e.statusText,headers:t,encodeBody:"ma\
+nual"})}async function M(e){return Response.json({ok:!0,proxy:"cf-mirror-universal",version:R,currentOrigin:e.current,sourceKey:await g(e),expiresAt:e.
+expiry||null},{headers:{"cache-control":f,"access-control-allow-origin":"*"}})}async function L(e,r,n){if(e===r.current)return!0;try{const t=await fetch(
+e+"/__bridge-health",{signal:AbortSignal.timeout(1700),redirect:"error",headers:{accept:"application/json"}});if(!t.ok)return!1;const o=await t.json();
+return o?.ok===!0&&o?.proxy==="cf-mirror-universal"&&o?.currentOrigin===e&&o?.sourceKey===n}catch{return!1}}async function U(e,r,n){const t=await _(
+n.current);if(t.origins.length<2)return null;const o=await g(n),a=Math.floor(Date.now()/(t.rotationMinutes*6e4))%t.origins.length;for(let i=0;i<t.
+origins.length;i++){const s=t.origins[(a+i)%t.origins.length];if(s===n.current)return null;if(await L(s,n,o)){const c=new URL("/",s);return c.searchParams.
+set("__cfm_entry","1"),Response.redirect(c.href,302)}}return null}var C={async fetch(e,r){const n=new URL(e.url);if(r.PUBLIC_ORIGIN&&r.PUBLIC_ORIGIN!==
+n.origin)return l(421,"Unexpected Worker hostname");const t=A(r,n);if(!t)return l(503,"Mirror Worker not configured for an active HTTPS source");
+if(t.expiry&&Date.now()>=t.expiry)return l(410,"Mirror session expired");if(e.method==="GET"&&n.pathname==="/__bridge-health")return M(t);if(e.method===
+"GET"&&n.pathname==="/__bridge-pool"){const c=await _(t.current);return Response.json({schema:d,origins:c.origins,rotationMinutes:c.rotationMinutes,
+currentOrigin:t.current,sourceKey:await g(t)},{headers:{"cache-control":f,"access-control-allow-origin":"*"}})}if(e.method==="GET"&&n.pathname===
+"/sw.js")return new Response(x,{headers:{"content-type":"text/javascript; charset=utf-8","service-worker-allowed":"/","cache-control":f,"x-conten\
+t-type-options":"nosniff"}});const o=e.headers.get("upgrade")?.toLowerCase()==="websocket";if(!["GET","HEAD","POST"].includes(e.method))return l(
+405,"Method not allowed");if(o&&(!m.has(n.pathname)||e.method!=="GET"))return l(404,"WebSocket route not found");if(!v(e,n,o))return l(403,"Origi\
+n denied");if(o){const c=(e.headers.get("sec-websocket-protocol")||"").split(",").map(p=>p.trim()),h=m.get(n.pathname);if(!c.includes(h)||!c.some(
+p=>/^[A-Za-z0-9_-]{43}$/.test(p)))return l(403,"WebSocket control token required");if(!/(?:^|;\s*)cfm_auth=[A-Za-z0-9_-]{24,100}(?:;|$)/.test(e.headers.
+get("cookie")||""))return l(401,"Password required")}const a=e.headers.get("cookie")||"";if(!o&&e.method==="GET"&&n.pathname==="/"&&!/(?:^|;\s*)cfm_auth=/.
+test(a)&&!n.searchParams.has("__cfm_entry")&&!n.searchParams.has("__cfm_hop")){const c=await U(e,n,t);if(c)return c}const i=new URL(t.upstream.origin);
+i.pathname=n.pathname,i.search=n.search,i.searchParams.delete("__cfm_entry"),i.searchParams.delete("__cfm_hop");const s=T(e,t,o,n.pathname);try{if(o){
+const h=await fetch(i.href,{headers:s,redirect:"manual"});return h.status===101&&h.webSocket?h:l(502,"Mirror WebSocket backend unavailable")}const c=await fetch(
+i.href,{method:e.method,headers:s,body:e.method==="POST"?e.body:void 0,redirect:"manual"});return await I(c,t,n.pathname)}catch{return l(502,"Mir\
+ror tunnel unavailable")}}};export{C as default};
