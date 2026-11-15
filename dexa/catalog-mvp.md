@@ -88,7 +88,7 @@ Conversation completion NEVER implies a tool ran successfully. Never invent miss
 
 HISTORY_LIMIT: 30
 HISTORY_COUNT: 29
-HISTORY_SHA256: 3be088ff1923a1415f9bcc92c6fcc764cf32deefaf4623a2804f4d2e3aff18e6
+HISTORY_SHA256: 930a896766670dc49a689918ee19ab45235f50674361df4fa2deb6bdd8ca9592
 
 ~~~json
 [
@@ -348,8 +348,8 @@ HISTORY_SHA256: 3be088ff1923a1415f9bcc92c6fcc764cf32deefaf4623a2804f4d2e3aff18e6
     "exchange": 29,
     "createdAt": "2026-11-15T20:25:12.605Z",
     "ownerRequest": "توی لیست کانتکت‌های من در گوشی‌ام یک شماره وجود داره به اسم «شماره ایرانسل من»؛ به اون شماره یک پیامک حاوی یک نقطه تنها بزن.",
-    "dexaVisibleReply": "شناسهٔ فرمان ذخیره شد؛ تکمیل واقعی دستگاه هنوز تأیید نشده است.",
-    "executionState": "WAITING_EXTERNAL",
+    "dexaVisibleReply": "فرمان قبلی طبق رسید واقعی ارائه‌دهنده ناموفق بوده است.",
+    "executionState": "FAILED",
     "turnComplete": true,
     "effectsExecuted": 0
   }
