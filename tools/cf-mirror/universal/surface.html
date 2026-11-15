@@ -15,6 +15,7 @@ body{display:flex;flex-direction:column}
 #stage{position:relative;flex:1;width:100%;min-height:0;overflow:hidden;background:#121822;touch-action:none;user-select:none;-webkit-user-select:none;overscroll-behavior:none;cursor:crosshair}
 #surface{position:absolute;left:0;top:0;transform-origin:top left;will-change:transform;pointer-events:none}
 #image{display:block;width:100%;height:100%;max-width:none;max-height:none;user-select:none;-webkit-user-drag:none;pointer-events:none}
+#pointer-arrow{position:absolute;left:0;top:0;width:25px;height:32px;z-index:4;pointer-events:none;transform:translate3d(-100px,-100px,0);will-change:transform;filter:drop-shadow(0 1px 2px #000c)}
 #hud{position:absolute;right:8px;top:8px;z-index:3;pointer-events:none;background:#0b1525a9;color:#d8e6fa;border-radius:6px;padding:3px 7px;font:11px system-ui}
 #bottom{min-height:48px;flex:none;display:flex;align-items:center;gap:5px;padding:5px 7px calc(5px + env(safe-area-inset-bottom));background:#192437;border-top:1px solid #33455f}
 button,.tool{background:#2a3c55;color:#ecf5ff;border:1px solid #526988;border-radius:8px;font:12px system-ui;padding:7px 9px;cursor:pointer;touch-action:manipulation;text-decoration:none;white-space:nowrap}
@@ -45,6 +46,9 @@ button[aria-pressed="true"]{background:#1958a5;border-color:#72b1ff}
  <div id="surface">
   <img id="image" alt="Live mirror surface">
  </div>
+ <svg id="pointer-arrow" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="25" height="32" viewBox="0 0 25 32">
+   <path d="M2 2L2 25L8 20L12 30L17 28L13 18L23 18Z" fill="#fff" stroke="#101820" stroke-width="2" stroke-linejoin="round"/>
+ </svg>
  <div id="hud">Loading…</div>
 </div>
 <div id="bottom">
@@ -105,7 +109,7 @@ button[aria-pressed="true"]{background:#1958a5;border-color:#72b1ff}
 'use strict';
 const CONTROL_CSRF='__CONTROL_CSRF__';
 const stage=document.getElementById('stage'),surface=document.getElementById('surface');
-const image=document.getElementById('image');
+const image=document.getElementById('image'),pointerArrow=document.getElementById('pointer-arrow');
 const stateText=document.getElementById('state'),hud=document.getElementById('hud'),hint=document.getElementById('hint');
 const keys=document.getElementById('keys'),help=document.getElementById('help');
 let iw=1280,ih=800,base=1,scale=1,zoom=1,mode='fit',panX=0,panY=0,tx=0,ty=0,remote={x:640,y:400};
@@ -116,6 +120,11 @@ let inertiaId=0,moveBusy=false,dxWaiting=0,dyWaiting=0,moveResolvers=[],lastPoin
 const mods={ctrl:false,alt:false,shift:false,meta:false};
 const clamp=(n,lo,hi)=>Math.max(lo,Math.min(hi,n));
 const now=()=>performance.now();
+const useNativeTouchEvents=('ontouchstart' in window)&&('TouchEvent' in window);
+function placePointer(){
+ if(!pointerArrow)return;
+ pointerArrow.style.transform='translate3d('+(tx+remote.x*scale)+'px,'+(ty+remote.y*scale)+'px,0)';
+}
 function post(url,payload={}){
  return fetch(url,{method:'POST',headers:{'content-type':'application/json','X-CF-Mirror-CSRF':CONTROL_CSRF},body:JSON.stringify(payload),cache:'no-store'})
    .then(async r=>{const j=await r.json().catch(()=>({ok:false}));if(!r.ok||j.ok===false)throw Error(j.error||'Remote input failed');return j;});
@@ -124,6 +133,7 @@ function postSafe(url,payload={}){return post(url,payload).catch(e=>{hud.textCon
 function updateRemote(r){
  if(r?.cursorPos&&Number.isFinite(r.cursorPos.x)&&Number.isFinite(r.cursorPos.y)){
   remote={x:clamp(r.cursorPos.x,0,iw-1),y:clamp(r.cursorPos.y,0,ih-1)};
+  placePointer();
  }
 }
 function clampPan(){
@@ -140,6 +150,7 @@ function render(){
  tx=(w-iw*scale)/2+panX;ty=(h-ih*scale)/2+panY;
  surface.style.width=iw+'px';surface.style.height=ih+'px';
  surface.style.transform='translate('+tx+'px,'+ty+'px) scale('+scale+')';
+ placePointer();
  document.getElementById('reset').textContent=zoom.toFixed(1)+'×';
  document.getElementById('viewMode').textContent=mode==='fit'?'Fit':'Fill';
  hud.textContent=(ready?'Live':'Loading')+' · '+Math.round(iw)+'×'+Math.round(ih)+' · '+rate;
@@ -162,7 +173,7 @@ async function flushMove(){
  dxWaiting-=dx;dyWaiting-=dy;
  moveBusy=true;
  try{const r=await post('/move-rel',{dx,dy});updateRemote(r);}
- catch{hud.textContent='Input error';}
+ catch(e){hud.textContent='Mouse input error';stateText.textContent='Touchpad input failed: '+String(e.message||e).slice(0,55);}
  finally{moveBusy=false;if(Math.abs(dxWaiting)>.15||Math.abs(dyWaiting)>.15)flushMove();else resolveMoves();}
 }
 function resolveMoves(){for(const f of moveResolvers.splice(0))f();}
@@ -231,6 +242,7 @@ function movePinch(){
  pinch.priorCx=cx;pinch.priorCy=cy;
 }
 function onPointerDown(e){
+ if(useNativeTouchEvents&&e.pointerType==='touch'&&!e.__fromTouch)return;
  if(e.pointerType!=='touch'){
   if(e.pointerType==='mouse'){
    e.preventDefault();
@@ -250,6 +262,7 @@ function onPointerDown(e){
  longTimer=setTimeout(()=>{longTimer=null;longPress();},610);
 }
 function onPointerMove(e){
+ if(useNativeTouchEvents&&e.pointerType==='touch'&&!e.__fromTouch)return;
  if(e.pointerType!=='touch'){
   if(e.pointerType==='mouse'&&e.buttons===0&&now()-lastPointerEvent>75){
    lastPointerEvent=now();const p=pointToSource(e.clientX,e.clientY,true);
@@ -273,6 +286,7 @@ function onPointerMove(e){
  if(one.moved>1)moveRelativeScreen(dx,dy,curSpeed);
 }
 function onPointerUp(e){
+ if(useNativeTouchEvents&&e.pointerType==='touch'&&!e.__fromTouch)return;
  if(e.pointerType!=='touch'){
   if(e.pointerType==='mouse'){
    e.preventDefault();const p=pointToSource(e.clientX,e.clientY,true);
@@ -294,7 +308,35 @@ function onPointerUp(e){
 stage.addEventListener('pointerdown',onPointerDown);
 stage.addEventListener('pointermove',onPointerMove);
 stage.addEventListener('pointerup',onPointerUp);
-stage.addEventListener('pointercancel',e=>{cancelLong();cancelInertia();fingers.delete(e.pointerId);if(!fingers.size){suppressUntilAllUp=false;pinch=null;one=null;}});
+stage.addEventListener('pointercancel',e=>{
+ if(useNativeTouchEvents&&e.pointerType==='touch')return;
+ cancelLong();cancelInertia();fingers.delete(e.pointerId);
+ if(!fingers.size){suppressUntilAllUp=false;pinch=null;one=null;}
+});
+// Use native Touch Events on Android/iOS. They remain reliable in nested
+// same-origin iframes where the browser can cancel Pointer Events mid-swipe.
+// Pointer Events continue to handle physical mouse/pen and browsers without
+// Touch Events. Exactly one path handles each touch, avoiding double movement.
+if(useNativeTouchEvents){
+ const converted=(t,e)=>({pointerType:'touch',pointerId:t.identifier,clientX:t.clientX,clientY:t.clientY,__fromTouch:true,preventDefault(){}});
+ stage.addEventListener('touchstart',e=>{
+  e.preventDefault();
+  for(const t of e.changedTouches)onPointerDown(converted(t,e));
+ },{passive:false});
+ stage.addEventListener('touchmove',e=>{
+  e.preventDefault();
+  for(const t of e.changedTouches)onPointerMove(converted(t,e));
+ },{passive:false});
+ stage.addEventListener('touchend',e=>{
+  e.preventDefault();
+  for(const t of e.changedTouches)onPointerUp(converted(t,e));
+ },{passive:false});
+ stage.addEventListener('touchcancel',e=>{
+  e.preventDefault();cancelLong();cancelInertia();
+  for(const t of e.changedTouches)fingers.delete(t.identifier);
+  if(!fingers.size){suppressUntilAllUp=false;pinch=null;one=null;}
+ },{passive:false});
+}
 stage.addEventListener('contextmenu',e=>e.preventDefault());
 stage.addEventListener('wheel',e=>{
  e.preventDefault();

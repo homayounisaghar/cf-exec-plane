@@ -336,7 +336,7 @@ class X11 {
   async unfit() {}
   startStream(cb, fps) {
     const r = this.region;
-    const p = spawn('ffmpeg', ['-loglevel', 'error', '-f', 'x11grab', '-draw_mouse', '1', '-framerate', String(fps), '-video_size', `${r.w}x${r.h}`, '-i', `${this.d}+${r.x},${r.y}`, '-q:v', String([2, 3, 5][this.level ?? 1]), '-f', 'image2pipe', '-vcodec', 'mjpeg', '-'], { env: this.env, stdio: ['ignore', 'pipe', 'ignore'] });
+    const p = spawn('ffmpeg', ['-loglevel', 'error', '-f', 'x11grab', '-draw_mouse', '0', '-framerate', String(fps), '-video_size', `${r.w}x${r.h}`, '-i', `${this.d}+${r.x},${r.y}`, '-q:v', String([2, 3, 5][this.level ?? 1]), '-f', 'image2pipe', '-vcodec', 'mjpeg', '-'], { env: this.env, stdio: ['ignore', 'pipe', 'ignore'] });
     let buf = Buffer.alloc(0);
     p.stdout.on('data', c => {
       buf = Buffer.concat([buf, c]);
