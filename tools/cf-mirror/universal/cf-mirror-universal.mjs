@@ -28,7 +28,7 @@ const baseHeaders={
  'x-content-type-options':'nosniff',
  'x-frame-options':'SAMEORIGIN',
  'content-security-policy':"default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; frame-src 'self'; connect-src 'self'; form-action 'self'; frame-ancestors 'self'",
- 'permissions-policy':'camera=(), microphone=(), geolocation=()'
+ 'permissions-policy':'camera=(), microphone=(self), geolocation=()'
 };
 const reply=(res,status,body,type='application/json; charset=utf-8',extra={})=>{
  if(res.headersSent)return;

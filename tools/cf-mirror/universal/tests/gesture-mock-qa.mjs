@@ -18,7 +18,8 @@ class Node{
  getBoundingClientRect(){return {left:0,top:42,width:this.clientWidth,height:this.clientHeight,right:this.clientWidth,bottom:42+this.clientHeight}}
  setAttribute(a,v){this[a]=v;}
  setPointerCapture(){}
- focus(){}
+ focus(){this.focused=true}
+ blur(){this.focused=false}
  scrollIntoView(){}
  querySelectorAll(){return []}
  querySelector(){return new Node('special')}
@@ -27,8 +28,20 @@ const ids=['stage','surface','image','cursor','state','hud','hint','keys','help'
 for(const n of ids)nodes.set(n,new Node(n));
 let cursor={x:700,y:430};
 const document={getElementById:id=>{if(!nodes.has(id))nodes.set(id,new Node(id));return nodes.get(id)}};
+let voiceSessions=0;
+class FakeSpeechRecognition {
+ start(){
+  voiceSessions++;
+  this.onstart?.();
+  setTimeout(()=>{
+   this.onresult?.({resultIndex:0,results:[{isFinal:true,0:{transcript:'سلام دنیا'}}]});
+   this.onend?.();
+  },12);
+ }
+ stop(){this.onend?.();}
+}
 const context=vm.createContext({
- document,window:{addEventListener(){}},setTimeout,clearTimeout,setInterval(){return 1},clearInterval(){},
+ document,navigator:{language:'fa-IR'},window:{addEventListener(){},SpeechRecognition:FakeSpeechRecognition,isSecureContext:true},setTimeout,clearTimeout,setInterval(){return 1},clearInterval(){},
  ResizeObserver:class{constructor(fn){this.fn=fn}observe(){this.fn()}},
  requestAnimationFrame(){return 1},cancelAnimationFrame(){},
  performance,Math,Number,JSON,Promise,
@@ -94,3 +107,25 @@ const mouseCall=calls.filter(x=>x.url==='/down').at(-1).data;
 assert(Math.abs(mouseCall.x-700)<=1&&Math.abs(mouseCall.y-430)<=1,'desktop mouse calibration failed');
 console.log('DESKTOP_MOUSE_CALIBRATED',JSON.stringify(mouseCall));
 console.log('MOCK_GESTURE_TESTS_PASS');
+assert(!html.includes('id="cursor"'),'ghost overlay still present');
+const keyboardButton=nodes.get('keyboardToggle');
+keyboardButton.emit('click');
+assert(nodes.get('nativeBar').classList.contains('open'),'keyboard container did not open');
+assert(nodes.get('nativeInput').focused===true,'Android input not focused synchronously');
+nodes.get('nativeInput').value='hello';
+nodes.get('nativeInput').emit('input');
+await new Promise(r=>setTimeout(r,20));
+assert(calls.some(x=>x.url==='/type'&&x.data.s==='hello'),'Android input text was not forwarded');
+keyboardButton.emit('click');
+assert(!nodes.get('nativeBar').classList.contains('open'),'keyboard container did not close');
+console.log('NATIVE_KEYBOARD_INPUT_PASS');
+assert(voiceSessions===0,'microphone must not start automatically');
+const voiceButton=nodes.get('micToggle');
+voiceButton.emit('click');
+await new Promise(r=>setTimeout(r,65));
+assert(voiceSessions===1,'voice recognition did not start on tap');
+assert(calls.some(x=>x.url==='/type'&&x.data.s==='سلام دنیا'),'final voice transcript not forwarded once');
+assert(calls.filter(x=>x.url==='/type'&&x.data.s==='سلام دنیا').length===1,'final transcript sent twice');
+assert(nodes.get('micToggle').attributes?.['aria-pressed']!=='true','mic still active');
+console.log('SPEECH_RECOGNITION_FARSI_PASS');
+console.log('ALL_GESTURE_AND_VOICE_MOCKS_PASS');

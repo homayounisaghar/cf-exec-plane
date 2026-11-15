@@ -25,7 +25,7 @@ body{display:flex;flex-direction:column}
  <div id="tabs"><button id="newTab" title="New browser tab">＋</button></div>
  <form id="nav"><button type="button" id="back" title="Back">←</button><input type="text" id="address" autocomplete="off" spellcheck="false" placeholder="Browse to any URL"><button type="submit">Go</button><span id="status"></span></form>
 </div>
-<iframe id="mirror" title="Interactive remote window" src="/view/" allow="fullscreen"></iframe>
+<iframe id="mirror" title="Interactive remote window" src="/view/" allow="fullscreen; microphone"></iframe>
 <script>
 'use strict';
 const BROWSER_MODE=__BROWSER_MODE__,CONTROL_CSRF='__CONTROL_CSRF__';

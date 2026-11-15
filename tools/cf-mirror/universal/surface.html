@@ -15,7 +15,6 @@ body{display:flex;flex-direction:column}
 #stage{position:relative;flex:1;width:100%;min-height:0;overflow:hidden;background:#121822;touch-action:none;user-select:none;-webkit-user-select:none;overscroll-behavior:none;cursor:crosshair}
 #surface{position:absolute;left:0;top:0;transform-origin:top left;will-change:transform;pointer-events:none}
 #image{display:block;width:100%;height:100%;max-width:none;max-height:none;user-select:none;-webkit-user-drag:none;pointer-events:none}
-#cursor{position:absolute;top:0;left:0;width:18px;height:18px;border:2px solid #fff;border-radius:50%;background:rgba(46,139,255,.20);box-shadow:0 0 0 2px #1263e8,0 1px 5px #000c;transform:translate(-50%,-50%);pointer-events:none}
 #hud{position:absolute;right:8px;top:8px;z-index:3;pointer-events:none;background:#0b1525a9;color:#d8e6fa;border-radius:6px;padding:3px 7px;font:11px system-ui}
 #bottom{min-height:48px;flex:none;display:flex;align-items:center;gap:5px;padding:5px 7px calc(5px + env(safe-area-inset-bottom));background:#192437;border-top:1px solid #33455f}
 button,.tool{background:#2a3c55;color:#ecf5ff;border:1px solid #526988;border-radius:8px;font:12px system-ui;padding:7px 9px;cursor:pointer;touch-action:manipulation;text-decoration:none;white-space:nowrap}
@@ -25,11 +24,19 @@ button[aria-pressed="true"]{background:#1958a5;border-color:#72b1ff}
 #keys{display:none;position:absolute;z-index:8;left:8px;right:8px;bottom:53px;padding:9px;border-radius:10px;border:1px solid #516a86;background:#192538f5;box-shadow:0 10px 35px #0008}
 #keys.open{display:block}
 #keyrow{display:flex;flex-wrap:wrap;gap:5px}
-#nativeInput{display:none;width:100%;margin-top:8px;padding:9px;border:1px solid #597797;border-radius:7px;color:#fff;background:#152135;font:15px system-ui}
-#nativeInput.open{display:block}
+#nativeBar{display:none;position:absolute;z-index:10;left:8px;right:8px;bottom:54px;align-items:center;gap:6px;padding:9px;border-radius:10px;border:1px solid #5b7191;background:#182538f5;box-shadow:0 12px 30px #0009}
+#nativeBar.open{display:flex}
+#nativeInput{display:block;flex:1;min-width:0;padding:10px;border:1px solid #597797;border-radius:7px;color:#fff;background:#152135;font:16px system-ui;outline-offset:2px}
+#voicePanel{display:none;position:absolute;z-index:9;left:8px;right:8px;bottom:54px;align-items:center;gap:8px;padding:9px;border-radius:10px;border:1px solid #567392;background:#17283cf5;box-shadow:0 12px 30px #0009}
+#voicePanel.open{display:flex}
+#voiceLang{background:#253e5b;color:#edf5ff;border:1px solid #6480a2;border-radius:6px;padding:6px;font:12px system-ui;max-width:110px}
+#voiceStatus{font:12px system-ui;color:#e8f2ff;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#micToggle.active{background:#a02e3c;border-color:#ec7581}
+#micToggle{font-size:15px;min-width:38px}
 #help{display:none;position:absolute;z-index:7;left:8px;right:8px;top:52px;padding:10px 13px;border-radius:9px;background:#1d2a3cf5;border:1px solid #5c708c;box-shadow:0 10px 25px #0008;font:12px/1.7 system-ui}
 #help.open{display:block}
-@media(max-width:390px){#top{padding:4px 6px}#bottom{gap:4px;padding:4px}button,.tool{font-size:11px;padding:7px 7px}#hint{font-size:10px}}
+@media(max-width:540px){#hint{display:none}#bottom{justify-content:space-between;gap:4px}}
+@media(max-width:390px){#top{padding:4px 6px}#bottom{gap:4px;padding:4px}button,.tool{font-size:11px;padding:7px 7px}}
 </style>
 </head>
 <body>
@@ -37,7 +44,6 @@ button[aria-pressed="true"]{background:#1958a5;border-color:#72b1ff}
 <div id="stage" aria-label="Remote desktop touchpad" tabindex="0">
  <div id="surface">
   <img id="image" alt="Live mirror surface">
-  <div id="cursor" aria-hidden="true"></div>
  </div>
  <div id="hud">Loading…</div>
 </div>
@@ -46,6 +52,8 @@ button[aria-pressed="true"]{background:#1958a5;border-color:#72b1ff}
  <button id="viewMode" title="Switch between fit and fill">Fit</button>
  <button id="reset" title="Reset digital zoom and pan">1×</button>
  <button id="keysButton" aria-expanded="false">Keys</button>
+ <button id="micToggle" type="button" title="Dictate with phone microphone" aria-label="Start voice typing" aria-pressed="false">🎙</button>
+ <button id="keyboardToggle" type="button" title="Show Android keyboard" aria-label="Open phone keyboard" aria-pressed="false">⌨</button>
  <button id="fullscreen" title="Full screen">⛶</button>
 </div>
 <section id="keys" aria-label="Remote special keys">
@@ -67,10 +75,23 @@ button[aria-pressed="true"]{background:#1958a5;border-color:#72b1ff}
   <button data-action="ctrlaltdel">Ctrl+Alt+Del</button>
   <button data-key="PrintScreen">PrtSc</button>
   <a class="tool" href="/shot.jpg" target="_blank" rel="noopener" download="cf-mirror.jpg">📷 Capture</a>
-  <button id="typeToggle" title="Open the phone's native keyboard to type into the focused remote app">ABC</button>
   <button id="dragToggle" aria-pressed="false">Drag: off</button>
  </div>
- <input id="nativeInput" type="text" inputmode="text" autocorrect="off" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Phone keyboard → focused remote field">
+</section>
+<section id="voicePanel" role="status" aria-live="polite">
+ <span id="voiceStatus">Tap 🎙 to dictate into the focused remote field.</span>
+ <select id="voiceLang" aria-label="Speech language">
+  <option value="fa-IR">فارسی</option>
+  <option value="en-US">English</option>
+  <option value="de-DE">Deutsch</option>
+  <option value="ar-SA">العربية</option>
+  <option value="tr-TR">Türkçe</option>
+ </select>
+ <button id="closeVoice" type="button" aria-label="Dismiss voice status">×</button>
+</section>
+<section id="nativeBar" aria-label="Phone typing">
+ <input id="nativeInput" type="text" inputmode="text" autocorrect="on" autocomplete="off" autocapitalize="sentences" spellcheck="true" placeholder="Type with Android keyboard…">
+ <button id="closeKeyboard" type="button" aria-label="Hide phone keyboard">×</button>
 </section>
 <div id="help">
  <strong>Touchpad controls</strong>
@@ -78,13 +99,13 @@ button[aria-pressed="true"]{background:#1958a5;border-color:#72b1ff}
  <div>Tap: left click at remote cursor. Double tap: double click. Hold ~0.6 s: right click.</div>
  <div>Fast finger flick: pointer glides briefly with inertia. Drag button: toggle left-button hold for dragging.</div>
  <div>Two fingers: pinch to zoom; pan the magnified image. At 1×, two-finger slide scrolls the remote page.</div>
- <div>Fit/Fill changes viewing zoom only; remote window coordinates stay calibrated. ABC opens the phone's normal keyboard; Keys sends missing desktop keys.</div>
+ <div>Fit/Fill changes viewing zoom only. Tap 🎙 for speech-to-text (the browser may ask for microphone permission); ⌨ opens Android/Gboard keyboard and its built-in mic. Keys sends missing desktop keys.</div>
 </div>
 <script>
 'use strict';
 const CONTROL_CSRF='__CONTROL_CSRF__';
 const stage=document.getElementById('stage'),surface=document.getElementById('surface');
-const image=document.getElementById('image'),cursor=document.getElementById('cursor');
+const image=document.getElementById('image');
 const stateText=document.getElementById('state'),hud=document.getElementById('hud'),hint=document.getElementById('hint');
 const keys=document.getElementById('keys'),help=document.getElementById('help');
 let iw=1280,ih=800,base=1,scale=1,zoom=1,mode='fit',panX=0,panY=0,tx=0,ty=0,remote={x:640,y:400};
@@ -103,7 +124,6 @@ function postSafe(url,payload={}){return post(url,payload).catch(e=>{hud.textCon
 function updateRemote(r){
  if(r?.cursorPos&&Number.isFinite(r.cursorPos.x)&&Number.isFinite(r.cursorPos.y)){
   remote={x:clamp(r.cursorPos.x,0,iw-1),y:clamp(r.cursorPos.y,0,ih-1)};
-  cursor.style.left=remote.x+'px';cursor.style.top=remote.y+'px';
  }
 }
 function clampPan(){
@@ -120,7 +140,6 @@ function render(){
  tx=(w-iw*scale)/2+panX;ty=(h-ih*scale)/2+panY;
  surface.style.width=iw+'px';surface.style.height=ih+'px';
  surface.style.transform='translate('+tx+'px,'+ty+'px) scale('+scale+')';
- cursor.style.left=remote.x+'px';cursor.style.top=remote.y+'px';
  document.getElementById('reset').textContent=zoom.toFixed(1)+'×';
  document.getElementById('viewMode').textContent=mode==='fit'?'Fit':'Fill';
  hud.textContent=(ready?'Live':'Loading')+' · '+Math.round(iw)+'×'+Math.round(ih)+' · '+rate;
@@ -314,15 +333,129 @@ async function sendKey(k,override){
 }
 keys.querySelectorAll('[data-key]').forEach(b=>b.addEventListener('click',()=>sendKey(b.dataset.key)));
 keys.querySelector('[data-action=ctrlaltdel]').addEventListener('click',()=>sendKey('Delete',{ctrl:true,alt:true,shift:false,meta:false}));
+const nativeBar=document.getElementById('nativeBar');
 const nativeInput=document.getElementById('nativeInput');
-document.getElementById('typeToggle').addEventListener('click',()=>{
- nativeInput.classList.toggle('open');
- if(nativeInput.classList.contains('open')){nativeInput.focus();nativeInput.scrollIntoView({block:'nearest'});}
+const keyboardButton=document.getElementById('keyboardToggle');
+const voicePanel=document.getElementById('voicePanel');
+const voiceStatus=document.getElementById('voiceStatus');
+const micButton=document.getElementById('micToggle');
+const voiceLang=document.getElementById('voiceLang');
+const SpeechAPI=window.SpeechRecognition||window.webkitSpeechRecognition;
+voiceLang.value=(navigator.language||'').toLowerCase().startsWith('fa')?'fa-IR':(navigator.language||'').toLowerCase().startsWith('en')?'en-US':'fa-IR';
+let recognition=null,composing=false;
+function openNativeKeyboard(){
+ // Focusing inside a real button click is required for Android to summon Gboard.
+ voicePanel.classList.remove('open');
+ nativeBar.classList.add('open');
+ keyboardButton.setAttribute('aria-pressed','true');
+ nativeInput.focus({preventScroll:true});
+}
+function closeNativeKeyboard(){
+ nativeInput.blur();
+ nativeBar.classList.remove('open');
+ keyboardButton.setAttribute('aria-pressed','false');
+}
+keyboardButton.addEventListener('click',()=>{
+ if(nativeBar.classList.contains('open'))closeNativeKeyboard();else openNativeKeyboard();
 });
-let composing=false;
+document.getElementById('closeKeyboard').addEventListener('click',closeNativeKeyboard);
 nativeInput.addEventListener('compositionstart',()=>{composing=true;});
-nativeInput.addEventListener('compositionend',()=>{composing=false;const s=nativeInput.value;nativeInput.value='';if(s)postSafe('/type',{s});});
-nativeInput.addEventListener('input',()=>{if(composing)return;const s=nativeInput.value;nativeInput.value='';if(s)postSafe('/type',{s});});
+nativeInput.addEventListener('compositionend',()=>{
+ composing=false;
+ const s=nativeInput.value;
+ nativeInput.value='';
+ if(s)postSafe('/type',{s});
+});
+nativeInput.addEventListener('input',()=>{
+ if(composing)return;
+ const s=nativeInput.value;
+ nativeInput.value='';
+ if(s)postSafe('/type',{s});
+});
+nativeInput.addEventListener('keydown',e=>{
+ if(e.key==='Enter'){e.preventDefault();postSafe('/key',{key:'Enter',code:'Enter'});}
+ if(e.key==='Backspace'&&!nativeInput.value){e.preventDefault();postSafe('/key',{key:'Backspace',code:'Backspace'});}
+});
+document.getElementById('closeVoice').addEventListener('click',()=>{
+ if(recognition){try{recognition.stop();}catch{}}
+ voicePanel.classList.remove('open');
+});
+function speechNotice(message){voiceStatus.textContent=message;voicePanel.classList.add('open');}
+function resetMic(){
+ micButton.classList.remove('active');
+ micButton.setAttribute('aria-pressed','false');
+ micButton.setAttribute('aria-label','Start voice typing');
+}
+micButton.addEventListener('click',()=>{
+ if(recognition){
+  try{recognition.stop();speechNotice('Finishing dictation…');}
+  catch{recognition=null;resetMic();}
+  return;
+ }
+ if(!SpeechAPI||!window.isSecureContext){
+  // Fallback focuses Android's native text field synchronously with the tap.
+  openNativeKeyboard();
+  stateText.textContent='Speech API unavailable — use the mic on Gboard';
+  return;
+ }
+ closeNativeKeyboard();
+ let r;
+ try{r=new SpeechAPI();}catch{
+  speechNotice('Voice typing unsupported. Try the ⌨ keyboard.');return;
+ }
+ recognition=r;
+ r.lang=voiceLang.value;
+ r.interimResults=true;
+ r.continuous=false;
+ r.maxAlternatives=1;
+ let sentFinal=false,hadError=false;
+ r.onstart=()=>{
+  micButton.classList.add('active');
+  micButton.setAttribute('aria-pressed','true');
+  micButton.setAttribute('aria-label','Stop voice typing');
+  speechNotice('🎙 Listening… speak now');
+ };
+ r.onresult=e=>{
+  for(let i=e.resultIndex;i<e.results.length;i++){
+   const segment=e.results[i];
+   const words=String(segment?.[0]?.transcript||'').trim();
+   if(!words)continue;
+   if(segment.isFinal&&!sentFinal){
+    sentFinal=true;
+    speechNotice('Sending: '+words.slice(0,120));
+    // A final speech result is sent only once, into the currently focused remote field.
+    postSafe('/type',{s:words}).then(ans=>{
+     if(ans?.ok)speechNotice('✓ Sent: '+words.slice(0,110));
+     else speechNotice('Could not type remotely. Try ⌨.');
+    });
+   }else if(!segment.isFinal&&!sentFinal)speechNotice('🎙 '+words.slice(0,120));
+  }
+ };
+ r.onerror=e=>{
+  hadError=true;
+  const code=String(e.error||'unknown');
+  const message={
+   'not-allowed':'Microphone permission blocked. Use ⌨ or allow microphone access.',
+   'service-not-allowed':'Speech service unavailable. Try Gboard microphone with ⌨.',
+   'network':'Speech service network error. Try ⌨ instead.',
+   'no-speech':'No speech detected. Tap 🎙 to retry.',
+   'audio-capture':'Phone microphone not available.',
+   'language-not-supported':'This voice language is unavailable. Select another language.'
+  }[code]||('Voice typing error: '+code);
+  speechNotice(message);
+ };
+ r.onend=()=>{
+  if(recognition===r)recognition=null;
+  resetMic();
+  if(!sentFinal&&!hadError)speechNotice('Stopped. Tap 🎙 to dictate again.');
+ };
+ speechNotice('Requesting microphone access…');
+ try{r.start();}catch(e){
+  recognition=null;
+  resetMic();
+  speechNotice('Could not start microphone. Use ⌨ with Gboard.');
+ }
+});
 document.getElementById('dragToggle').addEventListener('click',async e=>{
  dragHeld=!dragHeld;e.target.setAttribute('aria-pressed',String(dragHeld));e.target.textContent=dragHeld?'Drag: on':'Drag: off';
  await movementsSettled();await postSafe(dragHeld?'/press-rel':'/release-rel',{button:0});

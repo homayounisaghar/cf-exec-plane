@@ -353,7 +353,21 @@ class X11 {
   async up(p) { await this.xdo('mousemove', ...this.P(p), 'mouseup', this.btn(p.button)); for (const k of this._m || []) await this.xdo('keyup', k); this._m = []; }
   async dbl(p) { await this.xdo('mousemove', ...this.P(p), 'click', '--repeat', '2', '1'); }
   async wheel(p) { const n = Math.min(10, Math.max(1, Math.round(Math.abs(p.dy || p.dx) / 60))); await this.xdo('mousemove', ...this.P(p), 'click', '--repeat', String(n), p.dy ? (p.dy > 0 ? '5' : '4') : (p.dx > 0 ? '7' : '6')); }
-  async type(s) { await this.xdo('type', '--delay', '20', '--', s); }
+  async type(s) {
+    const value=String(s||'').slice(0,5000);
+    if(!value)return;
+    if(!/[^\x00-\x7f]/.test(value))return await this.xdo('type','--delay','14','--',value);
+    // XTest cannot reliably inject Persian/Unicode via keysyms. On this same
+    // isolated X11 display, put UTF-8 text into CLIPBOARD briefly and paste it.
+    // This is only invoked by an authenticated /type action; no transcript is logged.
+    const clip=spawn('xclip',['-quiet','-selection','clipboard','-loops','10'],{env:this.env,stdio:['pipe','ignore','ignore']});
+    clip.on('error',()=>{});
+    clip.stdin.on('error',()=>{});
+    clip.stdin.end(value,'utf8');
+    await new Promise(resolve=>setTimeout(resolve,120));
+    await this.xdo('key','ctrl+v');
+    setTimeout(()=>{try{clip.kill('SIGTERM');}catch{}},1300).unref();
+  }
   async key(k) {
     const M = { PrintScreen:'Print', F5:'F5', Delete:'Delete', Home:'Home', End:'End', Tab:'Tab', Enter: 'Return', Backspace: 'BackSpace', Escape: 'Escape', ArrowLeft: 'Left', ArrowRight: 'Right', ArrowUp: 'Up', ArrowDown: 'Down', PageUp: 'Prior', PageDown: 'Next' };
     let n = M[k.key] || (k.key.length === 1 ? k.key.toLowerCase() : k.key);
