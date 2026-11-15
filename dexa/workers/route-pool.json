@@ -1,0 +1,7 @@
+{
+  "schema": "dexa.worker-pool.v1",
+  "origins": [
+    "https://dexa-cf-worker-canary-20261104.mirkazem.workers.dev",
+    "https://dexa-cf-backup-20261104.mirkazem-design.workers.dev"
+  ]
+}
