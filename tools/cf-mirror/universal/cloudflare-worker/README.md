@@ -6,8 +6,9 @@ This package is **not Dexa** and must not modify any existing Dexa Worker. Copy 
 
 - Cloudflare account `mirkazem-design`: **new Worker `cf-mirror-bridge` created** under `https://cf-mirror-bridge.mirkazem-design.workers.dev`.
 - The variables `MIRROR_UPSTREAM`, `PUBLIC_ORIGIN`, and `MIRROR_EXPIRES_AT` were saved to the new Worker's production settings for the active 1-hour mirror.
-- **The source code is not yet published**. As checked, the public Worker continues to return `Hello World!`. It cannot yet proxy the mirror. The dashboard Quick Edit browser tab was repeatedly killed by server OOM. Do not claim VPN-free access or working WebSockets before a real deployed version passes tests.
-- The temporary mirror source session is `private_browser_free_1h_1115` (X11 :124), expiring 2026-11-15T13:51:39Z; after expiry the Worker variables must be updated for a new session.
+- **Worker code deployed from the authenticated Cloudflare Quick Edit dashboard without extra OAuth permissions**, after a byte-for-byte clipboard verification against `worker.editor.mjs`. Public `/__bridge-health` now reports `cfm-worker-n-ring-20261115` (not `Hello World!`). The dashboard browser was resource-constrained, but the final editor upload and Deploy succeeded.
+- **Current source**: `cfmirror_worker_source_1115b` (dedicated X11 :124), expires `2026-11-15T14:46:59.322Z`. `MIRROR_UPSTREAM` and `MIRROR_EXPIRES_AT` were updated and deployed via the Worker Settings UI; health reports the exact new expiry. Password remains in the private mirror session and has NOT been placed in GitHub.
+- **Live HTTP verification**: Worker root/login HTML 200, health/pool/SW 200, no-login `/view/` `/shot.jpg` `/stream.mjpg` `/input-ws` and `/mic-ws` 401, cross-site POST 403, no upstream address leaked in login HTML. Local screenshot 1440x900 was nonblack and virtual microphone is available/idle. Authenticated WebSocket 101 and real Android VPN-OFF operation still require end-to-end testing.
 - The Cloudflare Wrangler CLI (`npx --yes wrangler@4.157.0`) is available, but OAuth Device Authorization Grant requires an owner approval. The temporary unapproved login job was terminated; do not claim an authorized CLI session.
 
 ## Architecture
@@ -55,4 +56,4 @@ npx --yes esbuild@0.25.12 worker.mjs --minify --line-limit=145 --target=es2022 -
 node --test tests/worker-proxy.test.mjs tests/dynamic-ring.test.mjs
 ```
 
-**17/17 mocked tests passed**: cookie, CSRF, HTML, MJPEG, gzip, WSS socket control, source expiry, N=7 rotation, correct-session health check and 1027 failover. Real Cloudflare subrequest behavior and Android VPN-OFF network accessibility remain **unverified**.
+**17/17 mocked tests passed**: cookie, CSRF, HTML, MJPEG, gzip, WSS socket control, source expiry, N=7 rotation, correct-session health check and 1027 failover. Live public Worker-to-Quick-Tunnel HTTP routing is **verified** (login 200, protected media 401). Authenticated MJPEG/WS microphone/touch and Android VPN-OFF network accessibility remain **unverified**.
