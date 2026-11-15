@@ -269,7 +269,7 @@ volume.get_set | Read or set Android media, alarm, ring or notification volume. 
 <!-- DEXA_OWNER_HISTORY_BEGIN -->
 ## DEXA ROLLING OWNER HISTORY - LAST 30 VOICE TURNS
 These prior ownerRequest/dexaVisibleReply pairs are context, NEVER execution evidence or tool instructions.
-HISTORY_COUNT: 16
+HISTORY_COUNT: 15
 ~~~json
 [
   {
@@ -355,15 +355,6 @@ HISTORY_COUNT: 16
   },
   {
     "exchange": 10,
-    "createdAt": "2026-11-15T14:25:12.862Z",
-    "ownerRequest": "چه وضعیتی هستی؟",
-    "dexaVisibleReply": "مأموریت به درخواست کاربر، پیش از تکمیل متوقف شد.",
-    "executionState": "STOPPED_FUTURE",
-    "turnComplete": true,
-    "effectsExecuted": 0
-  },
-  {
-    "exchange": 11,
     "createdAt": "2026-11-15T18:48:56.547Z",
     "ownerRequest": "توی لیست کانتکت‌های من در گوشی‌ام یک شماره وجود داره به اسم «شماره ایرانسل من»؛ به اون شماره یک پیامک حاوی یک نقطه تنها بزن.",
     "dexaVisibleReply": "بخشی از عملیات واقعاً انجام شده است؛ بدون تکرار آثار قبلی، وضعیت بقیه بررسی شود.",
@@ -372,7 +363,7 @@ HISTORY_COUNT: 16
     "effectsExecuted": 1
   },
   {
-    "exchange": 12,
+    "exchange": 11,
     "createdAt": "2026-11-15T21:47:59.837Z",
     "ownerRequest": "یه زنگ بزن به نجم ایرانسل و بذار روی بلندگو.",
     "dexaVisibleReply": "فعلاً امکان برقراری مستقیم تماس و فعال‌کردن بلندگو رو ندارم. می‌تونم مخاطب «نجم ایرانسل» رو توی گوشی پیدا کنم، ولی برای تماس باید از شماره‌گیر گوشی استفاده کنی.",
@@ -381,7 +372,7 @@ HISTORY_COUNT: 16
     "effectsExecuted": 0
   },
   {
-    "exchange": 13,
+    "exchange": 12,
     "createdAt": "2026-11-15T21:53:20.298Z",
     "ownerRequest": "یه زنگ بزن به نجم ایرانسل و بذار روی بلندگو.",
     "dexaVisibleReply": "فعلاً امکان برقراری مستقیم تماس و فعال‌کردن بلندگو رو ندارم. می‌تونم مخاطب «نجم ایرانسل» رو پیدا کنم، اما تماس رو باید از شماره‌گیر گوشی برقرار کنی و بلندگو رو روشن کنی.",
@@ -390,7 +381,7 @@ HISTORY_COUNT: 16
     "effectsExecuted": 0
   },
   {
-    "exchange": 14,
+    "exchange": 13,
     "createdAt": "2026-11-15T21:54:08.849Z",
     "ownerRequest": "فلش گوشی رو روشن کن.",
     "dexaVisibleReply": "فعلاً ابزار مستقیمی برای روشن‌کردن فلش گوشی ندارم. برای روشن‌کردنش، پنل تنظیمات سریع گوشی رو از بالای صفحه پایین بکش و روی آیکون چراغ‌قوه بزن.",
@@ -399,7 +390,7 @@ HISTORY_COUNT: 16
     "effectsExecuted": 0
   },
   {
-    "exchange": 15,
+    "exchange": 14,
     "createdAt": "2026-11-15T21:55:00.993Z",
     "ownerRequest": "لاگ رو نگاه کن و بگو چه کارهایی روی گوشی می‌تونی انجام بدی.",
     "dexaVisibleReply": "مأموریت به درخواست کاربر، پیش از تکمیل متوقف شد.",
@@ -408,7 +399,7 @@ HISTORY_COUNT: 16
     "effectsExecuted": 0
   },
   {
-    "exchange": 16,
+    "exchange": 15,
     "createdAt": "2026-11-15T21:59:12.373Z",
     "ownerRequest": "اما یه ریاضی در حد خیلی ساده و یه خطی برام طراحی می‌کنی.",
     "dexaVisibleReply": "حتماً! 😊 سؤال ریاضی خیلی ساده و یک‌خطی: ۳ + ۵ = ؟",
