@@ -3,7 +3,7 @@
 // actually opens a PulseAudio recording stream on the virtual microphone.
 // No root operations, extra public ports or changes to PulseAudio defaults.
 import fs from 'node:fs';
-import {spawn,execFile} from 'node:child_process';
+import {spawn,execFile,execFileSync} from 'node:child_process';
 import {promisify} from 'node:util';
 const execFileAsync=promisify(execFile);
 const PULSE_SERVER=process.env.CF_MIRROR_PULSE_SERVER||'unix:/run/user/'+process.getuid()+'/pulse/native';
@@ -11,13 +11,41 @@ const VIRTUAL_SOURCE=process.env.CF_MIRROR_MIC_SOURCE||'cf_wechat_preboot_mic';
 const VIRTUAL_SINK=process.env.CF_MIRROR_MIC_SINK||'cf_wechat_preboot_sink';
 const AUDIO_ENV={...process.env,PULSE_SERVER};
 
-function matchesApp(pid,source){
+// Chromium may overwrite /proc/PID/environ while updating its process title.
+// For a dedicated X11 display, validate the real _NET_WM_PID of visible
+// application windows, then walk the recorder's process ancestry. This keeps
+// audio requests scoped to the mirrored display even if DISPLAY is erased.
+const x11WindowCache=new Map();
+function visibleWindowPids(display){
+ const cached=x11WindowCache.get(display),now=Date.now();
+ if(cached&&now-cached.at<6000)return cached.pids;
+ let pids=new Set();
+ try{
+  const text=execFileSync('xdotool',['search','--onlyvisible','--name','.','getwindowpid'],{
+   env:{...process.env,DISPLAY:display},encoding:'utf8',timeout:950,maxBuffer:4096
+  });
+  pids=new Set(text.split(/\s+/).map(Number).filter(x=>Number.isSafeInteger(x)&&x>1));
+ }catch{}
+ x11WindowCache.set(display,{at:now,pids});
+ return pids;
+}
+export function matchesApp(pid,source){
  if(!Number.isSafeInteger(pid)||pid<2)return false;
  try{
-  const env=fs.readFileSync('/proc/'+pid+'/environ','utf8').split('\0');
-  if(source?.kind==='x11')return env.includes('DISPLAY='+source.display);
+  if(source?.kind==='x11'){
+   const env=fs.readFileSync('/proc/'+pid+'/environ','utf8').split('\0');
+   if(env.includes('DISPLAY='+source.display))return true;
+   const allowed=visibleWindowPids(source.display);
+   if(!allowed.size)return false;
+   let current=pid;
+   for(let i=0;i<14&&current>1;i++){
+    if(allowed.has(current))return true;
+    const st=fs.readFileSync('/proc/'+current+'/status','utf8');
+    current=Number(st.match(/^PPid:\s+(\d+)/m)?.[1]||0);
+   }
+   return false;
+  }
   if(source?.kind==='cdp'){
-   // Check the app's process ancestry for the selected CDP port.
    let current=pid;
    for(let i=0;i<12&&current>1;i++){
     const args=fs.readFileSync('/proc/'+current+'/cmdline','utf8').replace(/\0/g,' ');
