@@ -26,7 +26,7 @@ test('missing or unsafe origin configuration refuses requests',async()=>{
     assert.equal(r.status,503);
   }
   const r=await worker.fetch(req('/'),{...CONFIG,PUBLIC_ORIGIN:'https://evil.example'});
-  assert.equal(r.status,503);
+  assert.equal(r.status,421);
 });
 
 test('unexpected public host and expired source are rejected',async()=>{

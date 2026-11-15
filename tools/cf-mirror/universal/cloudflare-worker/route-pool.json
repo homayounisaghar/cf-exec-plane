@@ -1,0 +1,7 @@
+{
+  "schema": "cf-mirror.worker-pool.v1",
+  "rotationMinutes": 15,
+  "origins": [
+    "https://cf-mirror-bridge.mirkazem-design.workers.dev"
+  ]
+}
