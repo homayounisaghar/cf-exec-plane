@@ -99,7 +99,7 @@ Conversation completion NEVER implies a tool ran successfully. Never invent miss
 
 HISTORY_LIMIT: 30
 HISTORY_COUNT: 29
-HISTORY_SHA256: fdaaa9c4cd97396e803ed7559425b9e0abceb5c7f0b57e4420e7f1db974745cd
+HISTORY_SHA256: 0393f67ea44c066f85b561580595f5e2444cb3cb5ddde5ce9fa5645091125a5d
 
 ~~~json
 [
@@ -359,8 +359,8 @@ HISTORY_SHA256: fdaaa9c4cd97396e803ed7559425b9e0abceb5c7f0b57e4420e7f1db974745cd
     "exchange": 29,
     "createdAt": "2026-11-15T21:48:47.598Z",
     "ownerRequest": "پس لااقل یک ایموجی گل براش بفرست.",
-    "dexaVisibleReply": "شناسهٔ فرمان ذخیره شد؛ تکمیل واقعی دستگاه هنوز تأیید نشده است.",
-    "executionState": "WAITING_EXTERNAL",
+    "dexaVisibleReply": "فرمان قبلی طبق رسید واقعی ارائه‌دهنده ناموفق بوده است.",
+    "executionState": "FAILED",
     "turnComplete": true,
     "effectsExecuted": 0
   }
