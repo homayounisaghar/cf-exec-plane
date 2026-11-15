@@ -169,57 +169,12 @@ function pretty(n) {
 }
 
 // ---------------- server ----------------
-const PAGE = (title, interval) => `<!doctype html><html><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1">
-<title>${title} mirror</title><style>html,body{margin:0;height:100%;background:#2b2b2b;overflow:hidden}
-#i{display:block;width:100%;height:100%;object-fit:contain;object-position:center;outline:none;user-select:none;-webkit-user-drag:none}
-#t{position:fixed;left:-1000px;top:0;opacity:0}</style></head><body>
-<img id=i tabindex=0 alt="">
-<textarea id=t autocomplete=off></textarea>
-<script>
-const I=document.getElementById('i'),T=document.getElementById('t'),NAME=${JSON.stringify(title)},S={set textContent(v){document.title=NAME+' mirror ('+v+')'}};let iv=${interval}*1000,busy=0,last=0,mv=0;
-const CONTROL_CSRF='__CONTROL_CSRF__';
-function P(u,b){return fetch(u,{method:'POST',headers:{'content-type':'application/json','X-CF-Mirror-CSRF':CONTROL_CSRF},body:JSON.stringify(b||{})}).then(r=>r.json()).catch(()=>({}))}
-function xy(e){const r=I.getBoundingClientRect(),nw=I.naturalWidth||r.width,nh=I.naturalHeight||r.height,s=Math.min(r.width/nw,r.height/nh);return{x:Math.round((e.clientX-r.left)/s),y:Math.round((e.clientY-r.top)/s)}}
-let fr=0;function live(){I.src='/stream.mjpg?'+Date.now()}
-I.onerror=()=>{S.textContent='reconnecting';setTimeout(live,1000)};I.onload=()=>{fr++};
-function info(){fetch('/info').then(r=>r.json()).then(j=>{S.textContent='live '+j.interval_s+'s · '+j.quality+' resolution'+(j.auto?' · auto':'')+' · cpu '+j.cpu_pct+'%'}).catch(()=>{})}
-setInterval(info,3000);info();live();
-function soon(){}
-function fit(){P('/fit',{w:Math.round(innerWidth),h:Math.round(innerHeight)}).then(soon)}
-addEventListener('resize',()=>{clearTimeout(window._f);window._f=setTimeout(fit,400)});fit();
-const mods=e=>({alt:e.altKey,ctrl:e.ctrlKey,meta:e.metaKey,shift:e.shiftKey});
-I.addEventListener('mousemove',e=>{const n=Date.now();if(n-mv<120)return;mv=n;const p=xy(e);P('/move',p).then(r=>{if(r.cursor)I.style.cursor=r.cursor})});
-I.addEventListener('mousedown',e=>{if(Date.now()-touchModeAt<850)return;e.preventDefault();I.focus();P('/down',{...xy(e),button:e.button,...mods(e)})});
-I.addEventListener('mouseup',e=>{if(Date.now()-touchModeAt<850)return;e.preventDefault();P('/up',{...xy(e),button:e.button,...mods(e)}).then(soon)});
-I.addEventListener('dblclick',e=>{if(Date.now()-touchModeAt<850)return;e.preventDefault();P('/dbl',{...xy(e)}).then(soon)});
-I.addEventListener('contextmenu',e=>e.preventDefault());
-I.addEventListener('wheel',e=>{e.preventDefault();P('/wheel',{...xy(e),dx:e.deltaX,dy:e.deltaY}).then(soon)},{passive:false});
-let touchModeAt=0,dragTouch=null,lastScrollY=null;
-I.style.touchAction='none';
-I.addEventListener('touchstart',e=>{
- touchModeAt=Date.now();e.preventDefault();
- if(e.touches.length===1){dragTouch=xy(e.touches[0]);lastScrollY=null;P('/down',{...dragTouch,button:0});}
- else if(e.touches.length>=2){if(dragTouch)P('/up',{...dragTouch,button:0});dragTouch=null;lastScrollY=e.touches[0].clientY;}
-},{passive:false});
-I.addEventListener('touchmove',e=>{
- touchModeAt=Date.now();e.preventDefault();
- if(e.touches.length===1&&dragTouch){const p=xy(e.touches[0]);P('/move',p);dragTouch=p;}
- else if(e.touches.length>=2){const y=e.touches[0].clientY;if(lastScrollY!==null)P('/wheel',{...xy(e.touches[0]),dx:0,dy:(lastScrollY-y)*3});lastScrollY=y;}
-},{passive:false});
-function touchEnd(e){touchModeAt=Date.now();e.preventDefault();if(dragTouch)P('/up',{...dragTouch,button:0});dragTouch=null;lastScrollY=null;}
-I.addEventListener('touchend',touchEnd,{passive:false});
-I.addEventListener('touchcancel',touchEnd,{passive:false});
-function key(e){if(e.isComposing)return;const sp=e.key.length>1||e.ctrlKey||e.metaKey||e.altKey;if(!sp)return;e.preventDefault();P('/key',{key:e.key,code:e.code,...mods(e)}).then(soon)}
-I.addEventListener('keydown',key);T.addEventListener('keydown',key);
-document.addEventListener('paste',e=>{const s=e.clipboardData.getData('text');if(s){e.preventDefault();P('/type',{s}).then(soon)}});
-T.addEventListener('input',()=>{const s=T.value;T.value='';if(s)P('/type',{s}).then(soon)});
-I.addEventListener('keypress',e=>{if(e.ctrlKey||e.metaKey||e.altKey)return;e.preventDefault();P('/type',{s:e.key}).then(soon)});
-I.focus();
-</script></body></html>`;
+const SURFACE_HTML = fs.readFileSync(new URL('./surface.html', import.meta.url), 'utf8');
+const PAGE = title => SURFACE_HTML.replaceAll('__MIRROR_NAME__', title);
 
 // --- CDP backend ---
 class CDP {
-  constructor(port, match, fit, targetId) { this.port = port; this.match = match; this.fitOn = fit; this.targetId = targetId; this.id = 0; this.cb = new Map(); this.ws = null; this.fitted = false; }
+  constructor(port, match, fit, targetId) { this.port = port; this.match = match; this.fitOn = fit; this.targetId = targetId; this.id = 0; this.cb = new Map(); this.ws = null; this.fitted = false; this.pointer = { x: 640, y: 360 }; this.viewport = {w:1280,h:800}; }
   async connect() {
     if (this.ws && this.ws.readyState === 1) return;
     const l = await getJSON(`http://127.0.0.1:${this.port}/json/list`);
@@ -253,6 +208,7 @@ class CDP {
   async fit(w, h) {
     if (!this.fitOn || !(w > 200 && h > 200)) return;
     this.fitted = true;
+    this.viewport = {w:Math.min(w,2560),h:Math.min(h,1600)};
     await this.send('Emulation.setDeviceMetricsOverride', { width: Math.min(w, 2560), height: Math.min(h, 1600), deviceScaleFactor: 1, mobile: w < 600 });
   }
   async unfit() { if (this.fitted) try { await this.send('Emulation.clearDeviceMetricsOverride'); } catch {} }
@@ -263,14 +219,26 @@ class CDP {
   }
   btn(b) { return ['left', 'middle', 'right'][b] || 'left'; }
   mod(o) { return (o.alt ? 1 : 0) | (o.ctrl ? 2 : 0) | (o.meta ? 4 : 0) | (o.shift ? 8 : 0); }
-  async move(p) { await this.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: p.x, y: p.y }); return { cursor: await this.cursor(p.x, p.y) }; }
+  async move(p) { this.pointer = {x:Math.round(p.x),y:Math.round(p.y)}; await this.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: this.pointer.x, y: this.pointer.y }); return { cursor: await this.cursor(this.pointer.x, this.pointer.y), cursorPos:this.pointer }; }
+  async pointerPosition() { return this.pointer; }
+  async moveRelative(p) {
+    const dx = Math.max(-420,Math.min(420,Number(p.dx)||0)), dy = Math.max(-420,Math.min(420,Number(p.dy)||0));
+    const x = Math.max(0,Math.min(this.viewport.w-1,Math.round(this.pointer.x+dx)));
+    const y = Math.max(0,Math.min(this.viewport.h-1,Math.round(this.pointer.y+dy)));
+    return await this.move({x,y});
+  }
+  async clickAtPointer(p) {const a={...this.pointer,button:Number(p.button)||0};await this.down(a);await this.up(a);return {cursorPos:this.pointer};}
+  async pressAtPointer(p) {await this.down({...this.pointer,button:Number(p.button)||0});return {cursorPos:this.pointer};}
+  async releaseAtPointer(p) {await this.up({...this.pointer,button:Number(p.button)||0});return {cursorPos:this.pointer};}
+  async doubleAtPointer() {await this.dbl(this.pointer);return {cursorPos:this.pointer};}
+  async scrollAtPointer(p) {await this.wheel({...this.pointer,dx:Number(p.dx)||0,dy:Number(p.dy)||0});return {cursorPos:this.pointer};}
   async down(p) { await this.send('Input.dispatchMouseEvent', { type: 'mousePressed', x: p.x, y: p.y, button: this.btn(p.button), clickCount: 1, modifiers: this.mod(p) }); }
   async up(p) { await this.send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: p.x, y: p.y, button: this.btn(p.button), clickCount: 1, modifiers: this.mod(p) }); }
   async dbl(p) { for (const type of ['mousePressed', 'mouseReleased']) await this.send('Input.dispatchMouseEvent', { type, x: p.x, y: p.y, button: 'left', clickCount: 2 }); }
   async wheel(p) { await this.send('Input.dispatchMouseEvent', { type: 'mouseWheel', x: p.x, y: p.y, deltaX: p.dx || 0, deltaY: p.dy || 0 }); }
   async type(s) { await this.send('Input.insertText', { text: s }); }
   async key(k) {
-    const V = { Enter: 13, Backspace: 8, Tab: 9, Escape: 27, Delete: 46, ArrowLeft: 37, ArrowUp: 38, ArrowRight: 39, ArrowDown: 40, Home: 36, End: 35, PageUp: 33, PageDown: 34 };
+    const V = { PrintScreen:44, F5:116, Enter: 13, Backspace: 8, Tab: 9, Escape: 27, Delete: 46, ArrowLeft: 37, ArrowUp: 38, ArrowRight: 39, ArrowDown: 40, Home: 36, End: 35, PageUp: 33, PageDown: 34 };
     const vk = V[k.key] || (k.key.length === 1 ? k.key.toUpperCase().charCodeAt(0) : 0);
     const base = { key: k.key, code: k.code, windowsVirtualKeyCode: vk, nativeVirtualKeyCode: vk, modifiers: this.mod(k) };
     const text = k.key === 'Enter' ? '\r' : undefined;
@@ -281,30 +249,81 @@ class CDP {
 
 // --- X11 backend ---
 class X11 {
-  constructor(d, full) { this.d = d; this.env = xenv(d); this.restartOnRate = true; this.full = full; this.off = [0, 0]; this.region = this.findRegion(); }
-  // area that contains all visible app windows (WeChat + its popups); whole screen if none / --full
+  constructor(d, full) { this.d = d; this.env = xenv(d); this.restartOnRate = true; this.full = full; this.off = [0, 0]; this.region = this.findRegion(); this.readRootPointer(); }
+  // Select the largest visible app window, not the union of every desktop window.
+  // Popups layered inside the window remain visible. --full is the explicit desktop mode.
   findRegion() {
     let sw = 1440, sh = 1000;
-    try { const m = execFileSync('xdpyinfo', ['-display', this.d], { encoding: 'utf8', env: this.env, stdio: ['ignore', 'pipe', 'ignore'] }).match(/dimensions:\s+(\d+)x(\d+)/); if (m) { sw = +m[1]; sh = +m[2]; } } catch {}
-    const fullR = { x: 0, y: 0, w: sw - (sw % 2), h: sh - (sh % 2) };
-    if (this.full) return fullR;
-    let x1 = 1e9, y1 = 1e9, x2 = -1, y2 = -1;
+    try { const m = execFileSync('xdpyinfo', ['-display', this.d], {encoding:'utf8',env:this.env,stdio:['ignore','pipe','ignore'],timeout:1200}).match(/dimensions:\s+(\d+)x(\d+)/); if(m){sw=+m[1];sh=+m[2];} } catch {}
+    const fullR={x:0,y:0,w:sw-(sw%2),h:sh-(sh%2)};
+    if(this.full)return fullR;
+    const wins=[];
     try {
-      const ids = execFileSync('xdotool', ['search', '--onlyvisible', '--name', '.'], { encoding: 'utf8', env: this.env, stdio: ['ignore', 'pipe', 'ignore'] }).trim().split('\n').filter(Boolean);
-      for (const id of ids) {
-        const g = execFileSync('xdotool', ['getwindowgeometry', '--shell', id], { encoding: 'utf8', env: this.env, stdio: ['ignore', 'pipe', 'ignore'] });
-        const v = k => +(g.match(new RegExp(k + '=(-?\\d+)')) || [0, 0])[1];
-        const x = v('X'), y = v('Y'), w = v('WIDTH'), h = v('HEIGHT');
-        if (w < 40 || h < 40 || (w >= sw && h >= sh)) continue;
-        x1 = Math.min(x1, x); y1 = Math.min(y1, y); x2 = Math.max(x2, x + w); y2 = Math.max(y2, y + h);
+      const ids=execFileSync('xdotool',['search','--onlyvisible','--name','.'],{encoding:'utf8',env:this.env,timeout:2000,stdio:['ignore','pipe','ignore']}).trim().split('\n').filter(Boolean).slice(0,40);
+      for(const id of ids){
+        let title='';
+        try{title=execFileSync('xdotool',['getwindowname',id],{encoding:'utf8',env:this.env,timeout:500,stdio:['ignore','pipe','ignore']}).trim();}catch{}
+        if(/^(desktop|xfce4-panel|xfwm4|wrapper-2\.0)$/i.test(title))continue;
+        const g=execFileSync('xdotool',['getwindowgeometry','--shell',id],{encoding:'utf8',env:this.env,timeout:700,stdio:['ignore','pipe','ignore']});
+        const v=k=>Number((g.match(new RegExp('(?:^|\\n)'+k+'=(-?\\d+)'))||[])[1]||0);
+        const win={id,x:v('X'),y:v('Y'),w:v('WIDTH'),h:v('HEIGHT'),title};
+        if(win.w>=120&&win.h>=100&&win.x<sw&&win.y<sh&&win.x+win.w>0&&win.y+win.h>0)wins.push(win);
       }
-    } catch {}
-    if (x2 < 0) return fullR;
-    x1 = Math.max(0, x1); y1 = Math.max(0, y1); x2 = Math.min(sw, x2); y2 = Math.min(sh, y2);
-    let w = x2 - x1, h = y2 - y1; w -= w % 2; h -= h % 2;
-    return { x: x1, y: y1, w, h };
+    }catch{}
+    if(!wins.length){if(this.region)return this.region;throw new Error('NO_VISIBLE_X11_APPLICATION: launch a GUI app or use --full to mirror the desktop');}
+    wins.sort((a,b)=>b.w*b.h-a.w*a.h);
+    const win=wins[0];
+    const x=Math.max(0,Math.min(sw-2,win.x)),y=Math.max(0,Math.min(sh-2,win.y));
+    let w=Math.max(2,Math.min(sw,win.x+win.w)-x),h=Math.max(2,Math.min(sh,win.y+win.h)-y);
+    w-=w%2;h-=h%2;
+    return {x,y,w,h};
   }
-  P(p) { return [String(Math.round(p.x + this.region.x)), String(Math.round(p.y + this.region.y))]; }
+  P(p) {
+    const r=this.region;
+    const x=Math.max(r.x,Math.min(r.x+r.w-1,Math.round(Number(p.x||0)+r.x)));
+    const y=Math.max(r.y,Math.min(r.y+r.h-1,Math.round(Number(p.y||0)+r.y)));
+    this.pointer={x,y};
+    return [String(x),String(y)];
+  }
+  readRootPointer() {
+    try{
+      const s=execFileSync('xdotool',['getmouselocation','--shell'],{env:this.env,encoding:'utf8',timeout:600,stdio:['ignore','pipe','ignore']});
+      const x=Number((s.match(/(?:^|\n)X=(-?\d+)/)||[])[1]),y=Number((s.match(/(?:^|\n)Y=(-?\d+)/)||[])[1]);
+      if(Number.isFinite(x)&&Number.isFinite(y))this.pointer={x,y};
+    }catch{}
+    if(!this.pointer)this.pointer={x:this.region.x+Math.floor(this.region.w/2),y:this.region.y+Math.floor(this.region.h/2)};
+    return this.pointer;
+  }
+  async pointerPosition() {
+    const p=this.readRootPointer(),r=this.region;
+    return {x:Math.max(0,Math.min(r.w-1,p.x-r.x)),y:Math.max(0,Math.min(r.h-1,p.y-r.y))};
+  }
+  async moveRelative(p) {
+    if(!this.pointer)this.readRootPointer();
+    const r=this.region;
+    this.fractionX=(this.fractionX||0)+Math.max(-420,Math.min(420,Number(p.dx)||0));
+    this.fractionY=(this.fractionY||0)+Math.max(-420,Math.min(420,Number(p.dy)||0));
+    const dx=Math.trunc(this.fractionX),dy=Math.trunc(this.fractionY);
+    this.fractionX-=dx;this.fractionY-=dy;
+    const x=Math.max(r.x,Math.min(r.x+r.w-1,this.pointer.x+dx));
+    const y=Math.max(r.y,Math.min(r.y+r.h-1,this.pointer.y+dy));
+    this.pointer={x,y};
+    if(dx||dy)await this.xdo('mousemove',String(x),String(y));
+    return {cursorPos:{x:x-r.x,y:y-r.y}};
+  }
+  async clickAtPointer(p) {await this.xdo('click',this.btn(p.button));return {cursorPos:await this.pointerPosition()};}
+  async pressAtPointer(p) {await this.xdo('mousedown',this.btn(p.button));return {cursorPos:await this.pointerPosition()};}
+  async releaseAtPointer(p) {await this.xdo('mouseup',this.btn(p.button));return {cursorPos:await this.pointerPosition()};}
+  async doubleAtPointer() {await this.xdo('click','--repeat','2','--delay','80','1');return {cursorPos:await this.pointerPosition()};}
+  async scrollAtPointer(p) {
+    const dy=Math.max(-600,Math.min(600,Number(p.dy)||0)),dx=Math.max(-600,Math.min(600,Number(p.dx)||0));
+    const amt=dy||dx;
+    if(Math.abs(amt)<8)return {cursorPos:await this.pointerPosition()};
+    const n=Math.min(8,Math.max(1,Math.round(Math.abs(amt)/90)));
+    const button=dy?(dy>0?'5':'4'):(dx>0?'7':'6');
+    await this.xdo('click','--repeat',String(n),'--delay','18',button);
+    return {cursorPos:await this.pointerPosition()};
+  }
   xdo(...a) { return new Promise(r => { const p = spawn('xdotool', a, { env: this.env, stdio: 'ignore' }); p.on('close', r); p.on('error', r); }); }
   shot() {
     return new Promise((res, rej) => {
@@ -329,14 +348,14 @@ class X11 {
   }
   btn(b) { return String({ 0: 1, 1: 2, 2: 3 }[b] || 1); }
   mods(o) { return [o.ctrl && 'ctrl', o.alt && 'alt', o.shift && 'shift', o.meta && 'super'].filter(Boolean); }
-  async move(p) { await this.xdo('mousemove', ...this.P(p)); return { cursor: 'none' }; } // real cursor is drawn in the image
+  async move(p) { await this.xdo('mousemove', ...this.P(p)); return { cursor: 'none', cursorPos:await this.pointerPosition() }; } // X11 frame draws the real cursor
   async down(p) { const m = this.mods(p); for (const k of m) await this.xdo('keydown', k); await this.xdo('mousemove', ...this.P(p), 'mousedown', this.btn(p.button)); this._m = m; }
   async up(p) { await this.xdo('mousemove', ...this.P(p), 'mouseup', this.btn(p.button)); for (const k of this._m || []) await this.xdo('keyup', k); this._m = []; }
   async dbl(p) { await this.xdo('mousemove', ...this.P(p), 'click', '--repeat', '2', '1'); }
   async wheel(p) { const n = Math.min(10, Math.max(1, Math.round(Math.abs(p.dy || p.dx) / 60))); await this.xdo('mousemove', ...this.P(p), 'click', '--repeat', String(n), p.dy ? (p.dy > 0 ? '5' : '4') : (p.dx > 0 ? '7' : '6')); }
   async type(s) { await this.xdo('type', '--delay', '20', '--', s); }
   async key(k) {
-    const M = { Enter: 'Return', Backspace: 'BackSpace', Escape: 'Escape', ArrowLeft: 'Left', ArrowRight: 'Right', ArrowUp: 'Up', ArrowDown: 'Down', PageUp: 'Prior', PageDown: 'Next' };
+    const M = { PrintScreen:'Print', F5:'F5', Delete:'Delete', Home:'Home', End:'End', Tab:'Tab', Enter: 'Return', Backspace: 'BackSpace', Escape: 'Escape', ArrowLeft: 'Left', ArrowRight: 'Right', ArrowUp: 'Up', ArrowDown: 'Down', PageUp: 'Prior', PageDown: 'Next' };
     let n = M[k.key] || (k.key.length === 1 ? k.key.toLowerCase() : k.key);
     if (['Control', 'Shift', 'Alt', 'Meta'].includes(k.key)) return;
     await this.xdo('key', [...this.mods(k), n].join('+'));
@@ -400,13 +419,13 @@ async function serve(o) {
     try {
       const u = req.url.split('?')[0];
       if (req.method === 'GET' && u === '/health') return out(200, '{"ok":true}');
-      if (req.method === 'GET' && u === '/info') return out(200, JSON.stringify({ region: be.region || null, interval_s: stream.ms / 1000, auto, cpu_pct: CPU.pct, quality: ['high', 'medium', 'low'][be.level ?? 1] }));
+      if (req.method === 'GET' && u === '/info') return out(200, JSON.stringify({ kind:be instanceof CDP?'cdp':'x11', region: be.region || null, cursor: await be.pointerPosition(), interval_s: stream.ms / 1000, auto, cpu_pct: CPU.pct, quality: ['high', 'medium', 'low'][be.level ?? 1] }));
       if (req.method === 'GET' && u === '/shot.jpg') return out(200, await be.shot(), 'image/jpeg');
       if (req.method === 'GET' && u === '/stream.mjpg') return stream.add(res);
       if (req.method === 'GET' && u === '/') return out(200, PAGE(pretty(name).replace(/[<>&"]/g, ''), interval), 'text/html; charset=utf-8');
       if (req.method !== 'POST') return out(404, '{}');
       let b = ''; for await (const c of req) b += c; const p = b ? JSON.parse(b) : {};
-      const f = { '/move': () => be.move(p), '/down': () => be.down(p), '/up': () => be.up(p), '/dbl': () => be.dbl(p), '/wheel': () => be.wheel(p), '/type': () => be.type(String(p.s || '')), '/key': () => be.key(p), '/fit': () => be.fit(p.w, p.h) }[u];
+      const f = { '/move-rel': () => be.moveRelative(p), '/click-rel':()=>be.clickAtPointer(p), '/double-rel':()=>be.doubleAtPointer(), '/press-rel':()=>be.pressAtPointer(p), '/release-rel':()=>be.releaseAtPointer(p), '/scroll-rel':()=>be.scrollAtPointer(p), '/move': () => be.move(p), '/down': () => be.down(p), '/up': () => be.up(p), '/dbl': () => be.dbl(p), '/wheel': () => be.wheel(p), '/type': () => be.type(String(p.s || '')), '/key': () => be.key(p), '/fit': () => be.fit(p.w, p.h) }[u];
       if (!f) return out(404, '{}');
       const r = await f(); out(200, JSON.stringify({ ok: true, ...(r || {}) }));
     } catch (e) { out(500, JSON.stringify({ ok: false, error: String(e.message || e) })); }

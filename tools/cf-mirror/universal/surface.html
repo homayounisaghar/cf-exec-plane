@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>__MIRROR_NAME__ · touchpad mirror</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#eff5ff;background:#0d121b}
+*{box-sizing:border-box}
+html,body{width:100%;height:100%;margin:0;overflow:hidden;overscroll-behavior:none}
+body{display:flex;flex-direction:column}
+#top{height:42px;min-height:42px;flex:none;display:flex;align-items:center;gap:8px;padding:4px 10px;background:#1a2638;border-bottom:1px solid #33455f;user-select:none}
+#state{font:12px/1.3 system-ui;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#b7c9df}
+.pill{font-size:11px;background:#324e69;color:#e7f5ff;padding:3px 6px;border-radius:5px}
+#stage{position:relative;flex:1;width:100%;min-height:0;overflow:hidden;background:#121822;touch-action:none;user-select:none;-webkit-user-select:none;overscroll-behavior:none;cursor:crosshair}
+#surface{position:absolute;left:0;top:0;transform-origin:top left;will-change:transform;pointer-events:none}
+#image{display:block;width:100%;height:100%;max-width:none;max-height:none;user-select:none;-webkit-user-drag:none;pointer-events:none}
+#cursor{position:absolute;top:0;left:0;width:18px;height:18px;border:2px solid #fff;border-radius:50%;background:rgba(46,139,255,.20);box-shadow:0 0 0 2px #1263e8,0 1px 5px #000c;transform:translate(-50%,-50%);pointer-events:none}
+#hud{position:absolute;right:8px;top:8px;z-index:3;pointer-events:none;background:#0b1525a9;color:#d8e6fa;border-radius:6px;padding:3px 7px;font:11px system-ui}
+#bottom{min-height:48px;flex:none;display:flex;align-items:center;gap:5px;padding:5px 7px calc(5px + env(safe-area-inset-bottom));background:#192437;border-top:1px solid #33455f}
+button,.tool{background:#2a3c55;color:#ecf5ff;border:1px solid #526988;border-radius:8px;font:12px system-ui;padding:7px 9px;cursor:pointer;touch-action:manipulation;text-decoration:none;white-space:nowrap}
+button:active,.tool:active{background:#466589}
+button[aria-pressed="true"]{background:#1958a5;border-color:#72b1ff}
+#hint{font:11px system-ui;color:#a9c0d8;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#keys{display:none;position:absolute;z-index:8;left:8px;right:8px;bottom:53px;padding:9px;border-radius:10px;border:1px solid #516a86;background:#192538f5;box-shadow:0 10px 35px #0008}
+#keys.open{display:block}
+#keyrow{display:flex;flex-wrap:wrap;gap:5px}
+#nativeInput{display:none;width:100%;margin-top:8px;padding:9px;border:1px solid #597797;border-radius:7px;color:#fff;background:#152135;font:15px system-ui}
+#nativeInput.open{display:block}
+#help{display:none;position:absolute;z-index:7;left:8px;right:8px;top:52px;padding:10px 13px;border-radius:9px;background:#1d2a3cf5;border:1px solid #5c708c;box-shadow:0 10px 25px #0008;font:12px/1.7 system-ui}
+#help.open{display:block}
+@media(max-width:390px){#top{padding:4px 6px}#bottom{gap:4px;padding:4px}button,.tool{font-size:11px;padding:7px 7px}#hint{font-size:10px}}
+</style>
+</head>
+<body>
+<div id="top"><span class="pill" id="modeTag">Touchpad</span><span id="state">Connecting to mirror…</span><button id="helpToggle" aria-label="Touchpad help">?</button></div>
+<div id="stage" aria-label="Remote desktop touchpad" tabindex="0">
+ <div id="surface">
+  <img id="image" alt="Live mirror surface">
+  <div id="cursor" aria-hidden="true"></div>
+ </div>
+ <div id="hud">Loading…</div>
+</div>
+<div id="bottom">
+ <span id="hint">1 finger: move · tap: click · hold: right-click</span>
+ <button id="viewMode" title="Switch between fit and fill">Fit</button>
+ <button id="reset" title="Reset digital zoom and pan">1×</button>
+ <button id="keysButton" aria-expanded="false">Keys</button>
+ <button id="fullscreen" title="Full screen">⛶</button>
+</div>
+<section id="keys" aria-label="Remote special keys">
+ <div id="keyrow">
+  <button data-mod="ctrl" aria-pressed="false">Ctrl</button>
+  <button data-mod="alt" aria-pressed="false">Alt</button>
+  <button data-mod="shift" aria-pressed="false">Shift</button>
+  <button data-mod="meta" aria-pressed="false">Win</button>
+  <button data-key="Escape">Esc</button>
+  <button data-key="Tab">Tab</button>
+  <button data-key="Enter">Enter</button>
+  <button data-key="Backspace">⌫</button>
+  <button data-key="Delete">Del</button>
+  <button data-key="ArrowLeft">←</button>
+  <button data-key="ArrowRight">→</button>
+  <button data-key="ArrowUp">↑</button>
+  <button data-key="ArrowDown">↓</button>
+  <button data-key="F5">F5</button>
+  <button data-action="ctrlaltdel">Ctrl+Alt+Del</button>
+  <button data-key="PrintScreen">PrtSc</button>
+  <a class="tool" href="/shot.jpg" target="_blank" rel="noopener" download="cf-mirror.jpg">📷 Capture</a>
+  <button id="typeToggle" title="Open the phone's native keyboard to type into the focused remote app">ABC</button>
+  <button id="dragToggle" aria-pressed="false">Drag: off</button>
+ </div>
+ <input id="nativeInput" type="text" inputmode="text" autocorrect="off" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Phone keyboard → focused remote field">
+</section>
+<div id="help">
+ <strong>Touchpad controls</strong>
+ <div>One finger swipe: move remote cursor, wherever it already is.</div>
+ <div>Tap: left click at remote cursor. Double tap: double click. Hold ~0.6 s: right click.</div>
+ <div>Fast finger flick: pointer glides briefly with inertia. Drag button: toggle left-button hold for dragging.</div>
+ <div>Two fingers: pinch to zoom; pan the magnified image. At 1×, two-finger slide scrolls the remote page.</div>
+ <div>Fit/Fill changes viewing zoom only; remote window coordinates stay calibrated. ABC opens the phone's normal keyboard; Keys sends missing desktop keys.</div>
+</div>
+<script>
+'use strict';
+const CONTROL_CSRF='__CONTROL_CSRF__';
+const stage=document.getElementById('stage'),surface=document.getElementById('surface');
+const image=document.getElementById('image'),cursor=document.getElementById('cursor');
+const stateText=document.getElementById('state'),hud=document.getElementById('hud'),hint=document.getElementById('hint');
+const keys=document.getElementById('keys'),help=document.getElementById('help');
+let iw=1280,ih=800,base=1,scale=1,zoom=1,mode='fit',panX=0,panY=0,tx=0,ty=0,remote={x:640,y:400};
+let rate='?',ready=false,infoBusy=false,reconnectTimer=null,dragHeld=false,remoteFitTimer=null,sourceKind='x11';
+const fingers=new Map();
+let one=null,pinch=null,suppressUntilAllUp=false,longTimer=null,tapTimer=null,lastTapAt=0;
+let inertiaId=0,moveBusy=false,dxWaiting=0,dyWaiting=0,moveResolvers=[],lastPointerEvent=0;
+const mods={ctrl:false,alt:false,shift:false,meta:false};
+const clamp=(n,lo,hi)=>Math.max(lo,Math.min(hi,n));
+const now=()=>performance.now();
+function post(url,payload={}){
+ return fetch(url,{method:'POST',headers:{'content-type':'application/json','X-CF-Mirror-CSRF':CONTROL_CSRF},body:JSON.stringify(payload),cache:'no-store'})
+   .then(async r=>{const j=await r.json().catch(()=>({ok:false}));if(!r.ok||j.ok===false)throw Error(j.error||'Remote input failed');return j;});
+}
+function postSafe(url,payload={}){return post(url,payload).catch(e=>{hud.textContent='Input unavailable';return {ok:false,error:e.message};});}
+function updateRemote(r){
+ if(r?.cursorPos&&Number.isFinite(r.cursorPos.x)&&Number.isFinite(r.cursorPos.y)){
+  remote={x:clamp(r.cursorPos.x,0,iw-1),y:clamp(r.cursorPos.y,0,ih-1)};
+  cursor.style.left=remote.x+'px';cursor.style.top=remote.y+'px';
+ }
+}
+function clampPan(){
+ const w=iw*scale,h=ih*scale,W=stage.clientWidth,H=stage.clientHeight;
+ panX=w<=W?0:clamp(panX,-(w-W)/2,(w-W)/2);
+ panY=h<=H?0:clamp(panY,-(h-H)/2,(h-H)/2);
+}
+function render(){
+ const w=stage.clientWidth,h=stage.clientHeight;
+ if(!w||!h)return;
+ base=mode==='fit'?Math.min(w/iw,h/ih):Math.max(w/iw,h/ih);
+ scale=base*zoom;
+ clampPan();
+ tx=(w-iw*scale)/2+panX;ty=(h-ih*scale)/2+panY;
+ surface.style.width=iw+'px';surface.style.height=ih+'px';
+ surface.style.transform='translate('+tx+'px,'+ty+'px) scale('+scale+')';
+ cursor.style.left=remote.x+'px';cursor.style.top=remote.y+'px';
+ document.getElementById('reset').textContent=zoom.toFixed(1)+'×';
+ document.getElementById('viewMode').textContent=mode==='fit'?'Fit':'Fill';
+ hud.textContent=(ready?'Live':'Loading')+' · '+Math.round(iw)+'×'+Math.round(ih)+' · '+rate;
+}
+function pointToSource(x,y,strict=false){
+ const r=stage.getBoundingClientRect();
+ const sx=(x-r.left-tx)/scale,sy=(y-r.top-ty)/scale;
+ if(strict&&(sx<0||sx>=iw||sy<0||sy>=ih))return null;
+ return{x:clamp(Math.round(sx),0,iw-1),y:clamp(Math.round(sy),0,ih-1)};
+}
+function queueMove(dx,dy){
+ if(!Number.isFinite(dx)||!Number.isFinite(dy))return;
+ dxWaiting+=dx;dyWaiting+=dy;
+ if(!moveBusy)flushMove();
+}
+async function flushMove(){
+ if(moveBusy)return;
+ if(Math.abs(dxWaiting)<.15&&Math.abs(dyWaiting)<.15)return resolveMoves();
+ const dx=clamp(dxWaiting,-420,420),dy=clamp(dyWaiting,-420,420);
+ dxWaiting-=dx;dyWaiting-=dy;
+ moveBusy=true;
+ try{const r=await post('/move-rel',{dx,dy});updateRemote(r);}
+ catch{hud.textContent='Input error';}
+ finally{moveBusy=false;if(Math.abs(dxWaiting)>.15||Math.abs(dyWaiting)>.15)flushMove();else resolveMoves();}
+}
+function resolveMoves(){for(const f of moveResolvers.splice(0))f();}
+function movementsSettled(){return(!moveBusy&&Math.abs(dxWaiting)<.15&&Math.abs(dyWaiting)<.15)?Promise.resolve():new Promise(r=>moveResolvers.push(r));}
+function moveRelativeScreen(dx,dy,velocity){
+ const acceleration=clamp(.88+velocity*.55,.88,1.8);
+ queueMove(dx/Math.max(scale,.08)*acceleration,dy/Math.max(scale,.08)*acceleration);
+}
+function cancelLong(){if(longTimer!==null){clearTimeout(longTimer);longTimer=null;}}
+function cancelInertia(){if(inertiaId){cancelAnimationFrame(inertiaId);inertiaId=0;}}
+function startInertia(vx,vy){
+ cancelInertia();
+ let last=now(),duration=0;
+ const tick=t=>{
+  let dt=Math.min(t-last,35);last=t;duration+=dt;
+  const decay=Math.exp(-dt/150);
+  vx*=decay;vy*=decay;
+  if(duration>550||Math.hypot(vx,vy)<.025||fingers.size){inertiaId=0;return;}
+  moveRelativeScreen(vx*dt,vy*dt,Math.hypot(vx,vy));
+  inertiaId=requestAnimationFrame(tick);
+ };
+ inertiaId=requestAnimationFrame(tick);
+}
+async function leftClick(){await movementsSettled();if(dragHeld)return;updateRemote(await postSafe('/click-rel',{button:0}));}
+async function doubleClick(){await movementsSettled();if(dragHeld)return;updateRemote(await postSafe('/double-rel'));}
+function tap(){
+ const t=now();
+ if(t-lastTapAt<280&&tapTimer!==null){clearTimeout(tapTimer);tapTimer=null;lastTapAt=0;doubleClick();}
+ else{lastTapAt=t;tapTimer=setTimeout(()=>{tapTimer=null;leftClick();},280);}
+}
+function longPress(){
+ if(!one||one.moved>9||fingers.size!==1||suppressUntilAllUp)return;
+ one.longPressed=true;
+ movementsSettled().then(()=>postSafe('/click-rel',{button:2})).then(updateRemote);
+}
+function beginPinch(){
+ cancelLong();cancelInertia();
+ if(tapTimer){clearTimeout(tapTimer);tapTimer=null;}
+ lastTapAt=0;
+ suppressUntilAllUp=true;
+ const pts=[...fingers.values()].slice(0,2),cx=(pts[0].x+pts[1].x)/2,cy=(pts[0].y+pts[1].y)/2;
+ const distance=Math.max(10,Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y));
+ const anchor=pointToSource(cx,cy);
+ pinch={dist:distance,z0:zoom,anchor,cx,cy,priorCx:cx,priorCy:cy,zooming:false,scrollAcc:0};
+ one=null;
+}
+function movePinch(){
+ if(fingers.size<2||!pinch)return;
+ const pts=[...fingers.values()].slice(0,2),cx=(pts[0].x+pts[1].x)/2,cy=(pts[0].y+pts[1].y)/2;
+ const dist=Math.max(10,Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y));
+ const ratio=dist/pinch.dist;
+ if(Math.abs(ratio-1)>.035)pinch.zooming=true;
+ if(!pinch.zooming&&zoom===1&&mode==='fit'){
+   const dy=pinch.priorCy-cy,dx=pinch.priorCx-cx;
+   pinch.scrollAcc+=dy*2.0;
+   if(Math.abs(pinch.scrollAcc)>12){postSafe('/scroll-rel',{dy:clamp(pinch.scrollAcc,-320,320),dx:clamp(dx*2,-100,100)}).then(updateRemote);pinch.scrollAcc=0;}
+ }else{
+   zoom=clamp(pinch.z0*ratio,1,9);
+   base=mode==='fit'?Math.min(stage.clientWidth/iw,stage.clientHeight/ih):Math.max(stage.clientWidth/iw,stage.clientHeight/ih);
+   const nextScale=base*zoom;
+   const r=stage.getBoundingClientRect();
+   panX=cx-r.left-pinch.anchor.x*nextScale-(stage.clientWidth-iw*nextScale)/2;
+   panY=cy-r.top-pinch.anchor.y*nextScale-(stage.clientHeight-ih*nextScale)/2;
+   render();
+ }
+ pinch.priorCx=cx;pinch.priorCy=cy;
+}
+function onPointerDown(e){
+ if(e.pointerType!=='touch'){
+  if(e.pointerType==='mouse'){
+   e.preventDefault();
+   const p=pointToSource(e.clientX,e.clientY,true);
+   if(!p)return;
+   updateRemote({cursorPos:p});
+   postSafe('/down',{...p,button:e.button,ctrl:e.ctrlKey,alt:e.altKey,shift:e.shiftKey,meta:e.metaKey}).then(updateRemote);
+  }
+  return;
+ }
+ e.preventDefault();cancelInertia();
+ try{stage.setPointerCapture(e.pointerId);}catch{}
+ fingers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+ if(fingers.size>=2){beginPinch();return;}
+ one={id:e.pointerId,lastX:e.clientX,lastY:e.clientY,startX:e.clientX,startY:e.clientY,lastTime:now(),startTime:now(),moved:0,vx:0,vy:0,longPressed:false};
+ cancelLong();
+ longTimer=setTimeout(()=>{longTimer=null;longPress();},610);
+}
+function onPointerMove(e){
+ if(e.pointerType!=='touch'){
+  if(e.pointerType==='mouse'&&e.buttons===0&&now()-lastPointerEvent>75){
+   lastPointerEvent=now();const p=pointToSource(e.clientX,e.clientY,true);
+   if(p)postSafe('/move',p).then(updateRemote);
+  }
+  return;
+ }
+ if(!fingers.has(e.pointerId))return;
+ e.preventDefault();
+ fingers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+ if(fingers.size>=2){movePinch();return;}
+ if(!one||one.id!==e.pointerId)return;
+ const dx=e.clientX-one.lastX,dy=e.clientY-one.lastY;
+ const dt=Math.max(8,now()-one.lastTime);
+ one.lastX=e.clientX;one.lastY=e.clientY;one.lastTime=now();
+ one.moved+=Math.hypot(dx,dy);
+ if(one.moved>9)cancelLong();
+ const curSpeed=Math.hypot(dx,dy)/dt;
+ one.vx=one.vx*.38+dx/dt*.62;
+ one.vy=one.vy*.38+dy/dt*.62;
+ if(one.moved>1)moveRelativeScreen(dx,dy,curSpeed);
+}
+function onPointerUp(e){
+ if(e.pointerType!=='touch'){
+  if(e.pointerType==='mouse'){
+   e.preventDefault();const p=pointToSource(e.clientX,e.clientY,true);
+   if(!p)return;
+   postSafe('/up',{...p,button:e.button,ctrl:e.ctrlKey,alt:e.altKey,shift:e.shiftKey,meta:e.metaKey}).then(updateRemote);
+  }
+  return;
+ }
+ if(!fingers.has(e.pointerId))return;
+ e.preventDefault();cancelLong();
+ const single=fingers.size===1,gesture=one;
+ fingers.delete(e.pointerId);
+ if(!fingers.size){pinch=null;suppressUntilAllUp=false;}
+ if(!single||!gesture||gesture.id!==e.pointerId||suppressUntilAllUp)return;
+ if(!gesture.longPressed&&gesture.moved<10&&now()-gesture.startTime<480){tap();}
+ else if(!gesture.longPressed&&gesture.moved>24&&now()-gesture.lastTime<150&&Math.hypot(gesture.vx,gesture.vy)>.16)startInertia(gesture.vx,gesture.vy);
+ one=null;
+}
+stage.addEventListener('pointerdown',onPointerDown);
+stage.addEventListener('pointermove',onPointerMove);
+stage.addEventListener('pointerup',onPointerUp);
+stage.addEventListener('pointercancel',e=>{cancelLong();cancelInertia();fingers.delete(e.pointerId);if(!fingers.size){suppressUntilAllUp=false;pinch=null;one=null;}});
+stage.addEventListener('contextmenu',e=>e.preventDefault());
+stage.addEventListener('wheel',e=>{
+ e.preventDefault();
+ if(e.ctrlKey){
+  const old=scale,anchor=pointToSource(e.clientX,e.clientY),rect=stage.getBoundingClientRect();
+  zoom=clamp(zoom*Math.exp(-e.deltaY*.007),1,9);
+  const newScale=base*zoom;
+  panX=e.clientX-rect.left-anchor.x*newScale-(stage.clientWidth-iw*newScale)/2;
+  panY=e.clientY-rect.top-anchor.y*newScale-(stage.clientHeight-ih*newScale)/2;render();
+ }else{
+  const p=pointToSource(e.clientX,e.clientY,true);
+  if(p)postSafe('/wheel',{...p,dx:e.deltaX,dy:e.deltaY}).then(updateRemote);
+ }
+},{passive:false});
+stage.addEventListener('keydown',e=>{
+ if(e.isComposing)return;
+ if(e.key.length!==1||e.ctrlKey||e.altKey||e.metaKey){
+  e.preventDefault();postSafe('/key',{key:e.key,code:e.code,ctrl:e.ctrlKey,alt:e.altKey,shift:e.shiftKey,meta:e.metaKey});
+ }else postSafe('/type',{s:e.key});
+});
+document.getElementById('helpToggle').addEventListener('click',()=>help.classList.toggle('open'));
+document.getElementById('viewMode').addEventListener('click',()=>{mode=mode==='fit'?'fill':'fit';panX=panY=0;zoom=1;render();});
+document.getElementById('reset').addEventListener('click',()=>{mode='fit';zoom=1;panX=panY=0;render();});
+document.getElementById('fullscreen').addEventListener('click',()=>{if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen?.().catch(()=>{});});
+document.getElementById('keysButton').addEventListener('click',()=>{const open=keys.classList.toggle('open');document.getElementById('keysButton').setAttribute('aria-expanded',String(open));});
+function clearMods(){
+ for(const m of Object.keys(mods))mods[m]=false;
+ for(const b of keys.querySelectorAll('[data-mod]'))b.setAttribute('aria-pressed','false');
+}
+keys.querySelectorAll('[data-mod]').forEach(b=>b.addEventListener('click',()=>{
+ const m=b.dataset.mod;mods[m]=!mods[m];b.setAttribute('aria-pressed',String(mods[m]));
+}));
+async function sendKey(k,override){
+ const opts=override||mods;
+ await postSafe('/key',{key:k,code:k,...opts});if(!override)clearMods();
+}
+keys.querySelectorAll('[data-key]').forEach(b=>b.addEventListener('click',()=>sendKey(b.dataset.key)));
+keys.querySelector('[data-action=ctrlaltdel]').addEventListener('click',()=>sendKey('Delete',{ctrl:true,alt:true,shift:false,meta:false}));
+const nativeInput=document.getElementById('nativeInput');
+document.getElementById('typeToggle').addEventListener('click',()=>{
+ nativeInput.classList.toggle('open');
+ if(nativeInput.classList.contains('open')){nativeInput.focus();nativeInput.scrollIntoView({block:'nearest'});}
+});
+let composing=false;
+nativeInput.addEventListener('compositionstart',()=>{composing=true;});
+nativeInput.addEventListener('compositionend',()=>{composing=false;const s=nativeInput.value;nativeInput.value='';if(s)postSafe('/type',{s});});
+nativeInput.addEventListener('input',()=>{if(composing)return;const s=nativeInput.value;nativeInput.value='';if(s)postSafe('/type',{s});});
+document.getElementById('dragToggle').addEventListener('click',async e=>{
+ dragHeld=!dragHeld;e.target.setAttribute('aria-pressed',String(dragHeld));e.target.textContent=dragHeld?'Drag: on':'Drag: off';
+ await movementsSettled();await postSafe(dragHeld?'/press-rel':'/release-rel',{button:0});
+});
+async function information(){
+ if(infoBusy)return;infoBusy=true;
+ try{
+  const r=await fetch('/info',{cache:'no-store'});if(!r.ok)throw Error('Offline');
+  const j=await r.json();
+  if(j.region?.w&&j.region?.h){if(iw!==j.region.w||ih!==j.region.h){iw=j.region.w;ih=j.region.h;zoom=1;panX=panY=0;}}
+  else if(image.naturalWidth&&image.naturalHeight){iw=image.naturalWidth;ih=image.naturalHeight;}
+  if(j.cursor)updateRemote({cursorPos:j.cursor});
+  if(sourceKind!==j.kind){sourceKind=j.kind;scheduleRemoteFit();}
+  rate=Math.round(1/(j.interval_s||.2))+' fps';
+  ready=true;stateText.textContent='Live · touchpad · '+rate;render();
+ }catch{ready=false;stateText.textContent='Reconnecting…';}
+ finally{infoBusy=false;}
+}
+image.addEventListener('load',()=>{if(image.naturalWidth&&image.naturalHeight&&(image.naturalWidth!==iw||image.naturalHeight!==ih)){iw=image.naturalWidth;ih=image.naturalHeight;render();}});
+image.addEventListener('error',()=>{
+ ready=false;stateText.textContent='Reconnecting video…';
+ if(reconnectTimer)clearTimeout(reconnectTimer);
+ reconnectTimer=setTimeout(()=>{image.src='/stream.mjpg?t='+Date.now();},1300);
+});
+function scheduleRemoteFit(){
+ if(sourceKind!=='cdp')return;
+ if(remoteFitTimer)clearTimeout(remoteFitTimer);
+ remoteFitTimer=setTimeout(()=>{
+  remoteFitTimer=null;
+  postSafe('/fit',{w:Math.round(stage.clientWidth),h:Math.round(stage.clientHeight)});
+ },250);
+}
+window.addEventListener('resize',()=>{render();scheduleRemoteFit();});
+new ResizeObserver(()=>{render();scheduleRemoteFit();}).observe(stage);
+image.src='/stream.mjpg?t='+Date.now();
+information();setInterval(information,2600);
+stage.focus({preventScroll:true});
+render();
+</script>
+</body>
+</html>

@@ -19,7 +19,7 @@ On the CF server as cfserver (no root):
 Installed owner shortcut:
     /home/cfserver/.local/bin/cf-mirror-any
 
-ChatGPT can invoke this shortcut via the existing owner-authorized CF Server tool server_exec. A standalone native MCP tool has NOT yet been registered; existing original cf-mirror remains unchanged.
+ChatGPT can invoke this shortcut via the existing owner-authorized CF Server tool server_exec. Five dedicated cf_mirror_* MCP tools are registered in production; existing original cf-mirror remains unchanged.
 
 ## Usage
 
@@ -64,9 +64,9 @@ CLI start JSON response includes URL, mode, source, expiration, and (only for we
 
 - With CDP and NO explicit --tab, the UI shows a browser-like toolbar with all tabs, open/close/switch, URL input and Back. Popups bearing openerId can automatically be selected. This toolbar is an emulation: headless Chrome has no native tab/address-bar frame. Switching between browser profiles/ports requires a separate session.
 - With --tab, the selector must uniquely match one page. No silent fallback to another target.
-- With X11, the actual visible app/browser UI can be mirrored, including native Chrome tabs and popups. Default crop is the UNION of visible app windows on that display. --full shows entire display. IMPORTANT: a shared X11 desktop may expose unrelated windows; use a dedicated display for sensitive app mirroring.
+- With X11, the current largest visible app/browser window is cropped and centered, including native Chrome tabs. Dialogs overlaying that window are visible; separate top-level popup windows may require selecting another source/adjusting focus. --full explicitly shows the entire display. Use a dedicated X11 display to prevent other windows from appearing.
 - CDP Auto-Fit can change target viewport (max 2560x1600); --no-fit turns that off. X11 native display resolution is preserved. Arbitrary exact pixel-resolution presets are not part of this version.
-- Mobile touch tap/drag and two-finger scrolling are forwarded; the viewer has an explicit mobile keyboard/text control.
+- On mobile, one finger moves the cursor RELATIVELY; tap clicks at cursor; hold opens context menu; double tap double-clicks; flick has inertia. Pinch and two-finger gestures zoom/pan the viewer; at 1x, two-finger slides scroll the app. Only optional special-key controls and native-keyboard activation remain.
 - Requires CDP remote debugging or user-readable X11 display and Xauthority. Cannot access root-protected :0, Wayland-only apps, DRM/hardware-protected pixels, or unknown remote native apps without a supported capture interface.
 - PUBLIC RISK: whoever knows both a web URL and its password has full remote mouse/keyboard control, can read the mirrored browser and navigate to internal network pages. Strong passwords, short TTLs and a dedicated browser session are recommended.
 - LOCAL RISK: loopback is not authentication; another process/user with access to server loopback can access an active local mirror.
@@ -87,7 +87,7 @@ Installed host paths:
 
 The repository includes cf-mirror-mcp-tools.mjs which exports registerCfMirrorUniversalTools(server, z, {callAgent, callerIdentity}) for the CF MCP server. It registers cf_mirror_sources, cf_mirror_status, cf_mirror_open, cf_mirror_close and cf_mirror_screenshot (JPEG image returned through the MCP result when at most 1MB). It uses owner-authorized CF server_exec without requiring a new root/host daemon, and passes supplied public passwords via environment instead of the shell command text.
 
-A privileged release integration/restart is still required to make these dedicated names show up in cf_tool_list; do not patch the running production release without the owner approval and normal release tests. Until then the installed cf-mirror-any CLI is immediately callable by ChatGPT through server_exec. The only newly installed executable is in the owner's home, not /usr/local/bin; the previous cf-mirror remains untouched.
+Native mirror MCP tools were approved and activated in the production CF release on 2026-11-15, with a file:///release import and verified listing of five cf_mirror_* names. Host CLI remains available via authorized server_exec. Future CF releases must preserve this integration. The only newly installed executable is in the owner's home, not /usr/local/bin; the previous cf-mirror remains untouched.
 
 Actual mobile-device UI end-to-end was not tested; mobile touch and keyboard behavior is implemented but requires on-device validation.
 
@@ -96,3 +96,16 @@ Actual mobile-device UI end-to-end was not tested; mobile touch and keyboard beh
 The earlier mobile form token fix was insufficient: some mobile browsers sent authenticated control requests (`/fit`, `/move`, `/key`, `/api/*`) without a conventional `Origin` header, and `/login` with an existing valid cookie incorrectly fell through to the generic POST origin check. The gateway now routes `/login` through its password+CSRF verification even when an auth cookie exists. Authenticated browser UI (outer and inner viewer) receives a per-session-cookie HMAC CSRF token and sends it using the `X-CF-Mirror-CSRF` header for input/control POSTs. A control request is accepted when the HTTPS Origin matches or when the correct CSRF header is supplied; a valid auth cookie is still mandatory in public mode. No domain allowlist was added and all time limits remain enforced. A safe diagnostic event logs only the route class and presence flags, never passwords, CSRF values or cookie values.
 
 Verified: local outer/inner UI receive matching tokens; no-Origin control with token HTTP 200; without token HTTP 403; foreign-Origin without token HTTP 403; web login CSRF token accepted without Origin (incorrect password HTTP 401), invalid CSRF HTTP 403; unauthenticated public screenshot and control HTTP 401; real Alibaba browser source and public HTTPS health successful. A real phone login with the new URL is pending user validation.
+
+
+## 2026-11-15 touchpad UX + precise window crop
+
+Mobile UX now shows a **single largest visible X11 application window** instead of the union of windows or full desktop (the desktop requires explicit --full). The user's saved Chrome placement can be off the Xvfb screen; for a dedicated display such as :124, recenter/resize the browser window with xdotool so the whole window fits the virtual screen before opening a mirror. If no visible application window exists, app-crop mode refuses to start rather than silently exposing the full desktop. Screenshots and MJPEG video share the same X11 region, and all X11 absolute mouse coordinates add that region's origin.
+
+The browser UI inside the mirror is now a responsive, centered **stage with the actual source dimensions**. The previous image element with object-fit:contain left letterbox offsets out of coordinate calculations; mouse input now uses the single stage transform for both display and inverse coordinate mapping. Portrait phone controls: swipe one finger to move the **existing remote pointer relatively** (no click on contact), tap to left-click at that pointer, double-tap to double-click, hold around 0.6 seconds for right-click; faster flicks have decaying inertia. A drag toggle can hold/release the left button. Two-finger pinch changes the viewer's local zoom (1x..9x) and two fingers pan the enlarged image; at 1x in Fit mode, two-finger slide scrolls the remote page instead. Fit/Fill and 1x reset are available. Zoom/pan do NOT alter remote browser scaling or calibration. The mouse overlay reflects actual backend cursor coordinates.
+
+Only a compact optional **Keys** panel remains: Esc, Tab, Enter, Delete, Backspace, arrows, F5, modifier toggles Ctrl/Alt/Shift/Win, Ctrl+Alt+Del, PrintScreen and downloadable screenshot. ABC opens the PHONE's native text keyboard when user wants to type into the currently focused remote input (no large always-visible custom keyboard).
+
+The backend adds /move-rel, /click-rel, /double-rel, /scroll-rel, /press-rel, /release-rel (all authenticated and CSRF checked by the public gateway). CDP retains viewport auto-fit when enabled. Refactoring is isolated to the new universal runtime; legacy cf-mirror remains unchanged.
+
+Validation: real X11 source Chrome at x=20,y=20,w=1400,h=860; 1400x860 JPEG screenshot; backend 60x25 relative movement yielded exactly 60x25 physical X11 cursor movement; unauthorized controls were blocked (403). A Node VM-based mobile event test verified stage-to-source mapping, relative swipe without a press, tap at existing pointer, 610ms long press right click, pinch zoom and pan, and precise desktop mouse mapping. Static viewer JS passes syntax checks. A separate full Chromium mobile-browser QA caused unacceptable resource pressure on this busy host and was stopped; **behavior on the owner's physical phone still requires validation**. Do not claim an end-to-end device pass until that occurs.
