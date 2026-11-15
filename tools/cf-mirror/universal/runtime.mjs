@@ -177,7 +177,8 @@ const PAGE = (title, interval) => `<!doctype html><html><head><meta charset=utf-
 <textarea id=t autocomplete=off></textarea>
 <script>
 const I=document.getElementById('i'),T=document.getElementById('t'),NAME=${JSON.stringify(title)},S={set textContent(v){document.title=NAME+' mirror ('+v+')'}};let iv=${interval}*1000,busy=0,last=0,mv=0;
-function P(u,b){return fetch(u,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(b||{})}).then(r=>r.json()).catch(()=>({}))}
+const CONTROL_CSRF='__CONTROL_CSRF__';
+function P(u,b){return fetch(u,{method:'POST',headers:{'content-type':'application/json','X-CF-Mirror-CSRF':CONTROL_CSRF},body:JSON.stringify(b||{})}).then(r=>r.json()).catch(()=>({}))}
 function xy(e){const r=I.getBoundingClientRect(),nw=I.naturalWidth||r.width,nh=I.naturalHeight||r.height,s=Math.min(r.width/nw,r.height/nh);return{x:Math.round((e.clientX-r.left)/s),y:Math.round((e.clientY-r.top)/s)}}
 let fr=0;function live(){I.src='/stream.mjpg?'+Date.now()}
 I.onerror=()=>{S.textContent='reconnecting';setTimeout(live,1000)};I.onload=()=>{fr++};

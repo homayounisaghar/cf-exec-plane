@@ -57,6 +57,7 @@ body{display:flex;flex-direction:column}
 <script>
 'use strict';
 const browserMode=__BROWSER_MODE__;
+const CONTROL_CSRF='__CONTROL_CSRF__';
 const chrome=document.getElementById('chrome'),tabs=document.getElementById('tabstrip');
 const frame=document.getElementById('mirror'),address=document.getElementById('addr');
 const status=document.getElementById('status');
@@ -72,7 +73,7 @@ function btn(label,cls,click,title){
 async function api(path,body){
  const r=await fetch('/api/'+path,{
   method:body===undefined?'GET':'POST',
-  headers:body===undefined?{}:{'Content-Type':'application/json'},
+  headers:body===undefined?{}:{'Content-Type':'application/json','X-CF-Mirror-CSRF':CONTROL_CSRF},
   body:body===undefined?undefined:JSON.stringify(body),
   cache:'no-store'
  });
@@ -133,12 +134,12 @@ document.getElementById('keyboardToggle').addEventListener('click',()=>{kb.hidde
 document.getElementById('sendTyped').addEventListener('click',async()=>{
  const v=typed.value;typed.value='';
  if(!v)return;
- try{const r=await fetch('/type',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({s:v}),cache:'no-store'});if(!r.ok)throw Error('failed');}
+ try{const r=await fetch('/type',{method:'POST',headers:{'content-type':'application/json','X-CF-Mirror-CSRF':CONTROL_CSRF},body:JSON.stringify({s:v}),cache:'no-store'});if(!r.ok)throw Error('failed');}
  catch{alert('Typing into remote app failed');}
 });
 document.getElementById('toggleReveal').addEventListener('click',()=>{typed.type=typed.type==='password'?'text':'password';});
 for(const b of document.querySelectorAll('[data-key]'))b.addEventListener('click',async()=>{
- try{await fetch('/key',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({key:b.dataset.key,code:b.dataset.key})});}
+ try{await fetch('/key',{method:'POST',headers:{'content-type':'application/json','X-CF-Mirror-CSRF':CONTROL_CSRF},body:JSON.stringify({key:b.dataset.key,code:b.dataset.key})});}
  catch{alert('Remote key failed');}
 });
 document.getElementById('fullscreen').addEventListener('click',()=>{

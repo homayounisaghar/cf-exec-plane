@@ -269,6 +269,7 @@ async function serve(config){
  let done=false,webUrl=null,backend=null,tunnel=null,server=null,selectedId=c.source.selectedId||null,changing=Promise.resolve();
  const salt=crypto.randomBytes(16),pwHash=c.mode==='web'?crypto.scryptSync(c.password,salt,32):null;
  const loginCsrf=crypto.randomBytes(32).toString('base64url');
+ const controlSecret=crypto.randomBytes(32);
  c.password=undefined;
  const sessions=new Map(),bad=new Map();
  const gateOrigin=()=>{
@@ -386,6 +387,20 @@ async function serve(config){
   const exp=sessions.get(m[1]);return !!exp&&exp>Date.now()&&!isExpired();
  }
  const originOK=req=>req.headers.origin===gateOrigin();
+ const controlToken=req=>{
+  const sid=String(req.headers.cookie||'').match(/(?:^|;\s*)cfm_auth=([A-Za-z0-9_-]{24,100})(?:;|$)/)?.[1]||'local';
+  return crypto.createHmac('sha256',controlSecret).update(sid).digest('base64url');
+ };
+ const controlOK=req=>{
+  if(originOK(req))return true;
+  const expected=controlToken(req),given=String(req.headers['x-cf-mirror-csrf']||'');
+  return given.length===expected.length&&crypto.timingSafeEqual(Buffer.from(given),Buffer.from(expected));
+ };
+ const controlDeny=(req,res,p)=>{
+  const route=p.startsWith('/api/')?'/api/*':['/fit','/type','/key','/move','/down','/up','/dbl','/wheel'].includes(p)?p:'other';
+  console.error('MIRROR_CONTROL_DENIED',JSON.stringify({route,hasCookie:!!req.headers.cookie,origin:req.headers.origin?'present':'missing',tokenHeader:!!req.headers['x-cf-mirror-csrf'],fetchSite:String(req.headers['sec-fetch-site']||'').slice(0,20)}));
+  return reply(res,403,{ok:false,error:'Invalid control token or origin'});
+ };
  function proxy(req,res,url){
   const headers={};
   if(req.headers['content-type'])headers['content-type']=req.headers['content-type'];
@@ -400,7 +415,7 @@ async function serve(config){
   try{
    if(isExpired()){reply(res,410,'Mirror session expired','text/plain');await cleanup();return;}
    const u=new URL(req.url,'http://127.0.0.1:'+c.port), pathname=u.pathname;
-   if(c.mode==='web'&&!authCookie(req)){
+   if(c.mode==='web'&&(!authCookie(req)||(req.method==='POST'&&pathname==='/login'))){
     if(req.method==='GET'&&(pathname==='/'||pathname==='/login'))return reply(res,200,loginPage(loginCsrf),'text/html; charset=utf-8');
     if(req.method==='POST'&&pathname==='/login'){
      // The session-scoped hidden CSRF token protects mobile HTML form POSTs.
@@ -427,7 +442,13 @@ async function serve(config){
     return reply(res,401,{ok:false,error:'Password required'});
    }
    if(req.method==='GET'&&(pathname==='/'||pathname==='/index.html')){
-    const html=fs.readFileSync(VIEW,'utf8').replace('__BROWSER_MODE__',String(c.source.kind==='cdp'&&!c.source.tabOnly)).replace('__MIRROR_TITLE__',htmlEscape(c.name));
+    const html=fs.readFileSync(VIEW,'utf8').replace('__BROWSER_MODE__',String(c.source.kind==='cdp'&&!c.source.tabOnly)).replace('__MIRROR_TITLE__',htmlEscape(c.name)).replace('__CONTROL_CSRF__',controlToken(req));
+    return reply(res,200,html,'text/html; charset=utf-8');
+   }
+   if(req.method==='GET'&&(pathname==='/view/'||pathname==='/view')){
+    const upstream=await fetch(internal+'/',{signal:AbortSignal.timeout(5000)});
+    if(!upstream.ok)throw Error('Mirror viewer not responding');
+    const html=(await upstream.text()).replace('__CONTROL_CSRF__',controlToken(req));
     return reply(res,200,html,'text/html; charset=utf-8');
    }
    if(req.method==='GET'&&pathname==='/api/tabs'){
@@ -435,7 +456,7 @@ async function serve(config){
     return reply(res,200,{ok:true,tabs:a,selectedId});
    }
    if(req.method==='POST'&&pathname.startsWith('/api/')){
-    if(!originOK(req))return reply(res,403,{ok:false,error:'Invalid origin'});
+    if(!controlOK(req))return controlDeny(req,res,pathname);
     if(c.source.kind!=='cdp'||c.source.tabOnly)return reply(res,400,{ok:false,error:'Tab controls unavailable for this mirror'});
     const b=JSON.parse(await bodyString(req,4096));
     if(pathname==='/api/select')await select(String(b.id||''));
@@ -447,7 +468,7 @@ async function serve(config){
     return reply(res,200,{ok:true,selectedId});
    }
    // No endpoint escapes the web session's authentication/expiry check.
-   if(req.method==='POST'&&!originOK(req))return reply(res,403,{ok:false,error:'Invalid origin'});
+   if(req.method==='POST'&&!controlOK(req))return controlDeny(req,res,pathname);
    if(req.method==='GET'||req.method==='POST'){
     return proxy(req,res,pathname.startsWith('/view/')?pathname.slice(5)+u.search:pathname+u.search);
    }
