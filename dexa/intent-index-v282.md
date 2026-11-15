@@ -1,7 +1,7 @@
 # Dexa v282 - MINIMAL MODEL INTENT INDEX (one public page)
 
 This is the sole first-model capability reference and complete owner dialogue memory.
-The system, not the model, owns provider JSON outputs, data paths, MATCH/FILTER, dependencies, receipts, checks, result formatting and R3 phone approvals.
+The system, not the model, owns provider JSON outputs, data paths, MATCH/FILTER, dependencies, receipts, checks, result formatting and Android permission checks.
 Never output steps, deps, model-authored $ref, provider-output paths, checks, presentation or tool receipts. Exact USER-SUPPLIED file path/URL and source text are normal tool args when required by the provider input schema.
 For ONE requested executable capability output ONLY:
 {"schema":"dexa.intent.v1","capabilityId":"github.auth.status","args":{}}
@@ -12,7 +12,7 @@ For a natural conversational answer or needed clarification, output ONLY:
 A clarification ends THIS turn; the next owner message is a new turn. Never claim a tool was executed from a model response.
 Named Android SMS recipient SPECIAL SEMANTIC SELECTOR (not a JSON output path):
 {"schema":"dexa.intent.v1","capabilityId":"dexa.android.invoke","args":{"action":"sms.send","parameters":{"recipient":{"contact_name":"the full owner-supplied contact label"},"body":"the exact owner-supplied message"}}}
-Rana performs the one actual contacts.search, uses the verified unique on-device result and sends only with existing R3 owner approval; model never chooses JSON paths.
+Rana performs the one actual contacts.search, uses the verified unique on-device result and sends with existing Android permissions and no second Dexa confirmation; model never chooses JSON paths.
 For other Android actions choose dexa.android.invoke args:{"action":"<native ID>","parameters":{...}}. Use required fields; optional only when actually requested.
 Only tools enumerated below are planner-admitted. Unbound GH/RD aliases are NOT options. No runtime calls in this index.
 MIRRORING: To create any requested public internet mirror of a specified server browser/X11 app for N minutes/hours, choose tool.cf.cf_mirror_open with mode=web, ttl=30m/5h and exact app,cdp or x11 source; password is generated automatically. For LOCAL mirror choose mode=local and exact source, no password and no ttl. Use tool.cf.cf_mirror_sources first only when the target source cannot be identified. The EXECUTION RESULT must be presented by Rana/UI as a clickable actual URL, copyable actual password when web, real expiry, and warning that VPN may be required. Local URLs open only in a graphical browser ON THE SERVER. No VPN-free claims.
@@ -243,13 +243,13 @@ notification.snooze | Snooze one observed notification for bounded milliseconds.
 phone.dial | Open the dialer with exact phone number, without placing a call. | number:string | -
 settings.open | Open allowlisted Android system settings section. | {} | section
 sms.conversation_list | List bounded SMS conversation/thread summaries. | {} | limit
-sms.delete | Delete one observed SMS row with explicit confirm=true. | confirm:boolean message_id:string | -
+sms.delete | Delete one specifically observed SMS row. | message_id:string | -
 sms.list | List bounded SMS messages, optionally filtered by mailbox, sender and time. | {} | address,box,limit,since_ms,unread_only
 sms.mark_read | Set one exact SMS message read flag. | message_id:string | read
 sms.search | Search SMS bodies or addresses for exact text. | query:string | box,limit,since_ms
 sms.send | Send an SMS to exact recipient, with optional subscription selector. | body:string recipient:string | subscription_id
 sms.status | Read SMS permissions, device SMS role and supported operations. | {} | -
-sms.thread_delete | Delete one observed SMS conversation with explicit confirm=true. | confirm:boolean thread_id:string | -
+sms.thread_delete | Delete one specifically observed SMS conversation. | thread_id:string | -
 storage.file.save_from_url | Download HTTPS file to authorized shared storage, verifying SHA256 and size. | filename:string sha256:string size_bytes:integer url:string | directory,mime
 storage.file.upload_to_url | Upload one authorized file to a prearranged resumable HTTPS endpoint. | path:string size_bytes:integer upload_url:string | -
 storage.list | List entries in previously authorized shared-storage directory. | {} | directory,limit
