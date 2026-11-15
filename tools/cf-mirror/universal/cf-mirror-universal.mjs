@@ -141,6 +141,8 @@ function intervalSec(v){
 }
 async function resolveSource(o,found){
  const app=text(o.app,140).toLowerCase();
+ if(o.cdp&&o.x11)throw Error('Choose one source: --cdp OR --x11');
+ if(o.x11&&app)throw Error('Choose --app for automatic window discovery OR --x11 for a complete display');
  let port=null,display=null,selectedId=null;
  if(o.cdp){port=positivePort(o.cdp);}
  else if(o.x11){display=String(o.x11);if(!/^:\d+$/.test(display))throw Error('Invalid X11 DISPLAY');}
@@ -164,6 +166,11 @@ async function resolveSource(o,found){
  }
  const pages=(await getJson('http://127.0.0.1:'+port+'/json/list')).filter(t=>t.type==='page'&&!String(t.url).startsWith('devtools://'));
  if(!pages.length)throw Error('CDP browser has no page targets');
+ if(o.cdp&&app&&app!=='browser'&&!o.tab){
+  const matched=pages.filter(t=>(t.title+' '+t.url).toLowerCase().includes(app));
+  if(matched.length!==1)throw Error('App selector on CDP port must match exactly one tab; specify --tab. Matches='+matched.length);
+  selectedId=matched[0].id;
+ }
  if(o.tab){
   const needle=String(o.tab).toLowerCase();
   const exact=pages.find(t=>t.id.toLowerCase()===needle);

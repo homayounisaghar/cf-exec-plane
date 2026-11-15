@@ -82,3 +82,11 @@ Installed host paths:
 - /home/cfserver/.local/share/cf-mirror-universal/runtime.mjs
 - /home/cfserver/.local/share/cf-mirror-universal/viewer.html
 - /home/cfserver/.local/bin/cf-mirror-any
+
+## Optional dedicated MCP tool adapter (not live yet)
+
+The repository includes cf-mirror-mcp-tools.mjs which exports registerCfMirrorUniversalTools(server, z, {callAgent, callerIdentity}) for the CF MCP server. It registers cf_mirror_sources, cf_mirror_status, cf_mirror_open, cf_mirror_close and cf_mirror_screenshot (JPEG image returned through the MCP result when at most 1MB). It uses owner-authorized CF server_exec without requiring a new root/host daemon, and passes supplied public passwords via environment instead of the shell command text.
+
+A privileged release integration/restart is still required to make these dedicated names show up in cf_tool_list; do not patch the running production release without the owner approval and normal release tests. Until then the installed cf-mirror-any CLI is immediately callable by ChatGPT through server_exec. The only newly installed executable is in the owner's home, not /usr/local/bin; the previous cf-mirror remains untouched.
+
+Actual mobile-device UI end-to-end was not tested; mobile touch and keyboard behavior is implemented but requires on-device validation.
