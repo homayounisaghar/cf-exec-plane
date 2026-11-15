@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>__MIRROR_TITLE__ - CF Mirror</title>
+<style>
+:root{font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#e9edf8;background:#171a22}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden}
+body{display:flex;flex-direction:column}
+#chrome{display:none;flex:none;background:#242a37;border-bottom:1px solid #424b5f}
+#tabstrip{display:flex;align-items:center;gap:5px;overflow-x:auto;min-height:37px;padding:4px 6px 0;scrollbar-width:thin}
+.tab{display:inline-flex;align-items:center;gap:6px;max-width:240px;min-width:72px;padding:6px 6px 6px 10px;background:#303a4d;border:1px solid transparent;border-radius:8px 8px 0 0}
+.tab.selected{background:#121822;border-color:#56647a}
+.tab-name{background:none;color:inherit;border:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:12px system-ui;max-width:185px;text-align:left;cursor:pointer}
+.tab-close{background:transparent;color:#d8deeb;border:0;cursor:pointer;font-size:17px}
+#newTab{border:0;background:#404c61;color:white;border-radius:7px;cursor:pointer;padding:5px 10px}
+#nav{display:flex;align-items:center;gap:8px;padding:7px 10px;background:#121822}
+#addr{flex:1;min-width:0;padding:9px 12px;border:1px solid #53627b;color:#e9edf8;background:#293447;border-radius:20px;font-size:13px;outline-offset:2px}
+.navbutton{background:#37455e;color:#e7eefc;border:0;padding:9px;border-radius:7px;min-width:34px;cursor:pointer}
+#status{font:11px system-ui;color:#a8b3c7;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;max-width:140px}
+#mirror{border:none;display:block;flex:1;width:100%;height:100%;background:#101318}
+#keyboardToggle{position:fixed;left:10px;bottom:10px;z-index:5;background:#263553dd;color:#fff;padding:8px 12px;border-radius:8px;border:1px solid #7180a3;cursor:pointer}
+#keyboardPanel{position:fixed;left:10px;bottom:50px;z-index:6;background:#1c2536;border:1px solid #667392;border-radius:12px;box-shadow:0 12px 30px #0009;padding:12px;width:min(430px,calc(100vw - 20px))}
+#keyboardPanel[hidden]{display:none}
+#sendText{background:#eff4ff;color:#171e2a;border:0;border-radius:7px;width:100%;padding:10px;font:15px system-ui}
+.keyboardActions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.keyboardActions button{padding:7px 10px;background:#35486a;color:#fff;border:1px solid #526b99;border-radius:6px;cursor:pointer}
+#fullscreen{flex:none;position:fixed;right:10px;bottom:10px;background:#1a2439cc;color:white;border:1px solid #56617c;border-radius:7px;padding:6px;font-size:12px;cursor:pointer;z-index:4}
+@media(max-width:570px){#status{display:none}.tab{max-width:140px}.tab-name{max-width:102px}#nav{gap:4px;padding:5px}#addr{font-size:12px;padding:8px}}
+</style>
+</head>
+<body>
+<div id="chrome">
+ <div id="tabstrip"><button id="newTab" type="button" title="New browser tab">＋</button></div>
+ <form id="nav">
+   <button class="navbutton" type="button" id="back" title="Back" aria-label="Back">←</button>
+   <input id="addr" type="text" autocomplete="off" spellcheck="false" placeholder="Enter URL (including Google / SSO)">
+   <button class="navbutton" type="submit" title="Go">Go</button>
+   <span id="status">Connecting</span>
+ </form>
+</div>
+<iframe id="mirror" src="/view/" title="Live remote app or browser"></iframe>
+<button id="keyboardToggle" type="button" title="Type text or press keys on the remote computer">⌨ Keyboard</button>
+<div id="keyboardPanel" hidden>
+ <input id="sendText" type="password" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Type private text; sent only to the remote app">
+ <div class="keyboardActions">
+  <button type="button" id="sendTyped">Type into app</button>
+  <button type="button" id="toggleReveal">Show input</button>
+  <button type="button" data-key="Enter">Enter</button>
+  <button type="button" data-key="Tab">Tab</button>
+  <button type="button" data-key="Backspace">⌫</button>
+  <button type="button" data-key="Escape">Esc</button>
+ </div>
+</div>
+<button id="fullscreen" type="button">Full screen</button>
+<script>
+'use strict';
+const browserMode=__BROWSER_MODE__;
+const chrome=document.getElementById('chrome'),tabs=document.getElementById('tabstrip');
+const frame=document.getElementById('mirror'),address=document.getElementById('addr');
+const status=document.getElementById('status');
+if(browserMode)chrome.style.display='block';
+let selectedId=null,previousIds=null,pollBusy=false,tabSwitchBusy=false,refreshTimer=null;
+function btn(label,cls,click,title){
+ const b=document.createElement('button');
+ b.type='button';b.className=cls;b.textContent=label;
+ if(title)b.title=title;
+ b.addEventListener('click',click);
+ return b;
+}
+async function api(path,body){
+ const r=await fetch('/api/'+path,{
+  method:body===undefined?'GET':'POST',
+  headers:body===undefined?{}:{'Content-Type':'application/json'},
+  body:body===undefined?undefined:JSON.stringify(body),
+  cache:'no-store'
+ });
+ const x=await r.json();
+ if(!r.ok||!x.ok)throw Error(x.error||'Request failed');
+ return x;
+}
+function reloadMirror(){
+ frame.src='/view/?_='+Date.now();
+}
+async function act(fn){
+ if(tabSwitchBusy)return;
+ tabSwitchBusy=true;status.textContent='Switching...';
+ try{await fn();reloadMirror();await refreshTabs();}
+ catch(e){status.textContent=e.message;}
+ finally{tabSwitchBusy=false;}
+}
+async function refreshTabs(){
+ if(!browserMode||pollBusy)return;
+ pollBusy=true;
+ try{
+  const j=await api('tabs');
+  selectedId=j.selectedId;const found=new Set(j.tabs.map(t=>t.id));
+  if(previousIds){
+   const popup=j.tabs.find(t=>!previousIds.has(t.id)&&t.openerId===selectedId);
+   if(popup&&!tabSwitchBusy){
+    previousIds=found;
+    await act(()=>api('select',{id:popup.id}));
+    return;
+   }
+  }
+  previousIds=found;
+  tabs.replaceChildren();
+  for(const t of j.tabs){
+   const el=document.createElement('div');el.className='tab'+(t.id===selectedId?' selected':'');
+   const name=(t.title||t.url||'New tab').slice(0,100);
+   el.append(btn(name,'tab-name',()=>act(()=>api('select',{id:t.id})),t.url));
+   el.append(btn('×','tab-close',()=>act(()=>api('close',{id:t.id})),'Close tab'));
+   tabs.append(el);
+  }
+  tabs.append(btn('＋','',()=>act(()=>api('new',{})),'New tab'));
+  const selected=j.tabs.find(t=>t.id===selectedId);
+  if(selected&&document.activeElement!==address)address.value=selected.url||'';
+  status.textContent=j.tabs.length+' tab'+(j.tabs.length===1?'':'s');
+ }catch(e){status.textContent=e.message;}
+ finally{pollBusy=false;}
+}
+if(browserMode){
+ document.getElementById('nav').addEventListener('submit',e=>{
+  e.preventDefault();
+  const url=address.value.trim();if(url)act(()=>api('go',{url}));
+ });
+ document.getElementById('back').addEventListener('click',()=>act(()=>api('back',{})));
+ refreshTabs();refreshTimer=setInterval(refreshTabs,2500);
+}
+const kb=document.getElementById('keyboardPanel'),typed=document.getElementById('sendText');
+document.getElementById('keyboardToggle').addEventListener('click',()=>{kb.hidden=!kb.hidden;if(!kb.hidden)typed.focus();});
+document.getElementById('sendTyped').addEventListener('click',async()=>{
+ const v=typed.value;typed.value='';
+ if(!v)return;
+ try{const r=await fetch('/type',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({s:v}),cache:'no-store'});if(!r.ok)throw Error('failed');}
+ catch{alert('Typing into remote app failed');}
+});
+document.getElementById('toggleReveal').addEventListener('click',()=>{typed.type=typed.type==='password'?'text':'password';});
+for(const b of document.querySelectorAll('[data-key]'))b.addEventListener('click',async()=>{
+ try{await fetch('/key',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({key:b.dataset.key,code:b.dataset.key})});}
+ catch{alert('Remote key failed');}
+});
+document.getElementById('fullscreen').addEventListener('click',()=>{
+ if(document.fullscreenElement)document.exitFullscreen();
+ else document.documentElement.requestFullscreen?.();
+});
+</script>
+</body>
+</html>
