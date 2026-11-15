@@ -1,5 +1,8 @@
 # Dexa Superapp — public execution artifacts (not canonical project state)
 
+> **OWNER NONREGRESSION DIRECTIVE — VPN OFF IS MANDATORY (2026-11-15):** [Canonical private VPN-OFF Connectivity Contract](https://github.com/homayounisaghar/capability-fabric/blob/main/projects/dexa-dashboard-superapp/VPN_FREE_CONNECTIVITY_CONTRACT.md) and [scoped AGENTS.md](AGENTS.md) MUST be read before modifying web, Android/WebView, Service Worker, Cloudflare/API, Rana, remote control, voice/TTS, telemetry or release links. The owner's real phone reaches both Workers without VPN but the direct server timed out; v36 + web v1.8.70 immediate launch after force-stop/cache clearing is confirmed. Preserve Android WebViewClient **AND ServiceWorkerClient**, stable origin, dynamic N Worker selection, private auth/TLS, and no duplicate POST side effects. Every changed pipeline requires its own real-phone VPN-off acceptance; don't claim full Rana/native connectivity from boot alone.
+
+
 > **OWNER ARCHITECTURE DIRECTIVE — 2026-11-12.** Before proposing engine, dashboard, Android/WebView or voice-pipeline modifications, authorized project agents **must read** the canonical private [Dexa Owner Operation Success Manifesto](https://github.com/homayounisaghar/capability-fabric/blob/main/projects/dexa/OWNER_OPERATION_SUCCESS_MANIFESTO.md) and current [Dashboard state](https://github.com/homayounisaghar/capability-fabric/blob/main/projects/dexa-dashboard-superapp/PROJECT_STATE.md). The private repository, with active engine ref resolved from `WORK_REGISTRY.md`, is the source of truth. This folder contains public release artifacts, not a competing continuity root.
 
 ## Minimal owner-settled rules for readers of this public directory
