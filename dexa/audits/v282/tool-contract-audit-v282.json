@@ -1,0 +1,4740 @@
+{
+  "summary": {
+    "schema": "dexa.tool-contract-audit.v282",
+    "cfLive": 183,
+    "cfModelEligible": 178,
+    "cfOperatorOnly": 5,
+    "cfSchemaDrift": 0,
+    "externalCards": 282,
+    "unboundExternal": 104,
+    "nativeActions": 47,
+    "nativeExamplesValidated": 47,
+    "internalCards": 8,
+    "internalExamplesValidated": 8,
+    "cfExamplesValidated": 183,
+    "knownCfOutputAdapters": 12,
+    "unverifiedCfOutputShapes": 171,
+    "errors": []
+  },
+  "cfTools": [
+    {
+      "name": "alibaba_api_probe",
+      "route": "CF.alibaba_api_probe",
+      "catalogCapabilityId": "tool.cf.alibaba_api_probe",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "a6e59a0e9cc2caac9d3c507e367aa670ade389ec327faa9adb78114ce6267e71",
+      "requiredModelFields": [],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "alibaba_attachment_get",
+      "route": "CF.alibaba_attachment_get",
+      "catalogCapabilityId": "tool.cf.alibaba_attachment_get",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "f86d49dc9251b42661afcea02bf4db6745d6882f9fd0a3b5ce77339ee18692c4",
+      "requiredModelFields": [],
+      "optionalFields": [
+        "conversation",
+        "latest_message",
+        "message_handle"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "alibaba_capability_gaps",
+      "route": "CF.alibaba_capability_gaps",
+      "catalogCapabilityId": "tool.cf.alibaba_capability_gaps",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "a6e59a0e9cc2caac9d3c507e367aa670ade389ec327faa9adb78114ce6267e71",
+      "requiredModelFields": [],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "alibaba_capability_list",
+      "route": "CF.alibaba_capability_list",
+      "catalogCapabilityId": "tool.cf.alibaba_capability_list",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "a6e59a0e9cc2caac9d3c507e367aa670ade389ec327faa9adb78114ce6267e71",
+      "requiredModelFields": [],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "alibaba_contact_search",
+      "route": "CF.alibaba_contact_search",
+      "catalogCapabilityId": "tool.cf.alibaba_contact_search",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "ff4bf56ab0224322350a53be71a9c027d2f1d958b361fe1d07b63766b954e62d",
+      "requiredModelFields": [
+        "query"
+      ],
+      "optionalFields": [
+        "limit"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "query": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "alibaba_conversation_list",
+      "route": "CF.alibaba_conversation_list",
+      "catalogCapabilityId": "tool.cf.alibaba_conversation_list",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "bc798b8f34e9cdeac3593fa31eb5795ffeb84b4669313f496e73fbd67139e2f3",
+      "requiredModelFields": [],
+      "optionalFields": [
+        "limit"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "alibaba_conversation_search",
+      "route": "CF.alibaba_conversation_search",
+      "catalogCapabilityId": "tool.cf.alibaba_conversation_search",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "ff4bf56ab0224322350a53be71a9c027d2f1d958b361fe1d07b63766b954e62d",
+      "requiredModelFields": [
+        "query"
+      ],
+      "optionalFields": [
+        "limit"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "query": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "alibaba_delete",
+      "route": "CF.alibaba_delete",
+      "catalogCapabilityId": "tool.cf.alibaba_delete",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "82d7bdadb1a0947fb179628d7546b3d9f62df91f2965b68b66f9c55463a974a8",
+      "requiredModelFields": [
+        "confirm_irreversible",
+        "message_handle"
+      ],
+      "optionalFields": [
+        "for_everyone"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "message_handle": "example",
+        "confirm_irreversible": true
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "alibaba_file_upload",
+      "route": "CF.alibaba_file_upload",
+      "catalogCapabilityId": "tool.cf.alibaba_file_upload",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "ffbb358be09793f72d76a2f0e0b7625345d222136138d20a7b3ab4be03d655ef",
+      "requiredModelFields": [
+        "action"
+      ],
+      "optionalFields": [
+        "filename",
+        "media_type",
+        "sha256_hex",
+        "size_bytes",
+        "upload_id"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "action": "create"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "alibaba_file_upload_chunk",
+      "route": "CF.alibaba_file_upload_chunk",
+      "catalogCapabilityId": "tool.cf.alibaba_file_upload_chunk",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "0c84637cbf1264b3c2a391d0f1006fc56043f2cbb383df00291dd07bf264dd16",
+      "requiredModelFields": [
+        "data_base64",
+        "offset",
+        "upload_id"
+      ],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "upload_id": "0000000000000000000000000000000000000000000000000000000000000000",
+        "offset": 0,
+        "data_base64": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "alibaba_mark_read",
+      "route": "CF.alibaba_mark_read",
+      "catalogCapabilityId": "tool.cf.alibaba_mark_read",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "4ab0cf56f914ae4b3e4fc51328b62e58b9d4d521217d9d22652383cdbfd6ac56",
+      "requiredModelFields": [
+        "conversation"
+      ],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "conversation": "tgchat:example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "alibaba_message_get",
+      "route": "CF.alibaba_message_get",
+      "catalogCapabilityId": "tool.cf.alibaba_message_get",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "f86d49dc9251b42661afcea02bf4db6745d6882f9fd0a3b5ce77339ee18692c4",
+      "requiredModelFields": [],
+      "optionalFields": [
+        "conversation",
+        "latest_message",
+        "message_handle"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "alibaba_message_list",
+      "route": "CF.alibaba_message_list",
+      "catalogCapabilityId": "tool.cf.alibaba_message_list",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "7e721e467b945d1b757cb9ef78a4c978b4f23937fa24b57f24e8a8cec1bc6e19",
+      "requiredModelFields": [
+        "conversation"
+      ],
+      "optionalFields": [
+        "before_message_handle",
+        "limit"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "conversation": "tgchat:example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "alibaba_message_replies",
+      "route": "CF.alibaba_message_replies",
+      "catalogCapabilityId": "tool.cf.alibaba_message_replies",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "0f843c06a87d49fe425103e21cb888cf843bb124f18f3aee82d5dc0206a38e8c",
+      "requiredModelFields": [],
+      "optionalFields": [
+        "conversation",
+        "latest_message",
+        "limit",
+        "max_scan",
+        "message_handle"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "alibaba_message_search",
+      "route": "CF.alibaba_message_search",
+      "catalogCapabilityId": "tool.cf.alibaba_message_search",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "fa02a4a2c2b54365ab05481fabc76add22156045c5ce8032ec27843db17f0263",
+      "requiredModelFields": [
+        "query"
+      ],
+      "optionalFields": [
+        "conversation",
+        "limit"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "query": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "alibaba_mute",
+      "route": "CF.alibaba_mute",
+      "catalogCapabilityId": "tool.cf.alibaba_mute",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "25a5cd35ef5dc122e81a01a45cca2543be0675a4cf5f2af65165a18b9e8f7dbf",
+      "requiredModelFields": [
+        "conversation",
+        "muted"
+      ],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "conversation": "tgchat:example",
+        "muted": true
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "alibaba_pin",
+      "route": "CF.alibaba_pin",
+      "catalogCapabilityId": "tool.cf.alibaba_pin",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "0b74ad8156365eb64418d0722e9abee4b8901ac844ce5f47252ae086498c04ed",
+      "requiredModelFields": [
+        "conversation",
+        "pinned"
+      ],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "conversation": "tgchat:example",
+        "pinned": true
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "alibaba_reply",
+      "route": "CF.alibaba_reply",
+      "catalogCapabilityId": "tool.cf.alibaba_reply",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "ce32f707441e11bfa5fe506f57834816181ff4008bb1968cbf18b8ec32fc92f3",
+      "requiredModelFields": [
+        "text"
+      ],
+      "optionalFields": [
+        "conversation",
+        "latest_message",
+        "message_handle"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "text": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "alibaba_screenshot",
+      "route": "CF.alibaba_screenshot",
+      "catalogCapabilityId": "tool.cf.alibaba_screenshot",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "266f4dd88625f09b43be1eadf9d2bc822ed35d55c9ed1d0f3f32618e828b8c42",
+      "requiredModelFields": [],
+      "optionalFields": [
+        "format",
+        "quality"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "alibaba_send",
+      "route": "CF.alibaba_send",
+      "catalogCapabilityId": "tool.cf.alibaba_send",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "9aff3b0caebb32dd91bca09cba0fc0f2be70103c015f96dbcb1ae35322dca9e5",
+      "requiredModelFields": [
+        "target",
+        "text"
+      ],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "target": "example",
+        "text": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "alibaba_unread_list",
+      "route": "CF.alibaba_unread_list",
+      "catalogCapabilityId": "tool.cf.alibaba_unread_list",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "bc798b8f34e9cdeac3593fa31eb5795ffeb84b4669313f496e73fbd67139e2f3",
+      "requiredModelFields": [],
+      "optionalFields": [
+        "limit"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "audio_transcribe",
+      "route": "CF.audio_transcribe",
+      "catalogCapabilityId": "tool.cf.audio_transcribe",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "f8f7c28dd68b1aa5ac78ffd23e12a8ce57182135a345f57b9b5c9ae7605bc5c8",
+      "requiredModelFields": [],
+      "optionalFields": [
+        "batch_id",
+        "files"
+      ],
+      "observedOutputAdapter": true,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "audio_upload",
+      "route": "CF.audio_upload",
+      "catalogCapabilityId": "tool.cf.audio_upload",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "e8361f12d5d263e828bdf7b29010241e210496f3e2da10267315628b189fc00e",
+      "requiredModelFields": [
+        "action"
+      ],
+      "optionalFields": [
+        "data_base64",
+        "filename",
+        "media_type",
+        "offset",
+        "sha256_hex",
+        "size_bytes",
+        "upload_id"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "action": "create"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "bale_api_probe",
+      "route": "CF.bale_api_probe",
+      "catalogCapabilityId": "tool.cf.bale_api_probe",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "a6e59a0e9cc2caac9d3c507e367aa670ade389ec327faa9adb78114ce6267e71",
+      "requiredModelFields": [],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "bale_attachment_get",
+      "route": "CF.bale_attachment_get",
+      "catalogCapabilityId": "tool.cf.bale_attachment_get",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "ab272ec2929bd9b40b65b1044a4f6d8b60112747d74a0b7658047cae6eed4bb2",
+      "requiredModelFields": [],
+      "optionalFields": [
+        "attachment_index",
+        "conversation",
+        "latest_message",
+        "message_handle"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "bale_capability_gaps",
+      "route": "CF.bale_capability_gaps",
+      "catalogCapabilityId": "tool.cf.bale_capability_gaps",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "a6e59a0e9cc2caac9d3c507e367aa670ade389ec327faa9adb78114ce6267e71",
+      "requiredModelFields": [],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "bale_capability_list",
+      "route": "CF.bale_capability_list",
+      "catalogCapabilityId": "tool.cf.bale_capability_list",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "a6e59a0e9cc2caac9d3c507e367aa670ade389ec327faa9adb78114ce6267e71",
+      "requiredModelFields": [],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "bale_contact_search",
+      "route": "CF.bale_contact_search",
+      "catalogCapabilityId": "tool.cf.bale_contact_search",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "6be85f7c3eb61b2f34a9920b4aa6744429c841657616d308ebc90dd1abebf006",
+      "requiredModelFields": [
+        "query"
+      ],
+      "optionalFields": [
+        "limit"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "query": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "bale_conversation_list",
+      "route": "CF.bale_conversation_list",
+      "catalogCapabilityId": "tool.cf.bale_conversation_list",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "bc798b8f34e9cdeac3593fa31eb5795ffeb84b4669313f496e73fbd67139e2f3",
+      "requiredModelFields": [],
+      "optionalFields": [
+        "limit"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "bale_conversation_search",
+      "route": "CF.bale_conversation_search",
+      "catalogCapabilityId": "tool.cf.bale_conversation_search",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "6be85f7c3eb61b2f34a9920b4aa6744429c841657616d308ebc90dd1abebf006",
+      "requiredModelFields": [
+        "query"
+      ],
+      "optionalFields": [
+        "limit"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "query": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "bale_delete",
+      "route": "CF.bale_delete",
+      "catalogCapabilityId": "tool.cf.bale_delete",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "95a4b2231b18ce44e37cb228f370c600231493ea449f2c7c7a7e0cc77e649014",
+      "requiredModelFields": [
+        "confirm_irreversible"
+      ],
+      "optionalFields": [
+        "conversation",
+        "for_everyone",
+        "latest_message",
+        "message_handle"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "confirm_irreversible": true
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "bale_edit",
+      "route": "CF.bale_edit",
+      "catalogCapabilityId": "tool.cf.bale_edit",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "df51cdfda216817b9a331602df2cdc41b6f1b360da701879708305363db3c0e6",
+      "requiredModelFields": [
+        "text"
+      ],
+      "optionalFields": [
+        "conversation",
+        "latest_message",
+        "message_handle"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "text": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "bale_file_send",
+      "route": "CF.bale_file_send",
+      "catalogCapabilityId": "tool.cf.bale_file_send",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "8dcf2a2545a0f610ee7c9f86d9b46b9eb3a1b7da82037b0fe2cd06127aaa85a6",
+      "requiredModelFields": [
+        "file",
+        "target"
+      ],
+      "optionalFields": [
+        "caption"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "target": "example",
+        "file": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "bale_forward",
+      "route": "CF.bale_forward",
+      "catalogCapabilityId": "tool.cf.bale_forward",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "0a974ba2c40282c59f58a546d60a7d818293c2f68615972d4ee9954dd092ea7f",
+      "requiredModelFields": [
+        "target"
+      ],
+      "optionalFields": [
+        "latest_message",
+        "message_handle",
+        "source"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "target": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "bale_mark_read",
+      "route": "CF.bale_mark_read",
+      "catalogCapabilityId": "tool.cf.bale_mark_read",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "4ab0cf56f914ae4b3e4fc51328b62e58b9d4d521217d9d22652383cdbfd6ac56",
+      "requiredModelFields": [
+        "conversation"
+      ],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "conversation": "tgchat:example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "bale_mark_unread",
+      "route": "CF.bale_mark_unread",
+      "catalogCapabilityId": "tool.cf.bale_mark_unread",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "4ab0cf56f914ae4b3e4fc51328b62e58b9d4d521217d9d22652383cdbfd6ac56",
+      "requiredModelFields": [
+        "conversation"
+      ],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "conversation": "tgchat:example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "bale_message_list",
+      "route": "CF.bale_message_list",
+      "catalogCapabilityId": "tool.cf.bale_message_list",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "3f7d1c7531b6d69b119e23d1b13a323ded1b25ecd2f134dc7c1dba18b2de1494",
+      "requiredModelFields": [
+        "conversation"
+      ],
+      "optionalFields": [
+        "limit"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "conversation": "tgchat:example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "bale_message_replies",
+      "route": "CF.bale_message_replies",
+      "catalogCapabilityId": "tool.cf.bale_message_replies",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "0e3e4020b8b2e2093bef1da328762909f33d74d5b6ab1abbb895ea2d848b086d",
+      "requiredModelFields": [],
+      "optionalFields": [
+        "conversation",
+        "latest_message",
+        "limit",
+        "message_handle"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "bale_message_search",
+      "route": "CF.bale_message_search",
+      "catalogCapabilityId": "tool.cf.bale_message_search",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "016e5d2f300b27b246f83b6110880209be28648179cb158e18d901d3e2db74b0",
+      "requiredModelFields": [
+        "query"
+      ],
+      "optionalFields": [
+        "conversation",
+        "limit"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "query": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "bale_mute",
+      "route": "CF.bale_mute",
+      "catalogCapabilityId": "tool.cf.bale_mute",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "25a5cd35ef5dc122e81a01a45cca2543be0675a4cf5f2af65165a18b9e8f7dbf",
+      "requiredModelFields": [
+        "conversation",
+        "muted"
+      ],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "conversation": "tgchat:example",
+        "muted": true
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "bale_pin",
+      "route": "CF.bale_pin",
+      "catalogCapabilityId": "tool.cf.bale_pin",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "0b74ad8156365eb64418d0722e9abee4b8901ac844ce5f47252ae086498c04ed",
+      "requiredModelFields": [
+        "conversation",
+        "pinned"
+      ],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "conversation": "tgchat:example",
+        "pinned": true
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "bale_react",
+      "route": "CF.bale_react",
+      "catalogCapabilityId": "tool.cf.bale_react",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "542869bb54742ca0ab745d521faec33278b0a5585ecec3414f24450eccc7eccc",
+      "requiredModelFields": [],
+      "optionalFields": [
+        "conversation",
+        "emoji",
+        "latest_message",
+        "message_handle",
+        "remove"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "bale_reaction_get",
+      "route": "CF.bale_reaction_get",
+      "catalogCapabilityId": "tool.cf.bale_reaction_get",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "8a38937f339448dbc6e237487e8b5de3c5598a005d1638ac3a36d9902bfb2507",
+      "requiredModelFields": [],
+      "optionalFields": [
+        "conversation",
+        "latest_message",
+        "message_handle"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "bale_reply",
+      "route": "CF.bale_reply",
+      "catalogCapabilityId": "tool.cf.bale_reply",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "ed2c5c4e047cc8ad163e4b2bf4bf629171fe6a09daf0fcc99d6a0de7246fe71a",
+      "requiredModelFields": [
+        "text"
+      ],
+      "optionalFields": [
+        "conversation",
+        "latest_message",
+        "message_handle"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "text": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "bale_screenshot",
+      "route": "CF.bale_screenshot",
+      "catalogCapabilityId": "tool.cf.bale_screenshot",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "266f4dd88625f09b43be1eadf9d2bc822ed35d55c9ed1d0f3f32618e828b8c42",
+      "requiredModelFields": [],
+      "optionalFields": [
+        "format",
+        "quality"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "bale_send",
+      "route": "CF.bale_send",
+      "catalogCapabilityId": "tool.cf.bale_send",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "9aff3b0caebb32dd91bca09cba0fc0f2be70103c015f96dbcb1ae35322dca9e5",
+      "requiredModelFields": [
+        "target",
+        "text"
+      ],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "target": "example",
+        "text": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "bale_unread_list",
+      "route": "CF.bale_unread_list",
+      "catalogCapabilityId": "tool.cf.bale_unread_list",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "bc798b8f34e9cdeac3593fa31eb5795ffeb84b4669313f496e73fbd67139e2f3",
+      "requiredModelFields": [],
+      "optionalFields": [
+        "limit"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "bale_voice_send_file",
+      "route": "CF.bale_voice_send_file",
+      "catalogCapabilityId": "tool.cf.bale_voice_send_file",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "1b15f067afa9af6bb43ea3de35d8146805451133aa72c25d7bc09648b0daa8fc",
+      "requiredModelFields": [
+        "target"
+      ],
+      "optionalFields": [
+        "file",
+        "upload_id"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "target": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "cf_auth_mode_set",
+      "route": "CF.cf_auth_mode_set",
+      "catalogCapabilityId": "tool.cf.cf_auth_mode_set",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "c181986643cfd775af445f73503dc73965a495b3c5e6ad8421fd7df6aaf2a958",
+      "requiredModelFields": [
+        "mode"
+      ],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "mode": "disabled"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "cf_auth_owner_add",
+      "route": "CF.cf_auth_owner_add",
+      "catalogCapabilityId": "tool.cf.cf_auth_owner_add",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "1f021532b3d3794e97327bda4e10abf58797369b872cec12d82f9ef42c7f827e",
+      "requiredModelFields": [
+        "subject_fingerprint"
+      ],
+      "optionalFields": [
+        "label"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "subject_fingerprint": "cfsub_0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "cf_auth_owner_remove",
+      "route": "CF.cf_auth_owner_remove",
+      "catalogCapabilityId": "tool.cf.cf_auth_owner_remove",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "8332358cae04cb53b74575efc4e9d28145b88a1a138b5c7524c8edba433704d8",
+      "requiredModelFields": [
+        "subject_fingerprint"
+      ],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "subject_fingerprint": "cfsub_0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "cf_auth_status",
+      "route": "CF.cf_auth_status",
+      "catalogCapabilityId": "tool.cf.cf_auth_status",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "a6e59a0e9cc2caac9d3c507e367aa670ade389ec327faa9adb78114ce6267e71",
+      "requiredModelFields": [],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "cf_mirror_close",
+      "route": "CF.cf_mirror_close",
+      "catalogCapabilityId": null,
+      "executableByDexa": false,
+      "readOnly": false,
+      "inputSchemaSha256": "82a3134b2d899ec4bce699fe1b477654042f5cb9e806d69776fababf2400c849",
+      "requiredModelFields": [
+        "name"
+      ],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "excludedReason": "OPERATOR_MIRROR_NOT_OWNER_INTENT_AUTHORIZED",
+      "syntheticInputExample": {
+        "name": "0000000000000000000000000000000000000000"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "cf_mirror_open",
+      "route": "CF.cf_mirror_open",
+      "catalogCapabilityId": null,
+      "executableByDexa": false,
+      "readOnly": false,
+      "inputSchemaSha256": "351e759aed44e92139ce679cb6c9da489455fc3a6635f80808eae9a59e674f59",
+      "requiredModelFields": [],
+      "optionalFields": [
+        "app",
+        "cdp",
+        "full",
+        "interval",
+        "mode",
+        "name",
+        "no_fit",
+        "password",
+        "tab",
+        "ttl",
+        "x11"
+      ],
+      "observedOutputAdapter": false,
+      "excludedReason": "OPERATOR_MIRROR_NOT_OWNER_INTENT_AUTHORIZED",
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "cf_mirror_screenshot",
+      "route": "CF.cf_mirror_screenshot",
+      "catalogCapabilityId": null,
+      "executableByDexa": false,
+      "readOnly": false,
+      "inputSchemaSha256": "597dd83c963951be6d7511f7c7d71978a91d6b562368720f6fc68fe5b4235e18",
+      "requiredModelFields": [
+        "name"
+      ],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "excludedReason": "OPERATOR_MIRROR_NOT_OWNER_INTENT_AUTHORIZED",
+      "syntheticInputExample": {
+        "name": "0000000000000000000000000000000000000000"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "cf_mirror_sources",
+      "route": "CF.cf_mirror_sources",
+      "catalogCapabilityId": null,
+      "executableByDexa": false,
+      "readOnly": true,
+      "inputSchemaSha256": "a6e59a0e9cc2caac9d3c507e367aa670ade389ec327faa9adb78114ce6267e71",
+      "requiredModelFields": [],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "excludedReason": "OPERATOR_MIRROR_NOT_OWNER_INTENT_AUTHORIZED",
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "cf_mirror_status",
+      "route": "CF.cf_mirror_status",
+      "catalogCapabilityId": null,
+      "executableByDexa": false,
+      "readOnly": true,
+      "inputSchemaSha256": "a6e59a0e9cc2caac9d3c507e367aa670ade389ec327faa9adb78114ce6267e71",
+      "requiredModelFields": [],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "excludedReason": "OPERATOR_MIRROR_NOT_OWNER_INTENT_AUTHORIZED",
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "cf_oauth_approve",
+      "route": "CF.cf_oauth_approve",
+      "catalogCapabilityId": "tool.cf.cf_oauth_approve",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "7dd6e337e06319222d15b3de2ffe4613c7ea96e26c90af381feeb67d1226a752",
+      "requiredModelFields": [
+        "code"
+      ],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "code": "CF-000000000000"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "cf_whoami",
+      "route": "CF.cf_whoami",
+      "catalogCapabilityId": "tool.cf.cf_whoami",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "a6e59a0e9cc2caac9d3c507e367aa670ade389ec327faa9adb78114ce6267e71",
+      "requiredModelFields": [],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "github_auth_start",
+      "route": "CF.github_auth_start",
+      "catalogCapabilityId": "github.auth.start",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "a6e59a0e9cc2caac9d3c507e367aa670ade389ec327faa9adb78114ce6267e71",
+      "requiredModelFields": [],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "github_auth_status",
+      "route": "CF.github_auth_status",
+      "catalogCapabilityId": "github.auth.status",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "a6e59a0e9cc2caac9d3c507e367aa670ade389ec327faa9adb78114ce6267e71",
+      "requiredModelFields": [],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "github_branch_create",
+      "route": "CF.github_branch_create",
+      "catalogCapabilityId": "github.branch.create",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "c590f93dc4c87f68d81ea3ddfdeb4ea8f4fd17477c21d58f9b7f3f41400e742d",
+      "requiredModelFields": [
+        "from_ref",
+        "name",
+        "repo"
+      ],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "repo": "example/repo",
+        "name": "example",
+        "from_ref": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "github_branch_list",
+      "route": "CF.github_branch_list",
+      "catalogCapabilityId": "github.branch.list",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "c92d52e330cf03c7eb401a76a45b57c73f0e19c478b2302efa02344e8c629384",
+      "requiredModelFields": [
+        "repo"
+      ],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "repo": "example/repo"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "github_commit_get",
+      "route": "CF.github_commit_get",
+      "catalogCapabilityId": "github.commit.read",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "8e4de6e09e5debbcc3932c5ed5d7205244841876da63c2ef8ff23427fe818bc1",
+      "requiredModelFields": [
+        "repo",
+        "sha"
+      ],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "repo": "example/repo",
+        "sha": "0000000000000000000000000000000000000000"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "github_commit_list",
+      "route": "CF.github_commit_list",
+      "catalogCapabilityId": "github.commit.list",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "057215da15130cede185db755862977b7d0561f62dcecb2c0c935cdca9d6b727",
+      "requiredModelFields": [
+        "ref",
+        "repo"
+      ],
+      "optionalFields": [
+        "path"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "repo": "example/repo",
+        "ref": "main"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "github_compare",
+      "route": "CF.github_compare",
+      "catalogCapabilityId": "github.commit.compare",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "329a5dcf13646d9628e8690e57d5fc8348e721b568043f5ea394c437eaabc1f6",
+      "requiredModelFields": [
+        "base",
+        "head",
+        "repo"
+      ],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "repo": "example/repo",
+        "base": "example",
+        "head": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "github_file_delete",
+      "route": "CF.github_file_delete",
+      "catalogCapabilityId": "github.file.delete",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "faec346de5f35839f1ddec04db9bd9f42ca608fa826a2f3f3d4dfa25e2775d10",
+      "requiredModelFields": [
+        "branch",
+        "confirm",
+        "message",
+        "path",
+        "repo"
+      ],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "repo": "example/repo",
+        "branch": "main",
+        "path": "/tmp/dexa-example",
+        "message": "example",
+        "confirm": true
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "github_file_get",
+      "route": "CF.github_file_get",
+      "catalogCapabilityId": "github.file.read",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "c0587e408ff197f12e40d3a49d49e4ee5dc3e199352ef38ad63c4944736360cd",
+      "requiredModelFields": [
+        "path",
+        "ref",
+        "repo"
+      ],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "repo": "example/repo",
+        "ref": "main",
+        "path": "/tmp/dexa-example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "github_files_push",
+      "route": "CF.github_files_push",
+      "catalogCapabilityId": "github.files.commit_batch",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "0ae4bb2bab97481b00cd88af317fe67b59510f255ed7e7689b9ebdad18294331",
+      "requiredModelFields": [
+        "branch",
+        "files",
+        "message",
+        "repo"
+      ],
+      "optionalFields": [
+        "delete_paths"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "repo": "example/repo",
+        "branch": "main",
+        "message": "example",
+        "files": []
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "github_pr_create",
+      "route": "CF.github_pr_create",
+      "catalogCapabilityId": "github.pr.create",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "7a3e86be094af3aa28b61c09fd0ec63239a860261fa2a3dd7d765b443bee1426",
+      "requiredModelFields": [
+        "base",
+        "head",
+        "repo",
+        "title"
+      ],
+      "optionalFields": [
+        "body",
+        "draft"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "repo": "example/repo",
+        "title": "example",
+        "head": "example",
+        "base": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "github_pr_list",
+      "route": "CF.github_pr_list",
+      "catalogCapabilityId": "github.pr.list",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "dadb09f786282761a802eb3d95b7d7a8983224f527278ee07383b03674f53ff7",
+      "requiredModelFields": [
+        "repo"
+      ],
+      "optionalFields": [
+        "state"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "repo": "example/repo"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "github_pr_merge",
+      "route": "CF.github_pr_merge",
+      "catalogCapabilityId": "github.pr.merge",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "a2896d7c249b44a5ddb2a022e79ebe304a8beee0ef3b43f46d10f38921fdef0f",
+      "requiredModelFields": [
+        "confirm",
+        "number",
+        "repo"
+      ],
+      "optionalFields": [
+        "method"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "repo": "example/repo",
+        "number": 1,
+        "confirm": true
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "github_repo_list",
+      "route": "CF.github_repo_list",
+      "catalogCapabilityId": "github.repository.list",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "a6e59a0e9cc2caac9d3c507e367aa670ade389ec327faa9adb78114ce6267e71",
+      "requiredModelFields": [],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "github_search_code",
+      "route": "CF.github_search_code",
+      "catalogCapabilityId": "github.code.search",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "b715a27c79cfa3f68d23ccc5843c1bf17c6e06f62e4b7147d1a91d247381a22e",
+      "requiredModelFields": [
+        "query"
+      ],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "query": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "github_tree_list",
+      "route": "CF.github_tree_list",
+      "catalogCapabilityId": "github.tree.list",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "057215da15130cede185db755862977b7d0561f62dcecb2c0c935cdca9d6b727",
+      "requiredModelFields": [
+        "ref",
+        "repo"
+      ],
+      "optionalFields": [
+        "path"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "repo": "example/repo",
+        "ref": "main"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "onshape_artifact",
+      "route": "CF.onshape_artifact",
+      "catalogCapabilityId": "tool.cf.onshape_artifact",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "3b1b5ddc483f71642cff9a5b1caafe726d2432a34f46dd9d998c1903ca64c528",
+      "requiredModelFields": [
+        "action"
+      ],
+      "optionalFields": [
+        "artifact_id",
+        "content_type",
+        "data_base64",
+        "filename",
+        "length",
+        "offset"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "action": "write"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "onshape_capability_list",
+      "route": "CF.onshape_capability_list",
+      "catalogCapabilityId": "onshape.capability.list",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "084c50c68cb97b750b25f0c5b43c0a5236448d70ea5ce3042e37510657c7b62c",
+      "requiredModelFields": [],
+      "optionalFields": [
+        "search"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "onshape_catalog_refresh",
+      "route": "CF.onshape_catalog_refresh",
+      "catalogCapabilityId": "tool.cf.onshape_catalog_refresh",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "a6e59a0e9cc2caac9d3c507e367aa670ade389ec327faa9adb78114ce6267e71",
+      "requiredModelFields": [],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "onshape_operation_execute",
+      "route": "CF.onshape_operation_execute",
+      "catalogCapabilityId": "onshape.operation.execute",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "d7ffd04d16e23b8b153852a2f18736aefe02f63d1fb752878d2ea4c526ee7097",
+      "requiredModelFields": [
+        "operation"
+      ],
+      "optionalFields": [
+        "arguments",
+        "body",
+        "headers",
+        "multipart",
+        "owner_confirmed_high_impact",
+        "path_params",
+        "query",
+        "request_id",
+        "target"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "operation": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "onshape_operation_status",
+      "route": "CF.onshape_operation_status",
+      "catalogCapabilityId": "tool.cf.onshape_operation_status",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "512627dd9e6f5baa505cc9d6b7a67758ac7c8ab03c6dffe93ebe8f7e7b10633b",
+      "requiredModelFields": [
+        "operation_id"
+      ],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "operation_id": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "onshape_reauth",
+      "route": "CF.onshape_reauth",
+      "catalogCapabilityId": "tool.cf.onshape_reauth",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "a6e59a0e9cc2caac9d3c507e367aa670ade389ec327faa9adb78114ce6267e71",
+      "requiredModelFields": [],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "onshape_resolve",
+      "route": "CF.onshape_resolve",
+      "catalogCapabilityId": "tool.cf.onshape_resolve",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "23148620901ef33d4a0ad556f042c530eaa805d8b9c245266d13f2963d3f4488",
+      "requiredModelFields": [],
+      "optionalFields": [
+        "document_id",
+        "document_url",
+        "element_id",
+        "element_name",
+        "feature_name",
+        "include_elements",
+        "include_features",
+        "include_parts",
+        "part_name",
+        "workspace_id"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "onshape_screenshot",
+      "route": "CF.onshape_screenshot",
+      "catalogCapabilityId": "onshape.screenshot.capture",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "1ee8fadde5f872910a44433c6de9b81a36190e7d98f187440ba8c5ecea44fb56",
+      "requiredModelFields": [],
+      "optionalFields": [
+        "document_id",
+        "element_id",
+        "format",
+        "quality",
+        "workspace_id"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "onshape_status",
+      "route": "CF.onshape_status",
+      "catalogCapabilityId": "tool.cf.onshape_status",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "a6e59a0e9cc2caac9d3c507e367aa670ade389ec327faa9adb78114ce6267e71",
+      "requiredModelFields": [],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "onshape_verification_submit",
+      "route": "CF.onshape_verification_submit",
+      "catalogCapabilityId": "tool.cf.onshape_verification_submit",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "51e5a31513fa45a7c788fc48abd755da002563be5fa8653d5de3e324da0893b4",
+      "requiredModelFields": [
+        "code"
+      ],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "code": "0000000000000000"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "server_admin_approve",
+      "route": "CF.server_admin_approve",
+      "catalogCapabilityId": "tool.cf.server_admin_approve",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "c94782dbc880e8ffc9de1c6db626399261ef8c2923c8ee7a041a2def57d91c4b",
+      "requiredModelFields": [
+        "code",
+        "request_id"
+      ],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "request_id": "0000000000000000",
+        "code": "000000"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "server_admin_cancel",
+      "route": "CF.server_admin_cancel",
+      "catalogCapabilityId": "tool.cf.server_admin_cancel",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "2b984b996d2c3a27dbbc70d335a879024b466788252a2b33ddbf662e7d367171",
+      "requiredModelFields": [
+        "request_id"
+      ],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "request_id": "0000000000000000"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "server_admin_list",
+      "route": "CF.server_admin_list",
+      "catalogCapabilityId": "tool.cf.server_admin_list",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "a6e59a0e9cc2caac9d3c507e367aa670ade389ec327faa9adb78114ce6267e71",
+      "requiredModelFields": [],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "server_admin_output",
+      "route": "CF.server_admin_output",
+      "catalogCapabilityId": "tool.cf.server_admin_output",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "2b984b996d2c3a27dbbc70d335a879024b466788252a2b33ddbf662e7d367171",
+      "requiredModelFields": [
+        "request_id"
+      ],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "request_id": "0000000000000000"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "server_admin_request",
+      "route": "CF.server_admin_request",
+      "catalogCapabilityId": "tool.cf.server_admin_request",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "c56ce47d3877f60b29e7cac0dce75d01935aa397c4b446ecc854af64ead9dafc",
+      "requiredModelFields": [
+        "command",
+        "reason"
+      ],
+      "optionalFields": [
+        "background",
+        "timeout_s"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "command": "example",
+        "reason": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "server_exec",
+      "route": "CF.server_exec",
+      "catalogCapabilityId": "server.command.run",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "b529e889d960a9dbc5d7fdd7849459d6dcb6e0bc8596905026364abcae770b79",
+      "requiredModelFields": [
+        "command"
+      ],
+      "optionalFields": [
+        "background",
+        "cwd",
+        "env",
+        "label",
+        "timeout_s"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "command": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "server_file_copy",
+      "route": "CF.server_file_copy",
+      "catalogCapabilityId": "server.file.copy",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "65e41b2e76a7c8778a4f2926a1f6fd130af54fc073581088dfbc4991f819e2f7",
+      "requiredModelFields": [
+        "dst",
+        "src"
+      ],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "src": "example",
+        "dst": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "server_file_delete",
+      "route": "CF.server_file_delete",
+      "catalogCapabilityId": "server.file.delete",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "06c4d1699978f6a2a5f831859dbbf1e9c8ba3e46b11e66f4b36018ac42c78ac9",
+      "requiredModelFields": [
+        "confirm",
+        "path"
+      ],
+      "optionalFields": [
+        "recursive"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "path": "/tmp/dexa-example",
+        "confirm": true
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "server_file_edit",
+      "route": "CF.server_file_edit",
+      "catalogCapabilityId": "server.file.edit",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "06410d7d3ac918ef1016e473120053b5a3245966bff04a3b5f47d28192aed4e8",
+      "requiredModelFields": [
+        "new_text",
+        "old_text",
+        "path"
+      ],
+      "optionalFields": [
+        "replace_all"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "path": "/tmp/dexa-example",
+        "old_text": "example",
+        "new_text": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "server_file_fetch",
+      "route": "CF.server_file_fetch",
+      "catalogCapabilityId": "server.file.fetch",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "2726578bc80842cfef88dca7b71eca9263d7cf2fcc1bc6a6102b8c2c50be8b10",
+      "requiredModelFields": [
+        "dest_path",
+        "url_or_cf_download_path"
+      ],
+      "optionalFields": [
+        "expected_size",
+        "sha256"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "url_or_cf_download_path": "example",
+        "dest_path": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "server_file_link",
+      "route": "CF.server_file_link",
+      "catalogCapabilityId": "tool.cf.server_file_link",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "ee8934c2f321ff693b65ab23febf87f9732320b7cfee08ff873b632ec7d7799f",
+      "requiredModelFields": [
+        "path"
+      ],
+      "optionalFields": [
+        "ttl_s"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "path": "/tmp/dexa-example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "server_file_list",
+      "route": "CF.server_file_list",
+      "catalogCapabilityId": "server.directory.list",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "a9a42ccd5187c48520f28d82a215276ff64ab2c1d5e9180ada08e41976329413",
+      "requiredModelFields": [
+        "path"
+      ],
+      "optionalFields": [
+        "depth"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "path": "/tmp/dexa-example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "server_file_move",
+      "route": "CF.server_file_move",
+      "catalogCapabilityId": "server.file.move",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "65e41b2e76a7c8778a4f2926a1f6fd130af54fc073581088dfbc4991f819e2f7",
+      "requiredModelFields": [
+        "dst",
+        "src"
+      ],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "src": "example",
+        "dst": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "server_file_read",
+      "route": "CF.server_file_read",
+      "catalogCapabilityId": "server.file.read",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "65e94f3c74d49bed364710bb0bf06340203a67fa3fbe27c93ea59993d4747cfc",
+      "requiredModelFields": [
+        "path"
+      ],
+      "optionalFields": [
+        "encoding",
+        "length",
+        "offset"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "path": "/tmp/dexa-example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "server_file_search",
+      "route": "CF.server_file_search",
+      "catalogCapabilityId": "server.file.search",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "28c335262c6d90dabae04d01fe524d64b9b2afa912002905b68f52c846d0c2fc",
+      "requiredModelFields": [
+        "path"
+      ],
+      "optionalFields": [
+        "content_regex",
+        "max_results",
+        "name_glob"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "path": "/tmp/dexa-example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "server_file_stat",
+      "route": "CF.server_file_stat",
+      "catalogCapabilityId": "server.file.stat",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "7c2f9618e5b82a7b3e485978f31b7ec06e4fee89e473944f75892312aa7d9131",
+      "requiredModelFields": [
+        "path"
+      ],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "path": "/tmp/dexa-example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "server_file_upload",
+      "route": "CF.server_file_upload",
+      "catalogCapabilityId": "server.file.upload",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "4f5594ca8b312cca3f76ddfe977086e7c2f11b3bdbd97ea1e39a72e72ec60a1d",
+      "requiredModelFields": [
+        "action"
+      ],
+      "optionalFields": [
+        "content_base64",
+        "offset",
+        "path",
+        "sha256",
+        "size_bytes",
+        "upload_id"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "action": "start"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "server_file_write",
+      "route": "CF.server_file_write",
+      "catalogCapabilityId": "server.file.write",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "cff7560ac2058701ba0d0cdd7dd2e172a6cddb4110459aed0943ef2b37488bcd",
+      "requiredModelFields": [
+        "path"
+      ],
+      "optionalFields": [
+        "content",
+        "content_base64",
+        "make_dirs",
+        "mode"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "path": "/tmp/dexa-example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "server_job_kill",
+      "route": "CF.server_job_kill",
+      "catalogCapabilityId": "server.job.kill",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "3663175382b10fa73dc3339c62a224fad7405ee32c48b34b0081d139500f92c5",
+      "requiredModelFields": [
+        "job_id"
+      ],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "job_id": "00000000000000000000000000000000"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "server_job_list",
+      "route": "CF.server_job_list",
+      "catalogCapabilityId": "server.job.list",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "a6e59a0e9cc2caac9d3c507e367aa670ade389ec327faa9adb78114ce6267e71",
+      "requiredModelFields": [],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "server_job_output",
+      "route": "CF.server_job_output",
+      "catalogCapabilityId": "server.job.output",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "bfe546a0339fb29ad0dfa695cfb053317ecf184fbbcfd3da88f3ff3e40befd3d",
+      "requiredModelFields": [
+        "job_id"
+      ],
+      "optionalFields": [
+        "stderr_offset",
+        "stdout_offset"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "job_id": "00000000000000000000000000000000"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "server_job_status",
+      "route": "CF.server_job_status",
+      "catalogCapabilityId": "server.job.status",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "3663175382b10fa73dc3339c62a224fad7405ee32c48b34b0081d139500f92c5",
+      "requiredModelFields": [
+        "job_id"
+      ],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "job_id": "00000000000000000000000000000000"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "server_status",
+      "route": "CF.server_status",
+      "catalogCapabilityId": "tool.cf.server_status",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "a6e59a0e9cc2caac9d3c507e367aa670ade389ec327faa9adb78114ce6267e71",
+      "requiredModelFields": [],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "telegram_attachment_get",
+      "route": "CF.telegram_attachment_get",
+      "catalogCapabilityId": "tool.cf.telegram_attachment_get",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "bd18e7501e92a148bdbb99e46f2cd18dcf687e0340b95fc17978480f5cec9e2e",
+      "requiredModelFields": [],
+      "optionalFields": [
+        "attachment_handle",
+        "attachment_index",
+        "conversation",
+        "latest_message",
+        "message_handle",
+        "portable_format"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "telegram_capability_gaps",
+      "route": "CF.telegram_capability_gaps",
+      "catalogCapabilityId": "tool.cf.telegram_capability_gaps",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "83f9d543ebef807456548c93e995ad9bb664f65720af7faed5f507b4a06ff173",
+      "requiredModelFields": [],
+      "optionalFields": [
+        "limit"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "telegram_capability_list",
+      "route": "CF.telegram_capability_list",
+      "catalogCapabilityId": "tool.cf.telegram_capability_list",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "91fe402d3d1826bf1c855b7af17c9393460aa380fb9d07bb02b91b88b274e1d5",
+      "requiredModelFields": [],
+      "optionalFields": [
+        "family"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "telegram_contact_search",
+      "route": "CF.telegram_contact_search",
+      "catalogCapabilityId": "tool.cf.telegram_contact_search",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "6be85f7c3eb61b2f34a9920b4aa6744429c841657616d308ebc90dd1abebf006",
+      "requiredModelFields": [
+        "query"
+      ],
+      "optionalFields": [
+        "limit"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "query": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "telegram_conversation_list",
+      "route": "CF.telegram_conversation_list",
+      "catalogCapabilityId": "telegram.conversation.list",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "bc798b8f34e9cdeac3593fa31eb5795ffeb84b4669313f496e73fbd67139e2f3",
+      "requiredModelFields": [],
+      "optionalFields": [
+        "limit"
+      ],
+      "observedOutputAdapter": true,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "telegram_conversation_search",
+      "route": "CF.telegram_conversation_search",
+      "catalogCapabilityId": "tool.cf.telegram_conversation_search",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "6be85f7c3eb61b2f34a9920b4aa6744429c841657616d308ebc90dd1abebf006",
+      "requiredModelFields": [
+        "query"
+      ],
+      "optionalFields": [
+        "limit"
+      ],
+      "observedOutputAdapter": true,
+      "syntheticInputExample": {
+        "query": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "telegram_edit",
+      "route": "CF.telegram_edit",
+      "catalogCapabilityId": "tool.cf.telegram_edit",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "7639a0faa6a3cd5292eeef221b08242c13996e98614658b4dbfc3e41141ecad8",
+      "requiredModelFields": [
+        "text"
+      ],
+      "optionalFields": [
+        "conversation",
+        "latest_message",
+        "message_handle"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "text": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "telegram_file_send",
+      "route": "CF.telegram_file_send",
+      "catalogCapabilityId": "tool.cf.telegram_file_send",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "10a75ddfa569d2871e8257b4ab56c3bbaa6e04ed240354e54f7f9b1bfa04efa4",
+      "requiredModelFields": [
+        "target",
+        "upload_id"
+      ],
+      "optionalFields": [
+        "caption"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "upload_id": "0000000000000000000000000000000000000000000000000000000000000000",
+        "target": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "telegram_file_upload",
+      "route": "CF.telegram_file_upload",
+      "catalogCapabilityId": "tool.cf.telegram_file_upload",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "ffbb358be09793f72d76a2f0e0b7625345d222136138d20a7b3ab4be03d655ef",
+      "requiredModelFields": [
+        "action"
+      ],
+      "optionalFields": [
+        "filename",
+        "media_type",
+        "sha256_hex",
+        "size_bytes",
+        "upload_id"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "action": "create"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "telegram_file_upload_chunk",
+      "route": "CF.telegram_file_upload_chunk",
+      "catalogCapabilityId": "tool.cf.telegram_file_upload_chunk",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "481fdfc9e0e723b05ddac86af07b83f4cddc897d7b5b18556d94d8629a2ea25b",
+      "requiredModelFields": [
+        "offset",
+        "upload_id"
+      ],
+      "optionalFields": [
+        "data_base64",
+        "zero_bytes"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "upload_id": "0000000000000000000000000000000000000000000000000000000000000000",
+        "offset": 0
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "telegram_forward",
+      "route": "CF.telegram_forward",
+      "catalogCapabilityId": "tool.cf.telegram_forward",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "030be498575948b25000e6ea84f8e332b76cdf97dadc342fbcaa2b8ac863fecd",
+      "requiredModelFields": [
+        "target"
+      ],
+      "optionalFields": [
+        "latest_message",
+        "message_handle",
+        "source"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "target": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "telegram_mark_read",
+      "route": "CF.telegram_mark_read",
+      "catalogCapabilityId": "tool.cf.telegram_mark_read",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "7e4f4c53ee1a61be68efc290060974647a93ee181b413e580bdce4a465d424c4",
+      "requiredModelFields": [
+        "conversation",
+        "count"
+      ],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "conversation": "tgchat:example",
+        "count": 1
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "telegram_mark_unread",
+      "route": "CF.telegram_mark_unread",
+      "catalogCapabilityId": "tool.cf.telegram_mark_unread",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "4ab0cf56f914ae4b3e4fc51328b62e58b9d4d521217d9d22652383cdbfd6ac56",
+      "requiredModelFields": [
+        "conversation"
+      ],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "conversation": "tgchat:example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "telegram_message_list",
+      "route": "CF.telegram_message_list",
+      "catalogCapabilityId": "telegram.message.read_recent",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "3f7d1c7531b6d69b119e23d1b13a323ded1b25ecd2f134dc7c1dba18b2de1494",
+      "requiredModelFields": [
+        "conversation"
+      ],
+      "optionalFields": [
+        "limit"
+      ],
+      "observedOutputAdapter": true,
+      "syntheticInputExample": {
+        "conversation": "tgchat:example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "telegram_message_replies",
+      "route": "CF.telegram_message_replies",
+      "catalogCapabilityId": "tool.cf.telegram_message_replies",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "4928b23f779a4579fd9cc37aa92caba62aaacfc32fffe458b4abbdaeb0d39e11",
+      "requiredModelFields": [],
+      "optionalFields": [
+        "conversation",
+        "latest_message",
+        "limit",
+        "message_handle"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "telegram_message_search",
+      "route": "CF.telegram_message_search",
+      "catalogCapabilityId": "tool.cf.telegram_message_search",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "016e5d2f300b27b246f83b6110880209be28648179cb158e18d901d3e2db74b0",
+      "requiredModelFields": [
+        "query"
+      ],
+      "optionalFields": [
+        "conversation",
+        "limit"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "query": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "telegram_mute",
+      "route": "CF.telegram_mute",
+      "catalogCapabilityId": "tool.cf.telegram_mute",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "25a5cd35ef5dc122e81a01a45cca2543be0675a4cf5f2af65165a18b9e8f7dbf",
+      "requiredModelFields": [
+        "conversation",
+        "muted"
+      ],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "conversation": "tgchat:example",
+        "muted": true
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "telegram_react",
+      "route": "CF.telegram_react",
+      "catalogCapabilityId": "telegram.message.react",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "1d7b509ddb34fa187b10a332cade816d762da6e36539f04c65159dd67659b072",
+      "requiredModelFields": [],
+      "optionalFields": [
+        "conversation",
+        "emoji",
+        "latest_message",
+        "message_handle",
+        "remove"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "telegram_reaction_catalog",
+      "route": "CF.telegram_reaction_catalog",
+      "catalogCapabilityId": "tool.cf.telegram_reaction_catalog",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "a6e59a0e9cc2caac9d3c507e367aa670ade389ec327faa9adb78114ce6267e71",
+      "requiredModelFields": [],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "telegram_reaction_get",
+      "route": "CF.telegram_reaction_get",
+      "catalogCapabilityId": "tool.cf.telegram_reaction_get",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "1f54803d7ea93f0539604d688854d51046a03291fe8e16eaf057d32e14c128f9",
+      "requiredModelFields": [],
+      "optionalFields": [
+        "conversation",
+        "latest_message",
+        "message_handle"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "telegram_reply",
+      "route": "CF.telegram_reply",
+      "catalogCapabilityId": "tool.cf.telegram_reply",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "7639a0faa6a3cd5292eeef221b08242c13996e98614658b4dbfc3e41141ecad8",
+      "requiredModelFields": [
+        "text"
+      ],
+      "optionalFields": [
+        "conversation",
+        "latest_message",
+        "message_handle"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "text": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "telegram_screenshot",
+      "route": "CF.telegram_screenshot",
+      "catalogCapabilityId": "telegram.screenshot.capture",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "266f4dd88625f09b43be1eadf9d2bc822ed35d55c9ed1d0f3f32618e828b8c42",
+      "requiredModelFields": [],
+      "optionalFields": [
+        "format",
+        "quality"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "telegram_semantic_invoke",
+      "route": "CF.telegram_semantic_invoke",
+      "catalogCapabilityId": "tool.cf.telegram_semantic_invoke",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "3cfded241b7477b0625efed4fa7bc4c43cb4053b05e24d0c98cb0c201c3baa84",
+      "requiredModelFields": [
+        "operation"
+      ],
+      "optionalFields": [
+        "args",
+        "confirm_irreversible",
+        "purpose"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "operation": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "telegram_send",
+      "route": "CF.telegram_send",
+      "catalogCapabilityId": "telegram.message.send",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "9aff3b0caebb32dd91bca09cba0fc0f2be70103c015f96dbcb1ae35322dca9e5",
+      "requiredModelFields": [
+        "target",
+        "text"
+      ],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "target": "example",
+        "text": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "telegram_unread_list",
+      "route": "CF.telegram_unread_list",
+      "catalogCapabilityId": "tool.cf.telegram_unread_list",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "bc798b8f34e9cdeac3593fa31eb5795ffeb84b4669313f496e73fbd67139e2f3",
+      "requiredModelFields": [],
+      "optionalFields": [
+        "limit"
+      ],
+      "observedOutputAdapter": true,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "telegram_voice_send_file",
+      "route": "CF.telegram_voice_send_file",
+      "catalogCapabilityId": "tool.cf.telegram_voice_send_file",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "92c66e9114fb7396c6c0c6dc2d25cd5306f628a00adbb6e52f5d775a8ade5d60",
+      "requiredModelFields": [
+        "target"
+      ],
+      "optionalFields": [
+        "file",
+        "filename",
+        "media_type",
+        "upload_id"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "target": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "voice_convert",
+      "route": "CF.voice_convert",
+      "catalogCapabilityId": "tool.cf.voice_convert",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "df604a533c0a0cf4dc14aad76fd7ac2ef97c1c5492ef9ade2d1a7579ef84385a",
+      "requiredModelFields": [
+        "action"
+      ],
+      "optionalFields": [
+        "file",
+        "index_rate",
+        "output_format",
+        "pitch"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "action": "status"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "wechat_cached_media_get",
+      "route": "CF.wechat_cached_media_get",
+      "catalogCapabilityId": "tool.cf.wechat_cached_media_get",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "c815cdc5a66260c5749e86d6fda62278bb87ba62c22c3b9aea2da6bf090a6cb8",
+      "requiredModelFields": [
+        "file_ref"
+      ],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "file_ref": "wechatcache:000000000000000000000000000000000000000000000000"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "wechat_cached_media_list",
+      "route": "CF.wechat_cached_media_list",
+      "catalogCapabilityId": "tool.cf.wechat_cached_media_list",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "0b2afbb44107efc8e74f49fdb779c8caf7cbbafd858967004eeb901bd8cbcc9f",
+      "requiredModelFields": [],
+      "optionalFields": [
+        "kind",
+        "limit"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "wechat_capability_gaps",
+      "route": "CF.wechat_capability_gaps",
+      "catalogCapabilityId": "tool.cf.wechat_capability_gaps",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "a6e59a0e9cc2caac9d3c507e367aa670ade389ec327faa9adb78114ce6267e71",
+      "requiredModelFields": [],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "wechat_capability_list",
+      "route": "CF.wechat_capability_list",
+      "catalogCapabilityId": "tool.cf.wechat_capability_list",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "a6e59a0e9cc2caac9d3c507e367aa670ade389ec327faa9adb78114ce6267e71",
+      "requiredModelFields": [],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "wechat_chat_view",
+      "route": "CF.wechat_chat_view",
+      "catalogCapabilityId": "tool.cf.wechat_chat_view",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "29c673993b6add5480280fe121c291a5f532370ef3039ba13a61ff00a764ac73",
+      "requiredModelFields": [
+        "target"
+      ],
+      "optionalFields": [
+        "allow_mark_read"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "target": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "wechat_contact_search",
+      "route": "CF.wechat_contact_search",
+      "catalogCapabilityId": "tool.cf.wechat_contact_search",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "8d6a1f3a3006409a2f99ed743f79b4b9b90d3b6be371bff393c499ba999639d8",
+      "requiredModelFields": [
+        "query"
+      ],
+      "optionalFields": [
+        "limit"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "query": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "wechat_conversation_list",
+      "route": "CF.wechat_conversation_list",
+      "catalogCapabilityId": "tool.cf.wechat_conversation_list",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "aaedc3aa4d66c6fea1fc66e908b7263c41328a84c37aea1dc6515e051b2c7fd5",
+      "requiredModelFields": [],
+      "optionalFields": [
+        "limit",
+        "max_pages"
+      ],
+      "observedOutputAdapter": true,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "wechat_conversation_search",
+      "route": "CF.wechat_conversation_search",
+      "catalogCapabilityId": "tool.cf.wechat_conversation_search",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "8d6a1f3a3006409a2f99ed743f79b4b9b90d3b6be371bff393c499ba999639d8",
+      "requiredModelFields": [
+        "query"
+      ],
+      "optionalFields": [
+        "limit"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "query": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "wechat_file_send",
+      "route": "CF.wechat_file_send",
+      "catalogCapabilityId": "tool.cf.wechat_file_send",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "fd201fd56785ce154388726b0ec85f94c5bcfa19c3db7390e7501c274eb48dd6",
+      "requiredModelFields": [
+        "target",
+        "upload_id"
+      ],
+      "optionalFields": [
+        "allow_mark_read",
+        "dry_run"
+      ],
+      "observedOutputAdapter": true,
+      "syntheticInputExample": {
+        "target": "example",
+        "upload_id": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "wechat_file_upload",
+      "route": "CF.wechat_file_upload",
+      "catalogCapabilityId": "tool.cf.wechat_file_upload",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "ffbb358be09793f72d76a2f0e0b7625345d222136138d20a7b3ab4be03d655ef",
+      "requiredModelFields": [
+        "action"
+      ],
+      "optionalFields": [
+        "filename",
+        "media_type",
+        "sha256_hex",
+        "size_bytes",
+        "upload_id"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "action": "create"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "wechat_file_upload_chunk",
+      "route": "CF.wechat_file_upload_chunk",
+      "catalogCapabilityId": "tool.cf.wechat_file_upload_chunk",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "ba359cf48a0ecb085d5c9dff8926cda7392c31b38858f7c9a4b91bc55b412ac9",
+      "requiredModelFields": [
+        "data_base64",
+        "offset",
+        "upload_id"
+      ],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "upload_id": "0000000000000000000000000000000000000000000000000000000000000000",
+        "offset": 0,
+        "data_base64": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "wechat_mark_read",
+      "route": "CF.wechat_mark_read",
+      "catalogCapabilityId": "tool.cf.wechat_mark_read",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "650a55d8e23bbbfbcb23e3a395406a54b9bbb57fe42b06a4af31ab178c1c33d4",
+      "requiredModelFields": [
+        "target"
+      ],
+      "optionalFields": [
+        "dry_run"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "target": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "wechat_mark_unread",
+      "route": "CF.wechat_mark_unread",
+      "catalogCapabilityId": "tool.cf.wechat_mark_unread",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "650a55d8e23bbbfbcb23e3a395406a54b9bbb57fe42b06a4af31ab178c1c33d4",
+      "requiredModelFields": [
+        "target"
+      ],
+      "optionalFields": [
+        "dry_run"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "target": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "wechat_message_list",
+      "route": "CF.wechat_message_list",
+      "catalogCapabilityId": "tool.cf.wechat_message_list",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "e7738923bb75bfbf676b8d5eeba1fcf3e71ca51865efbe78b3f8c2936832b118",
+      "requiredModelFields": [
+        "target"
+      ],
+      "optionalFields": [
+        "allow_mark_read",
+        "limit"
+      ],
+      "observedOutputAdapter": true,
+      "syntheticInputExample": {
+        "target": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "wechat_message_search",
+      "route": "CF.wechat_message_search",
+      "catalogCapabilityId": "tool.cf.wechat_message_search",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "8d6a1f3a3006409a2f99ed743f79b4b9b90d3b6be371bff393c499ba999639d8",
+      "requiredModelFields": [
+        "query"
+      ],
+      "optionalFields": [
+        "limit"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "query": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "wechat_mute",
+      "route": "CF.wechat_mute",
+      "catalogCapabilityId": "tool.cf.wechat_mute",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "59e82edc9c561c34d174fe3408475da72e62f40fa4acc59039156d1148fc56f6",
+      "requiredModelFields": [
+        "desired",
+        "target"
+      ],
+      "optionalFields": [
+        "dry_run"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "target": "example",
+        "desired": true
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "wechat_native_voice_capability",
+      "route": "CF.wechat_native_voice_capability",
+      "catalogCapabilityId": "tool.cf.wechat_native_voice_capability",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "a6e59a0e9cc2caac9d3c507e367aa670ade389ec327faa9adb78114ce6267e71",
+      "requiredModelFields": [],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "wechat_pin",
+      "route": "CF.wechat_pin",
+      "catalogCapabilityId": "tool.cf.wechat_pin",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "59e82edc9c561c34d174fe3408475da72e62f40fa4acc59039156d1148fc56f6",
+      "requiredModelFields": [
+        "desired",
+        "target"
+      ],
+      "optionalFields": [
+        "dry_run"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "target": "example",
+        "desired": true
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "wechat_screenshot",
+      "route": "CF.wechat_screenshot",
+      "catalogCapabilityId": "tool.cf.wechat_screenshot",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "a6e59a0e9cc2caac9d3c507e367aa670ade389ec327faa9adb78114ce6267e71",
+      "requiredModelFields": [],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "wechat_selected_conversation",
+      "route": "CF.wechat_selected_conversation",
+      "catalogCapabilityId": "tool.cf.wechat_selected_conversation",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "a6e59a0e9cc2caac9d3c507e367aa670ade389ec327faa9adb78114ce6267e71",
+      "requiredModelFields": [],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "wechat_send",
+      "route": "CF.wechat_send",
+      "catalogCapabilityId": "tool.cf.wechat_send",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "415177cb6fac78cd95238eba219ad0adfb14fa928c01841d8a945b458bb13bbd",
+      "requiredModelFields": [
+        "target",
+        "text"
+      ],
+      "optionalFields": [
+        "allow_mark_read",
+        "dry_run"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "target": "example",
+        "text": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "wechat_unread_list",
+      "route": "CF.wechat_unread_list",
+      "catalogCapabilityId": "tool.cf.wechat_unread_list",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "aaedc3aa4d66c6fea1fc66e908b7263c41328a84c37aea1dc6515e051b2c7fd5",
+      "requiredModelFields": [],
+      "optionalFields": [
+        "limit",
+        "max_pages"
+      ],
+      "observedOutputAdapter": true,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "whatsapp_attachment_get",
+      "route": "CF.whatsapp_attachment_get",
+      "catalogCapabilityId": "tool.cf.whatsapp_attachment_get",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "83cb83bcb20697ce44f6e3109960ce73d0bd756e3b05b912a00513fc55db0ca0",
+      "requiredModelFields": [],
+      "optionalFields": [
+        "conversation",
+        "latest_message",
+        "message_handle"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "whatsapp_capability_gaps",
+      "route": "CF.whatsapp_capability_gaps",
+      "catalogCapabilityId": "tool.cf.whatsapp_capability_gaps",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "a6e59a0e9cc2caac9d3c507e367aa670ade389ec327faa9adb78114ce6267e71",
+      "requiredModelFields": [],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "whatsapp_capability_list",
+      "route": "CF.whatsapp_capability_list",
+      "catalogCapabilityId": "tool.cf.whatsapp_capability_list",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "a6e59a0e9cc2caac9d3c507e367aa670ade389ec327faa9adb78114ce6267e71",
+      "requiredModelFields": [],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "whatsapp_contact_search",
+      "route": "CF.whatsapp_contact_search",
+      "catalogCapabilityId": "tool.cf.whatsapp_contact_search",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "6be85f7c3eb61b2f34a9920b4aa6744429c841657616d308ebc90dd1abebf006",
+      "requiredModelFields": [
+        "query"
+      ],
+      "optionalFields": [
+        "limit"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "query": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "whatsapp_conversation_list",
+      "route": "CF.whatsapp_conversation_list",
+      "catalogCapabilityId": "tool.cf.whatsapp_conversation_list",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "bc798b8f34e9cdeac3593fa31eb5795ffeb84b4669313f496e73fbd67139e2f3",
+      "requiredModelFields": [],
+      "optionalFields": [
+        "limit"
+      ],
+      "observedOutputAdapter": true,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "whatsapp_conversation_search",
+      "route": "CF.whatsapp_conversation_search",
+      "catalogCapabilityId": "tool.cf.whatsapp_conversation_search",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "6be85f7c3eb61b2f34a9920b4aa6744429c841657616d308ebc90dd1abebf006",
+      "requiredModelFields": [
+        "query"
+      ],
+      "optionalFields": [
+        "limit"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "query": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "whatsapp_delete",
+      "route": "CF.whatsapp_delete",
+      "catalogCapabilityId": "tool.cf.whatsapp_delete",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "2ab62ae80cefba7e1a710d575fdc1af2dc693f717d386a06095c286bd4967fad",
+      "requiredModelFields": [
+        "confirm_irreversible"
+      ],
+      "optionalFields": [
+        "conversation",
+        "for_everyone",
+        "latest_message",
+        "message_handle"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "confirm_irreversible": true
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "whatsapp_edit",
+      "route": "CF.whatsapp_edit",
+      "catalogCapabilityId": "tool.cf.whatsapp_edit",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "dc69d92beb34844f7f5666ccef6d064c5cc5dcead9696ed3cc91aa533a467adf",
+      "requiredModelFields": [
+        "text"
+      ],
+      "optionalFields": [
+        "conversation",
+        "latest_message",
+        "message_handle"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "text": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "whatsapp_file_send",
+      "route": "CF.whatsapp_file_send",
+      "catalogCapabilityId": "tool.cf.whatsapp_file_send",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "ce7fad651e662dcec08b8c644c984ce091639a69b5753629ef91565a275b2e61",
+      "requiredModelFields": [
+        "target"
+      ],
+      "optionalFields": [
+        "caption",
+        "file",
+        "upload_id"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "target": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "whatsapp_file_upload",
+      "route": "CF.whatsapp_file_upload",
+      "catalogCapabilityId": "tool.cf.whatsapp_file_upload",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "ffbb358be09793f72d76a2f0e0b7625345d222136138d20a7b3ab4be03d655ef",
+      "requiredModelFields": [
+        "action"
+      ],
+      "optionalFields": [
+        "filename",
+        "media_type",
+        "sha256_hex",
+        "size_bytes",
+        "upload_id"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "action": "create"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "whatsapp_file_upload_chunk",
+      "route": "CF.whatsapp_file_upload_chunk",
+      "catalogCapabilityId": "tool.cf.whatsapp_file_upload_chunk",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "481fdfc9e0e723b05ddac86af07b83f4cddc897d7b5b18556d94d8629a2ea25b",
+      "requiredModelFields": [
+        "offset",
+        "upload_id"
+      ],
+      "optionalFields": [
+        "data_base64",
+        "zero_bytes"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "upload_id": "0000000000000000000000000000000000000000000000000000000000000000",
+        "offset": 0
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "whatsapp_forward",
+      "route": "CF.whatsapp_forward",
+      "catalogCapabilityId": "tool.cf.whatsapp_forward",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "fc50e9fef2d855ed3b1e623a6e9cbc18d2563650c4195826aee0094e0b3e630b",
+      "requiredModelFields": [
+        "target"
+      ],
+      "optionalFields": [
+        "latest_message",
+        "message_handle",
+        "source"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "target": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "whatsapp_mark_read",
+      "route": "CF.whatsapp_mark_read",
+      "catalogCapabilityId": "tool.cf.whatsapp_mark_read",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "4ab0cf56f914ae4b3e4fc51328b62e58b9d4d521217d9d22652383cdbfd6ac56",
+      "requiredModelFields": [
+        "conversation"
+      ],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "conversation": "tgchat:example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "whatsapp_mark_unread",
+      "route": "CF.whatsapp_mark_unread",
+      "catalogCapabilityId": "tool.cf.whatsapp_mark_unread",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "4ab0cf56f914ae4b3e4fc51328b62e58b9d4d521217d9d22652383cdbfd6ac56",
+      "requiredModelFields": [
+        "conversation"
+      ],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "conversation": "tgchat:example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "whatsapp_message_get",
+      "route": "CF.whatsapp_message_get",
+      "catalogCapabilityId": "tool.cf.whatsapp_message_get",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "89d5b0da0e84d6e4290c475fc8700199e1d313ae1244fe7dfda303fc9b690760",
+      "requiredModelFields": [],
+      "optionalFields": [
+        "conversation",
+        "include_quoted",
+        "latest_message",
+        "message_handle"
+      ],
+      "observedOutputAdapter": true,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "whatsapp_message_list",
+      "route": "CF.whatsapp_message_list",
+      "catalogCapabilityId": "tool.cf.whatsapp_message_list",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "07c73d2e1651647f53c7bf6aef48131b2f7232b9e961dd007298a118131a65ef",
+      "requiredModelFields": [
+        "conversation"
+      ],
+      "optionalFields": [
+        "before_message_handle",
+        "limit"
+      ],
+      "observedOutputAdapter": true,
+      "syntheticInputExample": {
+        "conversation": "tgchat:example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "whatsapp_message_search",
+      "route": "CF.whatsapp_message_search",
+      "catalogCapabilityId": "tool.cf.whatsapp_message_search",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "016e5d2f300b27b246f83b6110880209be28648179cb158e18d901d3e2db74b0",
+      "requiredModelFields": [
+        "query"
+      ],
+      "optionalFields": [
+        "conversation",
+        "limit"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "query": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "whatsapp_mute",
+      "route": "CF.whatsapp_mute",
+      "catalogCapabilityId": "tool.cf.whatsapp_mute",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "25a5cd35ef5dc122e81a01a45cca2543be0675a4cf5f2af65165a18b9e8f7dbf",
+      "requiredModelFields": [
+        "conversation",
+        "muted"
+      ],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "conversation": "tgchat:example",
+        "muted": true
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "whatsapp_pin",
+      "route": "CF.whatsapp_pin",
+      "catalogCapabilityId": "tool.cf.whatsapp_pin",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "0b74ad8156365eb64418d0722e9abee4b8901ac844ce5f47252ae086498c04ed",
+      "requiredModelFields": [
+        "conversation",
+        "pinned"
+      ],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "conversation": "tgchat:example",
+        "pinned": true
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "whatsapp_react",
+      "route": "CF.whatsapp_react",
+      "catalogCapabilityId": "tool.cf.whatsapp_react",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "771a7563d20bec831f8fa53b152d6f933efe90779a38e5f61d199661124fde3a",
+      "requiredModelFields": [],
+      "optionalFields": [
+        "conversation",
+        "emoji",
+        "latest_message",
+        "message_handle",
+        "remove"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "whatsapp_reaction_get",
+      "route": "CF.whatsapp_reaction_get",
+      "catalogCapabilityId": "tool.cf.whatsapp_reaction_get",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "83cb83bcb20697ce44f6e3109960ce73d0bd756e3b05b912a00513fc55db0ca0",
+      "requiredModelFields": [],
+      "optionalFields": [
+        "conversation",
+        "latest_message",
+        "message_handle"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "whatsapp_reply",
+      "route": "CF.whatsapp_reply",
+      "catalogCapabilityId": "tool.cf.whatsapp_reply",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "dc69d92beb34844f7f5666ccef6d064c5cc5dcead9696ed3cc91aa533a467adf",
+      "requiredModelFields": [
+        "text"
+      ],
+      "optionalFields": [
+        "conversation",
+        "latest_message",
+        "message_handle"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "text": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "whatsapp_screenshot",
+      "route": "CF.whatsapp_screenshot",
+      "catalogCapabilityId": "tool.cf.whatsapp_screenshot",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "266f4dd88625f09b43be1eadf9d2bc822ed35d55c9ed1d0f3f32618e828b8c42",
+      "requiredModelFields": [],
+      "optionalFields": [
+        "format",
+        "quality"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "whatsapp_send",
+      "route": "CF.whatsapp_send",
+      "catalogCapabilityId": "tool.cf.whatsapp_send",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "9aff3b0caebb32dd91bca09cba0fc0f2be70103c015f96dbcb1ae35322dca9e5",
+      "requiredModelFields": [
+        "target",
+        "text"
+      ],
+      "optionalFields": [],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "target": "example",
+        "text": "example"
+      },
+      "exampleValidated": true
+    },
+    {
+      "name": "whatsapp_unread_list",
+      "route": "CF.whatsapp_unread_list",
+      "catalogCapabilityId": "tool.cf.whatsapp_unread_list",
+      "executableByDexa": true,
+      "readOnly": true,
+      "inputSchemaSha256": "bc798b8f34e9cdeac3593fa31eb5795ffeb84b4669313f496e73fbd67139e2f3",
+      "requiredModelFields": [],
+      "optionalFields": [
+        "limit"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {},
+      "exampleValidated": true
+    },
+    {
+      "name": "whatsapp_voice_send_file",
+      "route": "CF.whatsapp_voice_send_file",
+      "catalogCapabilityId": "tool.cf.whatsapp_voice_send_file",
+      "executableByDexa": true,
+      "readOnly": false,
+      "inputSchemaSha256": "1b15f067afa9af6bb43ea3de35d8146805451133aa72c25d7bc09648b0daa8fc",
+      "requiredModelFields": [
+        "target"
+      ],
+      "optionalFields": [
+        "file",
+        "upload_id"
+      ],
+      "observedOutputAdapter": false,
+      "syntheticInputExample": {
+        "target": "example"
+      },
+      "exampleValidated": true
+    }
+  ],
+  "nativeActions": [
+    {
+      "name": "system.health",
+      "action": "dexa.android.invoke",
+      "requiredModelFields": [],
+      "optionalFields": [],
+      "syntheticInputExample": {},
+      "exampleValidated": true,
+      "resultFields": [
+        "package"
+      ],
+      "resultExampleStatus": "RECEIPT_CONTRACT_ONLY_NOT_ALL_FIELDS_OBSERVED"
+    },
+    {
+      "name": "capability.inventory",
+      "action": "dexa.android.invoke",
+      "requiredModelFields": [],
+      "optionalFields": [],
+      "syntheticInputExample": {},
+      "exampleValidated": true,
+      "resultFields": [
+        "manifest"
+      ],
+      "resultExampleStatus": "RECEIPT_CONTRACT_ONLY_NOT_ALL_FIELDS_OBSERVED"
+    },
+    {
+      "name": "device.state.get",
+      "action": "dexa.android.invoke",
+      "requiredModelFields": [],
+      "optionalFields": [],
+      "syntheticInputExample": {},
+      "exampleValidated": true,
+      "resultFields": [
+        "state"
+      ],
+      "resultExampleStatus": "RECEIPT_CONTRACT_ONLY_NOT_ALL_FIELDS_OBSERVED"
+    },
+    {
+      "name": "notification.post",
+      "action": "dexa.android.invoke",
+      "requiredModelFields": [],
+      "optionalFields": [
+        "text",
+        "title"
+      ],
+      "syntheticInputExample": {},
+      "exampleValidated": true,
+      "resultFields": [],
+      "resultExampleStatus": "RECEIPT_CONTRACT_ONLY_NOT_ALL_FIELDS_OBSERVED"
+    },
+    {
+      "name": "notification.access.status",
+      "action": "dexa.android.invoke",
+      "requiredModelFields": [],
+      "optionalFields": [],
+      "syntheticInputExample": {},
+      "exampleValidated": true,
+      "resultFields": [
+        "status"
+      ],
+      "resultExampleStatus": "RECEIPT_CONTRACT_ONLY_NOT_ALL_FIELDS_OBSERVED"
+    },
+    {
+      "name": "notification.inbox.status",
+      "action": "dexa.android.invoke",
+      "requiredModelFields": [],
+      "optionalFields": [],
+      "syntheticInputExample": {},
+      "exampleValidated": true,
+      "resultFields": [
+        "inbox"
+      ],
+      "resultExampleStatus": "RECEIPT_CONTRACT_ONLY_NOT_ALL_FIELDS_OBSERVED"
+    },
+    {
+      "name": "notification.inventory.metadata",
+      "action": "dexa.android.invoke",
+      "requiredModelFields": [],
+      "optionalFields": [
+        "limit"
+      ],
+      "syntheticInputExample": {},
+      "exampleValidated": true,
+      "resultFields": [
+        "inventory"
+      ],
+      "resultExampleStatus": "RECEIPT_CONTRACT_ONLY_NOT_ALL_FIELDS_OBSERVED"
+    },
+    {
+      "name": "notification.dismiss",
+      "action": "dexa.android.invoke",
+      "requiredModelFields": [
+        "expected_content_hash",
+        "expected_package",
+        "notification_id"
+      ],
+      "optionalFields": [
+        "allow_nonclearable_ongoing"
+      ],
+      "syntheticInputExample": {
+        "expected_content_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+        "expected_package": "com.example.app",
+        "notification_id": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "exampleValidated": true,
+      "resultFields": [],
+      "resultExampleStatus": "RECEIPT_CONTRACT_ONLY_NOT_ALL_FIELDS_OBSERVED"
+    },
+    {
+      "name": "notification.snooze",
+      "action": "dexa.android.invoke",
+      "requiredModelFields": [
+        "duration_ms",
+        "expected_content_hash",
+        "notification_id"
+      ],
+      "optionalFields": [],
+      "syntheticInputExample": {
+        "duration_ms": 60000,
+        "expected_content_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+        "notification_id": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "exampleValidated": true,
+      "resultFields": [],
+      "resultExampleStatus": "RECEIPT_CONTRACT_ONLY_NOT_ALL_FIELDS_OBSERVED"
+    },
+    {
+      "name": "notification.control.selftest",
+      "action": "dexa.android.invoke",
+      "requiredModelFields": [],
+      "optionalFields": [],
+      "syntheticInputExample": {},
+      "exampleValidated": true,
+      "resultFields": [],
+      "resultExampleStatus": "RECEIPT_CONTRACT_ONLY_NOT_ALL_FIELDS_OBSERVED"
+    },
+    {
+      "name": "display.present_text",
+      "action": "dexa.android.invoke",
+      "requiredModelFields": [],
+      "optionalFields": [
+        "text"
+      ],
+      "syntheticInputExample": {},
+      "exampleValidated": true,
+      "resultFields": [
+        "presentation"
+      ],
+      "resultExampleStatus": "RECEIPT_CONTRACT_ONLY_NOT_ALL_FIELDS_OBSERVED"
+    },
+    {
+      "name": "display.present_image",
+      "action": "dexa.android.invoke",
+      "requiredModelFields": [
+        "artifact_id"
+      ],
+      "optionalFields": [
+        "mime"
+      ],
+      "syntheticInputExample": {
+        "artifact_id": "example"
+      },
+      "exampleValidated": true,
+      "resultFields": [
+        "presentation",
+        "artifact_id",
+        "mime"
+      ],
+      "resultExampleStatus": "RECEIPT_CONTRACT_ONLY_NOT_ALL_FIELDS_OBSERVED"
+    },
+    {
+      "name": "artifact.fetch_verify_cache",
+      "action": "dexa.android.invoke",
+      "requiredModelFields": [
+        "sha256",
+        "url"
+      ],
+      "optionalFields": [
+        "max_bytes",
+        "mime"
+      ],
+      "syntheticInputExample": {
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "url": "https://example.invalid"
+      },
+      "exampleValidated": true,
+      "resultFields": [],
+      "resultExampleStatus": "RECEIPT_CONTRACT_ONLY_NOT_ALL_FIELDS_OBSERVED"
+    },
+    {
+      "name": "display.present_artifact",
+      "action": "dexa.android.invoke",
+      "requiredModelFields": [
+        "artifact_id"
+      ],
+      "optionalFields": [
+        "mime"
+      ],
+      "syntheticInputExample": {
+        "artifact_id": "example"
+      },
+      "exampleValidated": true,
+      "resultFields": [],
+      "resultExampleStatus": "RECEIPT_CONTRACT_ONLY_NOT_ALL_FIELDS_OBSERVED"
+    },
+    {
+      "name": "tts.speak",
+      "action": "dexa.android.invoke",
+      "requiredModelFields": [
+        "text"
+      ],
+      "optionalFields": [
+        "language"
+      ],
+      "syntheticInputExample": {
+        "text": "example"
+      },
+      "exampleValidated": true,
+      "resultFields": [],
+      "resultExampleStatus": "RECEIPT_CONTRACT_ONLY_NOT_ALL_FIELDS_OBSERVED"
+    },
+    {
+      "name": "media.control",
+      "action": "dexa.android.invoke",
+      "requiredModelFields": [
+        "operation"
+      ],
+      "optionalFields": [],
+      "syntheticInputExample": {
+        "operation": "play_pause"
+      },
+      "exampleValidated": true,
+      "resultFields": [
+        "operation"
+      ],
+      "resultExampleStatus": "RECEIPT_CONTRACT_ONLY_NOT_ALL_FIELDS_OBSERVED"
+    },
+    {
+      "name": "storage.status",
+      "action": "dexa.android.invoke",
+      "requiredModelFields": [],
+      "optionalFields": [],
+      "syntheticInputExample": {},
+      "exampleValidated": true,
+      "resultFields": [
+        "storage"
+      ],
+      "resultExampleStatus": "RECEIPT_CONTRACT_ONLY_NOT_ALL_FIELDS_OBSERVED"
+    },
+    {
+      "name": "storage.list",
+      "action": "dexa.android.invoke",
+      "requiredModelFields": [],
+      "optionalFields": [
+        "directory",
+        "limit"
+      ],
+      "syntheticInputExample": {},
+      "exampleValidated": true,
+      "resultFields": [
+        "listing"
+      ],
+      "resultExampleStatus": "RECEIPT_CONTRACT_ONLY_NOT_ALL_FIELDS_OBSERVED"
+    },
+    {
+      "name": "storage.stat",
+      "action": "dexa.android.invoke",
+      "requiredModelFields": [
+        "path"
+      ],
+      "optionalFields": [],
+      "syntheticInputExample": {
+        "path": "/tmp/dexa-example"
+      },
+      "exampleValidated": true,
+      "resultFields": [
+        "entry"
+      ],
+      "resultExampleStatus": "RECEIPT_CONTRACT_ONLY_NOT_ALL_FIELDS_OBSERVED"
+    },
+    {
+      "name": "storage.search",
+      "action": "dexa.android.invoke",
+      "requiredModelFields": [],
+      "optionalFields": [
+        "alternate_queries",
+        "directory",
+        "extension",
+        "limit",
+        "query",
+        "recursive"
+      ],
+      "syntheticInputExample": {
+        "query": "example"
+      },
+      "exampleValidated": true,
+      "resultFields": [
+        "search"
+      ],
+      "resultExampleStatus": "RECEIPT_CONTRACT_ONLY_NOT_ALL_FIELDS_OBSERVED"
+    },
+    {
+      "name": "storage.file.save_from_url",
+      "action": "dexa.android.invoke",
+      "requiredModelFields": [
+        "filename",
+        "sha256",
+        "size_bytes",
+        "url"
+      ],
+      "optionalFields": [
+        "directory",
+        "mime"
+      ],
+      "syntheticInputExample": {
+        "filename": "example",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "size_bytes": 1,
+        "url": "https://example.invalid"
+      },
+      "exampleValidated": true,
+      "resultFields": [],
+      "resultExampleStatus": "RECEIPT_CONTRACT_ONLY_NOT_ALL_FIELDS_OBSERVED"
+    },
+    {
+      "name": "storage.file.upload_to_url",
+      "action": "dexa.android.invoke",
+      "requiredModelFields": [
+        "path",
+        "size_bytes",
+        "upload_url"
+      ],
+      "optionalFields": [],
+      "syntheticInputExample": {
+        "path": "/tmp/dexa-example",
+        "size_bytes": 1,
+        "upload_url": "https://example.invalid"
+      },
+      "exampleValidated": true,
+      "resultFields": [],
+      "resultExampleStatus": "RECEIPT_CONTRACT_ONLY_NOT_ALL_FIELDS_OBSERVED"
+    },
+    {
+      "name": "sms.status",
+      "action": "dexa.android.invoke",
+      "requiredModelFields": [],
+      "optionalFields": [],
+      "syntheticInputExample": {},
+      "exampleValidated": true,
+      "resultFields": [
+        "messaging"
+      ],
+      "resultExampleStatus": "RECEIPT_CONTRACT_ONLY_NOT_ALL_FIELDS_OBSERVED"
+    },
+    {
+      "name": "sms.list",
+      "action": "dexa.android.invoke",
+      "requiredModelFields": [],
+      "optionalFields": [
+        "address",
+        "box",
+        "limit",
+        "since_ms",
+        "unread_only"
+      ],
+      "syntheticInputExample": {},
+      "exampleValidated": true,
+      "resultFields": [
+        "messages"
+      ],
+      "resultExampleStatus": "RECEIPT_CONTRACT_ONLY_NOT_ALL_FIELDS_OBSERVED"
+    },
+    {
+      "name": "sms.conversation_list",
+      "action": "dexa.android.invoke",
+      "requiredModelFields": [],
+      "optionalFields": [
+        "limit"
+      ],
+      "syntheticInputExample": {},
+      "exampleValidated": true,
+      "resultFields": [
+        "conversations"
+      ],
+      "resultExampleStatus": "RECEIPT_CONTRACT_ONLY_NOT_ALL_FIELDS_OBSERVED"
+    },
+    {
+      "name": "sms.search",
+      "action": "dexa.android.invoke",
+      "requiredModelFields": [
+        "query"
+      ],
+      "optionalFields": [
+        "box",
+        "limit",
+        "since_ms"
+      ],
+      "syntheticInputExample": {
+        "query": "example"
+      },
+      "exampleValidated": true,
+      "resultFields": [
+        "messages"
+      ],
+      "resultExampleStatus": "RECEIPT_CONTRACT_ONLY_NOT_ALL_FIELDS_OBSERVED"
+    },
+    {
+      "name": "contacts.search",
+      "action": "dexa.android.invoke",
+      "requiredModelFields": [
+        "query"
+      ],
+      "optionalFields": [
+        "limit"
+      ],
+      "syntheticInputExample": {
+        "query": "example"
+      },
+      "exampleValidated": true,
+      "resultFields": [
+        "contacts"
+      ],
+      "resultExampleStatus": "RECEIPT_CONTRACT_ONLY_NOT_ALL_FIELDS_OBSERVED"
+    },
+    {
+      "name": "sms.send",
+      "action": "dexa.android.invoke",
+      "requiredModelFields": [
+        "body",
+        "recipient"
+      ],
+      "optionalFields": [
+        "subscription_id"
+      ],
+      "syntheticInputExample": {
+        "body": "example",
+        "recipient": "example"
+      },
+      "exampleValidated": true,
+      "resultFields": [],
+      "resultExampleStatus": "RECEIPT_CONTRACT_ONLY_NOT_ALL_FIELDS_OBSERVED"
+    },
+    {
+      "name": "sms.mark_read",
+      "action": "dexa.android.invoke",
+      "requiredModelFields": [
+        "message_id"
+      ],
+      "optionalFields": [
+        "read"
+      ],
+      "syntheticInputExample": {
+        "message_id": "00000000000000000000000000000000"
+      },
+      "exampleValidated": true,
+      "resultFields": [],
+      "resultExampleStatus": "RECEIPT_CONTRACT_ONLY_NOT_ALL_FIELDS_OBSERVED"
+    },
+    {
+      "name": "sms.delete",
+      "action": "dexa.android.invoke",
+      "requiredModelFields": [
+        "confirm",
+        "message_id"
+      ],
+      "optionalFields": [],
+      "syntheticInputExample": {
+        "confirm": true,
+        "message_id": "00000000000000000000000000000000"
+      },
+      "exampleValidated": true,
+      "resultFields": [],
+      "resultExampleStatus": "RECEIPT_CONTRACT_ONLY_NOT_ALL_FIELDS_OBSERVED"
+    },
+    {
+      "name": "sms.thread_delete",
+      "action": "dexa.android.invoke",
+      "requiredModelFields": [
+        "confirm",
+        "thread_id"
+      ],
+      "optionalFields": [],
+      "syntheticInputExample": {
+        "confirm": true,
+        "thread_id": "00000000000000000000000000000000"
+      },
+      "exampleValidated": true,
+      "resultFields": [],
+      "resultExampleStatus": "RECEIPT_CONTRACT_ONLY_NOT_ALL_FIELDS_OBSERVED"
+    },
+    {
+      "name": "app.open",
+      "action": "dexa.android.invoke",
+      "requiredModelFields": [
+        "package"
+      ],
+      "optionalFields": [],
+      "syntheticInputExample": {
+        "package": "com.example.app"
+      },
+      "exampleValidated": true,
+      "resultFields": [],
+      "resultExampleStatus": "RECEIPT_CONTRACT_ONLY_NOT_ALL_FIELDS_OBSERVED"
+    },
+    {
+      "name": "url.open",
+      "action": "dexa.android.invoke",
+      "requiredModelFields": [
+        "url"
+      ],
+      "optionalFields": [],
+      "syntheticInputExample": {
+        "url": "https://example.invalid"
+      },
+      "exampleValidated": true,
+      "resultFields": [],
+      "resultExampleStatus": "RECEIPT_CONTRACT_ONLY_NOT_ALL_FIELDS_OBSERVED"
+    },
+    {
+      "name": "navigation.open",
+      "action": "dexa.android.invoke",
+      "requiredModelFields": [
+        "query"
+      ],
+      "optionalFields": [],
+      "syntheticInputExample": {
+        "query": "example"
+      },
+      "exampleValidated": true,
+      "resultFields": [],
+      "resultExampleStatus": "RECEIPT_CONTRACT_ONLY_NOT_ALL_FIELDS_OBSERVED"
+    },
+    {
+      "name": "phone.dial",
+      "action": "dexa.android.invoke",
+      "requiredModelFields": [
+        "number"
+      ],
+      "optionalFields": [],
+      "syntheticInputExample": {
+        "number": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "exampleValidated": true,
+      "resultFields": [],
+      "resultExampleStatus": "RECEIPT_CONTRACT_ONLY_NOT_ALL_FIELDS_OBSERVED"
+    },
+    {
+      "name": "message.compose",
+      "action": "dexa.android.invoke",
+      "requiredModelFields": [
+        "recipient"
+      ],
+      "optionalFields": [
+        "body"
+      ],
+      "syntheticInputExample": {
+        "recipient": "example"
+      },
+      "exampleValidated": true,
+      "resultFields": [],
+      "resultExampleStatus": "RECEIPT_CONTRACT_ONLY_NOT_ALL_FIELDS_OBSERVED"
+    },
+    {
+      "name": "alarm.set",
+      "action": "dexa.android.invoke",
+      "requiredModelFields": [
+        "hour",
+        "minute"
+      ],
+      "optionalFields": [
+        "label"
+      ],
+      "syntheticInputExample": {
+        "hour": 0,
+        "minute": 0
+      },
+      "exampleValidated": true,
+      "resultFields": [],
+      "resultExampleStatus": "RECEIPT_CONTRACT_ONLY_NOT_ALL_FIELDS_OBSERVED"
+    },
+    {
+      "name": "timer.set",
+      "action": "dexa.android.invoke",
+      "requiredModelFields": [
+        "seconds"
+      ],
+      "optionalFields": [
+        "label"
+      ],
+      "syntheticInputExample": {
+        "seconds": 1
+      },
+      "exampleValidated": true,
+      "resultFields": [],
+      "resultExampleStatus": "RECEIPT_CONTRACT_ONLY_NOT_ALL_FIELDS_OBSERVED"
+    },
+    {
+      "name": "volume.get_set",
+      "action": "dexa.android.invoke",
+      "requiredModelFields": [],
+      "optionalFields": [
+        "operation",
+        "percent",
+        "stream"
+      ],
+      "syntheticInputExample": {},
+      "exampleValidated": true,
+      "resultFields": [
+        "stream",
+        "current",
+        "max",
+        "percent"
+      ],
+      "resultExampleStatus": "RECEIPT_CONTRACT_ONLY_NOT_ALL_FIELDS_OBSERVED"
+    },
+    {
+      "name": "app.uninstall.request",
+      "action": "dexa.android.invoke",
+      "requiredModelFields": [
+        "package"
+      ],
+      "optionalFields": [],
+      "syntheticInputExample": {
+        "package": "com.example.app"
+      },
+      "exampleValidated": true,
+      "resultFields": [],
+      "resultExampleStatus": "RECEIPT_CONTRACT_ONLY_NOT_ALL_FIELDS_OBSERVED"
+    },
+    {
+      "name": "app.settings.open",
+      "action": "dexa.android.invoke",
+      "requiredModelFields": [
+        "package"
+      ],
+      "optionalFields": [],
+      "syntheticInputExample": {
+        "package": "com.example.app"
+      },
+      "exampleValidated": true,
+      "resultFields": [],
+      "resultExampleStatus": "RECEIPT_CONTRACT_ONLY_NOT_ALL_FIELDS_OBSERVED"
+    },
+    {
+      "name": "settings.open",
+      "action": "dexa.android.invoke",
+      "requiredModelFields": [],
+      "optionalFields": [
+        "section"
+      ],
+      "syntheticInputExample": {},
+      "exampleValidated": true,
+      "resultFields": [],
+      "resultExampleStatus": "RECEIPT_CONTRACT_ONLY_NOT_ALL_FIELDS_OBSERVED"
+    },
+    {
+      "name": "app.inspect",
+      "action": "dexa.android.invoke",
+      "requiredModelFields": [
+        "package"
+      ],
+      "optionalFields": [],
+      "syntheticInputExample": {
+        "package": "com.example.app"
+      },
+      "exampleValidated": true,
+      "resultFields": [
+        "installed",
+        "package",
+        "enabled",
+        "version_name"
+      ],
+      "resultExampleStatus": "RECEIPT_CONTRACT_ONLY_NOT_ALL_FIELDS_OBSERVED"
+    },
+    {
+      "name": "ui.inspect",
+      "action": "dexa.android.invoke",
+      "requiredModelFields": [],
+      "optionalFields": [],
+      "syntheticInputExample": {},
+      "exampleValidated": true,
+      "resultFields": [
+        "nodes",
+        "node_count",
+        "package"
+      ],
+      "resultExampleStatus": "RECEIPT_CONTRACT_ONLY_NOT_ALL_FIELDS_OBSERVED"
+    },
+    {
+      "name": "ui.tap",
+      "action": "dexa.android.invoke",
+      "requiredModelFields": [
+        "selector",
+        "selector_type"
+      ],
+      "optionalFields": [],
+      "syntheticInputExample": {
+        "selector": "example",
+        "selector_type": "view_id"
+      },
+      "exampleValidated": true,
+      "resultFields": [],
+      "resultExampleStatus": "RECEIPT_CONTRACT_ONLY_NOT_ALL_FIELDS_OBSERVED"
+    },
+    {
+      "name": "ui.scroll",
+      "action": "dexa.android.invoke",
+      "requiredModelFields": [],
+      "optionalFields": [
+        "direction"
+      ],
+      "syntheticInputExample": {},
+      "exampleValidated": true,
+      "resultFields": [],
+      "resultExampleStatus": "RECEIPT_CONTRACT_ONLY_NOT_ALL_FIELDS_OBSERVED"
+    },
+    {
+      "name": "ui.text.enter",
+      "action": "dexa.android.invoke",
+      "requiredModelFields": [
+        "selector",
+        "selector_type"
+      ],
+      "optionalFields": [
+        "value"
+      ],
+      "syntheticInputExample": {
+        "selector": "example",
+        "selector_type": "view_id"
+      },
+      "exampleValidated": true,
+      "resultFields": [],
+      "resultExampleStatus": "RECEIPT_CONTRACT_ONLY_NOT_ALL_FIELDS_OBSERVED"
+    }
+  ],
+  "internalCards": [
+    {
+      "name": "dexa.text.process",
+      "exampleValidated": true,
+      "requiredModelFields": [
+        "operation"
+      ],
+      "syntheticInputExample": {
+        "operation": "draft"
+      },
+      "modelVisible": true
+    },
+    {
+      "name": "dexa.memory.read",
+      "exampleValidated": true,
+      "requiredModelFields": [
+        "refId"
+      ],
+      "syntheticInputExample": {
+        "refId": "examplea"
+      },
+      "modelVisible": true
+    },
+    {
+      "name": "dexa.ticket.previous",
+      "exampleValidated": true,
+      "requiredModelFields": [],
+      "syntheticInputExample": {},
+      "modelVisible": true
+    },
+    {
+      "name": "web.search",
+      "exampleValidated": true,
+      "requiredModelFields": [
+        "query"
+      ],
+      "syntheticInputExample": {
+        "query": "example"
+      },
+      "modelVisible": true
+    },
+    {
+      "name": "web.evidence",
+      "exampleValidated": true,
+      "requiredModelFields": [
+        "query"
+      ],
+      "syntheticInputExample": {
+        "query": "example"
+      },
+      "modelVisible": true
+    },
+    {
+      "name": "web.read",
+      "exampleValidated": true,
+      "requiredModelFields": [
+        "url"
+      ],
+      "syntheticInputExample": {
+        "url": "https://example.invalid/item"
+      },
+      "modelVisible": true
+    },
+    {
+      "name": "dexa.android.invoke",
+      "exampleValidated": true,
+      "requiredModelFields": [
+        "action",
+        "parameters"
+      ],
+      "syntheticInputExample": {
+        "action": "system.health",
+        "parameters": {}
+      },
+      "modelVisible": true
+    },
+    {
+      "name": "dexa.android.status",
+      "exampleValidated": true,
+      "requiredModelFields": [
+        "request_id"
+      ],
+      "syntheticInputExample": {
+        "request_id": "00000000-0000-0000-0000-000000000000"
+      },
+      "modelVisible": false
+    }
+  ],
+  "unboundExternal": [
+    {
+      "capabilityId": "github.issue.comment.create",
+      "route": "GH.add_comment_to_issue",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "github.issue.comments.read",
+      "route": "GH.fetch_issue_comments",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "github.issue.read",
+      "route": "GH.fetch_issue",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "github.issue.search",
+      "route": "GH.search_issues",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "remote_desktop.device.list",
+      "route": "RD.list_devices",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "remote_desktop.pdf.write",
+      "route": "RD.write_pdf",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.add_issue_assignees",
+      "route": "GH.add_issue_assignees",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.add_issue_labels",
+      "route": "GH.add_issue_labels",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.add_reaction_to_issue_comment",
+      "route": "GH.add_reaction_to_issue_comment",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.add_reaction_to_pr",
+      "route": "GH.add_reaction_to_pr",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.add_reaction_to_pr_review_comment",
+      "route": "GH.add_reaction_to_pr_review_comment",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.add_review_to_pr",
+      "route": "GH.add_review_to_pr",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.convert_pull_request_to_draft",
+      "route": "GH.convert_pull_request_to_draft",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.create_blob",
+      "route": "GH.create_blob",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.create_commit",
+      "route": "GH.create_commit",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.create_file",
+      "route": "GH.create_file",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.create_issue",
+      "route": "GH.create_issue",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.create_tree",
+      "route": "GH.create_tree",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.dismiss_pull_request_review",
+      "route": "GH.dismiss_pull_request_review",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.download_user_content",
+      "route": "GH.download_user_content",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.download_workflow_artifact",
+      "route": "GH.download_workflow_artifact",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.enable_auto_merge",
+      "route": "GH.enable_auto_merge",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.fetch",
+      "route": "GH.fetch",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.fetch_blob",
+      "route": "GH.fetch_blob",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.fetch_commit_workflow_runs",
+      "route": "GH.fetch_commit_workflow_runs",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.fetch_pr",
+      "route": "GH.fetch_pr",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.fetch_pr_comments",
+      "route": "GH.fetch_pr_comments",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.fetch_pr_file_patch",
+      "route": "GH.fetch_pr_file_patch",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.fetch_pr_patch",
+      "route": "GH.fetch_pr_patch",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.fetch_workflow_job_logs",
+      "route": "GH.fetch_workflow_job_logs",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.fetch_workflow_job_steps",
+      "route": "GH.fetch_workflow_job_steps",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.fetch_workflow_run_artifacts",
+      "route": "GH.fetch_workflow_run_artifacts",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.fetch_workflow_run_jobs",
+      "route": "GH.fetch_workflow_run_jobs",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.get_commit_combined_status",
+      "route": "GH.get_commit_combined_status",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.get_issue_comment_reactions",
+      "route": "GH.get_issue_comment_reactions",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.get_pr_diff",
+      "route": "GH.get_pr_diff",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.get_pr_info",
+      "route": "GH.get_pr_info",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.get_pr_reactions",
+      "route": "GH.get_pr_reactions",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.get_pr_review_comment_reactions",
+      "route": "GH.get_pr_review_comment_reactions",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.get_profile",
+      "route": "GH.get_profile",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.get_repo",
+      "route": "GH.get_repo",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.get_repo_collaborator_permission",
+      "route": "GH.get_repo_collaborator_permission",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.get_user_login",
+      "route": "GH.get_user_login",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.get_users_recent_prs_in_repo",
+      "route": "GH.get_users_recent_prs_in_repo",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.label_pr",
+      "route": "GH.label_pr",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.list_installations",
+      "route": "GH.list_installations",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.list_installed_accounts",
+      "route": "GH.list_installed_accounts",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.list_pr_changed_filenames",
+      "route": "GH.list_pr_changed_filenames",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.list_pull_request_review_threads",
+      "route": "GH.list_pull_request_review_threads",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.list_pull_request_reviews",
+      "route": "GH.list_pull_request_reviews",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.list_recent_issues",
+      "route": "GH.list_recent_issues",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.list_repositories_by_affiliation",
+      "route": "GH.list_repositories_by_affiliation",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.list_repositories_by_installation",
+      "route": "GH.list_repositories_by_installation",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.list_user_org_memberships",
+      "route": "GH.list_user_org_memberships",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.list_user_orgs",
+      "route": "GH.list_user_orgs",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.lock_issue_conversation",
+      "route": "GH.lock_issue_conversation",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.mark_pull_request_ready_for_review",
+      "route": "GH.mark_pull_request_ready_for_review",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.remove_issue_assignees",
+      "route": "GH.remove_issue_assignees",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.remove_issue_label",
+      "route": "GH.remove_issue_label",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.remove_pull_request_reviewers",
+      "route": "GH.remove_pull_request_reviewers",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.remove_reaction_from_issue_comment",
+      "route": "GH.remove_reaction_from_issue_comment",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.remove_reaction_from_pr",
+      "route": "GH.remove_reaction_from_pr",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.remove_reaction_from_pr_review_comment",
+      "route": "GH.remove_reaction_from_pr_review_comment",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.reply_to_review_comment",
+      "route": "GH.reply_to_review_comment",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.request_pull_request_reviewers",
+      "route": "GH.request_pull_request_reviewers",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.rerun_failed_workflow_run_jobs",
+      "route": "GH.rerun_failed_workflow_run_jobs",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.rerun_workflow_job",
+      "route": "GH.rerun_workflow_job",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.resolve_review_thread",
+      "route": "GH.resolve_review_thread",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.search_branches",
+      "route": "GH.search_branches",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.search_commits",
+      "route": "GH.search_commits",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.search_installed_repositories_streaming",
+      "route": "GH.search_installed_repositories_streaming",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.search_installed_repositories_v2",
+      "route": "GH.search_installed_repositories_v2",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.search_prs",
+      "route": "GH.search_prs",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.search_repositories",
+      "route": "GH.search_repositories",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.unlock_issue_conversation",
+      "route": "GH.unlock_issue_conversation",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.unresolve_review_thread",
+      "route": "GH.unresolve_review_thread",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.update_file",
+      "route": "GH.update_file",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.update_issue",
+      "route": "GH.update_issue",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.update_issue_comment",
+      "route": "GH.update_issue_comment",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.update_pull_request",
+      "route": "GH.update_pull_request",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.update_ref",
+      "route": "GH.update_ref",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.gh.update_review_comment",
+      "route": "GH.update_review_comment",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.rd.create_directory",
+      "route": "RD.create_directory",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.rd.force_terminate",
+      "route": "RD.force_terminate",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.rd.get_config",
+      "route": "RD.get_config",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.rd.get_more_search_results",
+      "route": "RD.get_more_search_results",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.rd.get_recent_tool_calls",
+      "route": "RD.get_recent_tool_calls",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.rd.get_tool_result",
+      "route": "RD.get_tool_result",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.rd.get_usage_stats",
+      "route": "RD.get_usage_stats",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.rd.give_feedback_to_desktop_commander",
+      "route": "RD.give_feedback_to_desktop_commander",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.rd.interact_with_process",
+      "route": "RD.interact_with_process",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.rd.kill_process",
+      "route": "RD.kill_process",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.rd.list_processes",
+      "route": "RD.list_processes",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.rd.list_remote_tool_calls",
+      "route": "RD.list_remote_tool_calls",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.rd.list_searches",
+      "route": "RD.list_searches",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.rd.list_sessions",
+      "route": "RD.list_sessions",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.rd.ping",
+      "route": "RD.ping",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.rd.read_multiple_files",
+      "route": "RD.read_multiple_files",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.rd.read_process_output",
+      "route": "RD.read_process_output",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.rd.set_config_value",
+      "route": "RD.set_config_value",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.rd.shutdown",
+      "route": "RD.shutdown",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.rd.start_search",
+      "route": "RD.start_search",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.rd.stop_search",
+      "route": "RD.stop_search",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    },
+    {
+      "capabilityId": "tool.rd.who_am_i",
+      "route": "RD.who_am_i",
+      "status": "UNBOUND_CONNECTOR_SCHEMA_NOT_AVAILABLE_TO_RANA"
+    }
+  ]
+}
