@@ -68,4 +68,8 @@ This project is accepted as complete **with a documented transport limitation**,
 - Dexa authenticated owner catalog: \`tool.cf.cf_mirror_open\`, \`tool.cf.cf_mirror_sources\`, \`tool.cf.cf_mirror_status\`, \`tool.cf.cf_mirror_close\`, \`tool.cf.cf_mirror_screenshot\`; the tools remain subject to existing owner OAuth, physical runtime and exact input schemas. The catalog does not grant access by itself.
 - Public Dexa knowledge: \`homayounisaghar/cf-exec-plane/dexa/cf-mirror-universal-operator-guide.md\` and reference from \`dexa/catalog-mvp.md\`.
 
+## Viewer input toggle (2026-11-16)
+
+The same mirror viewer has a **Mouse / Touchpad** toggle among its bottom buttons. **LOCAL mirrors default to Mouse** (visible desktop pointer, absolute click/tap and drag). **INTERNET/WEB mirrors default to Touchpad** (relative movement, touchpad taps click at the current remote cursor, optional ⌖ predictive cursor ring). Either mode can be selected manually in either mirror without creating a new session; selection is retained for the current browser tab using `sessionStorage`. A refresh of the server browser (`Ctrl+Shift+R`) activates the input mode toolbar on a previously running mirror. This is an input interaction choice, **not** a VPN workaround, security control or transport mode. No password or TTL is added to a local mirror by switching input mode. Do not confuse these defaults when presenting a new mirror.
+
 The public and local workflows are deliberately distinct. Internet mode always has an access password and expiry, local mode has neither unless the caller deliberately chooses a nonstandard local TTL at CLI level.
