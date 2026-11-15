@@ -58,7 +58,7 @@ button[aria-pressed="true"]{background:#1958a5;border-color:#72b1ff}
  <button id="reset" title="Reset digital zoom and pan">1×</button>
  <button id="keysButton" aria-expanded="false">Keys</button>
  <button id="micToggle" type="button" title="Dictate with phone microphone" aria-label="Start voice typing" aria-pressed="false">🎙</button>
- <label class="keyboard-control" title="Android keyboard: direct input"><span aria-hidden="true">⌨</span><input id="keyboardToggle" class="keyboard-direct" type="text" inputmode="text" enterkeyhint="done" autocapitalize="sentences" autocomplete="off" autocorrect="on" spellcheck="true" aria-label="Android keyboard input"/></label>
+ <div class="keyboard-control" title="Android keyboard: direct input"><span aria-hidden="true">⌨</span><input id="keyboardToggle" class="keyboard-direct" type="text" inputmode="text" enterkeyhint="done" autocapitalize="sentences" autocomplete="off" autocorrect="on" spellcheck="true" aria-label="Android keyboard input"/></div>
  <button id="fullscreen" title="Full screen">⛶</button>
 </div>
 <section id="keys" aria-label="Remote special keys">
@@ -233,6 +233,9 @@ function movePinch(){
  pinch.priorCx=cx;pinch.priorCy=cy;
 }
 function onPointerDown(e){
+ // User is interacting with the remote screen, not the phone's IME.
+ // Clear stale focus even if Android already hid the keyboard via Back.
+ if(document.activeElement===keyboardButton)deactivateKeyboard();
  if(useNativeTouchEvents&&e.pointerType==='touch'&&!e.__fromTouch)return;
  if(e.pointerType!=='touch'){
   if(e.pointerType==='mouse'){
@@ -425,6 +428,20 @@ function forwardDelete(key){
  lastDeleteAt=t;
  remoteKey(key);
 }
+function notifyKeyboardState(kind){
+ try{window.parent?.postMessage({kind},window.location.origin);}catch{}
+}
+function deactivateKeyboard(focusStage=false){
+ // Blur immediately and focus a NON-editable stage so the Android IME actually
+ // disappears. Browser-specific VirtualKeyboard.hide is a best-effort extra,
+ // never a dependency on a particular keyboard app.
+ if(document.activeElement===keyboardButton)keyboardButton.blur();
+ if(focusStage)stage.focus({preventScroll:true});
+ try{
+  const result=navigator.virtualKeyboard?.hide?.();
+  if(result&&typeof result.catch==='function')result.catch(()=>{});
+ }catch{}
+}
 function syncKeyboardViewport(){
  // The outer page owns the VisualViewport. Tell it to resize its iframe
  // after Android's keyboard animation begins, without adding a typing bar.
@@ -436,11 +453,41 @@ function watchKeyboardViewport(){
 }
 keyboardButton.addEventListener('focus',()=>{
  voicePanel.classList.remove('open');
+ notifyKeyboardState('cf-mirror-ime-focus');
  watchKeyboardViewport();
 });
 keyboardButton.addEventListener('blur',()=>{
  clearKeyboardShadow();
+ notifyKeyboardState('cf-mirror-ime-blur');
  watchKeyboardViewport();
+});
+// If the field remains focused after Android's Back/hide-keyboard action,
+// tapping the blue keyboard control again must explicitly turn it OFF.
+// Never prevent the *first* tap: it must focus this real input to open the IME.
+let manualKeyboardCloseUntil=0;
+function toggleKeyboardOff(e){
+ // The second touch, while already focused, is an explicit OFF switch.
+ // Cancel its default focus/click so Chrome cannot immediately reopen the IME.
+ if(document.activeElement!==keyboardButton&&performance.now()>manualKeyboardCloseUntil)return;
+ e.preventDefault();
+ e.stopPropagation?.();
+ manualKeyboardCloseUntil=performance.now()+800;
+ deactivateKeyboard(true);
+}
+keyboardButton.addEventListener('pointerdown',toggleKeyboardOff,{passive:false});
+keyboardButton.addEventListener('touchstart',e=>{
+ if(document.activeElement===keyboardButton||performance.now()<manualKeyboardCloseUntil)toggleKeyboardOff(e);
+},{passive:false});
+keyboardButton.addEventListener('click',e=>{
+ if(performance.now()>=manualKeyboardCloseUntil)return;
+ e.preventDefault();
+ e.stopPropagation?.();
+ deactivateKeyboard(true);
+});
+// Parent top-level page sees OSK visibility better than the iframe.
+window.addEventListener('message',e=>{
+ if(e.origin!==window.location.origin||e.source!==window.parent)return;
+ if(e.data?.kind==='cf-mirror-ime-dismissed')deactivateKeyboard();
 });
 keyboardButton.addEventListener('compositionstart',()=>{keyboardComposing=true;});
 keyboardButton.addEventListener('compositionend',()=>{

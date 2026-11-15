@@ -32,15 +32,27 @@ body{display:flex;flex-direction:column;position:fixed;top:var(--cf-view-top,0px
 const BROWSER_MODE=__BROWSER_MODE__,CONTROL_CSRF='__CONTROL_CSRF__';
 const controls=document.getElementById('browserControls'),tabs=document.getElementById('tabs'),frame=document.getElementById('mirror'),address=document.getElementById('address'),status=document.getElementById('status');
 if(BROWSER_MODE)controls.style.display='block';
-// The parent window's VisualViewport, unlike an iframe's, reports the space
-// left after a docked Android keyboard opens. Floating keyboard mode normally
-// leaves the VisualViewport unchanged, so we keep the full viewer height.
+// The parent owns the visual viewport. Track focus + the first real shrink
+// to tell a child IME to blur when Android hides a DOCKED keyboard with Back.
+// If a floating keyboard does not shrink the viewport, stage interactions
+// and tapping the keyboard icon again are explicit fallback off switches.
+let imeFocused=false,imeBaseline=0,imeWasDocked=false;
+let maxVisibleHeight=window.visualViewport?.height||window.innerHeight;
 function syncOuterViewport(){
  const v=window.visualViewport;
  const h=(v&&Number.isFinite(v.height))?v.height:window.innerHeight;
  const top=(v&&Number.isFinite(v.offsetTop))?v.offsetTop:0;
  document.body.style.setProperty('--cf-view-height',Math.max(140,Math.round(h))+'px');
  document.body.style.setProperty('--cf-view-top',Math.max(0,Math.round(top))+'px');
+ if(!imeFocused)maxVisibleHeight=Math.max(maxVisibleHeight,h);
+ if(imeFocused){
+  if(h<imeBaseline-120)imeWasDocked=true;
+  if(imeWasDocked&&h>=imeBaseline-65){
+   imeFocused=false;
+   imeWasDocked=false;
+   frame.contentWindow?.postMessage({kind:'cf-mirror-ime-dismissed'},location.origin);
+  }
+ }
 }
 function settleKeyboardViewport(){
  syncOuterViewport();
@@ -51,10 +63,23 @@ if(window.visualViewport){
  window.visualViewport.addEventListener('scroll',syncOuterViewport,{passive:true});
 }
 window.addEventListener('resize',syncOuterViewport);
-window.addEventListener('orientationchange',settleKeyboardViewport);
+window.addEventListener('orientationchange',()=>{
+ // A phone rotation changes the natural unoccluded height.
+ maxVisibleHeight=window.visualViewport?.height||window.innerHeight;
+ settleKeyboardViewport();
+});
 window.addEventListener('message',e=>{
  if(e.origin!==location.origin||e.source!==frame.contentWindow)return;
- if(e.data&&e.data.kind==='cf-mirror-viewport-sync')settleKeyboardViewport();
+ if(e.data?.kind==='cf-mirror-ime-focus'){
+  imeFocused=true;
+  imeBaseline=Math.max(window.visualViewport?.height||window.innerHeight,maxVisibleHeight);
+  imeWasDocked=(window.visualViewport?.height||window.innerHeight)<imeBaseline-120;
+  settleKeyboardViewport();
+ }else if(e.data?.kind==='cf-mirror-ime-blur'){
+  imeFocused=false;
+  imeWasDocked=false;
+  settleKeyboardViewport();
+ }else if(e.data?.kind==='cf-mirror-viewport-sync')settleKeyboardViewport();
 });
 syncOuterViewport();
 let busy=false,selectedId=null,previousIds=null;
