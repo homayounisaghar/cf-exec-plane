@@ -319,7 +319,7 @@ Conversation completion NEVER implies a tool ran successfully. Never invent miss
 
 HISTORY_LIMIT: 30
 HISTORY_COUNT: 29
-HISTORY_SHA256: 8e57330775cf918166b4c55ebb6eb3a3117114aa54518b3b17f2cb5e67bf0ab3
+HISTORY_SHA256: 09d7cdaf596127d4bc1adcfa3eed760b5b8986f33101d4988cc286c503b9d58c
 
 ~~~json
 [
@@ -336,7 +336,7 @@ HISTORY_SHA256: 8e57330775cf918166b4c55ebb6eb3a3117114aa54518b3b17f2cb5e67bf0ab3
     "exchange": 2,
     "createdAt": "2026-11-14T15:49:23.971Z",
     "ownerRequest": "لیست دو تا چت آخر وی چتم رو بده.",
-    "dexaVisibleReply": "[{\"conversation_ref\":\"wechat-name:Kazem-tenghai\",\"name\":\"Kazem-tenghai\",\"identity_strength\":\"display_name_snapshot\",\"duplicate_name_safe\":false,\"selected\":true,\"unread_count\":0,\"has_unread\":false,\"read_state\":\"no_explicit_unread_badge\",\"muted\":false,\"pinned\":true,\"timestamp\":null,\"preview\":\"Z-YU: 我问一下昨天我问还没修好\\nYesterday 03:56\",\"source\":\"bounded_atspi_semantic_helper\"},{\"conversation_ref\":\"wechat-name:ESFA%20%26%20HXY%20Heatsink\",\"name\":\"ESFA & HXY Heatsink\",\"identity_strength\":\"display_name_snapshot\",\"duplicate_name_safe\":false,\"selected\":false,\"unread_count\":58,\"has_unread\":true,\"read_state\":\"explicit_unread\",\"muted\":true,\"pinned\":null,\"timestamp\":\"13:13\",\"preview\":\"Moe: [OK][OK][OK]\",\"source\":\"bounded_atspi_semantic_helper\"}]",
+    "dexaVisibleReply": "دو چت اول فهرست اخیر وی‌چتت: Kazem-tenghai، ESFA & HXY Heatsink.",
     "executionState": "SUCCEEDED_VERIFIED",
     "turnComplete": true,
     "effectsExecuted": 0
@@ -372,7 +372,7 @@ HISTORY_SHA256: 8e57330775cf918166b4c55ebb6eb3a3117114aa54518b3b17f2cb5e67bf0ab3
     "exchange": 6,
     "createdAt": "2026-11-14T18:32:18.149Z",
     "ownerRequest": "لیست ۵ تا چت آخر تلگرامم رو بده.",
-    "dexaVisibleReply": "[{\"handle\":\"tgchat:d815e083-5d58-42e8-8718-11ab86605ee9\",\"name\":\"نجمه ایرانسل\",\"type\":\"user\",\"kind\":\"user\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":true,\"unread_count\":0,\"unread_mark\":false,\"has_unread\":false},{\"handle\":\"tgchat:acfdb040-8ca2-4e86-8c75-e06ee9c55fab\",\"name\":\"چین ، ارسال بار و پست، نیازمندیها و پذیرش و دانشجویی ، یوان، ترجمه ، بلیط و ویزا، کنسولی\",\"type\":\"chat\",\"kind\":\"supergroup\",\"is_forum\":true,\"forum_kind\":\"forum\",\"pinned\":false,\"unread_count\":68,\"unread_mark\":false,\"has_unread\":true},{\"handle\":\"tgchat:310727db-c426-4e4b-86f7-683a184e77ee\",\"name\":\"هماهنگی نشست‌های حلقه دوستی\",\"type\":\"chat\",\"kind\":\"supergroup\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":16,\"unread_mark\":false,\"has_unread\":true},{\"handle\":\"tgchat:0ffb366f-4dd5-47ef-b206-3b0bb72a8c4b\",\"name\":\"🔒{ پروکسی تلگرام }🔓\",\"type\":\"chat\",\"kind\":\"channel\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":2,\"unread_mark\":false,\"has_unread\":true},{\"handle\":\"tgchat:2d0b229f-4244-4b86-b622-154a657b2594\",\"name\":\"اصحاب بعد از جنگ\",\"type\":\"chat\",\"kind\":\"supergroup\",\"is_forum\":false,\"forum_kind\":null,\"pinned\":false,\"unread_count\":2,\"unread_mark\":false,\"has_unread\":true}]",
+    "dexaVisibleReply": "۵ چت اول فهرست اخیر تلگرامت: نجمه ایرانسل، چین ، ارسال بار و پست، نیازمندیها و پذیرش و دانشجویی ، یوان، ترجمه ، بلیط و ویزا، کنسولی، هماهنگی نشست‌های حلقه دوستی، 🔒{ پروکسی تلگرام }🔓، اصحاب بعد از جنگ.",
     "executionState": "SUCCEEDED_VERIFIED",
     "turnComplete": true,
     "effectsExecuted": 0
@@ -381,7 +381,7 @@ HISTORY_SHA256: 8e57330775cf918166b4c55ebb6eb3a3117114aa54518b3b17f2cb5e67bf0ab3
     "exchange": 7,
     "createdAt": "2026-11-14T18:35:52.208Z",
     "ownerRequest": "دو تا چت اخیر ویچتم رو بده.",
-    "dexaVisibleReply": "[{\"conversation_ref\":\"wechat-name:Kazem-tenghai\",\"name\":\"Kazem-tenghai\",\"identity_strength\":\"display_name_snapshot\",\"duplicate_name_safe\":false,\"selected\":true,\"unread_count\":0,\"has_unread\":false,\"read_state\":\"no_explicit_unread_badge\",\"muted\":false,\"pinned\":true,\"timestamp\":null,\"preview\":\"Z-YU: 我问一下昨天我问还没修好\\nYesterday 03:56\",\"source\":\"bounded_atspi_semantic_helper\"},{\"conversation_ref\":\"wechat-name:ESFA%20%26%20HXY%20Heatsink\",\"name\":\"ESFA & HXY Heatsink\",\"identity_strength\":\"display_name_snapshot\",\"duplicate_name_safe\":false,\"selected\":false,\"unread_count\":58,\"has_unread\":true,\"read_state\":\"explicit_unread\",\"muted\":true,\"pinned\":null,\"timestamp\":\"13:13\",\"preview\":\"Moe: [OK][OK][OK]\",\"source\":\"bounded_atspi_semantic_helper\"}]",
+    "dexaVisibleReply": "دو چت اول فهرست اخیر وی‌چتت: Kazem-tenghai، ESFA & HXY Heatsink.",
     "executionState": "SUCCEEDED_VERIFIED",
     "turnComplete": true,
     "effectsExecuted": 0
@@ -399,7 +399,7 @@ HISTORY_SHA256: 8e57330775cf918166b4c55ebb6eb3a3117114aa54518b3b17f2cb5e67bf0ab3
     "exchange": 9,
     "createdAt": "2026-11-14T18:58:53.190Z",
     "ownerRequest": "۲۲ تا چت اخیر وی چتم رو بده.",
-    "dexaVisibleReply": "{\"output\":{\"stepId\":2,\"error\":\"TOOL_PLAN_DATA_PATH_MISSING\",\"physicalCommandIssued\":false,\"completed\":false},\"actualStepErrors\":[{\"stepId\":1,\"kind\":\"TOOL\",\"code\":\"_object_Object_\",\"physicalCallIssued\":true},{\"stepId\":2,\"kind\":\"TRANSFORM\",\"code\":\"TOOL_PLAN_DATA_PATH_MISSING\",\"physicalCallIssued\":false}],\"successfulPhysicalCalls\":1,\"warning\":\"Actual commands issued; failed steps were not treated as success.\"}",
+    "dexaVisibleReply": "انجام این درخواست ناموفق بود. دکسا نتوانست نتیجهٔ موردنیاز را از خروجی ابزار استخراج کند؛ بنابراین پاسخ درخواستی در دسترس نیست.",
     "executionState": "FAILED",
     "turnComplete": true,
     "effectsExecuted": 0
@@ -417,7 +417,7 @@ HISTORY_SHA256: 8e57330775cf918166b4c55ebb6eb3a3117114aa54518b3b17f2cb5e67bf0ab3
     "exchange": 11,
     "createdAt": "2026-11-14T20:56:59.788Z",
     "ownerRequest": "آخرین چت وی‌چتم متعلق به کیه؟",
-    "dexaVisibleReply": "Kazem-tenghai",
+    "dexaVisibleReply": "اولین چت فهرست وی‌چتت متعلق به Kazem-tenghaiه.",
     "executionState": "SUCCEEDED_VERIFIED",
     "turnComplete": true,
     "effectsExecuted": 0
@@ -426,7 +426,7 @@ HISTORY_SHA256: 8e57330775cf918166b4c55ebb6eb3a3117114aa54518b3b17f2cb5e67bf0ab3
     "exchange": 12,
     "createdAt": "2026-11-14T20:58:34.656Z",
     "ownerRequest": "آخرین پیام توی اون چت رو برام بخون.",
-    "dexaVisibleReply": "{\"output\":{\"error\":\"OUTPUT_NOT_RETURNED_BY_TOOL\",\"observed\":[{\"stepId\":1,\"kind\":\"TOOL\",\"capabilityId\":\"tool.cf.wechat_conversation_list\",\"physicalTool\":\"wechat_conversation_list\",\"startedAt\":\"2026-11-14T20:58:34.681Z\",\"completedAt\":\"2026-11-14T20:59:36.522Z\",\"commandIssued\":true,\"resultVerified\":false,\"actualError\":\"CATALOG_GATEWAY_TIMEOUT\",\"postDispatchReceiptMissing\":false,\"resultDigest\":\"ce5d43ba437a0a9db80960344498bf3d2a8f7f2f86b9d1e1744e0fbbfae523b4\"},{\"stepId\":2,\"kind\":\"TRANSFORM\",\"capabilityId\":\"LOCAL\",\"physicalTool\":null,\"startedAt\":\"2026-11-14T20:59:38.849Z\",\"completedAt\":\"2026-11-14T20:59:47.072Z\",\"commandIssued\":false,\"resultVerified\":false,\"actualError\":\"TOOL_PLAN_DATA_PATH_MISSING\",\"postDispatchReceiptMissing\":false,\"resultDigest\":\"4992eda375438d4f42376e91da0e5e575c43630d5e09bb5868b68b1be75e9e70\"},{\"stepId\":3,\"diagnostic\":\"UNRESOLVED_REFERENCE_SENT_AS_IS\"},{\"stepId\":3,\"kind\":\"TOOL\",\"capabilityId\":\"tool.cf.wechat_message_list\",\"physicalTool\":\"wechat_message_list\",\"startedAt\":\"2026-11-14T20:59:49.576Z\",\"completedAt\":\"2026-11-14T21:01:05.665Z\",\"commandIssued\":true,\"resultVerified\":false,\"actualError\":\"CATALOG_GATEWAY_TIMEOUT\",\"postDispatchReceiptMissing\":false,\"resultDigest\":\"1a7f662e8cb25f98129ef9752b18303574147e103ab0ab2a38d45d1793df52e1\"}]},\"actualStepErrors\":[{\"stepId\":1,\"kind\":\"TOOL\",\"code\":\"CATALOG_GATEWAY_TIMEOUT\",\"physicalCallIssued\":true},{\"stepId\":2,\"kind\":\"TRANSFORM\",\"code\":\"TOOL_PLAN_DATA_PATH_MISSING\",\"physicalCallIssued\":false},{\"stepId\":3,\"kind\":\"TOOL\",\"code\":\"CATALOG_GATEWAY_TIMEOUT\",\"physicalCallIssued\":true},{\"stepId\":3,\"code\":\"OUTPUT_PATH_TOOL_PLAN_DATA_PATH_MISSING\",\"physicalCallIssued\":false}],\"successfulPhysicalCalls\":2,\"warning\":\"Actual commands issued; failed steps were not treated as success.\"}",
+    "dexaVisibleReply": "انجام این درخواست ناموفق بود. ابزار وی‌چت فراخوانی شد، اما نتیجهٔ موردنیاز برای گزارش به دست نیامد.",
     "executionState": "FAILED",
     "turnComplete": true,
     "effectsExecuted": 0
@@ -435,7 +435,7 @@ HISTORY_SHA256: 8e57330775cf918166b4c55ebb6eb3a3117114aa54518b3b17f2cb5e67bf0ab3
     "exchange": 13,
     "createdAt": "2026-11-14T21:10:35.509Z",
     "ownerRequest": "توی چتی که بالای لیست وی‌چت هم پین شده، آخرین پیام چی بوده؟",
-    "dexaVisibleReply": "{\"output\":{\"stepId\":5,\"error\":\"TOOL_PLAN_TAKE_EXPECTS_ARRAY\",\"physicalCommandIssued\":false,\"completed\":false},\"actualStepErrors\":[{\"stepId\":3,\"kind\":\"TOOL\",\"code\":\"_object_Object_\",\"physicalCallIssued\":true},{\"stepId\":4,\"kind\":\"TRANSFORM\",\"code\":\"TOOL_PLAN_DATA_PATH_MISSING\",\"physicalCallIssued\":false},{\"stepId\":5,\"kind\":\"TRANSFORM\",\"code\":\"TOOL_PLAN_TAKE_EXPECTS_ARRAY\",\"physicalCallIssued\":false}],\"successfulPhysicalCalls\":2,\"warning\":\"Actual commands issued; failed steps were not treated as success.\"}",
+    "dexaVisibleReply": "انجام این درخواست ناموفق بود. دکسا نتوانست نتیجهٔ موردنیاز را از خروجی ابزار استخراج کند؛ بنابراین پاسخ درخواستی در دسترس نیست.",
     "executionState": "FAILED",
     "turnComplete": true,
     "effectsExecuted": 0
@@ -471,7 +471,7 @@ HISTORY_SHA256: 8e57330775cf918166b4c55ebb6eb3a3117114aa54518b3b17f2cb5e67bf0ab3
     "exchange": 17,
     "createdAt": "2026-11-14T22:30:12.527Z",
     "ownerRequest": "آخرین پیام در چتی که بالای ویچتم پین شده چیه؟",
-    "dexaVisibleReply": "[{\"body\":\"我问一下昨天我问还没修好\",\"body_may_be_truncated\":false,\"sender\":null,\"direction\":\"unknown\",\"direction_evidence\":\"row_spans_or_crosses_midline\",\"time\":null,\"after_separator\":\"03:56\",\"source\":\"visible_native_accessibility_list_item\"}]",
+    "dexaVisibleReply": "آخرین پیام قابل مشاهده: «我问一下昨天我问还没修好»",
     "executionState": "SUCCEEDED_VERIFIED",
     "turnComplete": true,
     "effectsExecuted": 1
@@ -579,7 +579,7 @@ HISTORY_SHA256: 8e57330775cf918166b4c55ebb6eb3a3117114aa54518b3b17f2cb5e67bf0ab3
     "exchange": 29,
     "createdAt": "2026-11-15T17:00:25.721Z",
     "ownerRequest": "الان دسترسی داری. حالا سعی کن که پیامک رو بفرستی. فقط دقت کن که ایرانسل سر همه.",
-    "dexaVisibleReply": "{\"output\":{\"stepId\":3,\"error\":\"CATALOG_UPSTREAM_TOOL_ERROR\",\"physicalCommandIssued\":true,\"completed\":false},\"actualStepErrors\":[{\"stepId\":1,\"kind\":\"TOOL\",\"code\":\"CATALOG_UPSTREAM_TOOL_ERROR\",\"physicalCallIssued\":true},{\"stepId\":2,\"kind\":\"TRANSFORM\",\"code\":\"TOOL_PLAN_DATA_PATH_MISSING\",\"physicalCallIssued\":false},{\"stepId\":3,\"kind\":\"TOOL\",\"code\":\"CATALOG_UPSTREAM_TOOL_ERROR\",\"physicalCallIssued\":true}],\"successfulPhysicalCalls\":2,\"warning\":\"Actual commands issued; failed steps were not treated as success.\"}",
+    "dexaVisibleReply": "درخواست ناموفق بود؛ دکسا نتونست نتیجهٔ لازم رو از جواب ابزار دربیاره.",
     "executionState": "FAILED",
     "turnComplete": true,
     "effectsExecuted": 0
