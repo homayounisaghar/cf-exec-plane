@@ -36,13 +36,21 @@ Sample UI (placeholders, not real credentials):
 
 ## Local (server-graphical) mirror
 
-Call \`cf_mirror_open\` with \`mode:"local"\` or omit mode. Choose source as above. **Do not ask for or pass \`password\`, \`ttl\` or an expiry time**. The session has no scheduled expiry by default. The returned URL is an \`http://127.0.0.1:<port>/\` loopback URL; present it as a clickable link, alongside the explicit location of use:
+Call \`cf_mirror_open\` with \`mode:"local"\` or omit mode. Choose source as above. **Do not ask for or pass \`password\`, \`ttl\` or an expiry time**. The session has no scheduled expiry by default. The returned URL is an \`http://127.0.0.1:<port>/\` loopback URL; **show it as selectable plain text (inline code or code block) with a prominent one-tap Copy local link control; NEVER render it as a clickable Markdown/DIL hyperlink or link-like button**. The owner copies the exact returned URL and pastes it into the graphical browser on the server. State the location of use:
 
-**«این لینک را در مرورگر گرافیکی روی خودِ سرور (XRDP/X11/Chrome سرور) باز کن؛ از مرورگر گوشی یا رایانهٔ دیگری مستقیم قابل‌استفاده نیست. به رمز، زمان انقضا یا VPN نیاز ندارد.»**
+**«این آدرس را با دکمهٔ کپی بردار و در مرورگر گرافیکی روی خودِ سرور (XRDP/X11/Chrome سرور) پیست کن؛ از مرورگر گوشی یا رایانهٔ دیگری مستقیم قابل‌استفاده نیست. به رمز، زمان انقضا یا VPN نیاز ندارد.»**
+
+Example local UI (placeholder, NOT a live URL):
+- **آدرس لوکال:** `http://127.0.0.1:<actual-port>/` as plain selectable code, NEVER a hyperlink.
+- **کنترل:** «کپی آدرس لوکال» / **Copy local link**, with a functional copy action copying exactly `result.url` to the clipboard.
+- **راهنما:** «آدرس را کپی کن و داخل مرورگر خودِ سرور پیست کن.»
+- Do not display a password, expiry, TTL or VPN warning for local. If the UI cannot render an actionable copy button, use a standard code block with built-in Copy.
 
 Local loopback does not provide network-wide user authentication. Any process with the relevant loopback access on the server could interact with a local mirror. Do not expose it through an unprotected public reverse proxy.
 
 ## Output contract and tool interfaces
+
+For LOCAL mirror outputs, use `presentation.url_display=copy_only`, `url_copyable=true`, `url_clickable=false`, `copy_value=url`, and `copy_label` to produce a copy-first UI. For WEB, keep the HTTPS URL tappable and the password copyable.
 
 - Source discovery: \`cf_mirror_sources({})\`.
 - Create: \`cf_mirror_open({mode:"web",app:"telegram",ttl:"30m"})\` or \`cf_mirror_open({mode:"local",x11:":124",full:true})\`.
@@ -72,4 +80,4 @@ This project is accepted as complete **with a documented transport limitation**,
 
 The same mirror viewer has a **Mouse / Touchpad** toggle among its bottom buttons. **LOCAL mirrors default to Mouse** (visible desktop pointer, absolute click/tap and drag). **INTERNET/WEB mirrors default to Touchpad** (relative movement, touchpad taps click at the current remote cursor, optional ⌖ predictive cursor ring). Either mode can be selected manually in either mirror without creating a new session; selection is retained for the current browser tab using `sessionStorage`. A refresh of the server browser (`Ctrl+Shift+R`) activates the input mode toolbar on a previously running mirror. This is an input interaction choice, **not** a VPN workaround, security control or transport mode. No password or TTL is added to a local mirror by switching input mode. Do not confuse these defaults when presenting a new mirror.
 
-The public and local workflows are deliberately distinct. Internet mode always has an access password and expiry, local mode has neither unless the caller deliberately chooses a nonstandard local TTL at CLI level.
+The public and local workflows are deliberately distinct. Internet mode always has an access password and expiry. Local mode has neither; passing TTL in LOCAL is rejected by the official MCP adapter and CLI.
