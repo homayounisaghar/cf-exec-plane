@@ -99,7 +99,7 @@ Conversation completion NEVER implies a tool ran successfully. Never invent miss
 
 HISTORY_LIMIT: 30
 HISTORY_COUNT: 13
-HISTORY_SHA256: 521885c234a5fb746d88e677ad284cdf39da225ca3f58e9394b91df26984ccd9
+HISTORY_SHA256: b848dfcc33f19dc71c3f04b60f0ce2d9afcd6c0a0d76cf314f7eb560d81eefbc
 
 ~~~json
 [
@@ -215,7 +215,7 @@ HISTORY_SHA256: 521885c234a5fb746d88e677ad284cdf39da225ca3f58e9394b91df26984ccd9
     "exchange": 13,
     "createdAt": "2026-11-16T03:36:44.985Z",
     "ownerRequest": "روی گوشی یه اپلیکیشن دارم به اسم «تاختچه». آن‌اینستالش کن.",
-    "dexaVisibleReply": "برای حذف اپ «تاختچه» باید نام بستهٔ اندرویدی (package name) آن مشخص باشد. لطفاً نام بستهٔ برنامه را بفرست تا درخواست حذفش را روی گوشی باز کنم.",
+    "dexaVisibleReply": "مأموریت به درخواست کاربر، پیش از تکمیل متوقف شد.",
     "executionState": "CONVERSATION_TURN_COMPLETED",
     "turnComplete": true,
     "effectsExecuted": 0
