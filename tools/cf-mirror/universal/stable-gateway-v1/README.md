@@ -19,7 +19,7 @@
 - opt-in stable-origin support added to cf-mirror-universal.mjs (backed up). It starts a web mirror without any Quick Tunnel and registers a stable path automatically; ordinary local and public calls are unchanged before activation.
 - stable-gateway-v1/worker.mjs — intended Cloudflare Worker source with Workers VPC binding MIRROR_VPC, public health and per-session routing.
 - stable-gateway-v1/wrangler.toml.example — example only, requires real VPC Service UUID before using.
-- stable-gateway-v1/test-stable.mjs: 12/12 passed, including two parallel routes, cookie scoping, expiry isolation, JPEG streaming, local WebSocket 101, Worker binding mocks.
+- stable-gateway-v1/test-stable.mjs: 13/13 passed, including two parallel routes, cookie scoping, expiry isolation, JPEG streaming, local WebSocket 101, Worker binding mocks.
 - stable-gateway-v1/test-live.mjs: passed. TWO real CDP browser sources 9323 and 9324 served through different session paths simultaneously; both authenticated with independent passwords; cross-session cookie was refused; one real 40,558-byte JPEG read. Both disposable sessions cleaned up. Neither used a public Quick Tunnel.
 - The existing Alibaba and WeChat local mirror sessions and their browser processes were preserved.
 
