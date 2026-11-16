@@ -8,6 +8,7 @@ import {acceptWebSocket,rejectUpgrade} from './ws-wire.mjs';
 import {Stream,CPU,autoRate} from './stream-manager.mjs';
 import {MicBridge} from './mic-bridge.mjs';
 import { spawn, execFileSync } from 'node:child_process';
+import { parseFrameExtents, parseX11Geometry, frameRegion } from './x11-window-geometry.mjs';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -21,7 +22,7 @@ function usage(code = 0) {
 
   cf-mirror list                         show mirrorable browsers (CDP) and X displays
   cf-mirror start NAME --cdp PORT [--match TEXT]
-  cf-mirror start NAME --x11 :N
+  cf-mirror start NAME --x11 :N [--window-id X11_WINDOW_ID]
         [--interval 1] [--port P] [--open] [--no-fit]
   cf-mirror status                       running mirrors + URLs
   cf-mirror stop NAME|all
@@ -117,7 +118,7 @@ async function start(o) {
   const old = running().find(j => j.name === name); if (old) { console.log(JSON.stringify({ ok: true, already_running: true, ...old })); return; }
   const port = o.port ? +o.port : await freePort();
   const a = [process.argv[1], 'serve', name, '--port', String(port), '--interval', String(o.interval || 'auto')];
-  if (o.cdp) a.push('--cdp', o.cdp); if (o.x11) a.push('--x11', o.x11); if (o.match) a.push('--match', o.match); if (o['no-fit']) a.push('--no-fit'); if (o.full) a.push('--full');
+  if (o.cdp) a.push('--cdp', o.cdp); if (o.x11) a.push('--x11', o.x11); if (o['window-id']) a.push('--window-id', o['window-id']); if (o.match) a.push('--match', o.match); if (o['no-fit']) a.push('--no-fit'); if (o.full) a.push('--full');
   const log = fs.openSync(path.join(STATE, `${name}.log`), 'a', 0o600);
   const ch = spawn(process.execPath, a, { detached: true, stdio: ['ignore', log, log] }); ch.unref();
   const url = `http://127.0.0.1:${port}/`;
@@ -252,34 +253,68 @@ class CDP {
 
 // --- X11 backend ---
 class X11 {
-  constructor(d, full) { this.d = d; this.env = xenv(d); this.restartOnRate = true; this.full = full; this.off = [0, 0]; this.region = this.findRegion(); this.readRootPointer(); }
+  constructor(d, full, windowId=null) {
+    this.d=d;this.env=xenv(d);this.restartOnRate=true;this.full=full;
+    this.windowId=windowId===null?null:String(windowId);
+    this.off=[0,0];this.region=this.findRegion();this.readRootPointer();
+  }
   // Select the largest visible app window, not the union of every desktop window.
   // Popups layered inside the window remain visible. --full is the explicit desktop mode.
   findRegion() {
-    let sw = 1440, sh = 1000;
-    try { const m = execFileSync('xdpyinfo', ['-display', this.d], {encoding:'utf8',env:this.env,stdio:['ignore','pipe','ignore'],timeout:1200}).match(/dimensions:\s+(\d+)x(\d+)/); if(m){sw=+m[1];sh=+m[2];} } catch {}
+    let sw=1440,sh=1000;
+    try{
+      const m=execFileSync('xdpyinfo',['-display',this.d],{encoding:'utf8',env:this.env,stdio:['ignore','pipe','ignore'],timeout:1200}).match(/dimensions:\s+(\d+)x(\d+)/);
+      if(m){sw=+m[1];sh=+m[2];}
+    }catch{}
     const fullR={x:0,y:0,w:sw-(sw%2),h:sh-(sh%2)};
     if(this.full)return fullR;
-    const wins=[];
-    try {
-      const ids=execFileSync('xdotool',['search','--onlyvisible','--name','.'],{encoding:'utf8',env:this.env,timeout:2000,stdio:['ignore','pipe','ignore']}).trim().split('\n').filter(Boolean).slice(0,40);
-      for(const id of ids){
-        let title='';
-        try{title=execFileSync('xdotool',['getwindowname',id],{encoding:'utf8',env:this.env,timeout:500,stdio:['ignore','pipe','ignore']}).trim();}catch{}
-        if(/^(desktop|xfce4-panel|xfwm4|wrapper-2\.0)$/i.test(title))continue;
-        const g=execFileSync('xdotool',['getwindowgeometry','--shell',id],{encoding:'utf8',env:this.env,timeout:700,stdio:['ignore','pipe','ignore']});
-        const v=k=>Number((g.match(new RegExp('(?:^|\\n)'+k+'=(-?\\d+)'))||[])[1]||0);
-        const win={id,x:v('X'),y:v('Y'),w:v('WIDTH'),h:v('HEIGHT'),title};
-        if(win.w>=120&&win.h>=100&&win.x<sw&&win.y<sh&&win.x+win.w>0&&win.y+win.h>0)wins.push(win);
+    const visibleIds=[];
+    try{
+      const stdout=execFileSync('xdotool',['search','--onlyvisible','--name','.'],{encoding:'utf8',env:this.env,timeout:2200,stdio:['ignore','pipe','ignore']});
+      visibleIds.push(...stdout.split('\n').filter(id=>/^\d+$/.test(id)).slice(0,80));
+      // Some native windows have WM_CLASS but no descriptive title.
+      if(this.windowId&&!visibleIds.includes(this.windowId)){
+        try{
+          const byClass=execFileSync('xdotool',['search','--onlyvisible','--class','.'],{encoding:'utf8',env:this.env,timeout:1200,stdio:['ignore','pipe','ignore']});
+          visibleIds.push(...byClass.split('\n').filter(id=>/^\d+$/.test(id)).slice(0,80));
+        }catch{}
       }
     }catch{}
-    if(!wins.length){if(this.region)return this.region;throw new Error('NO_VISIBLE_X11_APPLICATION: launch a GUI app or use --full to mirror the desktop');}
-    wins.sort((a,b)=>b.w*b.h-a.w*a.h);
+    if(this.windowId&&!visibleIds.includes(this.windowId))
+      throw Error('PINNED_X11_WINDOW_NOT_VISIBLE: '+this.windowId+' on '+this.d);
+    const wins=[];
+    for(const id of (this.windowId?[this.windowId]:visibleIds)){
+      let title='';
+      try{
+        title=execFileSync('xdotool',['getwindowname',id],{encoding:'utf8',env:this.env,timeout:550,stdio:['ignore','pipe','ignore']}).trim();
+      }catch{}
+      if(!this.windowId&&/^(desktop|xfce4-panel|xfwm4|wrapper-2\.0)$/i.test(title))continue;
+      let raw='';
+      try{
+        raw=execFileSync('xdotool',['getwindowgeometry','--shell',id],{encoding:'utf8',env:this.env,timeout:850,stdio:['ignore','pipe','ignore']});
+      }catch{}
+      const g=parseX11Geometry(raw);
+      if(!g)continue;
+      const win={id,...g,title};
+      if(g.w>=120&&g.h>=100&&g.x<sw&&g.y<sh&&g.x+g.w>0&&g.y+g.h>0)wins.push(win);
+    }
+    if(!wins.length){
+      if(this.windowId)throw Error('PINNED_X11_WINDOW_HAS_NO_VISIBLE_GEOMETRY: '+this.windowId);
+      if(this.region)return this.region;
+      throw Error('NO_VISIBLE_X11_APPLICATION: launch a GUI app or use --full to mirror desktop');
+    }
+    // Legacy X11-only selection still chooses the largest visible app window.
+    // App/window selector mirrors instead stay pinned to their exact X11 ID.
+    if(!this.windowId)wins.sort((a,b)=>b.w*b.h-a.w*a.h);
     const win=wins[0];
-    const x=Math.max(0,Math.min(sw-2,win.x)),y=Math.max(0,Math.min(sh-2,win.y));
-    let w=Math.max(2,Math.min(sw,win.x+win.w)-x),h=Math.max(2,Math.min(sh,win.y+win.h)-y);
-    w-=w%2;h-=h%2;
-    return {x,y,w,h};
+    let extents=null;
+    try{
+      const prop=execFileSync('xprop',['-id',String(win.id),'_NET_FRAME_EXTENTS'],
+        {encoding:'utf8',env:this.env,timeout:900,stdio:['ignore','pipe','ignore']});
+      extents=parseFrameExtents(prop);
+    }catch{}
+    // For undecorated WeChat/Xvfb clients: no WM frame extents, no offsets.
+    return frameRegion(win,extents,sw,sh);
   }
   P(p) {
     const r=this.region;
@@ -328,10 +363,17 @@ class X11 {
     return {cursorPos:await this.pointerPosition()};
   }
   xdo(...a) { return new Promise(r => { const p = spawn('xdotool', a, { env: this.env, stdio: 'ignore' }); p.on('close', r); p.on('error', r); }); }
+  captureScaleArgs() {
+    // Private full-desktop X11 :124 only: emit about half the source pixels.
+    // Keep logical desktop dimensions unchanged for mouse/touch coordinates.
+    const r=this.region;
+    return this.full && this.d===':124' && r.w===1440 && r.h===900
+      ? ['-vf','scale=1024:640:flags=bicubic'] : [];
+  }
   shot() {
     return new Promise((res, rej) => {
       const r = this.region;
-      const p = spawn('ffmpeg', ['-loglevel', 'error', '-f', 'x11grab', '-draw_mouse', '1', '-video_size', `${r.w}x${r.h}`, '-i', `${this.d}+${r.x},${r.y}`, '-frames:v', '1', '-q:v', '5', '-f', 'image2', '-vcodec', 'mjpeg', '-'], { env: this.env });
+      const p = spawn('ffmpeg', ['-loglevel', 'error', '-f', 'x11grab', '-draw_mouse', '1', '-video_size', `${r.w}x${r.h}`, '-i', `${this.d}+${r.x},${r.y}`, ...this.captureScaleArgs(), '-frames:v', '1', '-q:v', '6', '-f', 'image2', '-vcodec', 'mjpeg', '-'], { env: this.env });
       const ch = []; p.stdout.on('data', c => ch.push(c)); p.on('close', c => c === 0 ? res(Buffer.concat(ch)) : rej(new Error('ffmpeg ' + c))); p.on('error', rej);
     });
   }
@@ -339,7 +381,7 @@ class X11 {
   async unfit() {}
   startStream(cb, fps) {
     const r = this.region;
-    const p = spawn('ffmpeg', ['-loglevel', 'error', '-f', 'x11grab', '-draw_mouse', '1', '-framerate', String(fps), '-video_size', `${r.w}x${r.h}`, '-i', `${this.d}+${r.x},${r.y}`, '-q:v', String([2, 3, 5][this.level ?? 1]), '-f', 'image2pipe', '-vcodec', 'mjpeg', '-'], { env: this.env, stdio: ['ignore', 'pipe', 'ignore'] });
+    const p = spawn('ffmpeg', ['-loglevel', 'error', '-f', 'x11grab', '-draw_mouse', '1', '-framerate', String(fps), '-video_size', `${r.w}x${r.h}`, '-i', `${this.d}+${r.x},${r.y}`, ...this.captureScaleArgs(), '-q:v', String([2, 3, 5][this.level ?? 1]), '-f', 'image2pipe', '-vcodec', 'mjpeg', '-'], { env: this.env, stdio: ['ignore', 'pipe', 'ignore'] });
     let buf = Buffer.alloc(0);
     p.stdout.on('data', c => {
       buf = Buffer.concat([buf, c]);
@@ -382,12 +424,26 @@ class X11 {
 async function serve(o) {
   const name = o._[1], auto = !o.interval || o.interval === 'auto';
   const interval = auto ? 0.1 : Math.max(0.05, +o.interval);
-  const be = o.cdp ? new CDP(+o.cdp, o.match, !o['no-fit'], o['target-id']) : new X11(o.x11, !!o.full);
+  const be = o.cdp ? new CDP(+o.cdp, o.match, !o['no-fit'], o['target-id']) : new X11(o.x11, !!o.full, o['window-id']||null);
   const stream = new Stream(be, interval);
   const mic=new MicBridge(o.x11?{kind:'x11',display:o.x11}:{kind:'cdp',port:Number(o.cdp)});
   mic.inspect().catch(()=>{});
   if (auto) autoRate(stream);
-  if (be.findRegion) setInterval(() => { const r = be.findRegion(), c = be.region; if (r.x !== c.x || r.y !== c.y || r.w !== c.w || r.h !== c.h) { be.region = r; if (stream.src) { stream.stopSrc(); stream.src = be.startStream(f => stream.frame(f), Math.round(1000 / stream.ms)); } } }, 2000);
+  if (be.findRegion) setInterval(() => {
+    let next;
+    try{next=be.findRegion();}
+    catch(e){
+      console.error('X11_WINDOW_REGION_LOST:',String(e.message||e));
+      // Never show content from a different window if the pinned one closes.
+      if(be.windowId){stream.stopSrc();process.exit(1);}
+      return;
+    }
+    const current=be.region;
+    if(next.x!==current.x||next.y!==current.y||next.w!==current.w||next.h!==current.h){
+      be.region=next;
+      if(stream.src){stream.stopSrc();stream.src=be.startStream(f=>stream.frame(f),Math.round(1000/stream.ms));}
+    }
+  },2000);
   const quit = async () => { stream.stopSrc(); mic.shutdown(); await be.unfit(); process.exit(0); };
   process.on('SIGTERM', quit); process.on('SIGINT', quit);
   const server=http.createServer(async (req, res) => {

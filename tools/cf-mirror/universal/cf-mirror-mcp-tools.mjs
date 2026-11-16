@@ -32,16 +32,18 @@ export function registerCfMirrorUniversalTools(server,z,{callAgent,callerIdentit
   });
  }
  register('cf_mirror_sources','List mirrorable browsers and apps',
-  'Find available Chrome/CDP browser tabs and X11 apps/displays when the owner says mirror a particular browser/app and you cannot resolve the target. Then use cf_mirror_open for web or local mirroring. Do not confuse a local browser URL with a phone-accessible link.',
+  'Discover Chrome/CDP tabs and X11 displays with visible window_details containing numeric ID, title and WM_CLASS. For an exact native Linux app window (including a terminal or emulator), call cf_mirror_open({x11:":10",window_id:WINDOW_ID}) or use app/window selector; full:true is for the entire X11 desktop. A local URL works only ON THE SERVER, not on the phone.',
   {},readonly,async(input,extra)=>run([BIN,'list'],extra,{seconds:20}));
  register('cf_mirror_status','Universal mirror sessions',
   'Check created local or public mirroring sessions, their URLs, targets, active/expired status, and public expiry. Present web URLs as tappable links but local 127.0.0.1 URLs as copyable plain text, NEVER as hyperlinks. Does NOT reveal session passwords, which are shown only at creation. A new web session needs a new one-time password; local mirrors require none.',
   {},readonly,async(input,extra)=>run([BIN,'status'],extra,{seconds:15}));
  register('cf_mirror_open','Open universal local or web mirror',
-  'CREATE MIRROR ON REQUEST / MIRRORING / mirror / share a browser or app: when owner asks in Persian/English for an internet/public mirror of any Chrome/CDP tab, browser or X11 app for N minutes/hours, CALL cf_mirror_open with mode=web, target app/x11/cdp, and ttl (e.g. 5h, 30m). Password is generated automatically; do NOT ask for one. Present response.url as a TAPPABLE HTTPS link, response.password in a COPYABLE code block or copy button, expiry in user timezone, and always warn: VPN MAY BE REQUIRED to view/control/stream; VPN-free playback is not guaranteed. A Quick Tunnel can fail early. When owner requests LOCAL mirroring, CALL cf_mirror_open with mode=local (or omit mode), target app/x11/cdp, and DO NOT request or send password or ttl; present the returned numeric http://127.0.0.1:PORT/ URL as COPYABLE PLAIN CODE or a COPY LINK button (GenUI.copy where supported); NEVER render a clickable/tappable hyperlink for local. The user will paste that URL into a browser ON THE SERVER graphical/XRDP desktop, not open it on their phone. Local is loopback-only, passwordless and has no expiry by default. If target unclear, use cf_mirror_sources; avoid asking for a password or duration for local. Keep existing source/tab selectors. Public URL+password grant full mouse/keyboard control; share only with owner.',
+  'CREATE MIRROR ON REQUEST / MIRRORING / mirror / share a browser or app: when owner asks in Persian/English for an internet/public mirror of any Chrome/CDP tab, browser or X11 app for N minutes/hours, CALL cf_mirror_open with mode=web, target app/x11/cdp or an exact X11 window/window_id, and ttl (e.g. 5h, 30m). Password is generated automatically; do NOT ask for one. Present response.url as a TAPPABLE HTTPS link, response.password in a COPYABLE code block or copy button, expiry in user timezone, and always warn: VPN MAY BE REQUIRED to view/control/stream; VPN-free playback is not guaranteed. A Quick Tunnel can fail early. When owner requests LOCAL mirroring, CALL cf_mirror_open with mode=local (or omit mode), target app/x11/cdp, and DO NOT request or send password or ttl; present the returned numeric http://127.0.0.1:PORT/ URL as COPYABLE PLAIN CODE or a COPY LINK button (GenUI.copy where supported); NEVER render a clickable/tappable hyperlink for local. The user will paste that URL into a browser ON THE SERVER graphical/XRDP desktop, not open it on their phone. Local is loopback-only, passwordless and has no expiry by default. Native X11 window mirrors include the whole outer frame/title bar using _NET_FRAME_EXTENTS when the window manager provides it, and pin the exact window ID to prevent switching to another app. Use window for an X11 title/class selector, or window_id together with x11 to select a specific visible X11 window; x11 alone retains legacy largest-window behavior and full:true captures the whole display. If ambiguous, use cf_mirror_sources; avoid asking for a password or duration for local. Keep existing source/tab selectors. Public URL+password grant full mouse/keyboard control; share only with owner.',
   {name:schemaName.optional(),app:z.string().min(1).max(140).optional(),
    cdp:z.number().int().min(1).max(65535).optional(),
    x11:z.string().regex(/^:\d+$/).optional(),
+   window:z.string().min(1).max(200).optional(),
+   window_id:z.number().int().min(1).max(4294967295).optional(),
    tab:z.string().min(1).max(300).optional(),
    mode:z.enum(['local','web']).optional(),
    ttl:z.union([z.string().regex(/^\d+(s|m|h)?$/),z.number().int().min(30).max(86400)]).optional(),
@@ -55,6 +57,8 @@ export function registerCfMirrorUniversalTools(server,z,{callAgent,callerIdentit
    if(input.app)cmd.push('--app',input.app);
    if(input.cdp)cmd.push('--cdp',String(input.cdp));
    if(input.x11)cmd.push('--x11',input.x11);
+   if(input.window)cmd.push('--window',input.window);
+   if(input.window_id)cmd.push('--window-id',String(input.window_id));
    if(input.tab)cmd.push('--tab',input.tab);
    if(input.mode)cmd.push('--mode',input.mode);
    if(input.ttl!==undefined)cmd.push('--ttl',String(input.ttl));

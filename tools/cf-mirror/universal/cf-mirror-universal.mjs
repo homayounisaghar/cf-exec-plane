@@ -9,6 +9,7 @@ import os from 'node:os';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { spawn, execFileSync } from 'node:child_process';
+import { parseWindowClass } from './x11-window-geometry.mjs';
 
 const HOME=os.homedir(), ROOT=path.join(HOME,'.local/share/cf-mirror-universal');
 const STATE=path.join(HOME,'.cache/cf-mirror-universal');
@@ -102,14 +103,26 @@ async function discover(){
     const env=displayEnv(display);
     const info=execFileSync('xdpyinfo',['-display',display],{env,encoding:'utf8',timeout:2000,stdio:['ignore','pipe','ignore']});
     const size=info.match(/dimensions:\s+(\d+x\d+)/)?.[1]||'?';
-    let titles=[];
-    try{
-     const wins=execFileSync('xdotool',['search','--onlyvisible','--name','.'],{env,encoding:'utf8',timeout:1200}).split('\n').filter(Boolean).slice(0,60);
-     for(const id of wins){
-      try{const t=execFileSync('xdotool',['getwindowname',id],{env,encoding:'utf8',timeout:500}).trim();if(t&&t.length>2&&!titles.includes(t))titles.push(t.slice(0,100));}catch{}
-     }
-    }catch{}
-    displays.push({display,size,windows:titles.slice(0,20)});
+    const titles=[],windowDetails=[],ids=new Set();
+    // Enumerate X11 window IDs, not just titles: a display may host many apps.
+    for(const [option,term] of [['--name','.'],['--class','.']]){
+     try{
+      const foundIds=execFileSync('xdotool',['search','--onlyvisible',option,term],{env,encoding:'utf8',timeout:1400,stdio:['ignore','pipe','ignore']});
+      for(const id of foundIds.split('\n'))if(/^\d+$/.test(id)&&ids.size<80)ids.add(id);
+     }catch{}
+    }
+    for(const id of ids){
+     let title='',wmClass='';
+     try{title=execFileSync('xdotool',['getwindowname',id],{env,encoding:'utf8',timeout:550,stdio:['ignore','pipe','ignore']}).trim().slice(0,200);}catch{}
+     try{
+      const raw=execFileSync('xprop',['-id',id,'WM_CLASS'],{env,encoding:'utf8',timeout:550,stdio:['ignore','pipe','ignore']});
+      wmClass=parseWindowClass(raw);
+     }catch{}
+     if(!title&&!wmClass)continue;
+     windowDetails.push({id:Number(id),title,class:wmClass});
+     if(title.length>2&&!titles.includes(title))titles.push(title.slice(0,100));
+    }
+    displays.push({display,size,windows:titles.slice(0,20),window_details:windowDetails.slice(0,80)});
    }catch{displays.push({display,accessible:false});}
   }
  }catch{}
@@ -141,29 +154,75 @@ function intervalSec(v){
  return String(n);
 }
 async function resolveSource(o,found){
- const app=text(o.app,140).toLowerCase();
- if(o.cdp&&o.x11)throw Error('Choose one source: --cdp OR --x11');
- if(o.x11&&app)throw Error('Choose --app for automatic window discovery OR --x11 for a complete display');
+ const app=text(o.app,140).trim().toLowerCase();
+ const windowQuery=text(o.window,200).trim().toLowerCase();
+ const rawId=o['window-id'];
+ const windowId=rawId===undefined?null:Number(rawId);
+ if(rawId!==undefined&&(!/^\d+$/.test(String(rawId))||!Number.isSafeInteger(windowId)||windowId<1||windowId>4294967295))
+  throw Error('X11 window_id must be a positive decimal 32-bit window ID');
+ if(o.cdp&&(o.x11||windowQuery||windowId))throw Error('CDP cannot be combined with X11 display/window selectors');
+ if(app&&windowQuery)throw Error('Choose either app OR window title/class, not both');
+ if(windowId&&(windowQuery||app))throw Error('Choose exact window_id OR app/window, not both');
+ if(windowId&&!o.x11)throw Error('window_id needs x11 display to avoid selecting a window on another screen');
+ if(o.full&&(windowId||windowQuery))throw Error('full:true cannot be combined with a single X11 window');
  let port=null,display=null,selectedId=null;
+ const windowsOf=d=>Array.isArray(d.window_details)?d.window_details:[];
+ const matching=(d,q)=>windowsOf(d).filter(w=>
+   String(w.title||'').toLowerCase().includes(q)||String(w.class||'').toLowerCase().includes(q));
+ const errorMatches=items=>items.slice(0,15).map(w=>
+  String(w.display||'')+':'+String(w.id)+' '+String(w.title||w.class).slice(0,65)).join(' | ');
+ let pinned=null;
  if(o.cdp){port=positivePort(o.cdp);}
- else if(o.x11){display=String(o.x11);if(!/^:\d+$/.test(display))throw Error('Invalid X11 DISPLAY');}
- else{
+ else if(o.x11){
+  display=String(o.x11);
+  if(!/^:\d+$/.test(display))throw Error('Invalid X11 DISPLAY');
+ }else if(windowQuery){
+  const candidates=found.displays.flatMap(d=>matching(d,windowQuery).map(w=>({...w,display:d.display})));
+  if(candidates.length!==1)
+   throw Error(candidates.length?'Ambiguous X11 window: '+errorMatches(candidates):
+    'No visible X11 window matching title/class '+windowQuery);
+  display=candidates[0].display;pinned=candidates[0];
+ }else{
   const matches=found.browsers.filter(b=>app==='browser'||!app||b.pages.some(p=>(p.title+' '+p.url).toLowerCase().includes(app)));
   if(matches.length===1){
    port=matches[0].port;
    if(app&&app!=='browser')selectedId=matches[0].pages.find(p=>(p.title+' '+p.url).toLowerCase().includes(app))?.id||null;
   }else if(matches.length>1)throw Error('Ambiguous app/browser. Specify --cdp PORT. Candidates: '+matches.map(b=>b.port+' '+b.pages.map(p=>p.url.slice(0,55)).join(', ')).join(' | '));
   else if(app&&app!=='browser'){
-   const dx=found.displays.filter(d=>d.accessible!==false&&d.windows.some(w=>w.toLowerCase().includes(app)));
-   if(dx.length===1)display=dx[0].display;
-   else throw Error('No unique matching browser or X11 app. Use list and --cdp PORT / --x11 :N');
+   const candidates=found.displays.flatMap(d=>matching(d,app).map(w=>({...w,display:d.display})));
+   if(candidates.length!==1)
+    throw Error(candidates.length?'Ambiguous X11 app; select x11 and window_id: '+errorMatches(candidates):
+     'No matching browser or visible X11 app. Use list and --cdp PORT / --x11 :N');
+   display=candidates[0].display;pinned=candidates[0];
   }else throw Error('No unique browser. Run list and select --cdp PORT or --x11 :N');
  }
  if(display){
   if(o.tab)throw Error('--tab is only for CDP browsers');
   const d=found.displays.find(d=>d.display===display);
   if(!d||d.accessible===false)throw Error('X11 display not accessible: '+display);
-  return {kind:'x11',display,full:!!o.full};
+  if(windowId){
+   pinned=windowsOf(d).find(w=>w.id===windowId)||null;
+   if(!pinned)throw Error('X11 target window_id not visible on display '+display+': '+windowId);
+  }else if(windowQuery&&!pinned){
+   const hits=matching(d,windowQuery);
+   if(hits.length!==1)throw Error(hits.length?'Ambiguous X11 window: '+errorMatches(hits):
+    'No matching visible X11 window on '+display);
+   pinned=hits[0];
+  }else if(app&&!pinned&&!o.full){
+   const hits=matching(d,app);
+   if(hits.length!==1)throw Error(hits.length?'Ambiguous X11 app; use window_id: '+errorMatches(hits):
+    'No matching visible X11 app on '+display);
+   pinned=hits[0];
+  }
+  const source={kind:'x11',display,full:!!o.full};
+  // Exact app/window capture never silently switches to another window.
+  // Existing x11-only calls retain legacy largest-visible-client behavior.
+  if(pinned&&!o.full){
+   source.windowId=pinned.id;
+   source.windowTitle=pinned.title||'';
+   source.windowClass=pinned.class||'';
+  }
+  return source;
  }
  const pages=(await getJson('http://127.0.0.1:'+port+'/json/list')).filter(t=>t.type==='page'&&!String(t.url).startsWith('devtools://'));
  if(!pages.length)throw Error('CDP browser has no page targets');
@@ -305,6 +364,7 @@ async function serve(config){
   if(c.source.kind==='x11'){
    args.push('--x11',c.source.display);
    if(c.source.full)args.push('--full');
+   if(c.source.windowId)args.push('--window-id',String(c.source.windowId));
   }else{
    args.push('--cdp',String(c.source.port),'--target-id',selectedId);
    if(c.source.noFit)args.push('--no-fit');
