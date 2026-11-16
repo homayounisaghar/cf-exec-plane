@@ -226,8 +226,8 @@ async function startCLI(o){
     vpn_notice:'Public mirror may not load or stream without VPN; turn VPN on if needed.',
     duration_required:true,expires_at:safe.expires_at};
  }else{
-  safe.note='LOCAL mirror: open this numeric loopback URL in a graphical browser ON THE SERVER (XRDP/X11), not in the phone browser. No password, no VPN, and no duration required; session has no scheduled expiry by default.';
-  safe.presentation={link_label:'Open local mirror on server desktop',password_required:false,
+  safe.note='LOCAL mirror: present the loopback URL as selectable plain text (code) with a Copy link button. DO NOT render it as a clickable/tappable hyperlink: copy the URL and paste it into a graphical browser ON THE SERVER (XRDP/X11), not in the phone browser. No password, no VPN, no scheduled expiry.';
+  safe.presentation={link_label:'Copy local mirror URL',url_display:'copy_only',url_copyable:true,url_clickable:false,copy_label:'Copy local link',copy_value:safe.url,password_required:false,
     duration_required:false,vpn_required:false,server_graphical_browser_only:true};
  }
  out(safe);
