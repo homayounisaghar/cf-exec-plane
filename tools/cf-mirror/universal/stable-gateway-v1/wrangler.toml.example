@@ -1,0 +1,14 @@
+# Copy to wrangler.toml ONLY AFTER the account owner creates an authorized
+# Workers VPC HTTP Service with host=127.0.0.1, http_port=6266.
+# This VPC Service can have a single Cloudflare Tunnel and MANY mirror sessions.
+name = "cf-mirror-bridge"
+main = "worker.mjs"
+compatibility_date = "2026-11-16"
+workers_dev = true
+
+[vars]
+PUBLIC_ORIGIN = "https://cf-mirror-bridge.mirkazem-design.workers.dev"
+
+[[vpc_services]]
+binding = "MIRROR_VPC"
+service_id = "REPLACE_WITH_REAL_VPC_SERVICE_ID"
