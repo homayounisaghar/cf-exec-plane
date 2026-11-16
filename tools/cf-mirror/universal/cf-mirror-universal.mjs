@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // CF universal mirror controller, using the existing cf-mirror CDP/X11 engine.
-// Bound to loopback. Web sessions are accessible only through a per-session HTTPS
-// Cloudflare Quick Tunnel + authenticated, expiring gateway. No domain allowlist.
+// Bound to loopback. Web sessions use an authenticated expiring gateway: legacy
+// Quick Tunnel by default, or opt-in fixed Workers VPC multi-session route.
 import http from 'node:http';
 import net from 'node:net';
 import fs from 'node:fs';
