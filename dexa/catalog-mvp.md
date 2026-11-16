@@ -98,8 +98,8 @@ Each user/assistant exchange is complete after the assistant replies, even if ex
 Conversation completion NEVER implies a tool ran successfully. Never invent missing messages.
 
 HISTORY_LIMIT: 30
-HISTORY_COUNT: 13
-HISTORY_SHA256: fd6323054da3f0cedd9ef6c33aa27f8d6b131b96656e1a246e4a0cb08965d42a
+HISTORY_COUNT: 14
+HISTORY_SHA256: a093b36769e2d2d8c7849da575adab6539c6782bff6da9b5477bab28281ea568
 
 ~~~json
 [
@@ -217,6 +217,15 @@ HISTORY_SHA256: fd6323054da3f0cedd9ef6c33aa27f8d6b131b96656e1a246e4a0cb08965d42a
     "ownerRequest": "رو از کجا باید بیارم؟",
     "dexaVisibleReply": "مأموریت به درخواست کاربر، پیش از تکمیل متوقف شد.",
     "executionState": "STOPPED_FUTURE",
+    "turnComplete": true,
+    "effectsExecuted": 0
+  },
+  {
+    "exchange": 14,
+    "createdAt": "2026-11-16T03:41:27.640Z",
+    "ownerRequest": "شناسه حذفش رو از کجا باید بیارم؟",
+    "dexaVisibleReply": "فرمان مستقیم انجام‌پذیر نبود. خطای واقعی: MODEL_RESPONSE_COMPLETION_TIMEOUT",
+    "executionState": "FAILED",
     "turnComplete": true,
     "effectsExecuted": 0
   }
