@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {spawnSync} from 'node:child_process';
 import {readFileSync} from 'node:fs';
-import {parseFrameExtents,parseX11Geometry,parseWindowClass,frameRegion} from './x11-window-geometry.mjs';
+import {parseFrameExtents,parseX11Geometry,parseXwininfoGeometry,parseWindowClass,frameRegion} from './x11-window-geometry.mjs';
 const root=new URL('./',import.meta.url);
 const controller=readFileSync(new URL('cf-mirror-universal.mjs',root),'utf8');
 const engine=readFileSync(new URL('runtime.mjs',root),'utf8');
@@ -15,11 +15,16 @@ test('Xfwm4 EWMH outer frame extents are parsed in left,right,top,bottom order',
  assert.equal(parseFrameExtents('_NET_FRAME_EXTENTS(CARDINAL) = 5, 5, 9999, 5'),null);
 });
 
-test('terminal client 818x483 expands to complete decorated frame at 311,1280',()=>{
- const client=parseX11Geometry('WINDOW=50362571\nX=316\nY=1309\nWIDTH=818\nHEIGHT=483\nSCREEN=0\n');
- assert.deepEqual(client,{x:316,y:1309,w:818,h:483});
- const rect=frameRegion(client,parseFrameExtents('_NET_FRAME_EXTENTS(CARDINAL) = 5, 5, 29, 5'),1440,2992);
- assert.deepEqual(rect,{x:311,y:1280,w:828,h:518});
+test('Xfwm4 true root client origin from xwininfo avoids repeated xdotool decoration offset',()=>{
+ const xdotool=parseX11Geometry('WINDOW=50362571\nX=316\nY=1309\nWIDTH=818\nHEIGHT=483\nSCREEN=0\n');
+ assert.deepEqual(xdotool,{x:316,y:1309,w:818,h:483});
+ const client=parseXwininfoGeometry('  Absolute upper-left X:  311\n  Absolute upper-left Y:  1280\n  Relative upper-left X: 5\n  Relative upper-left Y: 29\n  Width: 818\n  Height: 483');
+ assert.deepEqual(client,{x:311,y:1280,w:818,h:483});
+ const extents=parseFrameExtents('_NET_FRAME_EXTENTS(CARDINAL) = 5, 5, 29, 5');
+ assert.deepEqual(frameRegion(client,extents,1440,2992),{x:306,y:1251,w:828,h:518});
+ // Current user's terminal was resized to 608 pixels wide; same root origin.
+ assert.deepEqual(frameRegion({...client,w:608},extents,1440,2992),{x:306,y:1251,w:618,h:518});
+ assert.equal(parseXwininfoGeometry('Absolute upper-left X: 311\nWidth: 818'),null);
 });
 
 test('undecorated WeChat Xvfb remains client-sized with even x11grab geometry',()=>{

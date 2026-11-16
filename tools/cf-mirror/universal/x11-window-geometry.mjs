@@ -15,6 +15,18 @@ export function parseX11Geometry(text) {
  if(![x,y,w,h].every(Number.isSafeInteger)||w<1||h<1)return null;
  return {x,y,w,h};
 }
+// xwininfo reports the actual client origin in root-screen coordinates.
+// xdotool getwindowgeometry may instead include EWMH decorations in its X/Y
+// output a second time; never use that reported X/Y for the final crop when
+// xwininfo is available. This distinction is crucial for titlebar capture.
+export function parseXwininfoGeometry(text) {
+ const s=String(text||'');
+ const v=label=>Number((s.match(new RegExp('(?:^|\\n)\\s*'+label+':\\s*(-?\\d+)'))||[])[1]);
+ const x=v('Absolute upper-left X'),y=v('Absolute upper-left Y');
+ const w=v('Width'),h=v('Height');
+ if(![x,y,w,h].every(Number.isSafeInteger)||w<1||h<1)return null;
+ return {x,y,w,h};
+}
 export function frameRegion(client,extents,screenW,screenH) {
  const {left=0,right=0,top=0,bottom=0}=extents||{};
  if(!client||![screenW,screenH].every(v=>Number.isSafeInteger(v)&&v>=2))

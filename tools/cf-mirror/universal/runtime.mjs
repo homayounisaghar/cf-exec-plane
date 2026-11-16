@@ -8,7 +8,7 @@ import {acceptWebSocket,rejectUpgrade} from './ws-wire.mjs';
 import {Stream,CPU,autoRate} from './stream-manager.mjs';
 import {MicBridge} from './mic-bridge.mjs';
 import { spawn, execFileSync } from 'node:child_process';
-import { parseFrameExtents, parseX11Geometry, frameRegion } from './x11-window-geometry.mjs';
+import { parseFrameExtents, parseX11Geometry, parseXwininfoGeometry, frameRegion } from './x11-window-geometry.mjs';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -313,8 +313,24 @@ class X11 {
         {encoding:'utf8',env:this.env,timeout:900,stdio:['ignore','pipe','ignore']});
       extents=parseFrameExtents(prop);
     }catch{}
-    // For undecorated WeChat/Xvfb clients: no WM frame extents, no offsets.
-    return frameRegion(win,extents,sw,sh);
+    // xdotool getwindowgeometry --shell can report coordinates shifted by
+    // the frame extents, even though its width/height are client dimensions.
+    // xwininfo -id returns true ABSOLUTE CLIENT root coordinates instead.
+    // Example Xfwm4: xdotool 316,1309; xwininfo 311,1280;
+    // _NET_FRAME_EXTENTS 5,5,29,5 => outer frame at 306,1251.
+    let client=null;
+    try{
+      const exact=execFileSync('xwininfo',['-id',String(win.id)],
+        {encoding:'utf8',env:this.env,timeout:900,stdio:['ignore','pipe','ignore']});
+      client=parseXwininfoGeometry(exact);
+    }catch{}
+    if(!client||client.w!==win.w||client.h!==win.h){
+      // Fallback for hosts without xwininfo: undo the decoration shift
+      // first, then frameRegion subtracts the actual outer frame extents.
+      client={...win,x:win.x-(extents?.left||0),y:win.y-(extents?.top||0)};
+    }
+    // Undecorated WeChat/Xvfb has no extents; its coordinates are unchanged.
+    return frameRegion(client,extents,sw,sh);
   }
   P(p) {
     const r=this.region;
