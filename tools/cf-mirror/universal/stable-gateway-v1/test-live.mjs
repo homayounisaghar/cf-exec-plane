@@ -15,13 +15,19 @@ const status=[];
 let broker=null;
 const delay=ms=>new Promise(r=>setTimeout(r,ms));
 function exec(cmd,args){return execFileSync(cmd,args,{encoding:'utf8',timeout:60000,stdio:['ignore','pipe','pipe']}).trim()}
-const alive=()=>new Promise((resolve,reject)=>{
+const alive=async()=>{
+ try{
+  const h=await fetch('http://127.0.0.1:'+PORT+'/__stable-health',{signal:AbortSignal.timeout(1000)});
+  if(h.ok&&(await h.text()).trim()==='CFM_STABLE_GATEWAY_READY_v1')return;
+ }catch{}
+ return new Promise((resolve,reject)=>{
  broker=spawn(process.execPath,[B,'serve'],{stdio:['ignore','pipe','pipe']});let log='';
  const timeout=setTimeout(()=>reject(Error('Broker start timeout '+log)),5000);
  broker.on('exit',c=>{clearTimeout(timeout);reject(Error('Broker exited '+c+' '+log))});
  broker.stdout.on('data',x=>{log+=x;if(log.includes('CFM_STABLE_BROKER_READY')){clearTimeout(timeout);resolve();}});
  broker.stderr.on('data',x=>{log+=x});
-});
+ });
+};
 async function start(p,name){
  const raw=exec(process.execPath,[C,'start',name,'--cdp',String(p),'--mode','web','--ttl','3m',
    '--stable-origin',PUBLIC,'--interval','1']);
@@ -52,6 +58,9 @@ try{
  await alive();
  for(const [p,n] of cfgs)await start(p,n);
  const [a,b]=status;
+ const listed=JSON.parse(exec(process.execPath,[C,'status'])).sessions;
+ assert.equal(listed.find(x=>x.name===a.name)?.url,a.url);
+ assert.equal(listed.find(x=>x.name===b.name)?.url,b.url);
  const [resultA,resultB]=await Promise.all([login(a),login(b)]);
  const crossed=await request(b.url,{headers:{cookie:a.cookie}});
  assert.equal(crossed.status,200); // Unauthorized GET / returns login HTML with HTTP 200 by design.
