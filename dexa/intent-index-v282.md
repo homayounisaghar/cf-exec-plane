@@ -274,15 +274,6 @@ HISTORY_COUNT: 13
 [
   {
     "exchange": 1,
-    "createdAt": "2026-11-14T21:26:11.601Z",
-    "ownerRequest": "چت‌های تلگرامم که پیام نخونده دارن رو لیست کن.",
-    "dexaVisibleReply": "متأسفانه نتونستم کاری که خواستی رو انجام بدم.",
-    "executionState": "FAILED",
-    "turnComplete": true,
-    "effectsExecuted": 0
-  },
-  {
-    "exchange": 2,
     "createdAt": "2026-11-14T22:13:28.706Z",
     "ownerRequest": "آخرین پیام در چتی که بالای ویچت هم پین شده چیه؟",
     "dexaVisibleReply": "متأسفانه نتونستم کاری که خواستی رو انجام بدم.",
@@ -291,7 +282,7 @@ HISTORY_COUNT: 13
     "effectsExecuted": 0
   },
   {
-    "exchange": 3,
+    "exchange": 2,
     "createdAt": "2026-11-14T22:30:12.527Z",
     "ownerRequest": "آخرین پیام در چتی که بالای ویچتم پین شده چیه؟",
     "dexaVisibleReply": "آخرین پیام قابل مشاهده: «我问一下昨天我问还没修好»",
@@ -300,7 +291,7 @@ HISTORY_COUNT: 13
     "effectsExecuted": 1
   },
   {
-    "exchange": 4,
+    "exchange": 3,
     "createdAt": "2026-11-15T03:51:18.233Z",
     "ownerRequest": "این پیام که در ویچتم پین شده متعلق به کیه؟",
     "dexaVisibleReply": "این پیام توی چت پین‌شدهٔ Kazem-tenghai بوده؛ اسم فرستنده‌اش مشخص نیست.",
@@ -309,7 +300,7 @@ HISTORY_COUNT: 13
     "effectsExecuted": 0
   },
   {
-    "exchange": 5,
+    "exchange": 4,
     "createdAt": "2026-11-15T14:24:51.462Z",
     "ownerRequest": "توی لیست مخاطبین گوشی من یه کسی هست به اسم «شماره ایرانسل من»، بهش یک اس‌ام‌اس سلام بفرست.",
     "dexaVisibleReply": "مأموریت به درخواست کاربر، پیش از تکمیل متوقف شد.",
@@ -318,7 +309,7 @@ HISTORY_COUNT: 13
     "effectsExecuted": 0
   },
   {
-    "exchange": 6,
+    "exchange": 5,
     "createdAt": "2026-11-15T18:48:56.547Z",
     "ownerRequest": "توی لیست کانتکت‌های من در گوشی‌ام یک شماره وجود داره به اسم «شماره ایرانسل من»؛ به اون شماره یک پیامک حاوی یک نقطه تنها بزن.",
     "dexaVisibleReply": "بخشی از عملیات واقعاً انجام شده است؛ بدون تکرار آثار قبلی، وضعیت بقیه بررسی شود.",
@@ -327,7 +318,7 @@ HISTORY_COUNT: 13
     "effectsExecuted": 1
   },
   {
-    "exchange": 7,
+    "exchange": 6,
     "createdAt": "2026-11-15T21:47:59.837Z",
     "ownerRequest": "یه زنگ بزن به نجم ایرانسل و بذار روی بلندگو.",
     "dexaVisibleReply": "فعلاً امکان برقراری مستقیم تماس و فعال‌کردن بلندگو رو ندارم. می‌تونم مخاطب «نجم ایرانسل» رو توی گوشی پیدا کنم، ولی برای تماس باید از شماره‌گیر گوشی استفاده کنی.",
@@ -336,7 +327,7 @@ HISTORY_COUNT: 13
     "effectsExecuted": 0
   },
   {
-    "exchange": 8,
+    "exchange": 7,
     "createdAt": "2026-11-15T21:53:20.298Z",
     "ownerRequest": "یه زنگ بزن به نجم ایرانسل و بذار روی بلندگو.",
     "dexaVisibleReply": "فعلاً امکان برقراری مستقیم تماس و فعال‌کردن بلندگو رو ندارم. می‌تونم مخاطب «نجم ایرانسل» رو پیدا کنم، اما تماس رو باید از شماره‌گیر گوشی برقرار کنی و بلندگو رو روشن کنی.",
@@ -345,7 +336,7 @@ HISTORY_COUNT: 13
     "effectsExecuted": 0
   },
   {
-    "exchange": 9,
+    "exchange": 8,
     "createdAt": "2026-11-15T21:54:08.849Z",
     "ownerRequest": "فلش گوشی رو روشن کن.",
     "dexaVisibleReply": "فعلاً ابزار مستقیمی برای روشن‌کردن فلش گوشی ندارم. برای روشن‌کردنش، پنل تنظیمات سریع گوشی رو از بالای صفحه پایین بکش و روی آیکون چراغ‌قوه بزن.",
@@ -354,7 +345,7 @@ HISTORY_COUNT: 13
     "effectsExecuted": 0
   },
   {
-    "exchange": 10,
+    "exchange": 9,
     "createdAt": "2026-11-15T21:55:00.993Z",
     "ownerRequest": "لاگ رو نگاه کن و بگو چه کارهایی روی گوشی می‌تونی انجام بدی.",
     "dexaVisibleReply": "مأموریت به درخواست کاربر، پیش از تکمیل متوقف شد.",
@@ -363,7 +354,7 @@ HISTORY_COUNT: 13
     "effectsExecuted": 0
   },
   {
-    "exchange": 11,
+    "exchange": 10,
     "createdAt": "2026-11-15T21:59:12.373Z",
     "ownerRequest": "اما یه ریاضی در حد خیلی ساده و یه خطی برام طراحی می‌کنی.",
     "dexaVisibleReply": "حتماً! 😊 سؤال ریاضی خیلی ساده و یک‌خطی: ۳ + ۵ = ؟",
@@ -372,7 +363,7 @@ HISTORY_COUNT: 13
     "effectsExecuted": 0
   },
   {
-    "exchange": 12,
+    "exchange": 11,
     "createdAt": "2026-11-16T03:35:58.841Z",
     "ownerRequest": "دو",
     "dexaVisibleReply": "مأموریت به درخواست کاربر، پیش از تکمیل متوقف شد.",
@@ -381,11 +372,20 @@ HISTORY_COUNT: 13
     "effectsExecuted": 0
   },
   {
-    "exchange": 13,
+    "exchange": 12,
     "createdAt": "2026-11-16T03:36:44.985Z",
     "ownerRequest": "روی گوشی یه اپلیکیشن دارم به اسم «تاختچه». آن‌اینستالش کن.",
     "dexaVisibleReply": "مأموریت به درخواست کاربر، پیش از تکمیل متوقف شد.",
     "executionState": "CONVERSATION_TURN_COMPLETED",
+    "turnComplete": true,
+    "effectsExecuted": 0
+  },
+  {
+    "exchange": 13,
+    "createdAt": "2026-11-16T03:39:12.741Z",
+    "ownerRequest": "اپلیکیشن «تاختچه» رو از روی گوشیم آن‌اینستال کن.",
+    "dexaVisibleReply": "مأموریت به درخواست کاربر، پیش از تکمیل متوقف شد.",
+    "executionState": "STOPPED_FUTURE",
     "turnComplete": true,
     "effectsExecuted": 0
   }
