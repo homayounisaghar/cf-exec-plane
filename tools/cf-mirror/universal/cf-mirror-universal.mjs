@@ -190,12 +190,13 @@ function writeState(st){
 async function startCLI(o){
  const name=o._[1]||('mirror-'+Date.now().toString(36));
  if(!goodName(name))throw Error('Mirror name must be 1..45 letters, digits, - or _');
+ const mode=o.mode||'local';
+ if(!['local','web'].includes(mode))throw Error('--mode must be local or web');
+ if(mode==='local'&&Object.hasOwn(o,'ttl'))throw Error('Local mirrors do not accept --ttl; omit it (local sessions have no scheduled expiry)');
  const old=readState(name);
  if(old&&alive(old.pid))throw Error('Mirror name already running. Use status or stop '+name);
  const found=await discover(),source=await resolveSource(o,found);
- const mode=o.mode||'local';
- if(!['local','web'].includes(mode))throw Error('--mode must be local or web');
- const expiresAt=mode==='web'?Date.now()+ttlSecs(o.ttl)*1000:(o.ttl?Date.now()+ttlSecs(o.ttl)*1000:null);
+ const expiresAt=mode==='web'?Date.now()+ttlSecs(o.ttl)*1000:null;
  const port=o.port?positivePort(o.port):await freePort(6200);
  const backendPort=await freePort(6400,[port]);
  const password=mode==='web'?String(o.password||crypto.randomBytes(18).toString('base64url')):null;
