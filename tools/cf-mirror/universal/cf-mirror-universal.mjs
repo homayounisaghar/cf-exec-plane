@@ -298,6 +298,9 @@ async function startCLI(o){
    const record=JSON.parse(reg);
    if(record.ok!==true||!record.stable_url?.startsWith(stableOrigin+'/m/'))throw Error('Invalid broker registration');
    safe.url=record.stable_url;
+   // Keep the per-session public path discoverable via cf_mirror_status too.
+   // Preserve the underlying origin in st.url for upstream same-origin checks.
+   writeState({...foundState,publicRouteUrl:record.stable_url});
   }catch(e){
    try{process.kill(child.pid,'SIGTERM')}catch{}
    throw Error('Stable route registration failed: '+e.message);
@@ -323,7 +326,7 @@ function statusCLI(){
   if(!f.endsWith('.json'))continue;
   const st=readState(f.slice(0,-5));
   if(!st)continue;
-  a.push({name:st.name,mode:st.mode,active:alive(st.pid)&&(!st.expiresAt||Date.now()<st.expiresAt),url:st.url,source:st.source,expires_at:st.expiresAt?new Date(st.expiresAt).toISOString():null});
+  a.push({name:st.name,mode:st.mode,active:alive(st.pid)&&(!st.expiresAt||Date.now()<st.expiresAt),url:st.publicRouteUrl||st.url,source:st.source,expires_at:st.expiresAt?new Date(st.expiresAt).toISOString():null});
  }
  out({ok:true,sessions:a});
 }
@@ -374,7 +377,7 @@ async function serve(config){
   return 'http://127.0.0.1:'+c.port;
  };
  const isExpired=()=>c.expiresAt&&Date.now()>=c.expiresAt;
- const state=(extra={})=>({name:c.name,pid:process.pid,backendPort:c.backendPort,port:c.port,mode:c.mode,source:c.source,selectedId,url:c.mode==='web'?webUrl:'http://127.0.0.1:'+c.port+'/',expiresAt:c.expiresAt,startupKey:c.startupKey,...extra});
+ const state=(extra={})=>({name:c.name,pid:process.pid,backendPort:c.backendPort,port:c.port,mode:c.mode,source:c.source,selectedId,url:c.mode==='web'?webUrl:'http://127.0.0.1:'+c.port+'/',publicRouteUrl:readState(c.name)?.publicRouteUrl||null,expiresAt:c.expiresAt,startupKey:c.startupKey,...extra});
  const internal='http://127.0.0.1:'+c.backendPort;
  async function stopBackend(){
   if(!backend)return;
