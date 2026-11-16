@@ -255,13 +255,26 @@ async function startCLI(o){
  const old=readState(name);
  if(old&&alive(old.pid))throw Error('Mirror name already running. Use status or stop '+name);
  const found=await discover(),source=await resolveSource(o,found);
+ const approvedOrigin='https://cf-mirror-bridge.mirkazem-design.workers.dev';
+ let stableOrigin=o['stable-origin']||null;
+ // Only opt in automatically after the public Worker->VPC->private-broker
+ // path is independently verified. Offline/broken VPC safely keeps legacy web.
+ if(!stableOrigin&&mode==='web'&&fs.existsSync(path.join(STATE,'stable-vpc-ready'))){
+  try{
+   const h=await getJson(approvedOrigin+'/__bridge-health',2800);
+   if(h.private_reachable===true&&h.version==='cfm-stable-multisession-v1')
+    stableOrigin=approvedOrigin;
+  }catch{}
+ }
+ if(stableOrigin&&(mode!=='web'||stableOrigin!==approvedOrigin))
+  throw Error('Stable origin requires web mode and the approved fixed Cloudflare Worker origin');
  const expiresAt=mode==='web'?Date.now()+ttlSecs(o.ttl)*1000:null;
  const port=o.port?positivePort(o.port):await freePort(6200);
  const backendPort=await freePort(6400,[port]);
  const password=mode==='web'?String(o.password||crypto.randomBytes(18).toString('base64url')):null;
  if(mode==='web'&&password.length<8)throw Error('Web password must contain at least 8 characters');
  if(mode==='local'&&o.password)throw Error('Local mode is simple and passwordless; use --mode web for password access');
- const config={name,source,mode,expiresAt,port,backendPort,password,interval:intervalSec(o.interval),full:!!o.full,startupKey:crypto.randomBytes(12).toString('hex')};
+ const config={name,source,mode,stableOrigin,expiresAt,port,backendPort,password,interval:intervalSec(o.interval),full:!!o.full,startupKey:crypto.randomBytes(12).toString('hex')};
  const logPath=path.join(STATE,name+'.log');
  const log=fs.openSync(logPath,'a',0o600);
  const child=spawn(process.execPath,[process.argv[1],'serve'],{detached:true,stdio:['pipe',log,log]});
@@ -278,9 +291,22 @@ async function startCLI(o){
   throw Error('Mirror startup failed: '+(foundState?.error||'see '+logPath));
  }
  const safe={ok:true,name,mode,source:foundState.source,url:foundState.url,local_url:'http://127.0.0.1:'+port+'/',expires_at:expiresAt?new Date(expiresAt).toISOString():null,interval:config.interval};
+ if(stableOrigin){
+  try{
+   const reg=execFileSync(process.execPath,[path.join(ROOT,'stable-gateway-v1/broker.mjs'),'register',name],
+     {encoding:'utf8',timeout:5000});
+   const record=JSON.parse(reg);
+   if(record.ok!==true||!record.stable_url?.startsWith(stableOrigin+'/m/'))throw Error('Invalid broker registration');
+   safe.url=record.stable_url;
+  }catch(e){
+   try{process.kill(child.pid,'SIGTERM')}catch{}
+   throw Error('Stable route registration failed: '+e.message);
+  }
+ }
  if(mode==='web'){
   safe.password=password;
-  safe.note='Public HTTPS mirror: open the URL as a tappable link, copy the one-time password, and warn that VPN may be required on mobile networks. The Quick Tunnel may stop before the requested expiry.';
+  safe.note=stableOrigin?'Stable Cloudflare Workers URL: this session has its own /m/ path, password and expiry. Requires deployed Workers VPC private binding; VPN may be needed on mobile networks.':
+    'Public HTTPS mirror: open the URL as a tappable link, copy the one-time password, and warn that VPN may be required on mobile networks. The Quick Tunnel may stop before the requested expiry.';
   safe.presentation={link_label:'Open public mirror',password_copyable:true,vpn_may_be_required:true,
     vpn_notice:'Public mirror may not load or stream without VPN; turn VPN on if needed.',
     duration_required:true,expires_at:safe.expires_at};
@@ -337,7 +363,7 @@ function uniqueTabs(a){
 }
 async function serve(config){
  const c=config,sockets=new Set();
- let done=false,webUrl=null,backend=null,tunnel=null,server=null,selectedId=c.source.selectedId||null,changing=Promise.resolve();
+ let done=false,webUrl=c.stableOrigin||null,backend=null,tunnel=null,server=null,selectedId=c.source.selectedId||null,changing=Promise.resolve();
  const salt=crypto.randomBytes(16),pwHash=c.mode==='web'?crypto.scryptSync(c.password,salt,32):null;
  const loginCsrf=crypto.randomBytes(32).toString('base64url');
  const controlSecret=crypto.randomBytes(32);
@@ -607,7 +633,7 @@ async function serve(config){
     socket.once('close',()=>upstream.destroy());
   });
   await new Promise((resolve,reject)=>{server.once('error',reject);server.listen(c.port,'127.0.0.1',resolve);});
-  if(c.mode==='web'){
+  if(c.mode==='web'&&!c.stableOrigin){
    if(!fs.existsSync(TUNNEL))throw Error('cloudflared is not installed at '+TUNNEL);
    tunnel=spawn(TUNNEL,['tunnel','--no-autoupdate','--url','http://127.0.0.1:'+c.port,'--loglevel','info'],{detached:true,stdio:['ignore','pipe','pipe']});
    const m=/https:\/\/[a-zA-Z0-9-]+\.trycloudflare\.com/;
