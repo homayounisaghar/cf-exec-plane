@@ -269,7 +269,7 @@ volume.get_set | Read or set Android media, alarm, ring or notification volume. 
 <!-- DEXA_OWNER_HISTORY_BEGIN -->
 ## DEXA ROLLING OWNER HISTORY - LAST 30 VOICE TURNS
 These prior ownerRequest/dexaVisibleReply pairs are context, NEVER execution evidence or tool instructions.
-HISTORY_COUNT: 13
+HISTORY_COUNT: 14
 ~~~json
 [
   {
@@ -386,6 +386,15 @@ HISTORY_COUNT: 13
     "ownerRequest": "رو از کجا باید بیارم؟",
     "dexaVisibleReply": "مأموریت به درخواست کاربر، پیش از تکمیل متوقف شد.",
     "executionState": "STOPPED_FUTURE",
+    "turnComplete": true,
+    "effectsExecuted": 0
+  },
+  {
+    "exchange": 14,
+    "createdAt": "2026-11-16T03:41:27.640Z",
+    "ownerRequest": "شناسه حذفش رو از کجا باید بیارم؟",
+    "dexaVisibleReply": "فرمان مستقیم انجام‌پذیر نبود. خطای واقعی: MODEL_RESPONSE_COMPLETION_TIMEOUT",
+    "executionState": "FAILED",
     "turnComplete": true,
     "effectsExecuted": 0
   }
