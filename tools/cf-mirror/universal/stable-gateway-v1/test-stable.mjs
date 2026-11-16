@@ -143,6 +143,18 @@ test('worker origin and root isolation',testOpts,async()=>{
  assert.equal((await worker.fetch(new Request(ORIGIN+'/'),{})).status,404);
  assert.equal((await worker.fetch(new Request(ORIGIN+'/__bridge-health'),{})).status,200);
 });
+test('worker health requires real VPC broker response',testOpts,async()=>{
+ const good={async fetch(url){
+  assert.ok(url.endsWith('/__stable-health'));
+  return new Response('CFM_STABLE_GATEWAY_READY_v1',{status:200});
+ }};
+ const r=await worker.fetch(new Request(ORIGIN+'/__bridge-health'),{MIRROR_VPC:good});
+ assert.equal(r.status,200);
+ const health=await r.json();assert.equal(health.private_reachable,true);
+ const bad={async fetch(){throw Error('unreachable')}}
+ const fail=await worker.fetch(new Request(ORIGIN+'/__bridge-health'),{MIRROR_VPC:bad});
+ assert.equal((await fail.json()).private_reachable,false);
+});
 test('clean shutdown',testOpts,async()=>{
  br.kill('SIGTERM');await Promise.all([new Promise(r=>a.close(r)),new Promise(r=>b.close(r))]);
  fs.rmSync(temp,{recursive:true,force:true});
