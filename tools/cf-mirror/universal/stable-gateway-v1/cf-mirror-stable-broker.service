@@ -1,0 +1,21 @@
+[Unit]
+Description=CF Universal Mirror fixed-origin multi-session broker (loopback only)
+After=network.target
+
+[Service]
+Type=simple
+User=cfserver
+Environment=CFM_BROKER_PORT=6266
+Environment=CFM_PUBLIC_ORIGIN=https://cf-mirror-bridge.mirkazem-design.workers.dev
+ExecStart=/usr/bin/node /home/cfserver/.local/share/cf-mirror-universal/stable-gateway-v1/broker.mjs serve
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/home/cfserver/.cache/cf-mirror-universal
+LimitNOFILE=10240
+
+[Install]
+WantedBy=default.target
