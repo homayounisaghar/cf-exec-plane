@@ -6,7 +6,7 @@
 
 **Natural-language activation**: For «برام یه میرورینگ ۵ ساعته از مرورگر روی اینترنت بساز» choose `cf_mirror_open` with `mode=web`, `ttl=5h` and an observed `app`, `cdp` or `x11` source. The returned public HTTPS `url` must be a **tappable link**, the returned password must be **copyable**, and the owner must receive a warning: **VPN may be required** and Quick Tunnel can stop early. No password is asked from the owner because the tool generates one.
 
-For «یه میرورینگ لوکال از وی‌چت بده» choose `cf_mirror_open` with `mode=local`, exact source, **no password or time/TTL**. Present the returned numeric `127.0.0.1` HTTP URL for a browser **on the server graphical desktop (XRDP/X11)**, not as a mobile internet link.
+For «یه میرورینگ لوکال از وی‌چت بده» choose `cf_mirror_open` with `mode=local`, exact source, **no password or time/TTL**. Present the returned numeric `127.0.0.1` HTTP URL as **copyable plain code with a Copy local link control, NOT as a tappable link**. The owner pastes it into a browser **on the server graphical desktop (XRDP/X11)**. In contrast, public WEB HTTPS URLs stay tappable and their passwords remain copyable.
 
 This release **does not promise VPN-free mirroring**. Prior VPN-free field tests are closed; the tool is considered complete with a documented VPN warning. Details: [CF Universal Mirror operator guide](cf-mirror-universal-operator-guide.md) and [source documentation](../tools/cf-mirror/universal/README.md). Neither passwords nor live private mirror links belong in this catalog. Authorization and exact runtime schemas remain enforced by the physical CF connector.
 
