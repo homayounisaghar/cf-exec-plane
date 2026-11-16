@@ -49,6 +49,7 @@ export function registerCfMirrorUniversalTools(server,z,{callAgent,callerIdentit
    interval:z.union([z.literal('auto'),z.number().min(0.05).max(5)]).optional(),
    full:z.boolean().optional(),no_fit:z.boolean().optional()},
   changing,async(input,extra)=>{
+   if((input.mode||'local')==='local'&&input.ttl!==undefined)throw Error('Local mirrors do not accept ttl; omit ttl (local sessions have no scheduled expiry)');
    const cmd=[BIN,'start'];
    if(input.name)cmd.push(input.name);
    if(input.app)cmd.push('--app',input.app);
